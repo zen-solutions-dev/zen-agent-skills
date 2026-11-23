@@ -33,7 +33,7 @@ produced this matrix, so per `A7` this verdict is that agent's, not an independe
 |---|---|---|---|---|
 | Scenarios | S-001 draft from a raw idea | Conformed | "The spec format" section (seven sections in fixed order, `status: draft` in the template) and Procedure step 4 / "Write the `ready` spec to the location above as `<slug>.md` with `status: draft`" | the location half is covered by S-006 and S-007 |
 | Scenarios | S-002 self-check with spec-quality | Conformed | Procedure step 3 / "Done when its verdict is `ready`; the spec you write is that version, not the first draft" | the second clause is what satisfies "the file it writes is the `ready` version" |
-| Scenarios | S-003 approval gate before decomposition | Conformed | [`new-task`](../../.agents/skills/new-task/SKILL.md) / "Refuse an unapproved spec, or one edited since its approval", with "`not-approved`, `changed`, `malformed`, or `unreadable`: stop and say which" | audited in `new-task` because the scenario places the behavior there; `feat-0076` slimmed `new-task` and kept this clause verbatim. Still a cross-skill dependency nothing enforces |
+| Scenarios | S-003 approval gate before decomposition | Conformed | [`new-task`](../../.agents/skills/new-task/SKILL.md) / "Refuse an unapproved spec, or one edited since its approval", with "`not-approved`, `changed`, `malformed`, or `unreadable`: stop and say which" | audited in `new-task` because the scenario places the behavior there; `feat-0076` slimmed `new-task` and kept this clause verbatim; `feat-0083` rewrote it to refuse text edited since approval too, which S-010 audits. Still a cross-skill dependency nothing enforces |
 | Scenarios | S-004 read-only for implementation surfaces | Conformed | Procedure step 4 / "edits **only that spec file** (and the spec index, if the repository keeps one): never source code, tests, config, the glossary, or a decision record" | the index widening is unchanged and stays inside the spec location. `feat-0076` kept this scenario intact by design: settled terms are **offered** to `domain-language` as its own step (step 5) rather than written during this run, so composing the interview did not widen the write surface |
 | Scenarios | S-005 retired | Retired | none: the scenario was retired by the `feat-0076` amendment | its behavior (exactly one clarifying question) is superseded by S-008. The skill no longer instructs it, which is the intended direction |
 | Scenarios | S-006 the spec goes where the repository already keeps specs | Conformed | "Where the spec goes" / "Find the repository's spec location before writing" ... "Match it." | |
@@ -65,8 +65,8 @@ produced this matrix, so per `A7` this verdict is that agent's, not an independe
 
 ## Coverage proof
 
-**Audited** (26 items): scenarios S-001 to S-009, of which S-005 is retired; five Proposed Surface
-rows; Goals 1 to 4; five Constraints; two Non-Goals; the Open Questions section.
+**Audited** (31 items): scenarios S-001 to S-011, of which S-005 is retired; seven Proposed Surface
+rows; Goals 1 to 4; six Constraints; two Non-Goals; the Open Questions section.
 
 **Unreconciled** (0 items): none.
 

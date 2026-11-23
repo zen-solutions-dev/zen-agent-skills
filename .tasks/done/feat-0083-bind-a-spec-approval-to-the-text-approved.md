@@ -123,7 +123,8 @@ fires.
       `changed`.
 - [x] `verifier-agent`'s deterministic verdict rule names every blocking verdict, so it agrees with
       its step 1 and S-012. The first version left the rule saying only "not `approved`".
-- [x] `--queue` names a file it could not read and exits 2, rather than leaving it out of the count.
+- [x] `--queue` names a file it could not read, a broken symlink included, and exits 2, rather
+      than leaving it out of the count.
 - [x] `install.py --skills verifier-agent` places `spec-author`; the `core`, `spine`, and `all`
       profiles place the same skills as before.
 - [x] S-012 and S-013 in `verifier-agent.conformance.md`, S-010 and S-011 in

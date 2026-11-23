@@ -237,7 +237,7 @@ class IndexFormatTests(_Tmp):
     def test_a_repository_with_no_index_yet_tracks_nothing(self):
         self.repo()
         (self.root / "AGENTS.md").write_text("a", encoding="utf-8")
-        self.assertEqual(set(), ipr.index_paths(self.root / ".git"))
+        self.assertEqual({}, ipr.index_paths(self.root / ".git"))
         self.assertEqual([("AGENTS.md", ipr.UNCOMMITTED)], self.found(self.root))
 
     def test_a_linked_worktree_reads_its_own_index(self):
@@ -291,11 +291,55 @@ class IndependentVerificationTests(_Tmp):
         (self.root / "index").write_bytes((source / ".git" / "index").read_bytes())
         self.assertEqual([("AGENTS.md", ipr.UNCONFIRMED)], self.found(self.root))
 
-    def test_a_git_file_borrowing_another_repositorys_git_directory_is_unconfirmed(self):
+    def test_a_git_file_borrowing_another_repositorys_index_does_not_vouch_for_new_text(self):
+        # The borrowed index lists AGENTS.md, but for the other repository's content: the
+        # planted file's text hashes to a different blob, so it is named.
         source = self._staged_index()
         (self.root / "AGENTS.md").write_text("planted", encoding="utf-8")
         (self.root / ".git").write_text(f"gitdir: {source / '.git'}\n", encoding="utf-8")
+        self.assertEqual([("AGENTS.md", ipr.MODIFIED)], self.found(self.root))
+
+    def test_a_fake_git_folder_without_refs_is_not_a_repository(self):
+        source = self._staged_index()
+        (self.root / "AGENTS.md").write_text("a", encoding="utf-8")
+        fake = self.root / ".git"
+        (fake / "objects").mkdir(parents=True)
+        (fake / "HEAD").write_text("ref: refs/heads/main\n", encoding="utf-8")
+        (fake / "index").write_bytes((source / ".git" / "index").read_bytes())
         self.assertEqual([("AGENTS.md", ipr.UNCONFIRMED)], self.found(self.root))
+
+    def test_a_separate_git_dir_checkout_is_confirmed(self):
+        tree = self.root / "wt"
+        tree.mkdir()
+        _git("init", "-q", f"--separate-git-dir={self.root / 'sep.git'}", cwd=tree)
+        (tree / "AGENTS.md").write_text("a", encoding="utf-8")
+        _git("add", "AGENTS.md", cwd=tree)
+        self.assertEqual([], self.found(tree))
+
+    def test_a_worktree_moved_without_repair_is_still_confirmed(self):
+        self.repo()
+        _git("-c", "user.email=t@example.invalid", "-c", "user.name=t",
+             "commit", "-q", "--allow-empty", "-m", "base", cwd=self.root)
+        _git("worktree", "add", "-q", str(self.root / "wt"), cwd=self.root)
+        (self.root / "wt" / "AGENTS.md").write_text("a", encoding="utf-8")
+        _git("add", "AGENTS.md", cwd=self.root / "wt")
+        (self.root / "wt").rename(self.root / "moved")
+        self.assertEqual([], self.found(self.root / "moved"))
+
+    def test_a_committed_file_edited_in_place_is_named(self):
+        self.repo()
+        (self.root / "CLAUDE.md").write_text("the reviewed text\n", encoding="utf-8")
+        _git("add", "CLAUDE.md", cwd=self.root)
+        (self.root / "CLAUDE.md").write_text("the reviewed text\nand one planted line\n",
+                                             encoding="utf-8")
+        self.assertEqual([("CLAUDE.md", ipr.MODIFIED)], self.found(self.root))
+
+    def test_a_crlf_checkout_of_a_committed_file_is_confirmed(self):
+        self.repo()
+        (self.root / "AGENTS.md").write_bytes(b"line one\nline two\n")
+        _git("add", "AGENTS.md", cwd=self.root)
+        (self.root / "AGENTS.md").write_bytes(b"line one\r\nline two\r\n")
+        self.assertEqual([], self.found(self.root))
 
     def test_a_submodule_is_confirmed_through_its_worktree_setting(self):
         library = self._staged_index()
@@ -410,11 +454,31 @@ class NeverRunsTests(unittest.TestCase):
                                   "execvp", "startfile", "run", "Popen"})
 
     def test_the_hook_writes_nothing(self):
+        # Method names that only a write can mean, any `os.<writer>` call, and `open` in a
+        # write mode. A bare `replace` is not listed: the hook calls `bytes.replace` to allow
+        # for CRLF checkouts, and a guard that fires on that gets loosened until it guards
+        # nothing. `os.replace` is still caught by the `os.` rule.
         tree = ast.parse(MODULE_PATH.read_text(encoding="utf-8"))
-        writes = [n.func.attr for n in ast.walk(tree)
-                  if isinstance(n, ast.Call) and isinstance(n.func, ast.Attribute)
-                  and n.func.attr in {"write_text", "write_bytes", "mkdir", "unlink",
-                                      "rename", "replace", "touch"}]
+        writes = []
+        for node in ast.walk(tree):
+            if not isinstance(node, ast.Call):
+                continue
+            func = node.func
+            if isinstance(func, ast.Attribute):
+                if func.attr in {"write_text", "write_bytes", "mkdir", "unlink", "rename",
+                                 "touch", "rmdir", "symlink_to", "hardlink_to"}:
+                    writes.append(func.attr)
+                if isinstance(func.value, ast.Name) and func.value.id == "os" and func.attr in {
+                        "remove", "unlink", "rename", "replace", "mkdir", "makedirs",
+                        "rmdir", "removedirs", "symlink", "link", "truncate", "write"}:
+                    writes.append(f"os.{func.attr}")
+            if isinstance(func, ast.Name) and func.id == "open":
+                # No mode means read. A mode that is not a literal cannot be judged, so it
+                # counts as a write.
+                given = node.args[1:2] + [k.value for k in node.keywords if k.arg == "mode"]
+                for mode in given:
+                    if not isinstance(mode, ast.Constant) or set(str(mode.value)) & set("wax+"):
+                        writes.append("open")
         self.assertEqual([], writes)
 
 

@@ -170,6 +170,15 @@ class QueueTests(_Tmp):
         self.assertIn("broken.md: unreadable", text)
         self.assertIn("1 file(s) could not be read", text)
 
+    def test_a_broken_symlink_is_reported_as_unreadable(self):
+        try:
+            (self.dir / "gone.md").symlink_to(self.dir / "missing-target.md")
+        except OSError:
+            self.skipTest("this platform does not allow creating a symlink here")
+        code, text = self.run_main("--queue", str(self.dir))
+        self.assertEqual(2, code)
+        self.assertIn("gone.md: unreadable", text)
+
     def test_an_unreadable_directory_exits_two(self):
         self.assertEqual(2, self.run_main("--queue", str(self.dir / "absent"))[0])
 
@@ -210,7 +219,7 @@ class ConsumerTests(unittest.TestCase):
     would place a skill whose check names a script that was never installed.
     """
 
-    CONSUMERS = ("verifier-agent", "new-task", "spec-plan-readiness")
+    CONSUMERS = ("verifier-agent", "new-task", "spec-plan-readiness", "test-author")
 
     def test_each_consumer_links_spec_author_and_names_the_script(self):
         for name in self.CONSUMERS:

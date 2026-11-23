@@ -50,7 +50,8 @@ Infer the mode from the inputs, and let the user override it.
 
 Required (acceptance mode):
 
-- **Approved spec**: a readable spec with `status: approved` and Given/When/Then scenarios
+- **Approved spec**: a readable spec with `status: approved`, whose text still matches its
+  `approved_digest` when it records one, and Given/When/Then scenarios
   carrying stable `S-NNN` ids.
 
 Required (characterization mode):

@@ -123,7 +123,10 @@ def main(argv=None, out=None) -> int:
             return 2
         directory = Path(argv[1])
         try:
-            candidates = sorted(p for p in directory.iterdir() if p.suffix == ".md" and p.is_file())
+            # A broken symlink is not a file, but it names a spec that cannot be read, so it
+            # is kept and reported rather than skipped.
+            candidates = sorted(p for p in directory.iterdir() if p.suffix == ".md"
+                                and (p.is_file() or (p.is_symlink() and not p.exists())))
         except OSError as error:
             out.write(f"{directory}: cannot read the directory ({error})\n")
             return 2

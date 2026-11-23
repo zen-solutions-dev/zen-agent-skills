@@ -85,6 +85,14 @@ is loaded first. Nothing in the kit named such a file at the moment it mattered.
   `.claude/settings.json` one folder down, or anywhere under a home that is itself a dotfiles
   repository, went unnamed. Both directories are checked now. Found by the independent
   verification, not by any gate.
+- **A rejected alternative: a back-pointer from the git directory.** Tried first, as the fix for
+  three plain files passing as a repository, and withdrawn after the second verification: git
+  supports layouts with no such pointer. The content check replaced it, and is the stronger test
+  anyway, since it is about the bytes the harness will load rather than about where git keeps
+  its metadata.
+- **A test change, reported under `A11`:** the hook's write guard no longer lists a bare
+  `replace`, because the hook now calls `bytes.replace` for CRLF checkouts. It forbids every
+  `os.<writer>` call and `open` in a write mode instead, so `os.replace` is still caught.
 
 ## Acceptance criteria (mechanically verifiable)
 
@@ -111,6 +119,13 @@ is loaded first. Nothing in the kit named such a file at the moment it mattered.
       silences every finding; `.claude/CLAUDE.md` is a memory file; a directory that can be
       entered but not listed still yields a file by name; a committed link to a file outside the
       repository is named; and settings that widen what runs without asking are named.
+- [x] From the second independent verification: the first fix demanded a pointer from the git
+      directory back to the checkout, which `--separate-git-dir` and a worktree moved before
+      `git worktree repair` do not have, so their committed files were reported. "Committed" now
+      means the file's content hashes to the blob its index entry records, which passes both
+      layouts (tested), still names a planted file beside a borrowed index, and also names a
+      committed instruction file edited in place afterwards, with a CRLF checkout allowed for. A
+      git directory must also hold `refs`, as git requires.
 
 ## Definition of done
 

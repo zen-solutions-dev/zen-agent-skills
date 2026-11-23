@@ -41,13 +41,20 @@ index file itself, versions 2 to 4, SHA-1 or SHA-256. Anything it cannot parse (
 index, an unknown version, a truncated file) makes the answer "could not confirm", and
 the file is named with that reason rather than passed as committed.
 
-The git directory has to prove itself first, because an index is only a file. A `.git`
-directory must hold `HEAD` and an object store, as git requires. A `.git` FILE must point
-at such a directory that points back: a linked worktree's names this checkout's `.git`, a
-submodule's names it in `core.worktree`. Otherwise three plain files, an index copied from
-anywhere, a `.git` file, and the instruction file, would pass as a committed repository.
-A committed instruction file that is a link to a file outside the repository is named too,
-since the commit vouches for the link, not for what it points at.
+Being listed in the index is not enough, because an index is only a file. Two more checks
+make "committed" mean the file as it stands:
+
+- The git directory must be one: `HEAD`, an object store, and `refs`, its own or a linked
+  worktree's common ones. A `.git` file is followed to it.
+- The file's content must hash, as git hashes a blob, to the object id its index entry
+  records. A planted file beside a borrowed or copied index does not, and neither does a
+  committed instruction file edited in place afterwards, which is how a malicious install
+  script would plant one. A Windows checkout's CRLF line endings are allowed for.
+
+Content rather than a pointer from the git directory back to the checkout, because layouts
+git supports have no such pointer: `--separate-git-dir`, and a worktree moved before
+`git worktree repair`. A committed instruction file that is a link to a file outside the
+repository is named too, since the commit vouches for the link, not for what it points at.
 
 "In the index" includes a file that was staged and never committed. Staging is an action
 someone took inside the repository, which is the distinction this hook draws.
@@ -85,6 +92,7 @@ exit    always 0
 Any malformed input, and any unexpected failure, exits 0 silently. A guardrail that
 breaks a session because it could not parse its own payload is worse than no guardrail.
 """
+import hashlib
 import json
 import os
 import sys
@@ -144,9 +152,14 @@ MAX_LISTED = 8
 # Read at most this much of a settings file; anything larger is not parsed.
 SETTINGS_READ_LIMIT = 1024 * 1024
 
+# Hash at most this much of an instruction file. Larger is not an instruction file anyone
+# writes by hand, and is reported as not confirmed rather than read whole.
+CONTENT_HASH_LIMIT = 4 * 1024 * 1024
+
 OUTSIDE = "outside any git repository"
 UNCOMMITTED = "in a repository, not committed"
 UNCONFIRMED = "beside git metadata that could not be confirmed, so not confirmed as committed"
+MODIFIED = "in a repository, but its content differs from what git's index records"
 LINKED_OUT = "committed, but as a link to a file outside the repository"
 
 REPORT_HEAD = (
@@ -205,57 +218,25 @@ def _entry(directory: Path, relative: str):
 def _real_git_dir(path: Path) -> bool:
     """Whether `path` holds what git itself requires of a git directory.
 
-    A `HEAD` file and an object store, its own or a linked worktree's common one. Without
-    this, three plain files (an index, a `.git` file reading `gitdir: .`, and the
+    `HEAD`, plus an object store and `refs`, its own or a linked worktree's common ones.
+    Without this, three plain files (an index, a `.git` file reading `gitdir: .`, and the
     instruction file) passed as a committed repository, though git called the folder not a
     repository at all.
     """
     if not (path / "HEAD").is_file():
         return False
-    if (path / "objects").is_dir():
+    if (path / "objects").is_dir() and (path / "refs").is_dir():
         return True
     try:
         common = (path / "commondir").read_text(encoding="utf-8").strip()
     except OSError:
         return False
     common_path = Path(common) if Path(common).is_absolute() else path / common
-    return (common_path / "objects").is_dir()
-
-
-def _points_back(git_dir: Path, top: Path) -> bool:
-    """Whether a git directory reached through a `.git` file belongs to this work tree.
-
-    A linked worktree's git directory names the `.git` file that points at it, and a
-    submodule's names its work tree in `core.worktree`. A `.git` file pointing at some
-    other repository's git directory, to borrow that repository's index, has neither.
-    """
-    try:
-        back = (git_dir / "gitdir").read_text(encoding="utf-8").strip()
-        back_path = Path(back) if Path(back).is_absolute() else git_dir / back
-        if back_path.resolve() == (top / ".git").resolve():
-            return True
-    except OSError:
-        pass
-    try:
-        config = (git_dir / "config").read_text(encoding="utf-8", errors="replace")
-    except OSError:
-        return False
-    for line in config.splitlines():
-        key, _, value = line.strip().partition("=")
-        if key.strip().lower() == "worktree" and value.strip():
-            target = Path(value.strip())
-            target = target if target.is_absolute() else git_dir / target
-            if target.resolve() == top.resolve():
-                return True
-    return False
+    return (common_path / "objects").is_dir() and (common_path / "refs").is_dir()
 
 
 def _git_dir(top: Path):
-    """The git directory for a work tree root, or None when it cannot be confirmed as one.
-
-    A `.git` directory must be a real git directory. A `.git` file must point at a real git
-    directory that points back at this work tree.
-    """
+    """The git directory for a work tree root, or None when it cannot be confirmed as one."""
     marker = top / ".git"
     if marker.is_dir():
         return marker if _real_git_dir(marker) else None
@@ -267,9 +248,7 @@ def _git_dir(top: Path):
         if line.startswith("gitdir:"):
             target = Path(line[len("gitdir:"):].strip())
             target = target if target.is_absolute() else (top / target)
-            if _real_git_dir(target) and _points_back(target, top):
-                return target
-            return None
+            return target if _real_git_dir(target) else None
     return None
 
 
@@ -282,7 +261,8 @@ def find_work_tree(start: Path):
 
 
 def _parse_entries(data: bytes, version: int, count: int, oid_len: int):
-    """Every path in the index, or None when `data` does not parse with this hash length.
+    """Every path in the index mapped to its object id, or None when `data` does not parse
+    with this hash length.
 
     The name length git stores in each entry's flags is checked against the name read,
     which is what tells a SHA-1 index from a SHA-256 one: the wrong length lands the flags
@@ -291,12 +271,13 @@ def _parse_entries(data: bytes, version: int, count: int, oid_len: int):
     end = len(data) - oid_len
     offset = 12
     previous = b""
-    paths = set()
+    paths = {}
     for _ in range(count):
         start = offset
         fixed = 40 + oid_len
         if offset + fixed + 2 > end:
             return None
+        oid = data[offset + 40:offset + 40 + oid_len]
         flags = int.from_bytes(data[offset + fixed:offset + fixed + 2], "big")
         offset += fixed + 2
         if flags & 0x4000:
@@ -332,7 +313,7 @@ def _parse_entries(data: bytes, version: int, count: int, oid_len: int):
         if stored != 0xFFF and stored != len(name):
             return None
         previous = name
-        paths.add(name)
+        paths[name] = oid
     # Extensions follow the entries. A split index ("link") keeps entries in a second
     # file this hook does not read, so its answer would be wrong rather than partial.
     while offset + 8 <= end:
@@ -347,11 +328,11 @@ def _parse_entries(data: bytes, version: int, count: int, oid_len: int):
 
 
 def index_paths(git_dir: Path):
-    """The set of paths in git's index as bytes, an empty set when there is no index,
-    or None when the index exists and cannot be read."""
+    """The paths in git's index as bytes, each mapped to its object id; empty when there is
+    no index, or None when the index exists and cannot be read."""
     index = git_dir / "index"
     if not index.exists():
-        return set()
+        return {}
     try:
         data = index.read_bytes()
     except OSError:
@@ -367,6 +348,29 @@ def index_paths(git_dir: Path):
         if parsed is not None:
             return parsed
     return None
+
+
+def _blob_id(content: bytes, oid_len: int) -> bytes:
+    """The object id git gives `content` as a blob, in the repository's hash."""
+    digest = hashlib.sha1 if oid_len == 20 else hashlib.sha256
+    return digest(b"blob %d\0" % len(content) + content).digest()
+
+
+def _matches_index(path: Path, oid: bytes):
+    """True when the file's content is the blob the index records, False when it is not,
+    None when it could not be read or is too large to hash."""
+    try:
+        if path.stat().st_size > CONTENT_HASH_LIMIT:
+            return None
+        content = path.read_bytes()
+    except OSError:
+        return None
+    if _blob_id(content, len(oid)) == oid:
+        return True
+    # A checkout with `core.autocrlf` writes CRLF while the blob holds LF.
+    if b"\r\n" in content and _blob_id(content.replace(b"\r\n", b"\n"), len(oid)) == oid:
+        return True
+    return False
 
 
 def _executing_keys(path: Path):
@@ -454,6 +458,16 @@ def findings(cwd: Path, home: Path):
                 target = path.resolve()
                 if target != tree and tree not in target.parents:
                     out.append((path, LINKED_OUT))
+                continue
+            same = _matches_index(path, tracked[relative])
+            if same is True:
+                continue
+            if same is None:
+                out.append((path, UNCONFIRMED))
+            elif kind not in PERSONAL_FILES:
+                out.append((path, MODIFIED))
+            elif kind == ".claude/settings.local.json" and _executing_keys(path):
+                out.append((path, f"{MODIFIED}, and it sets {', '.join(_executing_keys(path))}"))
             continue
         reason = UNCOMMITTED if tracked is not None else UNCONFIRMED
         if kind == ".claude/settings.local.json":

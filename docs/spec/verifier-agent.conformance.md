@@ -48,7 +48,7 @@ item 8 evaluation records are for.
 
 ## Coverage proof
 
-- **audited**: S-001 through S-011, and all four Proposed Surface groupings (inputs, the six output
+- **audited**: S-001 through S-013, and all four Proposed Surface groupings (inputs, the six output
   fields, the verdict values, report delivery). Every spec item was checked.
 - **unreconciled**: none. No item diverged and none is unbuilt.
 
