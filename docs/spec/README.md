@@ -77,17 +77,20 @@ more than one: `install` carries two, `build-adapters` four, since `chore-0043`,
 `chore-0062`, and again since `chore-0087`, `cloud-executable` three, since `chore-0061` and again
 since `chore-0049`, and
 `validate-skills` five, since `chore-0047`, again since `chore-0054`, again since `chore-0065`, and again since `feat-0064`.
+The 2026-11 overhaul added a second to `house-review` (`feat-0078`), `spec-author` (`feat-0076`)
+and `systematic-debugging` (`feat-0077`), and a first to `verifier-agent` (`feat-0077`).
 
 | Spec | Amendment | Amended |
 |---|---|---|
 | [`build-adapters`](build-adapters.md) | `S-015` to `S-017`, the `plugin` target (`feat-0034`); `S-018`, the code-span and fence exception (`chore-0043`); `S-019`, what a relative link inside an emitted lens must satisfy (`chore-0062`); `S-020` and the `Exit code` surface element, a destination outside the output root refused rather than written (`chore-0087`) | 2026-08-06, 2026-08-19, 2026-08-27, 2026-09-01 |
 | [`cloud-executable`](cloud-executable.md) | `S-017` and `S-018` repointed from `bug-0018`, closed 2026-08-08, to the open `bug-0020` (`chore-0051`); `S-020` and the `Output` surface element, what a passing gate's entry carries (`chore-0061`); the `Gate set` surface element restated as a property rather than a count (`chore-0049`) | 2026-08-20, 2026-08-27, 2026-08-28 |
 | [`doc-sync`](doc-sync.md) | `skipped` and `not_audited` split into two fields (`chore-0027`) | 2026-08-05 |
-| [`house-review`](house-review.md) | `S-014` to `S-018`, the evidence gate and finding signature (`feat-0040`) | 2026-08-05 |
+| [`house-review`](house-review.md) | `S-014` to `S-018`, the evidence gate and finding signature (`feat-0040`); `S-019` to `S-024`, the spec and standards axes and the depth selection absorbed from the retired `review-depth`, with `S-018` reworded and the spec-judgement non-goal narrowed (`feat-0078`) | 2026-08-05, 2026-11-23 |
 | [`install`](install.md) | `S-015`, the draft-skill axis (`feat-0036`); `S-016` to `S-018`, Goal 10 and `--replace-adopted`, the adopted-versus-derived axis (`bug-0018`) | 2026-08-05, 2026-08-07 |
-| [`spec-author`](spec-author.md) | `S-006` and `S-007`, the spec location (`chore-0027`) | 2026-08-05 |
-| [`systematic-debugging`](systematic-debugging.md) | `S-014` and `S-015`, where instrumentation may live and what happens where it cannot live anywhere, settling both Open Questions before anything was built against the contract (`chore-0078`) | 2026-08-29 |
+| [`spec-author`](spec-author.md) | `S-006` and `S-007`, the spec location (`chore-0027`); Goal 4 and the interview: `S-005` retired, `S-008` and `S-009` added (`feat-0076`) | 2026-08-05, 2026-11-23 |
+| [`systematic-debugging`](systematic-debugging.md) | `S-014` and `S-015`, where instrumentation may live and what happens where it cannot live anywhere, settling both Open Questions before anything was built against the contract (`chore-0078`); `S-016`, no red command means no hypothesis phase (`feat-0077`) | 2026-08-29, 2026-11-23 |
 | [`validate-skills`](validate-skills.md) | `S-022`, the code-span and fence exception (`chore-0039`); `S-023` and the "what it reads" surface entry, the lens-composition rule (`chore-0047`); `S-024` and the `Output` and "what it reads" surface entries, the supporting-file link rule (`chore-0054`); `S-025` and the same two surface entries again, the non-skill `.agents/` markdown link rule (`chore-0065`); `S-026` and the "what it reads" entry again, the universal-lens rule (`feat-0064`) | 2026-08-19, 2026-08-20, 2026-08-21, 2026-08-27, 2026-08-29 |
+| [`verifier-agent`](verifier-agent.md) | a dated note on dispatching the verifier with a fresh context, as a leaf, at high effort; no scenario changes, so whether it needs re-approval at all is the maintainer's call (`feat-0077`) | 2026-11-23 |
 
 The `house-review` row was missed when this table was first written, and how it was missed is the
 argument for eventually replacing this table with a marker key. That spec's note says its
@@ -142,17 +145,17 @@ something else today.
 | [`build-adapters`](build-adapters.md) | approved | 20 | [conformance](build-adapters.conformance.md), [readiness](build-adapters.readiness.md) |
 | [`cloud-executable`](cloud-executable.md) | approved | 20 | [conformance](cloud-executable.conformance.md), [readiness](cloud-executable.readiness.md), [verification: S-001 to S-016](cloud-executable.s001-s016.verification.md) (**fail**, fixed same day), [verification: the proof run](cloud-executable.verification.md) (**blocked**), [runbook](cloud-executable.runbook.md) |
 | [`doc-sync`](doc-sync.md) | approved | 15 | [conformance](doc-sync.conformance.md) |
-| [`house-review`](house-review.md) | approved | 18 | [conformance](house-review.conformance.md), [verification](house-review.verification.md) |
+| [`house-review`](house-review.md) | approved | 24 | [conformance](house-review.conformance.md), [verification](house-review.verification.md) |
 | [`install`](install.md) | approved | 18 | [conformance](install.conformance.md), [characterization](install.characterization.md) |
 | [`sitrep`](sitrep.md) | approved | 40 | [conformance](sitrep.conformance.md) (28 of 40 built), [readiness](sitrep.readiness.md) (implementable) |
-| [`spec-author`](spec-author.md) | approved | 7 | [conformance](spec-author.conformance.md) |
-| [`systematic-debugging`](systematic-debugging.md) | approved | 15 | [conformance](systematic-debugging.conformance.md) (15 of 15), [verification](systematic-debugging.verification.md) |
+| [`spec-author`](spec-author.md) | approved | 9, one retired | [conformance](spec-author.conformance.md) |
+| [`systematic-debugging`](systematic-debugging.md) | approved | 16 | [conformance](systematic-debugging.conformance.md) (16 of 16), [verification](systematic-debugging.verification.md) |
 | [`test-author`](test-author.md) | approved | 5 | [conformance](test-author.conformance.md) |
 | [`tracker-links`](tracker-links.md) | approved | 9 | [conformance](tracker-links.conformance.md), [verification](tracker-links.verification.md) |
 | [`validate-skills`](validate-skills.md) | approved | 26 | [conformance](validate-skills.conformance.md), [verification](validate-skills.verification.md) |
 | [`verifier-agent`](verifier-agent.md) | approved | 11 | [conformance](verifier-agent.conformance.md) |
 
-[`sitrep`](sitrep.md) was added and approved on 2026-09-11, after the figures in the next paragraph were computed, so they do not include it.
+[`sitrep`](sitrep.md) was added and approved on 2026-09-11, after the figures in the next paragraph were computed, so they do not include it. Nor do they include the 2026-11-23 overhaul amendments, which moved three of the counts in the table above: `house-review` from 18 to 24 (`feat-0078`), `spec-author` from 7 to 9 with `S-005` retired (`feat-0076`), and `systematic-debugging` from 15 to 16 (`feat-0077`). Each was counted from the spec's own scenario headings on that date.
 
 Twelve specs, 186 scenarios, all approved. **All twelve now carry a conformance matrix**, holding
 all 186 of those scenarios, recomputed from the files on 2026-08-29 rather than incremented: the
@@ -181,7 +184,8 @@ this page computed rather than hand-maintained, and this is the second one it wo
 [`systematic-debugging`](systematic-debugging.md) was the second **forward** spec here, written
 before an implementation rather than pinning one that already existed, so from 2026-08-19 until
 2026-08-29 it was the only spec with nothing to audit. It carries 15 rather than the 13 it was
-approved with, since `chore-0078` settled both of its Open Questions on 2026-08-29.
+approved with, since `chore-0078` settled both of its Open Questions on 2026-08-29, and 16 since
+`feat-0077` added `S-016` on 2026-11-23.
 
 [`cloud-executable`](cloud-executable.md) was the first forward spec and stopped being the exception
 on 2026-08-19, when `chore-0034` audited it. That matrix is worth reading for what it declined to

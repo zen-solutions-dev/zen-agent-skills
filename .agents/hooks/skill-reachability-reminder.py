@@ -169,6 +169,7 @@ KIT_SKILL_NAMES = frozenset({
     "test-author",
     "test-quality",
     "verifier-agent",
+    "zen",
 })
 
 # The banner keeps the exact words `NO SKILLS REACHABLE` at its head on purpose, and the

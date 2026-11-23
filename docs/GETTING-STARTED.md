@@ -137,14 +137,22 @@ python scripts/install.py --tools claude
 python scripts/install.py --tools opencode
 ```
 
-That default installs 18 of the 20 skills, the ones that make up the delivery workflow. There is a reason it is not all of them: your assistant reads a one-line summary of every installed skill in order to pick the right one, and that reading budget is shared with any other skills you have installed, so more is not automatically better. If you want the smallest useful set, or all of it:
+That default installs the skills that make up the delivery workflow, not every skill. There is a reason it is not all of them: your assistant reads a one-line summary of every installed skill in order to pick the right one, and that reading budget is shared with any other skills you have installed, so more is not automatically better. If you want the smallest useful set, or all of it:
 
 ```bash
 python scripts/install.py --profile core
 python scripts/install.py --profile all
 ```
 
-`core` is three skills: set up a project, track the work, describe the change at the end. Each command prints what it costs, so you can compare before deciding. You can change your mind later by running it again with a different profile.
+`core` is the smallest set: set up a project, track the work, describe the change at the end. Each command prints what it costs, so you can compare before deciding. You can change your mind later by running it again with a different profile.
+
+The newest skills, including `grill`, the interview this guide starts every change with, are still **drafts**: written, but not yet used on enough real work to be called finished. No install places them unless you ask:
+
+```bash
+python scripts/install.py --include-drafts
+```
+
+Add the flag to whichever command above you chose. Expect rough edges, and say so when you hit one; that is how a draft gets finished.
 
 ### 4a. If you already use `npx skills`
 
@@ -185,27 +193,28 @@ The assistant will inspect the project and, after confirmation, can create a sen
 
 The skill creates configuration. It does not install your programming language packages for you. After setup, follow the package manager instructions for your chosen stack, such as `uv sync`, `npm install`, `pnpm install`, or another command your assistant confirms for this project.
 
-### 6. Describe the first useful outcome
+### 6. Get grilled on the first useful outcome
 
-Do not begin with a giant vague request such as “build my whole startup.” Give the assistant one outcome a person can recognize and test.
+Do not begin with a giant vague request such as “build my whole startup.” Give the assistant one outcome a person can recognize and test, and ask it to grill you on it first.
 
 Try:
 
-> I want a visitor to create an account, see a welcome screen, and sign out. Help me turn this into the first small milestone. Use the project files and existing task system, and tell me what you need me to decide before changing anything.
+> Grill me. I want a visitor to create an account, see a welcome screen, and sign out. Interview me until every decision is made, look up anything you can find in the project yourself, and give me your recommended answer with each question.
 
-The assistant can then use `new-task` to turn the idea into an atomic task with a clear acceptance check.
+The `grill` skill asks a few questions at a time, each with a recommended answer you can accept with a "yes". It looks facts up in the project rather than asking you, so the questions that reach you are real decisions. It ends with a short record of what you decided.
+
+Then turn the decisions into work. For a small change, `new-task` writes one task with a clear acceptance check. For behaviour someone has to agree before it is built, `spec-author` writes a short specification first and waits for your approval. If you are unsure which, ask `zen`.
 
 ### 7. Work in small loops
 
 A healthy first-project loop looks like this:
 
-1. 💡 Explain one outcome.
-2. 🧩 Ask the assistant to break it into a small task.
-3. 🗣️ Review the plan in plain language.
-4. ✍️ Let the assistant make the change.
-5. 🔍 Ask what changed and how it was checked.
-6. 🧪 Try the result yourself.
-7. 📌 Record the next decision or task.
+1. 💡 Explain one outcome, and say "grill me".
+2. 🧩 Turn the decisions into a small task, or a specification if it needs agreeing.
+3. ✍️ Let the assistant build it, test-first where it can (`tdd`).
+4. 🔍 Ask for a review (`house-review`) and how it was checked.
+5. 🧪 Try the result yourself.
+6. 🔁 Run a retro (`retro`) when something needed correcting, so it does not need correcting twice.
 
 Small loops keep you in charge and make it easier to notice when the project is heading in the wrong direction.
 
@@ -293,8 +302,9 @@ The kit is most useful when it reduces repeated confusion.
 
 You can use the kit without adopting its full work-tracking system.
 
-Install the skills for your tool, then use one skill when the need appears:
+Install the skills for your tool, then use one skill when the need appears. If you cannot remember which, ask `zen`:
 
+- 🔥 `grill` for being interviewed about a plan or idea until nothing is silently assumed. A draft.
 - 📝 `doc-author` for a new, code-grounded guide.
 - 🔧 `doc-revise` for bringing an existing document back into alignment.
 - 🔎 `doc-sync` for finding out which documents a change made wrong, before you fix any of them.
@@ -304,6 +314,8 @@ Install the skills for your tool, then use one skill when the need appears:
 - 📬 `pr-describe` for a draft pull request description and changelog entry, including a reference that closes the linked GitHub issue when the pull request merges.
 - 📜 `spec-author` for writing down what a feature should do before anyone builds it.
 - 🧪 `test-author` for turning an agreed specification into real tests.
+- 🔴 `tdd` for building something new test-first. A draft.
+- 🔁 `retro` for turning a correction you keep making into a check. A draft.
 
 This approach is useful when your existing task or project-management system already works for you.
 
@@ -315,7 +327,8 @@ The kit becomes especially useful when more than one person or agent is involved
 
 ```mermaid
 flowchart LR
-  A[Idea or request] --> B[spec-author]
+  A[Idea or request] --> Z[grill]
+  Z --> B[spec-author]
   B --> C[You approve the specification]
   C --> D[new-task]
   D --> E[Agent or builder does the work]
@@ -325,25 +338,28 @@ flowchart LR
   H --> I[house-review]
   I --> K[doc-sync]
   K --> J[pr-describe]
+  J --> R[retro]
 ```
 
 A typical collaboration loop is:
 
+0. 🔥 `grill` interviews you about the idea until every decision is made, and `spec-author` runs the same interview before it writes anything.
 1. 📜 `spec-author` turns a rough idea into a written specification of what the result should do, then stops and waits for you to approve it. Nothing is built until you do.
-2. 📝 `new-task` breaks the approved specification into focused tasks.
+2. 📝 `new-task` breaks the approved specification into focused tasks, each small enough for one fresh agent session.
 3. 🧑‍💻 A builder or agent completes the task.
 4. ✅ The acceptance command proves the intended result.
 5. 🧪 `test-author` derives tests from the specification, so each test traces back to the behavior it protects.
 6. 📐 `spec-conformance` audits whether the implementation actually matches the specification, which is a different question from whether the tests pass.
 7. ✅ `verifier-agent` independently runs the agreed commands and answers one question with evidence: pass, fail, or blocked. "Blocked" means it could not check, which is deliberately different from "it failed".
-8. 🔍 `house-review` checks the change and reports findings without editing.
-9. 🌳 `fix-batch` can dispatch independent tasks to isolated worktrees when a team is ready for parallel work.
+8. 🔍 `house-review` checks the change twice, once against what the specification or task asked and once against your written standards, and reports findings without editing.
+9. 🌳 `fix-batch` can dispatch independent tasks to isolated worktrees when a team is ready for parallel work. Each agent it starts begins with a fresh context, may not start agents of its own, and works at medium effort; the verification runs at high effort.
 10. 🔄 `reconcile-worktrees` brings verified work back into the main project.
 11. 🔎 `doc-sync` reports which documents the change made wrong. It never edits one without your approval, and it will not touch a document that governs the code, because a disagreement there means the code is wrong.
 12. 📬 `pr-describe` drafts the change summary for review. If the task named a GitHub issue, the description carries a reference that closes it on merge, so the board stays honest without anyone tidying it up afterwards.
 13. 🤝 `human-handoff` or `agent-handoff` carries context to the next person or session.
+14. 🔁 `retro` looks back at what needed correcting and proposes a check or a written standard so it never needs correcting again.
 
-You do not need all of this at once. Steps 2 to 4 work on their own, and you can add the specification and testing steps when a piece of work is big enough to be worth agreeing on in writing first.
+You do not need all of this at once. Step 0 and steps 2 to 4 work on their own, and you can add the specification and testing steps when a piece of work is big enough to be worth agreeing on in writing first.
 
 The reason the specification comes first is worth stating plainly: an agent that is told what "done" means can be checked against it afterwards. Without that written agreement, "it works" is only an opinion, and the only person who can verify the result is whoever wrote the original prompt.
 
@@ -351,7 +367,7 @@ The reason the specification comes first is worth stating plainly: an agent that
 
 ### For a new idea
 
-> I have an idea, but it is still rough. Ask me the few questions needed to define the user outcome, then help me create one small task with a clear acceptance check. Keep the first version intentionally narrow.
+> Grill me on this idea. It is still rough. Interview me until the user outcome and every decision are clear, then help me create one small task with a clear acceptance check. Keep the first version intentionally narrow.
 
 ### For a project tour
 
@@ -371,7 +387,11 @@ The reason the specification comes first is worth stating plainly: an agent that
 
 ### For a review
 
-> Use `house-review` in report-only mode. Look for correctness, security, missing checks, and user-facing regressions. Report findings by severity with a concrete suggested fix, and do not edit files.
+> Use `house-review`. Check the change against what its task or specification asked, and separately against this project's written standards. Report findings by severity with a concrete suggested fix, and do not edit files.
+
+### For a look back
+
+> Use `retro` on this session. What did you have to be corrected on, and what check or written standard would mean nobody has to make that correction again? Propose; do not apply anything until I approve it.
 
 ## 🛡️ Safety and trust
 
@@ -416,11 +436,11 @@ Start with one workflow: describe an outcome, ask for a small task, review the p
 You can use this as a gentle starting plan for a new project or community workshop:
 
 - 🌱 **Day 1:** Install the kit and ask for a plain-language tour of your project.
-- 🎯 **Day 2:** Choose one small user outcome and turn it into a task.
+- 🎯 **Day 2:** Choose one small user outcome, ask to be grilled on it, and turn the decisions into a task.
 - 🛠️ **Day 3:** Let the assistant implement the task while you review each step.
 - ✅ **Day 4:** Try the result yourself and record what you learned.
 - 📝 **Day 5:** Update the README or create a handoff so another person can understand the project.
-- 🧭 **Day 6:** Review what should happen next, without committing to a giant roadmap.
+- 🧭 **Day 6:** Run a retro on the week, then review what should happen next, without committing to a giant roadmap.
 - 🎉 **Day 7:** Share the result, the lesson, or the question with your community.
 
 Progress is not measured by how much code appeared. It is measured by whether the next step became clearer and more trustworthy.
