@@ -2900,7 +2900,11 @@ class ForeignSymlinkTests(_FixtureKit):
     def test_a_link_the_record_names_is_still_relinked(self):
         # A moved checkout: the record says this tool linked the target to a source that
         # was this kit's, so repointing it at the kit's current source is the tool's own.
-        inst.save_manifest([{"tool": "claude", "name": "alpha", "target": str(self.link),
+        # The record names the target under the resolved home, as `install()` writes it:
+        # on Windows the temporary home is an 8.3 short path that resolves to a long one,
+        # so recording the unresolved `self.link` described a record no run ever makes.
+        recorded = self.home.resolve() / ".claude" / "skills" / "alpha"
+        inst.save_manifest([{"tool": "claude", "name": "alpha", "target": str(recorded),
                              "mode": "symlink", "source": str(self.mine)}], False)
         code, out = self._install(mode="symlink")
         self.assertEqual(code, 0, out)

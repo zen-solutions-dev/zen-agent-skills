@@ -554,16 +554,19 @@ def emit_plugin_manifests(out: Path, dry: bool, with_marketplace: bool = True) -
 def plugin_version(out: Path) -> str:
     """PLUGIN_BASE_VERSION plus a 12-character digest of the emitted skills and rules.
 
-    Over relative paths and bytes, sorted, so it is the same on every platform for the
-    same content. Excludes the manifests, which carry the version and so cannot be part
-    of what it digests. A preview writes no tree, so a preview's version is the base's.
+    Over relative paths and bytes, sorted by their case-sensitive parts, so it is the
+    same on every platform for the same content. Sorting the paths themselves was not:
+    `WindowsPath` orders case-insensitively, so `SKILL.md` and `references/` swapped
+    places and Windows computed a different version for the same tree (feat-0080). The
+    manifests are excluded, since they carry the version and so cannot be part of what
+    it digests. A preview writes no tree, so a preview's version is the base's.
     """
     digest = hashlib.sha256()
     for top in ("skills", "rules"):
         root = out / top
         if not root.is_dir():
             continue
-        for path in sorted(root.rglob("*")):
+        for path in sorted(root.rglob("*"), key=lambda p: p.relative_to(out).parts):
             rel = path.relative_to(out)
             if not path.is_file() or "__pycache__" in rel.parts or path.suffix == ".pyc":
                 continue
