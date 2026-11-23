@@ -98,8 +98,11 @@ notes go under "Notes for integration" in the pull request body.
   `spine` profile, which would fail `run-checks.py`, and shipping `grill` non-draft would break the
   contribution bar in `AGENTS.md`. `spec-author` names `grill` in backticks and carries a short
   inline fallback (numbered rounds, a recommendation per question, facts looked up and recorded).
-  **Seam left open deliberately**: when `grill` is promoted, turn the backtick into a link and shrink
-  the fallback to a pointer; the conformance matrix's S-008 and S-009 rows then need re-deriving.
+  **Seam left open deliberately** (confirmed by the orchestrator, who also ruled that WS4 does not
+  relax `draft_conflicts`): when `grill` is promoted, turn the backtick into a link and delete the
+  paragraph marked "Fallback while `grill` is a draft"; the matrix's S-008 and S-009 rows then need
+  re-deriving. The same rule holds for `domain-language`, which `spec-author` names in backticks and
+  `new-task` does not name at all (it reads "the glossary").
 - **Rejected: `spec-author` writing the glossary during its run.** That would have widened S-004
   (the run writes only the spec). Settled terms and decision-record candidates are listed in the
   report and offered to `domain-language` as its own step, so S-004 stands unamended.
