@@ -1301,22 +1301,20 @@ class RepositoryRecordsTest(unittest.TestCase):
         found, _ = cp.collect(REPO_ROOT)
         self.assertEqual([rel for rel, record in found if record.get("placement")], [])
 
-    def test_the_review_depth_file_declares_no_provenance_placement(self):
-        # The regression fixture from the other end. Its `source:` line is ignored because
-        # of where it sits, so the file must contain no declared placement at all: if one
-        # appeared, the placement-driven pass would report the skill as an unsourced block.
-        path = REPO_ROOT / ".agents" / "skills" / "review-depth" / "SKILL.md"
-        lines = path.read_text(encoding="utf-8").splitlines()
-        self.assertEqual(cp.placement_regions(cp.declared_lines(lines)), [])
-
-    def test_the_review_depth_output_template_contributes_no_records(self):
-        # The real file, not a fixture. `source: detected | user` in review-depth's output
-        # block is the collision the grammar was tightened for: if a later change widens
-        # it, the checker starts failing on a skill nobody touched.
-        path = REPO_ROOT / ".agents" / "skills" / "review-depth" / "SKILL.md"
+    def test_house_review_depth_wording_contributes_no_extra_records(self):
+        # The real-file guard for the `source:` collision used to read `review-depth`, whose
+        # output block carried `source: detected | user`. `feat-0078` folded that skill's
+        # depth rule into `house-review` and `feat-0080` deleted it, so the guard moves to
+        # where the wording now lives: `house-review` names the depth's source in prose
+        # (`source: user`). Every record the file yields must be one of its own provenance
+        # blocks, so a grammar widened to collect that line fails here on a real skill.
+        path = REPO_ROOT / ".agents" / "skills" / "house-review" / "SKILL.md"
         text = path.read_text(encoding="utf-8")
-        self.assertIn("source: detected | user", text, "fixture is stale; the field moved")
-        self.assertEqual(cp.parse_records(text), [])
+        self.assertIn("source: user", text, "fixture is stale; the wording moved")
+        records = cp.parse_records(text)
+        self.assertEqual(len(records), len(re.findall(r"^```provenance[ \t]*$", text, re.M)))
+        for record in records:
+            self.assertTrue(record["source"].startswith("https://"), record["source"])
 
 
 class RedirectStaysOnHttps(unittest.TestCase):

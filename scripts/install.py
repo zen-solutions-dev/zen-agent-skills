@@ -135,16 +135,19 @@ TOOL_SUBPATHS = {
 # over sibling references before anything is placed (S-013), because a skill that
 # composes a sibling by reference is broken without it.
 #
-# These boundaries are dictated by the reference graph, not chosen. It has one
-# strongly connected component of fourteen skills, so any profile touching it is at
-# least seventeen; the only separable skills are the handoff pair and the three that
-# reference no sibling. `core` is therefore small but cannot include new-task, which
-# lives inside the component. See docs/spec/install.md.
+# Until the 2026-11 overhaul these boundaries were dictated by the reference graph: one
+# strongly connected component of fourteen skills meant any profile touching it was at
+# least seventeen. The overhaul kept a sibling link only where a skill genuinely composes
+# its sibling and named every neighbour in backticks, so the graph has no cycle and the
+# seeds below are a choice again: `spine` names every shipped skill on the delivery path,
+# including `doc-author`, which used to arrive only through a neighbour's link
+# (feat-0080). `--skills` places any single skill with its closure. See docs/spec/install.md.
 PROFILE_SEEDS = {
     "core": ["project-bootstrap", "init-worktracking", "pr-describe"],
     "spine": ["spec-author", "spec-plan-readiness", "new-task", "fix-batch", "test-author",
               "spec-conformance", "verifier-agent", "reconcile-worktrees", "doc-sync",
-              "pr-describe", "project-bootstrap", "init-worktracking", "house-review"],
+              "pr-describe", "project-bootstrap", "init-worktracking", "house-review",
+              "doc-author"],
     "all": None,  # everything discovered
 }
 DEFAULT_PROFILE = "spine"

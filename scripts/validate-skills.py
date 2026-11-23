@@ -177,7 +177,7 @@ LENS_DECLARATION_LINES = 10
 #
 # Deliberately far narrower than LENS_DECLARATION_RE above, which matches the bare word. That
 # pattern is safe only because a rules directory holds nothing but lenses and a README; a
-# skill body is full of the word. `house-review`, `review-depth`, `spec-author`,
+# skill body is full of the word. `house-review`, the former `review-depth`, `spec-author`,
 # `test-author`, `verifier-agent` and `fix-batch` all name the lens they compose, and a
 # bare-word pattern would conscript every one of them. What separates a declaration from a
 # mention is the copula: a body saying it *is* a lens is classifying itself, and a body

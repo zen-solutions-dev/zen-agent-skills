@@ -10,7 +10,6 @@ spec: ""
 scenarios: []
 touched_files:
   - .agents/skills/
-  - .agents/skills/review-depth/
   - .agents/hooks/skill-reachability-reminder.py
   - scripts/install.py
   - scripts/check-provenance.py
