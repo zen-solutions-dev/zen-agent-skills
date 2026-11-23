@@ -34,6 +34,18 @@ an adopter's own lens silently at exit 0. `build-adapters.md` `S-010` and `S-014
 line for the other half of the distribution story; these scenarios draw the same line here rather
 than a second one.
 
+**Amended 2026-11-23 (`feat-0079`), under the 2026-11 overhaul plan the maintainer approved that
+day. Pending the maintainer's approval of this amendment itself: the plan approved the work, and
+the wording below is not this task's to approve.** `S-019` to `S-023` close the two hazards the
+2026-11 audit reproduced and add three requests. An existing rules directory the tool did not place
+is merged into file by file rather than refused whole (`S-019`), which narrows how `S-004` applies
+to that one module without changing what it protects. A same-named symlink pointing elsewhere is a
+conflict (`S-020`), which `S-004` always said and `_place()` did not do. `--include-drafts`
+(`S-021`) lets a person try a draft, which amends `S-015`'s "placed by no profile" to "placed by no
+profile unless asked"; `--skills` (`S-022`) places a named set and its closure; and a skill declaring
+`metadata.invocation: user` reaches Claude Code rendered (`S-023`). The Non-Goal that kept the draft
+axis out of adapter generation is withdrawn: `build-adapters.md` is amended by the same task.
+
 **Amended 2026-07-28 (`bug-0003`) and re-approved by the author on 2026-07-28.** S-007 was scoped to
 the home it was given and S-012 was added. The original wording, "remove the recorded targets and empty the record",
 was satisfied by an implementation that removed every recorded target from every home ever installed
@@ -90,7 +102,9 @@ overwritten exists only as a branch.
   named project at the request of whoever runs it; and the two failure modes differ, since an adapter
   is a derived artifact regenerated on demand rather than something an adopter's harness silently keeps
   loading. The inconsistency is real and is worth its own task: a maintainer who wants a draft withheld
-  everywhere should amend `build-adapters.md` too.
+  everywhere should amend `build-adapters.md` too. **Withdrawn 2026-11-23 (`feat-0079`, `chore-0077`):**
+  `build-adapters.md` now withholds drafts by the same rule, because the plugin target it generates is
+  distributed exactly as this tool's output is.
 - Judging whether a skill is well-formed. That is `validate-skills.py`.
 - Installing dependencies, or changing any harness setting beyond placing directories where it looks.
 - Managing, updating, or removing skills the tool did not place, including a user's own.
@@ -279,14 +293,73 @@ overwritten exists only as a branch.
   the baseline, and the option is its own named flag rather than a value of the placement mode,
   since it decides what happens to the adopter's work rather than how files are placed.
 
+### Scenario S-019: an existing rules directory the tool did not place is merged into, file by file
+
+- **Given** a real directory at the rules module's target that this tool did not place, holding files
+  of the adopter's own, one of which has the same name as a lens the kit ships
+- **When** the tool runs
+- **Then** every lens whose path is free is placed into that directory, the file at the clashing path
+  is left byte-for-byte unchanged and reported as a conflict naming it, the adopter's other files are
+  never read or touched, and the run exits non-zero per `S-004` while placing the rest.
+- **And** a file already there with exactly the kit's content is not a conflict and is not recorded as
+  the tool's, since nothing was placed.
+- **And** reversing the run removes only the files the tool placed and nobody has edited since, and
+  never the directory, because the directory is not the tool's.
+- **And** a re-run treats the files it placed by `S-016`'s rules: untouched is refreshed, edited is
+  kept. The reason for the change: refusing the directory whole left every skill that composes a lens
+  running without one, to protect files a per-file placement never touches.
+
+### Scenario S-020: a same-named symlink pointing elsewhere is a conflict
+
+- **Given** a symbolic link at a skill's target that points somewhere other than the kit's source
+- **When** the tool runs in symlink mode
+- **Then** the link is left pointing where it did, the target is reported as a conflict, and the run
+  exits non-zero per `S-004`,
+- **unless** the record names that target as this tool's, linked to the source it now points at,
+  which is the tool's own link left behind by a moved checkout, and is relinked per `S-003`.
+
+### Scenario S-021: drafts are placed when asked for, and named
+
+- **Given** skills marked a draft, and a run requesting drafts
+- **When** the tool runs with a profile
+- **Then** every draft is placed together with the profile's set, all of it closed over sibling
+  references per `S-013`, and the run names each placed draft on its own line and in a summary.
+- **And** with a named set (`S-022`), drafts may appear in the named set and its closure, and the
+  drafts outside it are not added.
+- **And** without the request, `S-015` holds unchanged.
+
+### Scenario S-022: a named set of skills is placed with its closure
+
+- **Given** one or more skill names in place of a profile
+- **When** the tool runs
+- **Then** it places those skills expanded to their closure over sibling references and prints the
+  closure before placing anything.
+- **And** an unknown name, a named draft without the drafts request, or a profile requested alongside
+  the names places nothing and exits non-zero, naming what is wrong.
+
+### Scenario S-023: a user-invoked skill reaches Claude Code rendered, and only Claude Code
+
+- **Given** a skill declaring `invocation: user` under `metadata`
+- **When** the tool places it for Claude Code
+- **Then** the placed `SKILL.md` carries `disable-model-invocation: true` as a top-level frontmatter
+  key and is otherwise byte-identical to the source, and the placement is a copy in either mode,
+  since a link would show the unrendered source.
+- **And** every other tool receives the source unchanged, because the key is legal only for Claude
+  Code and claude.ai rejects it.
+- **And** the record carries the rendered digests, so the staleness check reports a rendered copy
+  that has fallen behind its source as diverged, and reports a linked skill whose source has since
+  become user-invoked as needing a rendered copy.
+
 ## Proposed Surface
 
 | Element | Detail |
 |---|---|
-| Invocation | `python scripts/install.py [--tools <list>] [--profile <name>] [--mode <symlink\|copy>] [--home <dir>] [--dry-run] [--replace-adopted] [--uninstall]` |
+| Invocation | `python scripts/install.py [--tools <list>] [--profile <name> \| --skills <list>] [--include-drafts] [--mode <symlink\|copy>] [--home <dir>] [--dry-run] [--replace-adopted] [--uninstall]` |
 | `--tools` | Comma-separated subset of the supported tools; defaults to all of them |
 | `--profile` | Which skills to place: `core` (the separable front door), `spine` (the delivery loop), or `all`. Defaults to `spine`, which is smaller than `all`. Each is expanded to its closure over sibling references before anything is placed |
-| `--mode` | `symlink` or `copy`; defaults to copy on Windows and symlink elsewhere |
+| `--skills` | Comma-separated skill names placed with their closure over sibling references, per S-022. Replaces `--profile` |
+| `--include-drafts` | Also place draft skills, per S-021 |
+| `--mode` | `symlink` or `copy`; defaults to copy on Windows and symlink elsewhere. A user-invoked skill is copied for Claude Code in either mode, per S-023 |
 | `--home` | Base directory to install beneath; defaults to the user's home |
 | `--dry-run` | Preview: report what would be placed, write nothing |
 | `--replace-adopted` | Overwrite the installed rules module with the kit's copy, discarding the adopter's edits to it. Its own flag and not a `--mode` value, per S-018. Without it, an edited file is preserved and reported |
@@ -294,6 +367,8 @@ overwritten exists only as a branch.
 | Placed per tool | Each skill's directory under that tool's discovery path, plus the rules module as their sibling |
 | Adopted material | The rules module only. Placed file by file so an untouched file can be refreshed while an edited one beside it is kept, and so a file the adopter added is left alone. Skill directories are derived and are replaced wholesale |
 | Draft marker | Carried by the skill itself, in the `metadata` frontmatter property the skill schema permits: `metadata.status: draft`. No marker, or any other value, means shipped |
+| Invocation marker | Carried by the skill: `metadata.invocation: user`. Rendered as `disable-model-invocation: true` into the Claude Code copy only, per S-023 |
+| Merged rules module | A rules directory the tool did not place is recorded with mode `merged` and only the files the tool placed, per S-019 |
 | Record | A manifest of the targets this tool created, enabling re-run recognition in copy mode |
 | Exit code | non-zero on an unrecognised tool or profile, a profile colliding with a draft marker, or any unmanaged-target conflict, zero otherwise |
 | Output | one line per target with its outcome, then a summary carrying the placed count and the description-character total per profile; conflicts, any closure expansion, any skills held back as drafts, and any adopted file preserved rather than replaced additionally summarised, the last named per file |

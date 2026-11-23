@@ -10,7 +10,8 @@ parser can read. It also checks that inline relative links resolve
 on disk, that `../<name>/SKILL.md` references point at a skill that actually
 exists, that every self-declared lens under `.agents/rules/` is referenced by at
 least one skill, that a skill declaring itself a lens is not built as a
-workflow, and warns when a skill asserts both draft and shipped status. Since the
+workflow, that `metadata.invocation` is `user` or `model` when present (feat-0079),
+and warns when a skill asserts both draft and shipped status. Since the
 2026-10 kit refresh it also checks what the rules module costs every session: a lens
 must carry `paths` frontmatter so Claude Code loads it on demand, and the rules files
 without it (the always-loaded core) stay under `ALWAYS_LOADED_MAX_LINES`. It flags an
@@ -57,6 +58,7 @@ _TEXTIO_ROOT = Path(__file__).resolve().parent.parent
 if str(_TEXTIO_ROOT) not in sys.path:
     sys.path.insert(0, str(_TEXTIO_ROOT))
 from scripts._textio import NotUTF8, read_text_utf8   # noqa: E402
+from scripts._skillmeta import INVOCATION_VALUES, RENDERED_KEY, metadata_fields   # noqa: E402
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 SKILLS_DIR = REPO_ROOT / ".agents" / "skills"
@@ -957,6 +959,26 @@ def check_declared_shape(text: str, rel: str, warnings: list) -> None:
     )
 
 
+def check_invocation(text: str, fm: dict, rel: str, errors: list) -> None:
+    """`metadata.invocation` must be `user` or `model` (feat-0079).
+
+    The value decides whether a Claude Code copy is rendered with
+    `disable-model-invocation: true`, and every reader treats a value it does not know
+    as model-invoked. So a typo would ship silently as the opposite of what was meant,
+    costing description budget on every session; failing it here is the only place it
+    can be caught. The rendered key itself is legal for Claude Code and rejected by
+    claude.ai, so a source that writes it is told where the declaration belongs.
+    """
+    value = metadata_fields(text).get("invocation")
+    if value is not None and value not in INVOCATION_VALUES:
+        errors.append(f"{rel}/SKILL.md: metadata.invocation is {value!r}; it must be one of "
+                      f"{', '.join(INVOCATION_VALUES)}")
+    if RENDERED_KEY in fm:
+        errors.append(f"{rel}/SKILL.md: {RENDERED_KEY!r} belongs only in a copy rendered for "
+                      f"Claude Code; declare `invocation: user` under `metadata` instead, and "
+                      f"the install paths render it")
+
+
 def check_status_contradiction(text: str, rel: str, warnings: list) -> None:
     """Warn when a skill asserts both draft and shipped status."""
     if DRAFT_STATUS_RE.search(text) and SHIPPED_STATUS_RE.search(text):
@@ -1050,6 +1072,7 @@ def main(skills_dir: Path = SKILLS_DIR) -> int:
         check_folded_hyphen_break(text, rel, errors)
         check_declared_shape(text, rel, warnings)
         check_status_contradiction(text, rel, warnings)
+        check_invocation(text, fm, rel, errors)
 
     # Checked once over the whole tree rather than per skill: "no skill references this
     # lens" is a fact about every skill together, and it is the one rule here that reads

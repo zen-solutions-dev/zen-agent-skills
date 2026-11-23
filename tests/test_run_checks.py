@@ -97,6 +97,10 @@ class GateSetTests(unittest.TestCase):
         ("adapters dry run",
          [["scripts/build-adapters.py", "--dry-run"]],
          None),
+        # Added by feat-0079: the committed marketplace must match what would be generated.
+        ("plugin tree",
+         [["scripts/build-adapters.py", "--marketplace", "--check"]],
+         None),
         ("install dry run",
          [["scripts/install.py", "--dry-run", "--home", "./.tmp/zen-home"]],
          None),

@@ -1,0 +1,19 @@
+{
+  "name": "zen-agent-skills",
+  "description": "Portable, cross-harness agent skills for spec-driven work: authoring specs and tasks, dispatching parallel agents, and reviewing, testing, and documenting what they produce.",
+  "author": {
+    "name": "Zen Solutions",
+    "url": "https://github.com/zen-solutions-dev"
+  },
+  "homepage": "https://github.com/zen-solutions-dev/zen-agent-skills",
+  "repository": "https://github.com/zen-solutions-dev/zen-agent-skills",
+  "license": "MIT",
+  "keywords": [
+    "skills",
+    "agents",
+    "spec-driven",
+    "code-review",
+    "documentation"
+  ],
+  "version": "0.1.0+e117fbb81724"
+}
