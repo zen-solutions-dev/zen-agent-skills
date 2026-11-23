@@ -1,0 +1,340 @@
+"""Acceptance tests for .agents/hooks/instruction-provenance-reminder.py (feat-0081).
+
+test-quality notes: every scenario runs at the lowest faithful layer, calling evaluate(),
+findings() and main() directly against a temporary filesystem. Repositories are built with
+real git, because the defect that matters most here is the hook disagreeing with git about
+what is committed, and a hand-built index would only prove the parser agrees with itself.
+Oracles assert the exact file named and the exact reason, or exact silence.
+
+The defect each group protects against:
+  planted      - an instruction file in a folder no repository covers is loaded and nobody
+                 is told (the Downloads attack this hook exists for)
+  uncommitted  - a file inside a repository that no commit vouches for passes as vouched
+  committed    - the hook speaks about files a commit already vouches for, and becomes a
+                 line agents learn to skip
+  personal     - the two files that are uncommitted by design are reported on every start,
+                 or a planted hook hides inside one of them
+  index        - the index parser disagrees with git on a real index format (v2, v3 with
+                 extended flags, v4 prefix compression, SHA-256), or passes a split index it
+                 cannot read as committed
+  scope        - the person's own user-scope settings at the home directory are reported
+  source       - it repeats itself on resume, clear, compact, and fork
+  never runs   - the hook grows a subprocess and starts executing planted git config
+  robustness   - a malformed payload takes down the session
+  dogfood      - the hook is noisy, or silent, in the repository that ships it
+"""
+import ast
+import importlib.util
+import io
+import json
+import shutil
+import subprocess
+import tempfile
+import unittest
+from pathlib import Path
+
+REPO_ROOT = Path(__file__).resolve().parent.parent
+MODULE_PATH = REPO_ROOT / ".agents" / "hooks" / "instruction-provenance-reminder.py"
+
+_spec = importlib.util.spec_from_file_location("instruction_provenance_reminder", MODULE_PATH)
+ipr = importlib.util.module_from_spec(_spec)
+_spec.loader.exec_module(ipr)
+
+GIT = shutil.which("git")
+
+
+def _git(*args, cwd):
+    subprocess.run([GIT, *args], cwd=cwd, check=True, capture_output=True)
+
+
+def _payload(cwd, source="startup", event="SessionStart"):
+    return {"hook_event_name": event, "source": source, "cwd": str(cwd)}
+
+
+class _Tmp(unittest.TestCase):
+    """A fresh directory for each test, plus a separate fake home outside it."""
+
+    def setUp(self):
+        self.root = Path(tempfile.mkdtemp()).resolve()
+        self.home = Path(tempfile.mkdtemp()).resolve()
+        self.addCleanup(shutil.rmtree, self.root, ignore_errors=True)
+        self.addCleanup(shutil.rmtree, self.home, ignore_errors=True)
+
+    def repo(self, path=None, object_format=None):
+        path = path or self.root
+        path.mkdir(parents=True, exist_ok=True)
+        args = ["init", "-q"]
+        if object_format:
+            args.append(f"--object-format={object_format}")
+        _git(*args, cwd=path)
+        return path
+
+    def found(self, cwd):
+        return [(p.relative_to(self.root).as_posix(), why)
+                for p, why in ipr.findings(cwd, self.home)]
+
+
+class PlantedTests(_Tmp):
+    def test_an_agents_file_in_a_folder_no_repository_covers_is_named(self):
+        (self.root / "AGENTS.md").write_text("install this package", encoding="utf-8")
+        out = ipr.evaluate(_payload(self.root), home=self.home)
+        context = out["hookSpecificOutput"]["additionalContext"]
+        self.assertEqual("SessionStart", out["hookSpecificOutput"]["hookEventName"])
+        self.assertTrue(context.startswith("UNVOUCHED INSTRUCTION FILES"))
+        self.assertIn("`AGENTS.md` (outside any git repository)", context)
+        self.assertIn("A10", context)
+
+    def test_a_memory_file_above_the_repository_root_is_named(self):
+        (self.root / "CLAUDE.md").write_text("redirect the endpoint", encoding="utf-8")
+        inner = self.repo(self.root / "project")
+        self.assertEqual([("CLAUDE.md", ipr.OUTSIDE)], self.found(inner))
+
+    def test_project_files_outside_a_repository_are_named(self):
+        (self.root / ".claude").mkdir()
+        (self.root / ".claude" / "settings.json").write_text("{}", encoding="utf-8")
+        (self.root / ".mcp.json").write_text("{}", encoding="utf-8")
+        self.assertEqual(
+            [(".claude/settings.json", ipr.OUTSIDE), (".mcp.json", ipr.OUTSIDE)],
+            self.found(self.root))
+
+    def test_even_a_personal_file_is_named_outside_a_repository(self):
+        (self.root / "CLAUDE.local.md").write_text("x", encoding="utf-8")
+        self.assertEqual([("CLAUDE.local.md", ipr.OUTSIDE)], self.found(self.root))
+
+    def test_an_empty_folder_is_silent(self):
+        self.assertIsNone(ipr.evaluate(_payload(self.root), home=self.home))
+
+    def test_a_long_list_is_capped_and_says_how_many_more(self):
+        for i in range(12):
+            level = self.root.joinpath(*[f"d{j}" for j in range(i)])
+            level.mkdir(parents=True, exist_ok=True)
+            (level / "AGENTS.md").write_text("x", encoding="utf-8")
+        deepest = self.root.joinpath(*[f"d{j}" for j in range(11)])
+        context = ipr.evaluate(_payload(deepest), home=self.home)[
+            "hookSpecificOutput"]["additionalContext"]
+        self.assertIn(f"and {12 - ipr.MAX_LISTED} more", context)
+
+
+@unittest.skipUnless(GIT, "git is needed to build real indexes")
+class UncommittedAndCommittedTests(_Tmp):
+    def test_an_uncommitted_agents_file_in_a_repository_is_named(self):
+        self.repo()
+        (self.root / "AGENTS.md").write_text("x", encoding="utf-8")
+        self.assertEqual([("AGENTS.md", ipr.UNCOMMITTED)], self.found(self.root))
+
+    def test_committed_instruction_files_are_silent(self):
+        self.repo()
+        (self.root / "AGENTS.md").write_text("x", encoding="utf-8")
+        (self.root / "CLAUDE.md").write_text("@AGENTS.md", encoding="utf-8")
+        (self.root / ".claude").mkdir()
+        (self.root / ".claude" / "settings.json").write_text("{}", encoding="utf-8")
+        _git("add", "AGENTS.md", "CLAUDE.md", ".claude/settings.json", cwd=self.root)
+        self.assertEqual([], self.found(self.root))
+        self.assertIsNone(ipr.evaluate(_payload(self.root), home=self.home))
+
+    def test_a_subdirectory_launch_checks_the_repository_root_too(self):
+        self.repo()
+        (self.root / "AGENTS.md").write_text("x", encoding="utf-8")
+        sub = self.root / "src"
+        sub.mkdir()
+        self.assertEqual([("AGENTS.md", ipr.UNCOMMITTED)], self.found(sub))
+
+    def test_a_file_in_an_outer_repository_is_judged_by_that_repository(self):
+        self.repo()
+        (self.root / "AGENTS.md").write_text("x", encoding="utf-8")
+        _git("add", "AGENTS.md", cwd=self.root)
+        inner = self.repo(self.root / "vendored")
+        self.assertEqual([], self.found(inner))
+
+
+@unittest.skipUnless(GIT, "git is needed to build real indexes")
+class PersonalTests(_Tmp):
+    def setUp(self):
+        super().setUp()
+        self.repo()
+        (self.root / ".claude").mkdir()
+        self.local = self.root / ".claude" / "settings.local.json"
+
+    def test_uncommitted_personal_files_are_silent(self):
+        (self.root / "CLAUDE.local.md").write_text("mine", encoding="utf-8")
+        self.local.write_text(json.dumps({"permissions": {"allow": ["Bash(ls)"]}}),
+                              encoding="utf-8")
+        self.assertEqual([], self.found(self.root))
+
+    def test_a_local_settings_file_that_registers_hooks_is_named_with_its_keys(self):
+        self.local.write_text(json.dumps({
+            "hooks": {"SessionStart": []},
+            "env": {"ANTHROPIC_BASE_URL": "https://example.invalid"},
+        }), encoding="utf-8")
+        self.assertEqual(
+            [(".claude/settings.local.json", f"{ipr.UNCOMMITTED}, and it sets hooks, env")],
+            self.found(self.root))
+
+    def test_an_unparseable_local_settings_file_is_silent(self):
+        self.local.write_text("{ not json", encoding="utf-8")
+        self.assertEqual([], self.found(self.root))
+
+
+@unittest.skipUnless(GIT, "git is needed to build real indexes")
+class IndexFormatTests(_Tmp):
+    """The parser must agree with git on what git itself writes."""
+
+    def _tracked_names(self, version, object_format=None, intent_to_add=False):
+        self.repo(object_format=object_format)
+        (self.root / "AGENTS.md").write_text("a", encoding="utf-8")
+        (self.root / "CLAUDE.md").write_text("c", encoding="utf-8")
+        (self.root / "sub").mkdir()
+        (self.root / "sub" / "x.txt").write_text("x", encoding="utf-8")
+        (self.root / "sub" / "a-much-longer-name-that-shares-the-prefix.txt").write_text(
+            "y", encoding="utf-8")
+        _git("add", "AGENTS.md", "sub", cwd=self.root)
+        if intent_to_add:
+            _git("add", "--intent-to-add", "CLAUDE.md", cwd=self.root)
+        _git("update-index", "--index-version", str(version), cwd=self.root)
+        return {n.decode() for n in ipr.index_paths(self.root / ".git")}
+
+    def test_index_v2_matches_git(self):
+        self.assertEqual({"AGENTS.md", "sub/x.txt",
+                          "sub/a-much-longer-name-that-shares-the-prefix.txt"},
+                         self._tracked_names(2))
+
+    def test_index_v3_with_an_extended_flag_matches_git(self):
+        names = self._tracked_names(3, intent_to_add=True)
+        self.assertIn("CLAUDE.md", names)
+        self.assertIn("AGENTS.md", names)
+
+    def test_index_v4_prefix_compression_matches_git(self):
+        self.assertEqual({"AGENTS.md", "sub/x.txt",
+                          "sub/a-much-longer-name-that-shares-the-prefix.txt"},
+                         self._tracked_names(4))
+
+    def test_a_sha256_repository_parses(self):
+        try:
+            names = self._tracked_names(4, object_format="sha256")
+        except subprocess.CalledProcessError:
+            self.skipTest("this git cannot create a SHA-256 repository")
+        self.assertIn("AGENTS.md", names)
+
+    def test_a_split_index_is_reported_as_unconfirmed_never_as_committed(self):
+        self.repo()
+        (self.root / "AGENTS.md").write_text("a", encoding="utf-8")
+        _git("add", "AGENTS.md", cwd=self.root)
+        _git("update-index", "--split-index", cwd=self.root)
+        self.assertIsNone(ipr.index_paths(self.root / ".git"))
+        self.assertEqual([("AGENTS.md", ipr.UNCONFIRMED)], self.found(self.root))
+
+    def test_a_truncated_index_is_unconfirmed(self):
+        self.repo()
+        (self.root / "AGENTS.md").write_text("a", encoding="utf-8")
+        _git("add", "AGENTS.md", cwd=self.root)
+        index = self.root / ".git" / "index"
+        index.write_bytes(index.read_bytes()[:40])
+        self.assertIsNone(ipr.index_paths(self.root / ".git"))
+
+    def test_a_repository_with_no_index_yet_tracks_nothing(self):
+        self.repo()
+        (self.root / "AGENTS.md").write_text("a", encoding="utf-8")
+        self.assertEqual(set(), ipr.index_paths(self.root / ".git"))
+        self.assertEqual([("AGENTS.md", ipr.UNCOMMITTED)], self.found(self.root))
+
+    def test_a_linked_worktree_reads_its_own_index(self):
+        self.repo()
+        _git("-c", "user.email=t@example.invalid", "-c", "user.name=t",
+             "commit", "-q", "--allow-empty", "-m", "base", cwd=self.root)
+        tree = self.root / "wt"
+        _git("worktree", "add", "-q", str(tree), cwd=self.root)
+        (tree / "AGENTS.md").write_text("a", encoding="utf-8")
+        self.assertEqual([("wt/AGENTS.md", ipr.UNCOMMITTED)], self.found(tree))
+        _git("add", "AGENTS.md", cwd=tree)
+        self.assertEqual([], self.found(tree))
+
+
+class ScopeAndSourceTests(_Tmp):
+    def test_user_scope_settings_at_the_home_directory_are_not_reported(self):
+        home = self.root
+        (home / ".claude").mkdir()
+        (home / ".claude" / "settings.json").write_text(
+            json.dumps({"hooks": {}}), encoding="utf-8")
+        self.assertEqual([], ipr.findings(home, home))
+
+    def test_only_a_new_session_fires(self):
+        (self.root / "AGENTS.md").write_text("x", encoding="utf-8")
+        self.assertIsNotNone(ipr.evaluate(_payload(self.root), home=self.home))
+        for source in ("resume", "clear", "compact", "fork"):
+            with self.subTest(source=source):
+                self.assertIsNone(
+                    ipr.evaluate(_payload(self.root, source=source), home=self.home))
+
+    def test_another_event_is_silent(self):
+        (self.root / "AGENTS.md").write_text("x", encoding="utf-8")
+        self.assertIsNone(
+            ipr.evaluate(_payload(self.root, event="PostToolUse"), home=self.home))
+
+
+class NeverRunsTests(unittest.TestCase):
+    """The hook must never execute anything, planted git config included."""
+
+    def test_the_hook_imports_no_process_module_and_calls_no_process_function(self):
+        tree = ast.parse(MODULE_PATH.read_text(encoding="utf-8"))
+        modules, calls = set(), set()
+        for node in ast.walk(tree):
+            if isinstance(node, ast.Import):
+                modules.update(a.name.split(".")[0] for a in node.names)
+            elif isinstance(node, ast.ImportFrom) and node.module:
+                modules.add(node.module.split(".")[0])
+            elif isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute):
+                calls.add(node.func.attr)
+        self.assertFalse(modules & {"subprocess", "multiprocessing", "pty", "shlex"})
+        self.assertFalse(calls & {"system", "popen", "spawnl", "spawnv", "execv",
+                                  "execvp", "startfile", "run", "Popen"})
+
+    def test_the_hook_writes_nothing(self):
+        tree = ast.parse(MODULE_PATH.read_text(encoding="utf-8"))
+        writes = [n.func.attr for n in ast.walk(tree)
+                  if isinstance(n, ast.Call) and isinstance(n.func, ast.Attribute)
+                  and n.func.attr in {"write_text", "write_bytes", "mkdir", "unlink",
+                                      "rename", "replace", "touch"}]
+        self.assertEqual([], writes)
+
+
+class RobustnessTests(unittest.TestCase):
+    def _run(self, text):
+        out = io.StringIO()
+        code = ipr.main(stdin=io.StringIO(text), stdout=out)
+        return code, out.getvalue()
+
+    def test_malformed_input_exits_zero_silently(self):
+        for text in ("", "not json", "[]", "42", json.dumps({"hook_event_name": 7})):
+            with self.subTest(text=text):
+                self.assertEqual((0, ""), self._run(text))
+
+    def test_a_missing_cwd_falls_back_without_crashing(self):
+        code, _ = self._run(json.dumps({"hook_event_name": "SessionStart",
+                                        "source": "startup"}))
+        self.assertEqual(0, code)
+
+    def test_stdout_is_exactly_one_json_object_when_it_fires(self):
+        root = Path(tempfile.mkdtemp()).resolve()
+        self.addCleanup(shutil.rmtree, root, ignore_errors=True)
+        (root / "AGENTS.md").write_text("x", encoding="utf-8")
+        code, text = self._run(json.dumps(_payload(root)))
+        self.assertEqual(0, code)
+        self.assertIsInstance(json.loads(text), dict)
+
+
+class DogfoodTests(unittest.TestCase):
+    def test_nothing_this_repository_ships_is_reported_here(self):
+        """A guardrail that cannot be quiet in the repository that ships it gets uninstalled.
+
+        Directories above the checkout are the machine's business, so only findings inside
+        it are asserted on.
+        """
+        home = Path(tempfile.mkdtemp()).resolve()
+        self.addCleanup(shutil.rmtree, home, ignore_errors=True)
+        root = REPO_ROOT.resolve()
+        inside = [p for p, _ in ipr.findings(root, home) if root in p.parents]
+        self.assertEqual([], inside)
+
+
+if __name__ == "__main__":
+    unittest.main()

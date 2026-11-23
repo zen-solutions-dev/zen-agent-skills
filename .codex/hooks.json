@@ -46,6 +46,12 @@
             "command": "python3 \"$(git rev-parse --show-toplevel)/.agents/hooks/install-currency-reminder.py\" || python \"$(git rev-parse --show-toplevel)/.agents/hooks/install-currency-reminder.py\"",
             "statusMessage": "Install currency",
             "timeout": 20
+          },
+          {
+            "type": "command",
+            "command": "python3 \"$(git rev-parse --show-toplevel)/.agents/hooks/instruction-provenance-reminder.py\" || python \"$(git rev-parse --show-toplevel)/.agents/hooks/instruction-provenance-reminder.py\"",
+            "statusMessage": "Instruction provenance",
+            "timeout": 20
           }
         ]
       }
