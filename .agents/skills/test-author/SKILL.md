@@ -66,8 +66,11 @@ Optional:
 
 ### 1. Read the spec, refuse it if it is not approved, and gate it with spec-quality
 
-Read the spec. **Refuse an unapproved spec.** If `status` is not `approved`, stop and say so. Tests
-are the most durable form an unapproved contract can take: a draft spec can still be edited or
+Read the spec. **Refuse an unapproved spec, or one edited since its approval.** Run the digest script
+that ships with [`spec-author`](../spec-author/SKILL.md) (`scripts/spec_digest.py`) on it.
+`not-approved`, `changed`, `malformed`, or `unreadable`: stop and say which. `unbound` may be used;
+say in your report that the approval is not tied to any text. Tests are the most durable form an
+unapproved contract can take: a draft spec can still be edited or
 abandoned, while a suite derived from it becomes what later work is measured against, and
 `spec-conformance` and `verifier-agent` will cite those tests as evidence. Well-formedness is not approval, so the next check does not stand
 in for this one: `spec-quality` returns `ready` for a draft that is answerable, which is exactly the

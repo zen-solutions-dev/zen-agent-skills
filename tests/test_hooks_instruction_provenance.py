@@ -27,11 +27,14 @@ import ast
 import importlib.util
 import io
 import json
+import os
 import shutil
 import subprocess
+import sys
 import tempfile
 import unittest
 from pathlib import Path
+from unittest import mock
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 MODULE_PATH = REPO_ROOT / ".agents" / "hooks" / "instruction-provenance-reminder.py"
@@ -247,6 +250,124 @@ class IndexFormatTests(_Tmp):
         self.assertEqual([("wt/AGENTS.md", ipr.UNCOMMITTED)], self.found(tree))
         _git("add", "AGENTS.md", cwd=tree)
         self.assertEqual([], self.found(tree))
+
+
+@unittest.skipUnless(GIT, "git is needed to build real indexes")
+class IndependentVerificationTests(_Tmp):
+    """Each case here is a defect the independent verification of PR #108 reproduced."""
+
+    def test_project_files_where_the_session_started_are_checked_below_the_root(self):
+        self.repo()
+        sub = self.root / "sub"
+        (sub / ".claude").mkdir(parents=True)
+        (sub / ".mcp.json").write_text('{"mcpServers": {}}', encoding="utf-8")
+        (sub / ".claude" / "settings.json").write_text("{}", encoding="utf-8")
+        self.assertEqual([("sub/.claude/settings.json", ipr.UNCOMMITTED),
+                          ("sub/.mcp.json", ipr.UNCOMMITTED)], self.found(sub))
+
+    def test_a_dotfiles_repository_at_home_does_not_hide_a_planted_project(self):
+        home = self.repo()
+        evil = home / "Downloads" / "evil"
+        (evil / ".claude").mkdir(parents=True)
+        (evil / "AGENTS.md").write_text("x", encoding="utf-8")
+        (evil / ".claude" / "settings.json").write_text("{}", encoding="utf-8")
+        (evil / ".mcp.json").write_text("{}", encoding="utf-8")
+        names = [p.relative_to(home).as_posix() for p, _ in ipr.findings(evil, home)]
+        self.assertEqual(["Downloads/evil/AGENTS.md", "Downloads/evil/.claude/settings.json",
+                          "Downloads/evil/.mcp.json"], names)
+
+    def _staged_index(self):
+        source = Path(tempfile.mkdtemp()).resolve()
+        self.addCleanup(shutil.rmtree, source, ignore_errors=True)
+        self.repo(source)
+        (source / "AGENTS.md").write_text("a", encoding="utf-8")
+        _git("add", "AGENTS.md", cwd=source)
+        return source
+
+    def test_three_plain_files_do_not_pass_as_a_repository(self):
+        source = self._staged_index()
+        (self.root / "AGENTS.md").write_text("planted", encoding="utf-8")
+        (self.root / ".git").write_text("gitdir: .\n", encoding="utf-8")
+        (self.root / "index").write_bytes((source / ".git" / "index").read_bytes())
+        self.assertEqual([("AGENTS.md", ipr.UNCONFIRMED)], self.found(self.root))
+
+    def test_a_git_file_borrowing_another_repositorys_git_directory_is_unconfirmed(self):
+        source = self._staged_index()
+        (self.root / "AGENTS.md").write_text("planted", encoding="utf-8")
+        (self.root / ".git").write_text(f"gitdir: {source / '.git'}\n", encoding="utf-8")
+        self.assertEqual([("AGENTS.md", ipr.UNCONFIRMED)], self.found(self.root))
+
+    def test_a_submodule_is_confirmed_through_its_worktree_setting(self):
+        library = self._staged_index()
+        _git("-c", "user.email=t@example.invalid", "-c", "user.name=t",
+             "commit", "-q", "-m", "lib", cwd=library)
+        self.repo()
+        _git("-c", "protocol.file.allow=always", "submodule", "add", "-q", str(library),
+             "lib", cwd=self.root)
+        self.assertEqual([], self.found(self.root / "lib"))
+
+    @unittest.skipUnless(sys.platform.startswith("linux"),
+                         "only Linux filesystems accept a name that is not UTF-8")
+    def test_a_name_that_is_not_utf8_does_not_silence_the_hook(self):
+        self.repo()
+        odd = os.path.join(os.fsencode(str(self.root)), b"caf\xe9")
+        os.mkdir(odd)
+        with open(os.path.join(odd, b"AGENTS.md"), "w", encoding="utf-8") as handle:
+            handle.write("a")
+        _git("add", os.fsdecode(os.path.join(b"caf\xe9", b"AGENTS.md")), cwd=self.root)
+        (self.root / "CLAUDE.md").write_text("planted", encoding="utf-8")
+        self.assertEqual([("CLAUDE.md", ipr.UNCOMMITTED)],
+                         self.found(Path(os.fsdecode(odd))))
+
+    def test_a_committed_link_to_a_file_outside_the_repository_is_named(self):
+        self.repo()
+        outside = Path(tempfile.mkdtemp()).resolve()
+        self.addCleanup(shutil.rmtree, outside, ignore_errors=True)
+        (outside / "payload.md").write_text("planted", encoding="utf-8")
+        try:
+            (self.root / "AGENTS.md").symlink_to(outside / "payload.md")
+        except OSError:
+            self.skipTest("this platform does not allow creating a symlink here")
+        _git("add", "AGENTS.md", cwd=self.root)
+        self.assertEqual([("AGENTS.md", ipr.LINKED_OUT)], self.found(self.root))
+
+
+class MemoryAndSettingsTests(_Tmp):
+    def test_dot_claude_claude_md_is_a_memory_file(self):
+        (self.root / ".claude").mkdir()
+        (self.root / ".claude" / "CLAUDE.md").write_text("x", encoding="utf-8")
+        self.assertEqual([(".claude/CLAUDE.md", ipr.OUTSIDE)], self.found(self.root))
+
+    def test_user_memory_at_home_is_not_reported(self):
+        home = self.root
+        (home / ".claude").mkdir()
+        (home / ".claude" / "CLAUDE.md").write_text("mine", encoding="utf-8")
+        project = home / "work"
+        project.mkdir()
+        self.assertEqual([], ipr.findings(project, home))
+
+    def test_a_directory_that_cannot_be_listed_still_yields_a_file_by_name(self):
+        (self.root / "AGENTS.md").write_text("x", encoding="utf-8")
+        real = os.listdir
+
+        def refuse(path):
+            if Path(path) == self.root:
+                raise PermissionError("listing denied")
+            return real(path)
+
+        with mock.patch.object(ipr.os, "listdir", refuse):
+            self.assertEqual([("AGENTS.md", ipr.OUTSIDE)], self.found(self.root))
+
+    def test_settings_that_widen_what_runs_without_asking_are_named(self):
+        local = self.root / ".claude" / "settings.local.json"
+        local.parent.mkdir()
+        local.write_text(json.dumps({
+            "permissions": {"defaultMode": "bypassPermissions"},
+            "enabledPlugins": {"x@y": True},
+            "extraKnownMarketplaces": {"y": {}},
+        }), encoding="utf-8")
+        self.assertEqual(["enabledPlugins", "extraKnownMarketplaces", "permissions.defaultMode"],
+                         ipr._executing_keys(local))
 
 
 class ScopeAndSourceTests(_Tmp):

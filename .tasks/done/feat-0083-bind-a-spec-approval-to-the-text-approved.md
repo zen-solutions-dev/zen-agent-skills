@@ -14,11 +14,14 @@ touched_files:
   - .agents/skills/verifier-agent/SKILL.md
   - .agents/skills/new-task/SKILL.md
   - .agents/skills/spec-plan-readiness/SKILL.md
+  - .agents/skills/test-author/SKILL.md
   - tests/test_spec_digest.py
+  - tests/test_validate_skills.py
   - docs/spec/verifier-agent.md
   - docs/spec/verifier-agent.conformance.md
   - docs/spec/spec-author.md
   - docs/spec/spec-author.conformance.md
+  - docs/spec/test-author.md
   - docs/spec/README.md
   - .claude-plugin/plugin/
   - ROADMAP.md
@@ -52,9 +55,11 @@ rewriting the draft voids it.
   re-approval queue.
 - `spec-author` documents `approved_digest`, never writes it, and keeps it unchanged on an
   amendment.
-- `verifier-agent`, `new-task`, and `spec-plan-readiness` run the script and block on `changed` or
-  `malformed`; `unbound` proceeds and is reported. Each links `spec-author`, so an install that
-  places one places the script.
+- `verifier-agent`, `new-task`, `spec-plan-readiness`, and `test-author` run the script and block
+  on `changed` or `malformed` (and, where a spec cannot be read, on `unreadable`); `unbound`
+  proceeds and is reported. Each links `spec-author`, so an install that places one places the
+  script. `test-author` was missed by the first version and found by the independent
+  verification: tests are the most durable form a contract takes, and `A11` makes them the judge.
 - Amendments, pending the maintainer's re-approval, to `docs/spec/verifier-agent.md` (S-012, S-013,
   the approval constraint) and `docs/spec/spec-author.md` (S-010, S-011, a constraint, two surface
   rows), with conformance rows in both matrices; the spec index's convention brought up to date.
@@ -86,6 +91,10 @@ Recorded by the implementer:
   of them changes what a person agreed to.
 - **A seam left open deliberately: the script never writes approval.** It prints the line to copy.
   A script with an `approve` command would be one an agent can run.
+- **A premise that turned out false: `check-citations.py` proves the matrix quotes.** It audits
+  backtick spans only, so the double-quoted phrases in the conformance rows went unchecked, and
+  two of them went stale in this change. Each quoted phrase in the rows this task touched was
+  checked against the skill text by hand, whitespace-normalised.
 
 ## Risks and rollback
 
@@ -110,7 +119,11 @@ fires.
 - [x] Recording `status` and `approved_digest` does not change the digest; the printed line binds.
 - [x] `--queue` lists unbound and changed approved specs and skips drafts and sibling reports.
 - [x] The script writes nothing (AST guard).
-- [x] Every reader links `spec-author` and names the script and `changed`.
+- [x] Every reader, `test-author` included, links `spec-author` and names the script and
+      `changed`.
+- [x] `verifier-agent`'s deterministic verdict rule names every blocking verdict, so it agrees with
+      its step 1 and S-012. The first version left the rule saying only "not `approved`".
+- [x] `--queue` names a file it could not read and exits 2, rather than leaving it out of the count.
 - [x] `install.py --skills verifier-agent` places `spec-author`; the `core`, `spine`, and `all`
       profiles place the same skills as before.
 - [x] S-012 and S-013 in `verifier-agent.conformance.md`, S-010 and S-011 in

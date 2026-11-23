@@ -162,6 +162,14 @@ class QueueTests(_Tmp):
         self.assertNotIn("conformance", text)
         self.assertIn("2 approved spec(s) waiting", text)
 
+    def test_a_file_it_cannot_read_is_named_and_exits_two(self):
+        self.write("unbound.md", _spec_text())
+        (self.dir / "broken.md").write_bytes(b"---\nstatus: approved\n---\n\xff\xfe not utf-8\n")
+        code, text = self.run_main("--queue", str(self.dir))
+        self.assertEqual(2, code)
+        self.assertIn("broken.md: unreadable", text)
+        self.assertIn("1 file(s) could not be read", text)
+
     def test_an_unreadable_directory_exits_two(self):
         self.assertEqual(2, self.run_main("--queue", str(self.dir / "absent"))[0])
 

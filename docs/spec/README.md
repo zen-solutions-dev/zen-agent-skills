@@ -45,16 +45,17 @@ Reopening to `draft` was tried once, on [`house-review`](house-review.md) (`chor
 note recording it is still in that spec's header.
 
 **Since 2026-11-23 (`feat-0083`) a bound spec stalls anyway, and on purpose.** An approved spec that
-carries an `approved_digest` reads `changed` once amended, and `verifier-agent`, `new-task`, and
-`spec-plan-readiness` block on it until the author re-approves. That is the stall the paragraph
+carries an `approved_digest` reads `changed` once amended, and `verifier-agent`, `new-task`,
+`spec-plan-readiness`, and `test-author` block on it until the author re-approves. That is the stall the paragraph
 above avoided, chosen deliberately by the maintainer: verifying or decomposing against text nobody
 approved launders it into evidence, which is the reason `verifier-agent` blocks on a draft at all.
 Going back to `draft` still gains nothing, and loses the record of what was last approved.
 
 ### Why there is no third status value, and what the approval digest is
 
-Five things read a spec's `status`: `verifier-agent` blocks on anything but `approved`; `new-task`
-refuses to decompose it; [`doc-sync`](../../.agents/skills/doc-sync/SKILL.md) classifies a document
+These read a spec's `status`: `verifier-agent` blocks on anything but `approved`; `new-task`
+refuses to decompose it; `test-author` refuses to derive tests from it; `spec-plan-readiness` and
+all three of those read it through `spec_digest.py`; [`doc-sync`](../../.agents/skills/doc-sync/SKILL.md) classifies a document
 carrying one as a contract and therefore never edits it; the
 [spec-closeout gate](../../.agents/hooks/spec-conformance-gate.py) tests it against a terminal-status
 set that excludes `approved` on purpose, with a test pinning that; and the table below. A third value

@@ -79,6 +79,13 @@ is loaded first. Nothing in the kit named such a file at the moment it mattered.
   never committed is treated as vouched, because staging is an action taken inside the
   repository, which is the line this hook draws.
 
+- **A premise that turned out false: "the project root" is one directory.** The first version
+  checked project files only at the repository root. Harnesses differ on what they call the
+  project, and Claude Code reads the directory a session started in, so a planted
+  `.claude/settings.json` one folder down, or anywhere under a home that is itself a dotfiles
+  repository, went unnamed. Both directories are checked now. Found by the independent
+  verification, not by any gate.
+
 ## Acceptance criteria (mechanically verifiable)
 
     python -m unittest tests.test_hooks_instruction_provenance tests.test_hooks tests.test_install -v
@@ -96,6 +103,14 @@ is loaded first. Nothing in the kit named such a file at the moment it mattered.
 - [x] An AST guard proves the hook imports no process module and writes nothing.
 - [x] Nothing inside this repository is reported when the hook runs against it.
 - [x] Registered in all three adapters; the module-wide wiring tests cover it.
+- [x] From the independent verification of PR #108, each reproduced before it was fixed and now
+      pinned by a test: project files are checked where the session started as well as at the
+      repository root, so a subfolder launch and a dotfiles home no longer hide them; git metadata
+      must prove itself (`HEAD` and an object store, and a `.git` file that points back), so three
+      plain files no longer pass as a committed repository; a name that is not UTF-8 no longer
+      silences every finding; `.claude/CLAUDE.md` is a memory file; a directory that can be
+      entered but not listed still yields a file by name; a committed link to a file outside the
+      repository is named; and settings that widen what runs without asking are named.
 
 ## Definition of done
 

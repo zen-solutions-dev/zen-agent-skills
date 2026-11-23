@@ -4,9 +4,9 @@
 Fires on SessionStart with source `startup`. It looks for the files coding harnesses load
 as instructions or configuration before the agent has read anything: memory files such as
 `AGENTS.md` and `CLAUDE.md` in the launch directory and every directory above it, and
-project files such as `.claude/settings.json` and `.mcp.json` at the project root. Each
-one that sits outside any git repository, or inside one without being in git's index, is
-named in a single reminder. If every such file is committed, or there are none, it emits
+project files such as `.claude/settings.json` and `.mcp.json` where the session started and
+at its repository's root. Each one that sits outside any git repository, or inside one
+without being in git's index, is named in a single reminder. If every such file is committed, or there are none, it emits
 nothing at all. It never blocks, never writes, and never runs a program.
 
 Why this exists
@@ -41,19 +41,31 @@ index file itself, versions 2 to 4, SHA-1 or SHA-256. Anything it cannot parse (
 index, an unknown version, a truncated file) makes the answer "could not confirm", and
 the file is named with that reason rather than passed as committed.
 
+The git directory has to prove itself first, because an index is only a file. A `.git`
+directory must hold `HEAD` and an object store, as git requires. A `.git` FILE must point
+at such a directory that points back: a linked worktree's names this checkout's `.git`, a
+submodule's names it in `core.worktree`. Otherwise three plain files, an index copied from
+anywhere, a `.git` file, and the instruction file, would pass as a committed repository.
+A committed instruction file that is a link to a file outside the repository is named too,
+since the commit vouches for the link, not for what it points at.
+
 "In the index" includes a file that was staged and never committed. Staging is an action
 someone took inside the repository, which is the distinction this hook draws.
 
 What it does NOT answer
 -----------------------
 - Whether a committed file is safe. A commit only means someone with push access wrote
-  it. The message says so.
+  it. The message says so. A complete repository planted whole, history and all, vouches
+  for itself by this test; a single dropped file cannot.
 - The person's own user-scope configuration (`~/.claude/settings.json`,
   `~/.claude/CLAUDE.md`, `~/.codex/config.toml`). Those are uncommitted by design, so
   naming them would make the hook speak on every start. Auditing them, including for
   hooks the person never registered, is a different job with a different cadence.
 - Files a harness loads later, such as a `CLAUDE.md` in a subdirectory Claude Code reads
   when the agent first opens a file there. This hook sees only the launch.
+- Anything a harness wiring never runs it for. Codex's wiring here is repository-scoped,
+  so outside a repository only a user-level Claude Code registration reaches the
+  Downloads case.
 - Files outside the names below. The list is the set of auto-loaded files this hook knows
   about; a harness that adds a new one needs a line here.
 
@@ -82,12 +94,17 @@ from pathlib import Path
 # told, per the module's two-stage filtering rule.
 FIRING_SOURCES = {"startup"}
 
-# Memory files a harness loads from the launch directory and from directories above it.
-# Claude Code reads CLAUDE.md and CLAUDE.local.md from the working directory up to the
-# root; Codex and Cursor read AGENTS.md; Gemini CLI reads GEMINI.md.
-MEMORY_FILES = ("AGENTS.md", "CLAUDE.md", "CLAUDE.local.md", "GEMINI.md")
+# Memory files a harness loads from the launch directory and from directories above it,
+# as POSIX-relative paths. Claude Code reads CLAUDE.md, CLAUDE.local.md and
+# .claude/CLAUDE.md from the working directory up to the root; Codex and Cursor read
+# AGENTS.md; Gemini CLI reads GEMINI.md. At the home directory `.claude/CLAUDE.md` is the
+# person's own user memory, so it is skipped there.
+MEMORY_FILES = ("AGENTS.md", "CLAUDE.md", "CLAUDE.local.md", ".claude/CLAUDE.md", "GEMINI.md")
+USER_SCOPE_MEMORY = {".claude/CLAUDE.md"}
 
-# Files a harness loads from the project root only, as POSIX-relative paths.
+# Files a harness loads from the project directory, as POSIX-relative paths. Checked both
+# where the session started and at the root of its repository, because harnesses differ on
+# which of the two they call the project, and a planted file in either is loaded by one.
 PROJECT_FILES = (
     ".claude/settings.json",
     ".claude/settings.local.json",
@@ -100,8 +117,9 @@ PROJECT_FILES = (
 # Uncommitted on purpose inside a repository. See the docstring.
 PERSONAL_FILES = {"CLAUDE.local.md", ".claude/settings.local.json"}
 
-# Settings keys that run a program or redirect the agent. A personal settings file that
-# sets one of these is named even though personal files are otherwise exempt.
+# Settings keys that run a program, redirect the agent, or widen what runs without asking.
+# A personal settings file that sets one of these is named even though personal files are
+# otherwise exempt.
 EXECUTING_SETTINGS_KEYS = (
     "hooks",
     "env",
@@ -111,7 +129,14 @@ EXECUTING_SETTINGS_KEYS = (
     "awsCredentialExport",
     "otelHeadersHelper",
     "enableAllProjectMcpServers",
+    "enabledMcpjsonServers",
+    "enabledPlugins",
+    "extraKnownMarketplaces",
 )
+
+# A permission mode that runs every tool without asking, named when a personal settings
+# file sets it as the default.
+BYPASS_MODES = {"bypassPermissions"}
 
 # Enough to name the problem without burying the instruction under a list.
 MAX_LISTED = 8
@@ -121,7 +146,8 @@ SETTINGS_READ_LIMIT = 1024 * 1024
 
 OUTSIDE = "outside any git repository"
 UNCOMMITTED = "in a repository, not committed"
-UNCONFIRMED = "in a repository whose git index could not be read, so not confirmed"
+UNCONFIRMED = "beside git metadata that could not be confirmed, so not confirmed as committed"
+LINKED_OUT = "committed, but as a link to a file outside the repository"
 
 REPORT_HEAD = (
     "UNVOUCHED INSTRUCTION FILES: this session started with agent instruction or "
@@ -159,7 +185,9 @@ def _entry(directory: Path, relative: str):
         try:
             names = os.listdir(current)
         except OSError:
-            return None
+            # A directory that can be entered but not listed still lets a harness open a
+            # file by its exact name, so look for that name directly.
+            names = [part] if os.path.lexists(current / part) else []
         match = [n for n in names if n == part]
         if not match and CASE_INSENSITIVE:
             match = [n for n in names if n.casefold() == part.casefold()]
@@ -174,11 +202,63 @@ def _entry(directory: Path, relative: str):
     return current
 
 
+def _real_git_dir(path: Path) -> bool:
+    """Whether `path` holds what git itself requires of a git directory.
+
+    A `HEAD` file and an object store, its own or a linked worktree's common one. Without
+    this, three plain files (an index, a `.git` file reading `gitdir: .`, and the
+    instruction file) passed as a committed repository, though git called the folder not a
+    repository at all.
+    """
+    if not (path / "HEAD").is_file():
+        return False
+    if (path / "objects").is_dir():
+        return True
+    try:
+        common = (path / "commondir").read_text(encoding="utf-8").strip()
+    except OSError:
+        return False
+    common_path = Path(common) if Path(common).is_absolute() else path / common
+    return (common_path / "objects").is_dir()
+
+
+def _points_back(git_dir: Path, top: Path) -> bool:
+    """Whether a git directory reached through a `.git` file belongs to this work tree.
+
+    A linked worktree's git directory names the `.git` file that points at it, and a
+    submodule's names its work tree in `core.worktree`. A `.git` file pointing at some
+    other repository's git directory, to borrow that repository's index, has neither.
+    """
+    try:
+        back = (git_dir / "gitdir").read_text(encoding="utf-8").strip()
+        back_path = Path(back) if Path(back).is_absolute() else git_dir / back
+        if back_path.resolve() == (top / ".git").resolve():
+            return True
+    except OSError:
+        pass
+    try:
+        config = (git_dir / "config").read_text(encoding="utf-8", errors="replace")
+    except OSError:
+        return False
+    for line in config.splitlines():
+        key, _, value = line.strip().partition("=")
+        if key.strip().lower() == "worktree" and value.strip():
+            target = Path(value.strip())
+            target = target if target.is_absolute() else git_dir / target
+            if target.resolve() == top.resolve():
+                return True
+    return False
+
+
 def _git_dir(top: Path):
-    """The git directory for a work tree root, following a `.git` file if there is one."""
+    """The git directory for a work tree root, or None when it cannot be confirmed as one.
+
+    A `.git` directory must be a real git directory. A `.git` file must point at a real git
+    directory that points back at this work tree.
+    """
     marker = top / ".git"
     if marker.is_dir():
-        return marker
+        return marker if _real_git_dir(marker) else None
     try:
         text = marker.read_text(encoding="utf-8", errors="replace")
     except OSError:
@@ -186,7 +266,10 @@ def _git_dir(top: Path):
     for line in text.splitlines():
         if line.startswith("gitdir:"):
             target = Path(line[len("gitdir:"):].strip())
-            return target if target.is_absolute() else (top / target)
+            target = target if target.is_absolute() else (top / target)
+            if _real_git_dir(target) and _points_back(target, top):
+                return target
+            return None
     return None
 
 
@@ -296,7 +379,11 @@ def _executing_keys(path: Path):
         return []
     if not isinstance(loaded, dict):
         return []
-    return [key for key in EXECUTING_SETTINGS_KEYS if loaded.get(key)]
+    keys = [key for key in EXECUTING_SETTINGS_KEYS if loaded.get(key)]
+    permissions = loaded.get("permissions")
+    if isinstance(permissions, dict) and permissions.get("defaultMode") in BYPASS_MODES:
+        keys.append("permissions.defaultMode")
+    return keys
 
 
 def _display(path: Path, cwd: Path, home: Path) -> str:
@@ -313,22 +400,26 @@ def _display(path: Path, cwd: Path, home: Path) -> str:
 def _candidates(cwd: Path, top, home: Path):
     """Yield (path, kind) for every auto-loaded file present at launch.
 
-    `kind` is "memory" or the POSIX-relative project path.
+    `kind` is the POSIX-relative name the file was looked for under.
     """
     for directory in (cwd, *cwd.parents):
         for name in MEMORY_FILES:
+            if name in USER_SCOPE_MEMORY and directory == home:
+                continue
             found = _entry(directory, name)
             if found is not None:
                 yield found, name
-    root = top if top is not None else cwd
     # At the home directory these paths are the person's own user-scope settings, which
-    # the docstring puts out of scope.
-    if root == home:
-        return
-    for relative in PROJECT_FILES:
-        found = _entry(root, relative)
-        if found is not None:
-            yield found, relative
+    # the docstring puts out of scope. A dotfiles repository at home does not change that,
+    # and it must not hide a project directory below it either.
+    roots = [cwd] + ([top] if top is not None and top != cwd else [])
+    for root in roots:
+        if root == home:
+            continue
+        for relative in PROJECT_FILES:
+            found = _entry(root, relative)
+            if found is not None:
+                yield found, relative
 
 
 def findings(cwd: Path, home: Path):
@@ -355,7 +446,14 @@ def findings(cwd: Path, home: Path):
             git_dir = _git_dir(tree)
             indexes[tree] = index_paths(git_dir) if git_dir is not None else None
         tracked = indexes[tree]
-        if tracked is not None and path.relative_to(tree).as_posix().encode("utf-8") in tracked:
+        # Git stores a path's bytes as the filesystem gave them, so encode the way the
+        # filesystem decoded: a name that is not UTF-8 must not raise and silence the hook.
+        relative = os.fsencode(path.relative_to(tree).as_posix())
+        if tracked is not None and relative in tracked:
+            if path.is_symlink():
+                target = path.resolve()
+                if target != tree and tree not in target.parents:
+                    out.append((path, LINKED_OUT))
             continue
         reason = UNCOMMITTED if tracked is not None else UNCONFIRMED
         if kind == ".claude/settings.local.json":

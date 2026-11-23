@@ -12,6 +12,7 @@ touched_files:
   - docs/rationale/autonomy-citations.md
   - .agents/skills/fix-batch/SKILL.md
   - .claude-plugin/plugin/
+  - AGENTS.md
   - ROADMAP.md
   - CHANGELOG.md
 created: 2026-10-28
@@ -71,6 +72,10 @@ states is one a dispatched agent has no reason to share.
       `validate-skills.py` still passes its always-loaded line budget.
 - [x] `docs/rationale/autonomy-citations.md` has an `A11` entry with dated, attributed sources.
 - [x] `fix-batch`'s dispatch prompt states the rule.
+- [x] `AGENTS.md`'s layout row for the rules names `A10` and `A11` as the every-run rules. The
+      verbatim "original opening" kept in `docs/rationale/autonomy-citations.md` still names
+      only `A10`, and stays that way: it is a record of the module's first wording, and
+      rewriting it would falsify the history it exists to keep.
 
 ## Definition of done
 

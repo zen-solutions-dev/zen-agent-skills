@@ -26,12 +26,13 @@ For each SPEC it prints the verdict and the digest of the text as it stands now:
     unreadable    the file could not be read
 
 `--queue` lists every approved spec directly inside DIRECTORY that is unbound, changed, or
-malformed: the person's re-approval queue.
+malformed, the person's re-approval queue, and every `.md` file there it could not read.
 
 Exit status: 0 when every SPEC named may be relied on (bound or unbound), 1 when any may not
 (changed, malformed, not-approved), 2 when any could not be read or the arguments are wrong. Two
 outranks one, because a spec that could not be read is an unanswered question, not a refusal.
-`--queue` reports and exits 0 unless the directory cannot be read.
+`--queue` reports and exits 0, or 2 when the directory, or a file in it, could not be read: a file
+it cannot read might be an approved spec, so leaving it out would understate the queue.
 
 The digest
 ----------
@@ -126,13 +127,18 @@ def main(argv=None, out=None) -> int:
         except OSError as error:
             out.write(f"{directory}: cannot read the directory ({error})\n")
             return 2
-        queued = []
+        queued, unread = [], []
         for path in candidates:
             verdict, current, recorded = assess(path)
             if verdict in ("unbound", "changed", "malformed"):
                 queued.append(describe(path, verdict, current, recorded))
-        out.write("\n".join(queued) + ("\n" if queued else ""))
+            elif verdict == "unreadable":
+                unread.append(describe(path, verdict, current, recorded))
+        out.write("\n".join(queued + unread) + ("\n" if queued or unread else ""))
         out.write(f"{len(queued)} approved spec(s) waiting on a person's re-approval in {directory}\n")
+        if unread:
+            out.write(f"{len(unread)} file(s) could not be read, so the queue may be longer\n")
+            return 2
         return 0
     worst = 0
     for name in argv:
