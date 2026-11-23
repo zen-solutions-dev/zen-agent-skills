@@ -158,7 +158,6 @@ KIT_SKILL_NAMES = frozenset({
     "quest-tracker",
     "reconcile-worktrees",
     "retro",
-    "review-depth",
     "sitrep",
     "spec-author",
     "spec-conformance",

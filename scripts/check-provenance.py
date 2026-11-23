@@ -361,7 +361,7 @@ def parse_records(text):
 
     **Content, anywhere else.** A run outside any declared placement qualifies only if it
     carries at least one other recognised key, because `source:` is an ordinary word that
-    other templates use: the `review-depth` skill's output block has a `source:` field
+    other templates use: the former `review-depth` skill's output block had a `source:` field
     meaning "detected or user", and an earlier draft of this parser reported it as a fold-in
     with a missing digest.
 
@@ -369,7 +369,7 @@ def parse_records(text):
     misspelled field immediately after `source:` ended the run with only `source` collected,
     which failed the same content test that keeps review-depth out, so the entire block
     vanished from the run at exit 0 (bug-0041). Placement is what tells the two apart, and
-    it is the convention's own answer: review-depth's field is inside a ```text fence, and
+    it is the convention's own answer: review-depth's field was inside a ```text fence, and
     every real block in this repository is inside one of the two declared placements.
 
     A declared placement that produced no run at all is a record too, carrying `placement`

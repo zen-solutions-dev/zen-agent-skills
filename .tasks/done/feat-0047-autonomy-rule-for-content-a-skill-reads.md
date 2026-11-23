@@ -28,7 +28,7 @@ The skills that face it are the ones that read text somebody else can influence 
 | Skill | What it reads |
 |---|---|
 | [`pr-describe`](../../.agents/skills/pr-describe/SKILL.md) | issue bodies and titles from a tracker |
-| [`house-review`](../../.agents/skills/house-review/SKILL.md), [`review-depth`](../../.agents/skills/review-depth/SKILL.md) | a diff, which is whatever somebody wrote |
+| [`house-review`](../../.agents/skills/house-review/SKILL.md), `review-depth` | a diff, which is whatever somebody wrote |
 | [`doc-sync`](../../.agents/skills/doc-sync/SKILL.md) | every reader-facing document in a target repository |
 | [`reconcile-worktrees`](../../.agents/skills/reconcile-worktrees/SKILL.md), [`fix-batch`](../../.agents/skills/fix-batch/SKILL.md) | the output and diffs of other agents |
 

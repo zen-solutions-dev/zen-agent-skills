@@ -41,7 +41,7 @@ Review and shipping have the same gap from the other side:
 - [`house-review`](../../.agents/skills/house-review/SKILL.md) applies one rubric. It does not separately
   ask whether the change did what its contract asked, no more and no less, and it never reads the
   target repository's own written standards. Picking its depth takes a whole second skill,
-  [`review-depth`](../../.agents/skills/review-depth/SKILL.md), at 380 lines.
+  `review-depth`, at 380 lines.
 - [`pr-describe`](../../.agents/skills/pr-describe/SKILL.md) gets closing keywords right but never tells
   the human how hard to look: whether the change is a one-way or two-way door, and how wide its blast
   radius is.

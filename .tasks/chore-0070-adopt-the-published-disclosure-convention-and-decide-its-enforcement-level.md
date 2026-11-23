@@ -72,10 +72,11 @@ at all, so the tree passing them today is luck rather than a guarantee.
   cheaper to decide now than after a skill crosses the line.
 - **Add checks for the two unenforced rules**: reference depth, and a table of contents on references over
   100 lines. Both are decidable from the filesystem, so both can be real checks rather than advice.
-- **One worked example, only if the enforcement decision needs it.** `fix-batch` at 463 lines is the
-  obvious candidate and the only skill within 40 lines of the limit; `review-depth` at 352 and `doc-sync`
-  at 305 are next. **Splitting a skill is not required by this task** and should happen only if the
-  decision makes it necessary.
+- **One worked example, only if the enforcement decision needs it.** When this was filed, `fix-batch` at
+  463 lines was the obvious candidate, with `review-depth` at 352 and `doc-sync` at 305 next. The 2026-11
+  overhaul moved history into `references/` across the kit (`fix-batch` 251, `doc-sync` 257) and retired
+  `review-depth` into `house-review`, so re-measure before choosing one. **Splitting a skill is not
+  required by this task** and should happen only if the decision makes it necessary.
 
 **Out of scope:**
 
