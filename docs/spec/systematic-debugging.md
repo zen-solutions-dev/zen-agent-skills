@@ -25,6 +25,19 @@ later reader does not reopen it as an oversight. `status` is left reading `appro
 convention in [`README.md`](README.md), for the reason that file gives. Nothing else in this contract
 changes, and `S-001` through `S-013` are untouched.
 
+**Amended 2026-11-23 (`feat-0077`) to require a red command before any hypothesis: `S-016` is
+new.** This amendment is **pending the author's re-approval**, and `status` is left reading
+`approved` for the reason the 2026-08-29 amendment gives. A **red command** is one command the run
+has already run at least once, that drives the real code path, fails on the reported symptom
+specifically rather than merely erroring, is deterministic (or, for an intermittent defect, carries a
+pinned and recorded reproduction rate), is fast, and runs without a person. It is built without
+changing a tracked file, so `S-014`'s every-point bound covers it, and it is carried in
+`reproduction` rather than in a new field. The gate is **no red command, no hypothesis phase**: a run
+that cannot build one returns `not_reproducible`, with `missing_input` naming what would let one be
+built. The three verdicts, the record's fields and their presence conditions, the four inputs, and
+the bound are unchanged, and `S-001` through `S-015` are untouched. The idea is adapted from Matt
+Pocock's `diagnosing-bugs`, recorded in the skill's provenance.
+
 ## Problem
 
 The kit's spine assumes work arrives already diagnosed. Nothing in it establishes a cause.
@@ -204,6 +217,16 @@ anything that diagnoses.
 - **Then** no instrumentation is added and no tracked file is edited, `reproduction` records that the
   observation was made without instrumentation, and the run continues to a verdict on the evidence it
   could gather
+
+### Scenario S-016: no hypothesis is formed before a red command exists
+- **Given** a defect report restated as an observable
+- **When** the skill reaches the point of proposing why the defect happens
+- **Then** `reproduction` already carries a red command, one command the run has executed at least
+  once that drives the real code path, fails on the reported symptom specifically, is deterministic
+  or carries a pinned and recorded reproduction rate, is fast, and runs without a person, built
+  without changing any tracked file; and when no such command can be built, the run returns
+  `verdict: not_reproducible` with `missing_input` naming what would let one be built, and
+  `hypotheses` holds no entry proposing a cause
 
 ## Proposed Surface
 

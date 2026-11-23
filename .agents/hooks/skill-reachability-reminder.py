@@ -163,6 +163,7 @@ KIT_SKILL_NAMES = frozenset({
     "spec-plan-readiness",
     "spec-quality",
     "systematic-debugging",
+    "tdd",
     "test-author",
     "test-quality",
     "verifier-agent",

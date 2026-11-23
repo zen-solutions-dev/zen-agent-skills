@@ -281,7 +281,7 @@ class TestEmittedTreeResolves(unittest.TestCase):
                 text = (self.out / rel).read_text(encoding="utf-8")
                 line = next(l for l in text.splitlines() if l.startswith("description:"))
                 self.assertNotIn(">-", line)
-                self.assertTrue(line.startswith('description: "Turns the current session'), line)
+                self.assertTrue(line.startswith('description: "Handoff briefs for agents'), line)
 
     def test_each_adapter_carries_its_harness_frontmatter_and_the_banner(self):
         # Scenario S-002.

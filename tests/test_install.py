@@ -674,7 +674,7 @@ class ProfileTests(unittest.TestCase):
         handoff = next(d for d in inst.discover_skills() if d.name == "agent-handoff")
         desc = inst.description_of(handoff)
         self.assertFalse(desc.startswith(">"))
-        self.assertTrue(desc.startswith("Turns the current session"))
+        self.assertTrue(desc.startswith("Handoff briefs for agents"))
 
     def test_an_unrecognised_profile_places_nothing_and_exits_non_zero(self):
         # Scenario S-013: rejected the way an unrecognised tool is (S-009).
