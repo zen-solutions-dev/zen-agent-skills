@@ -12,6 +12,10 @@ Spec-vs-implementation audit of the `external` field in
 [`tracker-links.md`](tracker-links.md). Evidence is by code location or by skill-body clause; this
 audit is independent of test pass/fail.
 
+**Citations re-checked 2026-11-23 (`feat-0078`)** after `pr-describe` gained a merge-danger section
+and was slimmed. The closing-reference section was left word for word, so every clause this matrix
+quotes still resolves and no row's status moved.
+
 The contract spans two surfaces of different kinds, which is unusual here and is the fact that
 shapes the matrix: S-007 and S-008 are code and are testable, while S-001 to S-006 and S-009 are
 clauses in a prose procedure an agent follows. A prose clause can be audited for presence and
