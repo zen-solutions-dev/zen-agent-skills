@@ -87,7 +87,9 @@ vocabulary terms, a before-and-after diagram, its dependency category, and a str
 when the friction justifies reopening it, and says so. End with a top recommendation and why.
 
 Give the person the file's absolute path, offer to open it, and ask which candidate to explore. Do
-not propose interfaces yet. Done when the file exists and its path is reported.
+not propose interfaces yet.
+
+Done when the file exists and its path is reported.
 
 ### 4. Explore the chosen candidate
 
@@ -95,6 +97,9 @@ Walk its decision tree with the person (the `grill` skill, where installed): the
 dependencies and their category, what sits behind the new seam, and which tests survive. A term
 that gets sharpened goes into the glossary; a rejection with a lasting reason is offered as a
 decision record, so a later review does not suggest it again.
+
+Done when every open decision about the candidate is settled with the person or named as open, and
+every sharpened term and lasting rejection has been offered for the glossary or a decision record.
 
 ### 5. Design it twice (optional)
 
@@ -112,10 +117,15 @@ design gives its interface (types, invariants, ordering, error modes), a usage e
 hides, its dependency strategy, and its trade-offs. Compare them on depth, locality and seam
 placement, then recommend one, or a hybrid, with the reason.
 
+Done when the step is skipped because the person wants no alternatives, or at least three designs
+are complete with every field above and one (or a hybrid) is recommended with the reason.
+
 ### 6. Hand off
 
 The agreed candidate becomes a spec when people must agree its behaviour, or a task when they
-already do. Done when the person has a spec or task draft, or has rejected the candidate.
+already do.
+
+Done when the person has a spec or task draft, or has rejected the candidate.
 
 ## Provenance
 

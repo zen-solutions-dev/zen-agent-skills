@@ -108,13 +108,17 @@ Pick model-invoked only when the agent must reach the skill on its own, or anoth
 
 - The description leads with the triggering word, is written in the third person, names one
   trigger per case, and stays under about 400 characters.
-- The body stays under about 250 lines; detail and history live in `references/`.
+- The body stays under about 250 lines; detail, history and harness-specific mechanics live in
+  `references/`. A body may run past that only when the excess is procedure every run needs (a
+  step, a gate, the output contract) or the provenance footer, and the skill says so in one line.
+  Moving a step or a gate behind a link to meet the number hides it from the run that needs it.
 - A relative link to a sibling `SKILL.md` appears only where this skill genuinely composes that
   skill, because the link is also an install dependency. A neighbour is named in backticks.
 - The autonomy rules are reached with one pointer line to `core.md`, not restated.
 - Every dispatched subagent starts with a fresh context, not a fork of the parent, and is told it
   is a leaf that dispatches nothing further.
-- Every step ends on a clear, demanding completion criterion.
+- Every step ends on a clear, demanding completion criterion, on a line of its own beginning
+  "Done when".
 
 ## Provenance
 

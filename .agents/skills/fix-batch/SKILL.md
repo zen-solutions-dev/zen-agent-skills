@@ -16,6 +16,8 @@ Dispatch a batch of independent task files to parallel, worktree-isolated agents
 result yourself before calling any of it done. The verification pass is the point of the skill:
 unsupervised agents get things wrong, and their own summaries do not say so. Why each step exists,
 with the incidents that taught it, is in [`references/incidents.md`](references/incidents.md).
+This body runs past the kit's 250-line guide because the excess is steps, gates and the report
+contract every run needs; move only reference material out.
 
 This is the parallel step of the kit spine: `new-task` authors the task files, `fix-batch`
 dispatches them, [`test-author`](../test-author/SKILL.md) and
@@ -39,8 +41,9 @@ files**. If they overlap or depend on each other, run them in sequence in one pl
 
 Then size each item to **one fresh context window**: an agent that starts cold, reads `AGENTS.md`,
 its task file and the files the task names, and still has room to do the work and verify it. An
-item too big for that goes back to `new-task` to be split before it is dispatched. Done when every
-item is independent, disjoint, and fits one fresh context.
+item too big for that goes back to `new-task` to be split before it is dispatched.
+
+Done when every item is independent, disjoint, and fits one fresh context.
 
 ### Step 2: resolve what git will not carry into a worktree
 
@@ -148,12 +151,18 @@ carries all nine items.
 
 Background agents notify you on completion; do not sleep-loop.
 
+Done when every dispatched agent has returned a report or is known to have stopped without one, and
+no sleep or polling loop was run to learn it.
+
 ### Step 5: verify a blocker before dismissing it
 
 When an agent reports a blocker that looks like a false alarm, check the actual content yourself
 (what the diff touches, whether it overlaps the agent's `touched_files`) before dismissing or
 accepting it. If it is a false alarm, resume that same agent with a precise explanation, so it
 keeps its context.
+
+Done when every reported blocker is accepted or dismissed on content you read yourself, and every
+dismissed one has been sent back to the same agent with the explanation.
 
 ### Step 6: verify every agent, no exceptions
 
@@ -195,6 +204,9 @@ Per item: what changed, what you verified yourself (commands you ran, diffs you 
 contract status (conforming, or which field was missing and which remedy closed it), and anything
 you found and corrected. Commit and merge nothing. Landing is a separate, deliberate step:
 `reconcile-worktrees`.
+
+Done when every dispatched item has an entry with all four parts, including a `fail` or `blocked`
+item, and no agent branch has been committed to or merged by you.
 
 ## The delegate report contract
 

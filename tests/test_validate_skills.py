@@ -1400,7 +1400,9 @@ class TestSupportingFileLinkChecks(unittest.TestCase):
         # feat-0078 added four: `house-review/references/rationale.md`,
         # `doc-sync/references/notes.md`, and `improve-architecture/references/vocabulary.md`
         # and `report.md`.
-        self.assertEqual(counts, {"markdown": 14, "template": 8, "other": 8})
+        # chore-0096 added `house-review/references/claude-code.md`, moving the harness
+        # section out of the body the way `fix-batch` already does.
+        self.assertEqual(counts, {"markdown": 15, "template": 8, "other": 8})
 
     def test_a_byte_cache_is_not_counted_as_a_supporting_file(self):
         # The count has to be a fact about the kit and not about whether the tests have

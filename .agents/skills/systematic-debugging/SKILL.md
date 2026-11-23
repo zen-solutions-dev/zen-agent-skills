@@ -160,6 +160,9 @@ more.** For a component that is whatever its imports, its package layout, and it
 Record in `reproduction` that the observation was made without instrumentation. **The run still
 reaches a verdict** on the evidence it could gather. The diagnosis is always about the tracked code.
 
+Done when every instrument this run places lives in a copy it made, and every tracked file is as it
+was at the start, or `reproduction` records that no copy could be made and nothing was instrumented.
+
 ### 4. Localize before you explain
 
 **Where a failure crosses components, find the boundary at which behavior first diverges before
@@ -200,6 +203,10 @@ too, the cause is what the two share, and the record names every change trialled
 counterfactual that would hold whatever the answer turned out to be: "raising the timeout fixed it"
 is that shape, because raising a timeout ends any wait.
 
+Done when the latest entry in `hypotheses` has its trial and result, and the run has either
+returned `root_cause_found` with an observation that would have differed, or recorded that
+hypothesis as disproved.
+
 ### 6. Stop at the bound
 
 When the count of disproved hypotheses reaches the declared bound and no cause is confirmed, **stop
@@ -209,12 +216,19 @@ and return `verdict: architectural`**. Do not start another hypothesis.
 why each was disproved. The record states that the shape of the system, rather than any single
 defect, is the subject, so the next conversation is about the design.
 
+Done when the disproved count is below the bound, or the run has returned `architectural` with
+`bound_reached` set and every disproved hypothesis recorded with its reason.
+
 ### 7. When the report is the thing in error
 
 When the reproduction behaves exactly as the system's stated contract says it should, return
 `verdict: root_cause_found` with `root_cause` naming **the report** as the thing in error, and cite
 the contract you checked it against. `implicated_files` and `regression_observable` are
 **absent**: there is no code defect, and writing either would send someone to change correct code.
+
+Done when the reproduction has been checked against a contract you can cite, and either it departs
+from that contract or the run has returned with `root_cause` naming the report and both code fields
+absent.
 
 ### 8. Return the record, and do not repair
 
@@ -233,6 +247,9 @@ write into a repository the run promised only to read.
 **A persisted record is never rewritten by a later run.** The earlier record stays exactly as it was
 and the later run is persisted as a separate record. A record revised to match a later state stops
 being evidence.
+
+Done when the record carries every field its verdict requires and no other, it exists inline or at
+the supplied destination only, and every tracked file is as the run found it.
 
 ## The diagnosis record
 
@@ -259,6 +276,8 @@ A field whose condition is not met is **omitted**, not filled with a placeholder
 - **This skill's three verdicts are the classification vocabulary.** A skill here that classifies
   what an investigation concluded calls this one and reports its verdict.
 - When you catch yourself guessing, read [`references/red-flags.md`](references/red-flags.md).
+- This body runs past the kit's 250-line guide because the excess is steps, gates and the record
+  contract every run needs; move only reference material out.
 
 ## Conventions
 

@@ -38,7 +38,10 @@ questions you can ask now without guessing at an answer you have not heard.
 
 Read what the work touches: the request, the code or documents in the area, the project glossary
 and decision records if any exist (`GLOSSARY.md`, `docs/adr/`, or wherever the repository keeps
-them). Use the glossary's terms in every question. Done when you can name the first frontier.
+them). Use the glossary's terms in every question.
+
+Done when you can name the first frontier, and every glossary term the request touches is one you will
+use as the glossary defines it.
 
 ### 2. Split facts from decisions
 
@@ -67,21 +70,28 @@ Q4. Retries: should a failed upload retry three times with backoff, then surface
 ```
 
 A question that depends on another question still open in this round belongs to a later round.
-Wait for the answers. Done when the round is sent and nothing more is asked until they come back.
+Wait for the answers.
+
+Done when the round is sent and nothing more is asked until they come back.
 
 ### 4. Recompute the frontier
 
 Each answer reshapes the tree: settled decisions unblock the decisions hanging from them, and an
 answer can open a branch nobody saw. Record each settled decision in one line as it lands. When the
 person uses a term two ways, or a term the glossary defines differently, put that to them as a
-question in the next round. Returned lookups settle their facts. Then go back to step 3.
+question in the next round. Returned lookups settle their facts. Then go back to step 3, unless the
+new frontier is empty: then go to step 5.
+
+Done when every answer in the round is recorded as a one-line decision, every term conflict it
+raised is queued as a question, and the new frontier is either named or empty.
 
 ### 5. Close
 
 The interview is done when the frontier is empty, every branch has been visited, and nothing is left
 silently assumed. Then ask the person to confirm the shared understanding, in one sentence that
-restates the whole. Act on nothing until they confirm. Done when they have confirmed and the
-decisions record below is written.
+restates the whole. Act on nothing until they confirm.
+
+Done when they have confirmed and the decisions record below is written.
 
 ## Scale to the work
 

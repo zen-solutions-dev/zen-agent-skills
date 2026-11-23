@@ -92,8 +92,9 @@ Done when you know the next free id per type and the repository's acceptance com
 When a grilling session or an approved spec already settled the decisions, start from its decisions
 record or the spec and ask only what it left open. Otherwise ask only what the repository cannot
 answer: the observable outcome or symptom, what is out of scope, priority and deadline, and prior
-art to mirror. When the request already says enough, confirm it in one or two sentences. Done when
-you can state the outcome and the out-of-scope list.
+art to mirror. When the request already says enough, confirm it in one or two sentences.
+
+Done when you can state the outcome and the out-of-scope list.
 
 ### 3. Locate the real files, and verify every claim
 
@@ -104,7 +105,9 @@ a file to be created is named, with its exact path, in **Scope**.
 Every statement the task makes about the code ("the regex already handles the anchor form") is
 checked before it is written: run it, grep it, or read it. A confident wrong premise prompts
 compliance where a vague one would prompt a question. When you cannot find the surface, say so and
-ask. Done when every path and every claim in the draft has been checked.
+ask.
+
+Done when every path and every claim in the draft has been checked.
 
 ### 4. Decompose and name the parent
 
@@ -115,7 +118,9 @@ ask. Done when every path and every claim in the draft has been checked.
   repository's template seeds.
 - Present the split (titles, ids, dependencies, and what each slice delivers end to end) and ask
   whether the granularity and the dependency edges are right. This is the last cheap moment to
-  catch a wrong split. Done when the person confirms it.
+  catch a wrong split.
+
+Done when the person confirms the split and every task in it has a parent.
 
 ### 5. Write the task files
 
@@ -127,13 +132,19 @@ with relative links to the exact code; **Scope**, in and out, naming every file 
 fires, checked against the `touched_files` you wrote; **Acceptance criteria** with the literal
 command; **Definition of done** from the template.
 
+Done when every confirmed task has its file, every frontmatter field that applies is set, every
+section the template requires is filled, and every acceptance section holds a literal command.
+
 ### 6. Self-check and bookkeeping
 
 1. Run `python .tasks/validate.py --strict` and fix every finding. The one finding expected before
    the next step is the manifest falling behind the ids you consumed.
 2. When `.tasks/.scaffold.json` exists, raise its `id_high_water` for the types you used, then run
-   the validator again. Done when it passes.
+   the validator again.
 3. Write any roadmap Feature the person assented to.
+
+Done when the validator passes after the manifest is raised, and every roadmap Feature the person
+assented to is written.
 
 ### 7. Report and offer the handoff
 
@@ -141,6 +152,9 @@ List the files written with ids and titles. Offer, without running it, dispatch 
 noting that only tasks whose `depends_on` are in `done/` can go now. For tasks from an approved
 spec, offer `spec-plan-readiness` instead, which gates the set before dispatch, and report which
 scenarios map to which tasks and any deliberately left unimplemented. Commit nothing unless asked.
+
+Done when every file written is listed with its id and title, the handoff is offered and not run,
+and nothing is committed unless the person asked.
 
 Why several of these rules exist, with the incidents behind them:
 [references/why-these-rules.md](references/why-these-rules.md).

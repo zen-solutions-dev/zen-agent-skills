@@ -54,8 +54,9 @@ is the first finding, not a neutral default.
 
 Walk the session or the review thread and mark each moment the agent was corrected, went the wrong
 way, searched for something more than once, or ran an expensive command. For pull requests, every
-review comment is a candidate; a comment that recurs across pull requests is a strong one. Done when
-every correction and every review comment is either tied to a candidate below or dismissed with a
+review comment is a candidate; a comment that recurs across pull requests is a strong one.
+
+Done when every correction and every review comment is either tied to a candidate below or dismissed with a
 reason.
 
 ### 3. Classify each candidate
@@ -80,11 +81,15 @@ Keep the split between implementation and review in mind. The implementing agent
 context, so a rule only review needs belongs in the standards file that review reads (`house-review`
 reads it on its standards axis), not in the always-loaded instructions.
 
+Done when every candidate has exactly one category, and every standards violation with a fixed
+shape is proposed as a check rather than a rule.
+
 ### 4. Rank and report
 
 Rank by severity: a mistake that shipped or would have, then one review caught at real cost, then
-friction that only cost time. Within a rank, a recurring candidate outranks a one-off. Done when
-every candidate carries all the fields below.
+friction that only cost time. Within a rank, a recurring candidate outranks a one-off.
+
+Done when every candidate carries all the fields below.
 
 ```text
 guardrails: [name: wired | unwired | failing | absent, ...]
@@ -105,6 +110,9 @@ Apply each approved id, and nothing else. Re-check that the friction still repro
 A new check is run once and shown failing on the mistake it targets, then passing on the fix, before
 it is reported as applied; a check that cannot fail is unchecked. Report each applied id with the
 command run and its verbatim tail.
+
+Done when every approved id is reported as applied, with its command and tail, or as not applied
+with the reason, and no change outside the approved ids was made.
 
 ## Notes
 

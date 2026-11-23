@@ -73,6 +73,9 @@ pass. Decide the scope first, and make it visible:
 - **Record what you did not reach** in `not_audited`, with the reason. A document that was in scope
   and never read is not a clean document, and the report must not let those two look alike.
 
+Done when the scope is a counted list this run can read in full, and every document cut from it is
+in `not_audited` with its reason.
+
 ### 1. Classify every document before reading it for drift
 
 Decide what each document in scope *is*. Classify by property, not by filename, so the rule travels
@@ -98,6 +101,9 @@ Three rules protect this step:
   upstream, and editing it means the next sync silently reverts you.
 
 Record the classification for every document; it appears in the report.
+
+Done when every document in scope carries exactly one kind, and every document you could not place
+confidently is recorded as a contract.
 
 ### 2. Ground every claim in a repository fact
 
@@ -130,6 +136,9 @@ Three habits decide whether this step actually finds anything:
 **A claim you cannot tie to a fact produces no finding at all.** Not a low-confidence finding, not a
 note: nothing. A report padded with ungrounded suspicion is one the reader stops trusting.
 
+Done when every claim of the kinds above in every document read is tied to a confirming or
+contradicting fact or set aside as ungroundable, and every count has been recounted.
+
 ### 3. Judge drift by the document's kind
 
 The same disagreement means different things depending on what the document is.
@@ -157,6 +166,10 @@ Assign each finding a confidence:
 Give every finding a stable `D-NNN` id. Ids are what make dismissal cheap: the user replies "drop
 D-003" rather than re-describing the finding.
 
+Done when every contradicted claim is a finding with a `D-NNN` id, a confidence and a correction
+aimed at the document (or, for a contract, at the code), and every ledger is in `skipped` with its
+reason.
+
 ### 4. Report, and change nothing
 
 Dry run is the default, not a flag. A run with no approved findings changes no file, and `applied`
@@ -167,6 +180,9 @@ only meaningful next to the list of what was actually checked, otherwise a clean
 indistinguishable from a run that did not look. Whenever the scope was narrowed, by a change range,
 by the Step 0 bounding, or by a budget that ran out mid-run, say so and list what went unread in
 `not_audited`, so a partial audit is never read as a whole one.
+
+Done when the report holds every field of the output format below, every document in scope appears
+in exactly one of `audited`, `skipped` or `not_audited`, and no file has changed.
 
 ### 5. Apply only what was approved, and leave a record
 
@@ -185,9 +201,8 @@ Then:
 - **Compose [`doc-revise`](../doc-revise/SKILL.md)** for the edit itself. Its discipline governs:
   do not restate its rules here.
 - **Re-check the edited document's relative links after writing, and before recording anything.**
-  The composed editing discipline verifies links after a structural change, and correcting a stale
-  claim is usually not one, so this check belongs here and is unconditional: every applied edit gets
-  it. Run the repository's own link checker over the edited document (in this kit,
+  The check is unconditional: every applied edit gets it, for the reason in the notes. Run the
+  repository's own link checker over the edited document (in this kit,
   `python .tasks/validate.py --links <path>`; its other modes walk only the tracker directory and
   report clean without reading the edited document). Where the repository has no such checker,
   resolve each relative link in the edited document from that document's own directory and confirm
@@ -198,6 +213,9 @@ Then:
   corrected, the evidence, and the confidence it carried. Someone reading it later must be able to
   tell a mechanical correction from an applied judgment call, and see the basis for it, without
   re-running the audit.
+
+Done when every approved id is in `applied` with its full audit trail or reported as not applied
+with the reason, and every relative link in every edited document resolves.
 
 ## Output format
 
@@ -255,3 +273,5 @@ Rules:
 There is no exact oracle for prose-versus-code drift, so expect false positives and keep dismissal
 cheap. Why the ledger skip suppresses things that look actionable, where the most valuable findings
 usually are, and how to route a contract finding: [`references/notes.md`](references/notes.md).
+This body runs past the kit's 250-line guide because the excess is steps, gates and the output
+contract every run needs; move only reference material out.

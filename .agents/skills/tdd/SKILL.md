@@ -118,6 +118,9 @@ State the seams chosen and why, the behaviours covered, the test command and its
 behaviour deliberately left untested, and any decision taken without a person. A separate check of
 the work, by `verifier-agent` or a reviewer, reads this report.
 
+Done when every behaviour on the step 2 list is reported as covered or deliberately left untested
+with a reason, and the test command is given with the result it printed in this run.
+
 ## Notes
 
 - Worked good-versus-bad examples (behaviour against implementation coupling, a tautology against a
