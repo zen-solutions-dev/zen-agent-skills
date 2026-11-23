@@ -34,6 +34,17 @@ it. The frontmatter is left at `approved` for the author to confirm at closeout,
 repository `approved` is not a terminal status and an amendment does not reopen a contract by
 itself.
 
+**Amended 2026-11-23 (`feat-0078`), pending the maintainer's approval.** The review now runs on
+two independent axes, spec and standards (S-019 to S-022), and selects its own depth (S-023 and
+S-024), absorbing the `review-depth` skill's selection rule so one skill decides how hard to look
+and what a finding must prove. S-018 is reworded to name the depth step rather than the retired
+skill, with its obligation unchanged. The Non-Goal on judging a spec is narrowed, because the spec
+axis now judges one change against its contract; auditing a whole implementation scenario by
+scenario remains `spec-conformance`'s. The Proposed Surface gains Axes and Depth rows, and the
+Output row is amended. No existing scenario's obligation changes. The frontmatter stays at
+`approved` per the `feat-0040` precedent; the new scenarios are not approved until the maintainer
+says so.
+
 Adding S-013 forced one further edit, recorded here rather than left to be noticed: S-002, S-003, and
 S-004 each opened on "a request naming no scope", which a bare range satisfies, so on its own S-013
 would have fired at the same time as S-002 with a different outcome. Their preconditions now read
@@ -67,12 +78,18 @@ only the diff it was given, or hardcode a severity scheme, and nothing would obj
    finding to the code without trusting the reviewer.
 8. Give every finding an identity that survives the code moving, so the same defect is countable
    across reviewers and runs.
+9. Judge whether a change did what its contract asked, no more and no less, separately from whether
+   it meets the repository's written standards, so neither judgement masks the other.
+10. Spend review effort in proportion to a change's size and risk, from stated signals, so two runs
+    over the same change reach the same depth for an inspectable reason.
 
 ## Non-Goals
 
 - Applying, committing, or offering to apply the fixes it describes.
-- Judging whether an implementation matches a spec, which is `spec-conformance`, or whether tests are
-  well designed, which is `test-quality`.
+- Auditing a whole implementation against an approved spec, scenario by scenario, into a
+  conformance matrix, which is `spec-conformance`; or judging whether tests are well designed, which
+  is `test-quality`. The spec axis judges one change against its own contract and reports findings,
+  not a matrix.
 - Creating or editing a pull request, which is `pr-describe`.
 - Running the test suite or any build command as part of forming the review.
 
@@ -81,6 +98,9 @@ only the diff it was given, or hardcode a severity scheme, and nothing would obj
 - The rubric, the severity scheme, the validate-before-reporting protocol, the evidence shape, the
   evidence gate's branches, and the signature format live in the swappable `review-quality` lens,
   not in the skill. The skill composes them by reference.
+- The spec-axis and standards-axis rules (categories, precedence of a repository standard over the
+  rubric, citing the standard) live in the same lens. The depth signals and selection rule live in
+  the skill.
 - Counting how often a signature repeats across runs, and judging a repeated finding futile, are out
   of this contract. The skill emits signatures and reads nothing from them.
 - Changeset resolution is shared with `pr-describe`, so "review this" and "describe this" resolve to
@@ -223,11 +243,63 @@ only the diff it was given, or hardcode a severity scheme, and nothing would obj
 
 ### Scenario S-018: depth does not change what a finding must prove
 
-- **Given** a review running at a depth selected by `review-depth`, including the cheapest one
+- **Given** a review running at any depth, including the cheapest one
 - **When** the review is written
 - **Then** the evidence shape, the gate, and the drop-rather-than-hedge rule are applied unchanged,
   because depth sets how much is read and how exhaustively the rubric is swept, never the standard
   of proof a finding must meet.
+
+### Scenario S-019: the spec axis reports missing, unasked-for, and wrong work against the contract
+
+- **Given** a change with a contract (a spec, the task file the change completes, or the issue it
+  closes)
+- **When** the skill runs
+- **Then** the spec axis reports requirements the change omits or only partly meets, behaviour the
+  contract did not ask for, and requirements implemented incorrectly, each quoting the contract line
+  it rests on, and each through the same evidence gate as any other finding.
+
+### Scenario S-020: with no contract, the spec axis says so and stops
+
+- **Given** a change for which no contract can be found and the user supplied none
+- **When** the skill runs
+- **Then** the spec axis reports that no contract is available and produces no findings, rather than
+  inferring the intent from the diff and grading the change against itself.
+
+### Scenario S-021: the standards axis reads the repository's written standards
+
+- **Given** a target repository with a written standards file, such as `CODING_STANDARDS.md` or
+  `CONTRIBUTING.md`
+- **When** the skill runs
+- **Then** the standards axis reviews the change against that file and the lens rubric, cites the
+  standard (file and rule) in each finding resting on it, suppresses a rubric finding the
+  repository's standard explicitly endorses, and labels a rubric finding with no written standard
+  behind it as a judgement call.
+
+### Scenario S-022: the two axes are independent and are not reranked
+
+- **Given** any review that runs both axes, in a harness with or without subagents
+- **When** the review is written
+- **Then** each axis has its own section, verdict, severity ordering and worst finding, no single
+  worst finding is named across both, and where no subagents exist the spec axis is finished and
+  written down before the standards axis is read for.
+
+### Scenario S-023: depth is chosen from stated signals, and an explicit depth wins
+
+- **Given** a change and a request that either names `quick`, `standard` or `deep`, or names none
+- **When** the skill runs
+- **Then** a named depth is used as given, and otherwise the depth comes from the first matching
+  rule over the stated signals (reviewable lines, directory spread, risk flags, blast radius,
+  documentation-only scope), with the depth, the rule that fired, the excluded paths and any
+  escalated files reported in the output; when a user's depth disagrees with detection, the
+  detected depth is reported alongside without overriding it.
+
+### Scenario S-024: an unmeasurable change is reviewed at standard depth
+
+- **Given** a change for which a depth signal cannot be computed, or whose reviewable set is empty
+  after exclusions
+- **When** the skill selects a depth
+- **Then** it selects `standard`, names the signal that failed, and does not fall through to
+  `quick`.
 
 ## Proposed Surface
 
@@ -239,12 +311,15 @@ only the diff it was given, or hardcode a severity scheme, and nothing would obj
 | Severities | `blocker`, `major`, `minor`, `nit`, defined by the `review-quality` lens |
 | Evidence | Per finding: path, line range, symbol where the file has one, and an exact quote, resolved against the revision under review. A finding about something absent carries an anchor quote, what is absent, and the search that established it |
 | Signature | Per finding: `severity`, evidence path, rubric category slug, and a summary slug, joined by `\|`, carrying no line number. Format defined by the `review-quality` lens |
-| Output | A verdict line, a gate drop count when anything was dropped, then findings ordered by severity, each with `file:line`, its evidence, its signature, the issue, why, and fix |
+| Axes | Spec (against the contract: `spec-missing`, `spec-extra`, `spec-wrong`) and standards (against the repository's written standards plus the lens rubric), run as independent passes, never reranked against each other |
+| Depth | `quick`, `standard` or `deep`, from an explicit request or rules R1 to R7 over five signals; risk-flagged files are anchors at `deep` with a re-measured remainder capped at `standard`; unmeasurable selects `standard` |
+| Output | A header block (depth and rule, changeset and whether supplied or resolved, coverage, exclusions, sources per axis, gate drop count when anything was dropped), then a Spec section and a Standards section, each with its own verdict and inspected files and findings ordered by severity, each finding with `file:line`, its evidence, its signature, the issue, why, and fix |
 | Side effects | None. No file is written, no commit is made |
 
 ## Open Questions
 
-One, opened by the `feat-0040` amendment and stated at the end of this section.
+One, opened by the `feat-0040` amendment and stated at the end of this section. The `feat-0078`
+amendment opens none.
 
 Both questions this spec originally opened were resolved by `chore-0012` on 2026-07-27: a range supplied
 alongside a path scope narrows a change review to those paths (now `S-012`), and the name collision

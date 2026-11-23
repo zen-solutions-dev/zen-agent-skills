@@ -117,6 +117,9 @@ hypothetical: `verifier-agent`'s dogfood in this repository found a conformance 
 classifications were correct and whose citations had every one of them drifted eight lines after a
 refactor, and a human caught it rather than the process.
 
+**A finding that fails the gate is dropped alone.** Its siblings are resolved on their own
+evidence; one bad citation never sinks the batch.
+
 **A finding that fails the gate is dropped, not softened.** It is not reported at a lower severity,
 not hedged, and not marked "possible". The gate is worth having only because a reader can then trust
 every citation in the output, and one unresolvable finding carried through with a hedge spends that.
@@ -137,9 +140,10 @@ defect rather than two. Four fields joined by `|`:
 - **path**: the evidence `path`, repository-relative with forward slashes. For absence evidence, the
   anchor's path.
 - **category**: the rubric category as a slug, one of `correctness`, `security`, `error-handling`,
-  `tests`, `readability`, `performance`, `api`, `docs`. Slugs rather than the numbers 1 to 8,
-  because `review-depth` already spends `R1` to `R7` on its selection rules and two unrelated
-  numbering schemes in one review output is a trap worth not setting.
+  `tests`, `readability`, `performance`, `api`, `docs`, or on the spec axis one of `spec-missing`,
+  `spec-extra`, `spec-wrong`. Slugs rather than the numbers 1 to 8, because `house-review` already
+  spends `R1` to `R7` on its depth rules and two unrelated numbering schemes in one review output is
+  a trap worth not setting.
 - **summary-slug**: the finding's one-line issue, lowercased, with every run of characters outside
   `a-z0-9` collapsed to a single `-`, trimmed, and cut to its first eight tokens.
 
@@ -153,6 +157,46 @@ and that is the property that makes signatures countable at all.
 Signatures are emitted here, not consumed. Counting repeats across runs, and deciding when a
 repeatedly reported finding is futile, are separate work and deliberately not defined by this lens.
 
+## Two axes
+
+`house-review` runs two independent passes. This section holds the rules each pass applies; the
+skill holds the order.
+
+**Spec axis**: the change against its contract (a spec, a task file's scope and acceptance
+criteria, or the issue it closes), and nothing else. Three categories:
+
+- `spec-missing`: the contract asked for it and the change does not do it, or does part of it.
+- `spec-extra`: the change does something the contract did not ask for. Scope creep is a finding
+  even when the extra work is good, because nobody agreed to it.
+- `spec-wrong`: the change appears to implement a requirement, and the implementation does not do
+  what the requirement says.
+
+Every spec finding quotes the contract line it rests on, and that quote goes through the gate
+against the contract file just as the code quote does against the code. A missing requirement is
+an absence finding whose anchor is the contract line. With no contract available the axis reports
+that and stops; it never reconstructs intent from the diff, which would grade the change against
+itself.
+
+**Standards axis**: the change against the target repository's written standards, with the rubric
+above as the baseline. Four rules:
+
+- **The repository overrides the rubric.** Where a written standard endorses something a rubric
+  category would flag, suppress the rubric finding.
+- **Cite the standard.** A finding against a written standard names the file and quotes the rule.
+  A rubric finding with no written standard behind it is a judgement call, labelled as one, and
+  never a `blocker` on that basis alone.
+- **Skip what tooling enforces.** A lint rule, a formatter or a type check already in the
+  repository's check command catches its own violations; repeating them is noise.
+- **A mechanical repeat is a missing check.** A standards finding that is a fixed pattern (a banned
+  call, an import shape, a file location) and recurs across reviews belongs in a deterministic check,
+  not in the next review. Say so in the finding's fix; `retro` is where it gets built.
+
+The axes are not reranked against each other. Each has its own verdict, its own ordering and its
+own worst finding, so a page of style findings cannot bury one missing requirement.
+
+**Scope proof.** An axis that reports no findings states what it inspected. "No findings" with no
+inspected list is not a clean result, because it is indistinguishable from a pass that never looked.
+
 ## Review protocol
 
 1. **Ground every finding in the actual diff.** Read the real changed lines and enough surrounding
@@ -165,7 +209,7 @@ repeatedly reported finding is futile, are separate work and deliberately not de
    resolve it as the gate directs: re-anchor a quote that moved, drop a quote that resolves nowhere,
    and rerun the stated search for an absence. Report how many candidates the gate dropped. Rule 2
    is the judgment; this is the check that the judgment was actually made.
-4. **Order by severity**, blocker first. Within a severity, group by file.
+4. **Order by severity within each axis**, blocker first. Within a severity, group by file.
 5. **Make each finding actionable**: severity, `file:line`, the issue in one or two sentences, why
    it matters, its evidence quote, its signature, and a concrete suggested fix. Prefer a specific
    change over "consider improving".
@@ -187,11 +231,12 @@ review bar they did not choose.
 
 ## Provenance
 
-This lens draws on two upstream files rather than one, so it records two blocks. The composable
+This lens draws on three upstream files, so it records three blocks. The composable
 quality-lens pattern comes from the `review-quality` skill in Balarama Bosch's RepoPrompt Workflows
 (MIT); the evidence gate and the stable finding signature come from the Deep Review workflow in the
-same repository, taken as two mechanisms rather than as the workflow around them. Neither digest is
-of this file, which differs from both by design. Re-check them by running
+same repository, taken as two mechanisms rather than as the workflow around them. The two-axes
+section is adapted from Matt Pocock's `code-review` skill (MIT). No digest is of this file, which
+differs from all three by design. Re-check them by running
 `scripts/check-provenance.py` in the Zen Agent Skills repository.
 
 ```provenance
@@ -210,4 +255,13 @@ license: MIT
 retrieved: 2026-08-06
 sha256: 77437e6e78fd10bde508be37aed1d4339c4572b9d58a9f0bb745a6f95f637795
 note: source of the evidence gate and the stable finding signature. Backfilled baseline (feat-0043); the snapshot adapted from is gone, so this pins upstream as of the retrieved date.
+```
+
+```provenance
+source: https://raw.githubusercontent.com/mattpocock/skills/main/skills/engineering/code-review/SKILL.md
+author: Matt Pocock
+license: MIT
+retrieved: 2026-11-23
+sha256: 9c921a8d88138a41401d8897ca1bb852088ab1b7b605cdd04edc13e3e8aab6dd
+note: fetched with urllib and digested with hashlib on the retrieved date, at 6,721 bytes. Source of the standards-axis rules: the repository overrides the baseline, cite the standard, skip what tooling enforces.
 ```

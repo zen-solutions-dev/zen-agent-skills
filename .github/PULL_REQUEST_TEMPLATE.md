@@ -28,4 +28,4 @@ Closes #123
 Three rules, each of which fails silently when broken: repeat the keyword for every issue
 (`Closes #1, #2` closes only `#1`), target the default branch or the keyword is inert, and check the
 form is one GitHub recognises. Why each one matters, and what to check when an issue does not close,
-is in [docs/ISSUE-LINKING.md](https://github.com/hams-ollo/zen-agent-skills/blob/main/docs/ISSUE-LINKING.md).
+is in [docs/ISSUE-LINKING.md](https://github.com/zen-solutions-dev/zen-agent-skills/blob/main/docs/ISSUE-LINKING.md).

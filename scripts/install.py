@@ -20,6 +20,33 @@ and the offending entry, rather than acting on a record it cannot read.
     python scripts/install.py --check             # is an installed set still current?
     python scripts/install.py --replace-adopted   # take the kit's rules module, lose yours
     python scripts/install.py --uninstall         # remove what this installed
+    python scripts/install.py --skills new-task   # one skill plus its sibling-link closure
+    python scripts/install.py --include-drafts    # also place draft skills, to try them
+
+Named skills, drafts, and rendered copies (feat-0079)
+----------------------------------------------------
+`--skills a,b` places the named skills plus their closure over sibling links, and prints
+that closure, so a person can ask for one skill without taking a whole profile. It replaces
+`--profile` rather than combining with it.
+
+`--include-drafts` lets a draft be placed. With a profile it adds every draft and their
+closure to what the profile places; with `--skills` it lets the named set and its closure
+contain drafts without adding the rest. Either way the run names each placed draft, because
+a draft is placed only so a person can try it, and "no skill ships cold" is decided by use.
+
+A skill declaring `metadata.invocation: user` is started by a person, by name. Claude Code
+reads `disable-model-invocation: true` to keep such a skill's description out of every
+session, and claude.ai rejects that key, so the source never carries it: the `claude` target
+receives a rendered copy that does, and no other target is changed. A rendered skill is
+therefore always copied, never linked, even in symlink mode, because a link would show the
+unrendered source. Its recorded digests are the rendered bytes, so `--check` names a rendered
+copy that has fallen behind its source as `diverged`, and re-installing refreshes it.
+
+Two placement hazards are closed. A rules directory the kit did not place is merged into
+file by file rather than refused whole, and a file already there that the kit did not place
+is reported CONFLICT and left alone; `--uninstall` then removes only the files it placed.
+And a same-named symlink pointing anywhere but this kit's source, that the record does not
+name as this tool's, is a CONFLICT rather than being silently relinked.
 
 Staleness, and why --check exists
 ---------------------------------
@@ -90,6 +117,8 @@ _TEXTIO_ROOT = Path(__file__).resolve().parent.parent
 if str(_TEXTIO_ROOT) not in sys.path:
     sys.path.insert(0, str(_TEXTIO_ROOT))
 from scripts._textio import NotUTF8, read_text_utf8   # noqa: E402
+from scripts._skillmeta import (   # noqa: E402
+    is_user_invoked_text, metadata_fields, render_for_claude)
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 SKILLS_DIR = REPO_ROOT / ".agents" / "skills"
@@ -106,16 +135,19 @@ TOOL_SUBPATHS = {
 # over sibling references before anything is placed (S-013), because a skill that
 # composes a sibling by reference is broken without it.
 #
-# These boundaries are dictated by the reference graph, not chosen. It has one
-# strongly connected component of fourteen skills, so any profile touching it is at
-# least seventeen; the only separable skills are the handoff pair and the three that
-# reference no sibling. `core` is therefore small but cannot include new-task, which
-# lives inside the component. See docs/spec/install.md.
+# Until the 2026-11 overhaul these boundaries were dictated by the reference graph: one
+# strongly connected component of fourteen skills meant any profile touching it was at
+# least seventeen. The overhaul kept a sibling link only where a skill genuinely composes
+# its sibling and named every neighbour in backticks, so the graph has no cycle and the
+# seeds below are a choice again: `spine` names every shipped skill on the delivery path,
+# including `doc-author`, which used to arrive only through a neighbour's link
+# (feat-0080). `--skills` places any single skill with its closure. See docs/spec/install.md.
 PROFILE_SEEDS = {
     "core": ["project-bootstrap", "init-worktracking", "pr-describe"],
     "spine": ["spec-author", "spec-plan-readiness", "new-task", "fix-batch", "test-author",
               "spec-conformance", "verifier-agent", "reconcile-worktrees", "doc-sync",
-              "pr-describe", "project-bootstrap", "init-worktracking", "house-review"],
+              "pr-describe", "project-bootstrap", "init-worktracking", "house-review",
+              "doc-author"],
     "all": None,  # everything discovered
 }
 DEFAULT_PROFILE = "spine"
@@ -145,9 +177,7 @@ BLOCK_SCALAR_RE = re.compile(r"^[|>][+-]?\s*")
 #     metadata:
 #       status: draft
 #
-# Deliberately not a YAML parser, for the same reason DESC_FIELD_RE is not one.
-METADATA_KEY_RE = re.compile(r"^metadata:\s*$")
-STATUS_FIELD_RE = re.compile(r"^\s+status:\s*(\S.*?)\s*$")
+# Deliberately not a YAML parser. Read by `scripts/_skillmeta.py` since feat-0079.
 DRAFT_STATUS = "draft"
 
 
@@ -194,25 +224,55 @@ def status_of(skill_dir: Path) -> str:
 
     An unrecognised value reads as shipped rather than as a draft, so a typo
     over-delivers (today's defect) instead of silently under-delivering (the worse one).
+
+    The reader is `scripts/_skillmeta.py`, shared with build-adapters.py and
+    validate-skills.py since feat-0079 so the three cannot disagree about a marker.
     """
-    text = read_text_utf8(skill_dir / "SKILL.md")
-    lines = text.splitlines()
-    if not lines or lines[0].strip() != "---":
-        return ""
-    inside = False
-    for raw in lines[1:]:
-        if raw.strip() == "---":
-            break
-        if inside:
-            if raw.strip() and not raw[:1].isspace():
-                inside = False  # a new top-level key ended the metadata block
-            else:
-                m = STATUS_FIELD_RE.match(raw)
-                if m:
-                    return m.group(1).strip().strip('"').strip("'").lower()
-        if not inside and METADATA_KEY_RE.match(raw):
-            inside = True
-    return ""
+    return metadata_fields(read_text_utf8(skill_dir / "SKILL.md")).get("status", "")
+
+
+def is_user_invoked(skill_dir: Path) -> bool:
+    """Whether the skill declares `metadata.invocation: user` (feat-0079)."""
+    return is_user_invoked_text(read_text_utf8(skill_dir / "SKILL.md"))
+
+
+def renders_for(tool: str, skill_dir: Path) -> bool:
+    """Whether `tool` receives a rendered copy of this skill rather than the source.
+
+    Only Claude Code reads `disable-model-invocation`, and claude.ai rejects it, so only
+    the `claude` target renders, and only a user-invoked skill has anything to render.
+    """
+    return tool == "claude" and is_user_invoked(skill_dir)
+
+
+def rendered_skill_md(skill_dir: Path) -> bytes:
+    """The SKILL.md bytes a Claude Code copy of this skill carries."""
+    return render_for_claude(read_text_utf8(skill_dir / "SKILL.md")).encode("utf-8")
+
+
+def expected_digests(skill_dir: Path, tool: str) -> dict:
+    """What a correct install of this skill for `tool` digests to.
+
+    The source's own digests, except that a rendered copy's SKILL.md is the rendered
+    bytes. Recorded at install and recomputed by `--check`, so a rendered copy is compared
+    against what a re-install would place rather than against a source it never matched.
+    """
+    digests = digest_tree(skill_dir)
+    if renders_for(tool, skill_dir):
+        digests["SKILL.md"] = hashlib.sha256(rendered_skill_md(skill_dir)).hexdigest()
+    return digests
+
+
+def closure(names, by_name) -> set:
+    """`names` expanded over sibling links until closed, within `by_name` (S-013)."""
+    wanted = {n for n in names if n in by_name}
+    stack = list(wanted)
+    while stack:
+        for ref in sibling_refs(by_name[stack.pop()]):
+            if ref in by_name and ref not in wanted:
+                wanted.add(ref)
+                stack.append(ref)
+    return wanted
 
 
 def partition_drafts(skills):
@@ -598,8 +658,50 @@ def discover_hooks():
     return sorted(p for p in HOOKS_DIR.glob("*.py"))
 
 
+def select_skills(all_skills, profile: str, only=None, include_drafts: bool = False):
+    """Decide what a run places. Returns `(skills, added, problems)`.
+
+    `skills` is the closed set to place, `added` the names the closure added to what was
+    asked for, and `problems` a list of refusals; when it is non-empty nothing is placed.
+
+    Three requests, one rule. A profile seeds from `PROFILE_SEEDS`; `only` (from
+    `--skills`) seeds from the names given. Either way the seed is closed over sibling
+    links (S-013) before anything is placed. Without `include_drafts` the closure runs over
+    the shipped set and a draft anywhere in the request is a refusal (S-015); with it, a
+    profile also seeds every draft, and a named set may reach drafts through its closure.
+    """
+    by_name = {d.name: d for d in all_skills}
+    shipped, drafts = partition_drafts(all_skills)
+    draft_names = {d.name for d in drafts}
+    if only is not None:
+        unknown = [n for n in only if n not in by_name]
+        if unknown:
+            return [], [], [f"no skill is named {n!r}" for n in unknown]
+        named_drafts = [n for n in only if n in draft_names]
+        if named_drafts and not include_drafts:
+            return [], [], [f"{n!r} is marked a draft; pass --include-drafts to place it"
+                             for n in named_drafts]
+        pool = all_skills if include_drafts else shipped
+        wanted = closure(only, {d.name: d for d in pool})
+        skills = [d for d in pool if d.name in wanted]
+        added = sorted(wanted - set(only))
+        seed = None
+    else:
+        skills, added = resolve_profile(profile, shipped)
+        seed = PROFILE_SEEDS[profile]
+        if include_drafts:
+            asked = {d.name for d in skills}
+            wanted = closure(asked | draft_names, by_name)
+            skills = [d for d in all_skills if d.name in wanted]
+            added = sorted(set(added) | (wanted - asked - draft_names))
+    if include_drafts:
+        return skills, added, []
+    return skills, added, draft_conflicts(skills, seed, draft_names)
+
+
 def install(tools, mode, home: Path, dry: bool, profile: str = DEFAULT_PROFILE,
-            with_hooks: bool = False, replace_adopted: bool = False) -> int:
+            with_hooks: bool = False, replace_adopted: bool = False,
+            include_drafts: bool = False, only=None) -> int:
     # Resolved here and not only in `main()` (bug-0010), because every target below is
     # built from `home` and written verbatim into a persisted record. A relative spelling
     # records a string whose meaning depends on the reader's current directory, which
@@ -613,26 +715,40 @@ def install(tools, mode, home: Path, dry: bool, profile: str = DEFAULT_PROFILE,
         return 0
 
     # Drafts are removed before the profile is resolved (S-015), so the closure that
-    # keeps a profile sound (S-013) runs over the shipped set rather than around it.
+    # keeps a profile sound (S-013) runs over the shipped set rather than around it,
+    # unless `--include-drafts` asks for them (feat-0079).
     shipped, drafts = partition_drafts(all_skills)
-    skills, added = resolve_profile(profile, shipped)
+    draft_names = {d.name for d in drafts}
+    skills, added, problems = select_skills(all_skills, profile, only, include_drafts)
+    request = (f"skills {', '.join(only)}" if only is not None else f"profile {profile!r}")
 
-    problems = draft_conflicts(skills, PROFILE_SEEDS[profile], {d.name for d in drafts})
     if problems:
-        print(f"Refusing to place anything for profile {profile!r}: it collides with a "
-              f"draft marker, and every way through is wrong without a person deciding.")
+        print(f"Refusing to place anything for {request}: "
+              + ("it collides with a draft marker, and every way through is wrong without "
+                 "a person deciding." if only is None else "the request cannot be met."))
         for p in problems:
             print(f"  - {p}")
-        print("\nEither bless the draft by removing its marker, or mark the skill that "
-              "references it a draft too. Placing it would ship a reference to a skill "
-              "this run did not place; skipping the reference would ship the dangling "
-              "sibling the closure exists to prevent.")
+        if only is None:
+            print("\nEither bless the draft by removing its marker, or mark the skill that "
+                  "references it a draft too, or pass --include-drafts to place both. "
+                  "Placing it would ship a reference to a skill this run did not place; "
+                  "skipping the reference would ship the dangling sibling the closure "
+                  "exists to prevent.")
         return 2
 
-    if drafts:
+    placed_drafts = [d.name for d in skills if d.name in draft_names]
+    if drafts and not include_drafts:
         print(f"{len(drafts)} skill(s) marked a draft are excluded from every profile, "
-              f"including 'all': {', '.join(d.name for d in drafts)}.\n")
-    if added:
+              f"including 'all': {', '.join(d.name for d in drafts)}. Pass "
+              f"--include-drafts to try them.\n")
+    if placed_drafts:
+        print(f"Placing {len(placed_drafts)} draft skill(s) because --include-drafts was "
+              f"given: {', '.join(placed_drafts)}. A draft is not shipped; it is placed so "
+              f"a person can use it and decide whether to promote it.\n")
+    if only is not None:
+        print(f"Requested {len(only)} skill(s); with their closure over sibling links "
+              f"this run places {len(skills)}: {', '.join(d.name for d in skills)}.\n")
+    elif added:
         print(f"Profile {profile!r} was expanded to stay closed over sibling references: "
               f"{len(added)} skill(s) added ({', '.join(added)}). A skill that composes a "
               f"sibling is broken without it.\n")
@@ -669,16 +785,24 @@ def install(tools, mode, home: Path, dry: bool, profile: str = DEFAULT_PROFILE,
             base.mkdir(parents=True, exist_ok=True)
         for src in skills:
             target = base / src.name
-            status = _place(src, target, mode, dry, manifest)
+            render = renders_for(tool, src)
+            # A rendered skill is always a copy: a link would show the unrendered source.
+            placed_mode = "copy" if render else mode
+            status = _place(src, target, placed_mode, dry, manifest)
             if status == "CONFLICT":
                 conflicts += 1
             else:
+                if render and not dry:
+                    (target / "SKILL.md").write_bytes(rendered_skill_md(src))
                 entries[str(target)] = {
                     "tool": tool, "name": src.name,
-                    "target": str(target), "mode": mode, "source": str(src),
-                    "digests": digest_tree(src),
+                    "target": str(target), "mode": placed_mode, "source": str(src),
+                    "digests": expected_digests(src, tool),
                 }
-            print(f"{tag}{status:9} {tool:8} {src.name}  -> {target}")
+            marks = (["draft"] if src.name in draft_names else []) + \
+                (["rendered: user-invoked"] if render else [])
+            print(f"{tag}{status:9} {tool:8} {src.name}  -> {target}"
+                  + (f"  ({'; '.join(marks)})" if marks else ""))
 
         # The rules module, as the sibling <base>/../rules, so each skill's
         # ../../rules/<file>.md reference resolves in the installed layout too.
@@ -690,17 +814,37 @@ def install(tools, mode, home: Path, dry: bool, profile: str = DEFAULT_PROFILE,
         # before it is overwritten.
         if RULES_DIR.is_dir():
             rules_target = base.parent / "rules"
-            recorded = (entries.get(str(rules_target)) or {}).get("digests")
-            status, digests, notes = _place_adopted(
-                RULES_DIR, rules_target, mode, dry, manifest, recorded, replace_adopted)
-            if status == "CONFLICT":
-                conflicts += 1
+            previous = entries.get(str(rules_target)) or {}
+            recorded = previous.get("digests")
+            # A real directory this tool did not place as a whole, or one it merged into
+            # before, is merged into file by file (feat-0079). Refusing it whole left every
+            # skill that composes a lens running without one, for the sake of protecting
+            # files a per-file placement never touches.
+            merging = rules_target.is_dir() and not rules_target.is_symlink() and (
+                previous.get("mode") == "merged" or not is_managed(rules_target, manifest))
+            if merging:
+                status, digests, notes, clashes = _place_merged(
+                    RULES_DIR, rules_target, dry, recorded or {}, replace_adopted)
+                conflicts += clashes
+                if digests:
+                    entries[str(rules_target)] = {
+                        "tool": tool, "name": "rules", "target": str(rules_target),
+                        "mode": "merged", "source": str(RULES_DIR), "digests": digests,
+                    }
+                else:
+                    # Nothing of the kit's is in there, so there is nothing to record.
+                    entries.pop(str(rules_target), None)
             else:
-                entries[str(rules_target)] = {
-                    "tool": tool, "name": "rules",
-                    "target": str(rules_target), "mode": mode, "source": str(RULES_DIR),
-                    "digests": digests,
-                }
+                status, digests, notes = _place_adopted(
+                    RULES_DIR, rules_target, mode, dry, manifest, recorded, replace_adopted)
+                if status == "CONFLICT":
+                    conflicts += 1
+                else:
+                    entries[str(rules_target)] = {
+                        "tool": tool, "name": "rules",
+                        "target": str(rules_target), "mode": mode,
+                        "source": str(RULES_DIR), "digests": digests,
+                    }
             if status == "preserved":
                 preserved_adopted = True
             print(f"{tag}{status:9} {tool:8} rules  -> {rules_target}")
@@ -743,7 +887,7 @@ def install(tools, mode, home: Path, dry: bool, profile: str = DEFAULT_PROFILE,
     # Over the shipped set, not everything discovered: a draft is placed by no profile,
     # so counting its description would report a budget no run can incur (S-015).
     budgets = profile_budgets(shipped)
-    print(f"\n{tag}Done: profile {profile!r}, {len(skills)} of {len(all_skills)} skill(s) "
+    print(f"\n{tag}Done: {request}, {len(skills)} of {len(all_skills)} skill(s) "
           f"x {len(tools)} tool(s), plus the rules module"
           + (f", plus {len(hooks)} hook(s)." if hooks else "."))
     # One note per tool that received the module, rather than one note gated on Claude
@@ -777,8 +921,21 @@ def install(tools, mode, home: Path, dry: bool, profile: str = DEFAULT_PROFILE,
                   f"activate them. Check that tool's own hook wiring.")
     # A count, not a percentage: the harness budget scales with the context window and
     # is shared with skills this tool cannot see, so a proportion here would be invented.
-    print(f"{tag}Description budget: {budgets[profile]} characters for this profile "
-          f"(" + ", ".join(f"{n}={budgets[n]}" for n in PROFILE_SEEDS) + ").")
+    if only is None and not placed_drafts:
+        print(f"{tag}Description budget: {budgets[profile]} characters for this profile "
+              f"(" + ", ".join(f"{n}={budgets[n]}" for n in PROFILE_SEEDS) + ").")
+    else:
+        print(f"{tag}Description budget: {sum(len(description_of(d)) for d in skills)} "
+              f"characters for this selection (profiles: "
+              + ", ".join(f"{n}={budgets[n]}" for n in PROFILE_SEEDS) + ").")
+    # User-invoked skills are counted above, because the other tools load their
+    # descriptions; Claude Code, given the rendered key, does not.
+    user_invoked = [d for d in skills if is_user_invoked(d)]
+    if user_invoked and "claude" in tools:
+        print(f"{tag}Of that, {sum(len(description_of(d)) for d in user_invoked)} "
+              f"character(s) belong to {len(user_invoked)} user-invoked skill(s) "
+              f"({', '.join(d.name for d in user_invoked)}), which Claude Code keeps out "
+              f"of context: start one by name, as /<name>.")
     # Printed on every run, because the whole point of the check is that nothing else
     # tells you the copy has gone stale: a reader who never learns the flag exists is in
     # the state chore-0031 was filed on.
@@ -797,6 +954,12 @@ def _place(src: Path, target: Path, mode: str, dry: bool, manifest) -> str:
         if mode == "symlink":
             if points_to == src.resolve():
                 return "ok"
+            # A link pointing anywhere else is relinked only when the record says this tool
+            # made it, to a source it recorded (feat-0079). Relinking any same-named link
+            # broke the "never clobbers" promise: a person's own link to their own skill
+            # was silently repointed at the kit's.
+            if not _recorded_link(target, points_to, manifest):
+                return "CONFLICT"
             if not dry:
                 target.unlink()
                 _link(src, target)
@@ -829,6 +992,25 @@ def _place(src: Path, target: Path, mode: str, dry: bool, manifest) -> str:
         else:
             _copy(src, target)
     return "linked" if mode == "symlink" else "copied"
+
+
+def _recorded_link(target: Path, points_to, manifest) -> bool:
+    """Whether a link at `target` is one this tool recorded, pointing where it recorded.
+
+    Both halves are needed. The record alone would let a person's link, made after this
+    tool's was removed by hand, be repointed; the destination alone cannot be judged
+    without the record, because a moved checkout leaves a link to a source that is gone.
+    """
+    if points_to is None:
+        return False
+    for entry in manifest["entries"]:
+        if entry.get("target") == str(target) and entry.get("source"):
+            try:
+                if Path(entry.get("source")).resolve() == points_to:
+                    return True
+            except OSError:
+                continue
+    return False
 
 
 def _place_adopted(src: Path, target: Path, mode: str, dry: bool, manifest,
@@ -955,6 +1137,64 @@ def _place_adopted(src: Path, target: Path, mode: str, dry: bool, manifest,
                      "person's call. Run with --replace-adopted to take the kit's instead.")
         return "preserved", digests, notes
     return ("updated" if placed or removed else "ok"), digests, notes
+
+
+def _place_merged(src: Path, target: Path, dry: bool, recorded: dict,
+                  replace: bool) -> tuple:
+    """Merge the rules module into a directory this tool does not own whole (feat-0079).
+
+    Returns `(status, digests, notes, conflicts)`. `digests` records only the files this
+    tool placed, which is what `--uninstall` removes and `--check` compares; `conflicts`
+    counts the files it refused.
+
+    A file is the kit's only if the record says this tool placed it. Anything else at a
+    lens's path is someone's, and is reported CONFLICT and left byte-for-byte alone (S-004
+    per file), except a file already identical to the kit's, which is harmless and is left
+    as theirs without a conflict and without being recorded. A file the adopter added
+    under another name is never read. For a file this tool did place, the adopted rules of
+    `_place_adopted` hold: untouched is refreshed, edited is kept, removed is not restored.
+    """
+    source = digest_tree(src)
+    installed = digest_tree(target) if target.is_dir() else {}
+    digests, placed, clashes, notes = {}, [], [], []
+    for rel in sorted(source):
+        want, have, base = source[rel], installed.get(rel), recorded.get(rel)
+        if base is None:
+            if have is None:
+                _copy_file(src / rel, target / rel, dry)
+                digests[rel] = want
+                placed.append(rel)
+            elif have == want:
+                notes.append(f"kept {rel}: already there with the kit's exact content, "
+                             f"so it stays yours and is not recorded")
+            else:
+                clashes.append(rel)
+        elif have is None:
+            notes.append(f"preserved {rel}: you removed it, so this run does not restore "
+                         f"it, and the record no longer claims it")
+        elif have == want:
+            digests[rel] = want
+        elif have == base or replace:
+            _copy_file(src / rel, target / rel, dry)
+            digests[rel] = want
+            placed.append(rel)
+        else:
+            digests[rel] = base
+            notes.append(f"preserved {rel}: you edited it")
+    for rel in sorted(set(recorded) - set(source)):
+        if installed.get(rel) == recorded[rel]:
+            if not dry:
+                (target / rel).unlink()
+            notes.append(f"removed {rel}: the kit no longer ships it and it was untouched")
+        elif rel in installed:
+            notes.append(f"preserved {rel}: you kept it after the kit dropped it")
+    for rel in clashes:
+        notes.append(f"CONFLICT {rel}: a file this tool did not place is there; left "
+                     f"unchanged, so skills that compose this lens read yours")
+    if placed:
+        notes.append(f"placed {len(placed)} file(s) into a directory this tool does not "
+                     f"own whole: {', '.join(placed)}")
+    return ("merged" if placed else "ok"), digests, notes, len(clashes)
 
 
 def _link(src: Path, target: Path):
@@ -1087,7 +1327,16 @@ def uninstall(home: Path, dry: bool) -> int:
             # agreeing with the other two. `(unnamed entry)` is the wording
             # `install-currency-reminder.py` uses for the same gap.
             label = f"{(e.get('tool') or '?'):8} {e.get('name') or '(unnamed entry)'}"
-            if target.is_symlink() or target.exists():
+            if e.get("mode") == "merged" and target.is_dir() and not target.is_symlink():
+                # Merged into a directory this tool does not own (feat-0079): remove only
+                # the files it placed and nobody has edited since, never the directory.
+                gone, kept = _unmerge(target, e.get("digests") or {}, dry)
+                removed += 1
+                print(f"{tag}removed   {label}  ({target}: {gone} file(s) this tool placed; "
+                      f"the directory and everything else in it are kept)")
+                for rel in kept:
+                    print(f"{tag}          kept {rel}: edited since this tool placed it")
+            elif target.is_symlink() or target.exists():
                 if not dry:
                     _rm(target)
                 removed += 1
@@ -1104,6 +1353,22 @@ def uninstall(home: Path, dry: bool) -> int:
     if others:
         print(f"{tag}Kept {len(others)} target(s) recorded under other homes.")
     return 0
+
+
+def _unmerge(target: Path, digests: dict, dry: bool) -> tuple:
+    """Remove the recorded, unedited files of a merged module. Returns (removed, kept)."""
+    gone, kept = 0, []
+    for rel, digest in sorted(digests.items()):
+        path = target / rel
+        if not path.is_file():
+            continue
+        if hashlib.sha256(path.read_bytes()).hexdigest() != digest:
+            kept.append(rel)
+            continue
+        if not dry:
+            path.unlink()
+        gone += 1
+    return gone, kept
 
 
 def _compare(left: dict, right: dict, left_label: str = "installed",
@@ -1193,12 +1458,20 @@ def _check_entry(entry) -> tuple:
     if not source.is_dir():
         return "error", (f"the kit no longer has a source at {source}, so the installed "
                          f"copy cannot be compared against anything.")
+    tool = entry.get("tool", "")
     if target.is_symlink():
         try:
             same = target.resolve() == source.resolve()
         except OSError:
             same = False
         if same:
+            if entry.get("name") not in ADOPTED_ENTRY_NAMES and \
+                    (source / "SKILL.md").is_file() and renders_for(tool, source):
+                # The source became user-invoked after this link was made. The link shows
+                # the unrendered source, so Claude Code still loads its description.
+                return "diverged", ("links to its source, but the skill is now user-invoked "
+                                    "and Claude Code needs a rendered copy; re-install to "
+                                    "replace the link with one")
             return "linked", "links to its source, so it cannot be stale"
 
     try:
@@ -1218,6 +1491,11 @@ def _check_entry(entry) -> tuple:
         #
         # The baseline, not the installed tree: naming it "installed" printed a digest
         # matching no file on disk (reported on this pull request).
+        if entry.get("mode") == "merged":
+            # A merged module records only the files this tool placed. A kit file sitting
+            # on someone else's file was refused, not placed, so it is not news here.
+            current = {rel: d for rel, d in current.items()
+                       if rel in recorded or not (target / rel).exists()}
         moved = _compare(recorded, current, "recorded", "source now")
         try:
             installed = digest_tree(target)
@@ -1308,6 +1586,9 @@ def _check_entry(entry) -> tuple:
                            "to keep:\n" + "\n".join(f"      {p}" for p in moved) + "\n     "
                            + detail)
 
+    if (source / "SKILL.md").is_file() and renders_for(tool, source):
+        # A rendered copy is compared against what a re-install would place.
+        current["SKILL.md"] = hashlib.sha256(rendered_skill_md(source)).hexdigest()
     try:
         problems = _compare(digest_tree(target), current)
     except OSError as exc:
@@ -1427,9 +1708,15 @@ def _main(argv=None) -> int:
                     help="link mode (default: copy on Windows, symlink elsewhere)")
     ap.add_argument("--tools", default="claude,opencode",
                     help="comma-separated subset of: " + ",".join(TOOL_SUBPATHS))
-    ap.add_argument("--profile", default=DEFAULT_PROFILE,
+    ap.add_argument("--profile", default=None,
                     help="which skills to place: " + ", ".join(PROFILE_SEEDS)
                          + f" (default: {DEFAULT_PROFILE})")
+    ap.add_argument("--skills", default=None,
+                    help="comma-separated skill names to place, plus their closure over "
+                         "sibling links; replaces --profile")
+    ap.add_argument("--include-drafts", action="store_true",
+                    help="also place skills marked metadata.status: draft, and say which "
+                         "placed skills are drafts")
     ap.add_argument("--with-hooks", action="store_true",
                     help="also place .agents/hooks/ (opt-in: hooks run inside your "
                          "session, and stay inactive until you register them)")
@@ -1466,11 +1753,21 @@ def _main(argv=None) -> int:
     if bad:
         print(f"Unknown tool(s): {bad}. Choose from {list(TOOL_SUBPATHS)}.")
         return 2
-    if args.profile not in PROFILE_SEEDS:
-        print(f"Unknown profile: {args.profile!r}. Choose from {list(PROFILE_SEEDS)}.")
+    only = None
+    if args.skills is not None:
+        if args.profile is not None:
+            print("--skills and --profile both say which skills to place; pass one.")
+            return 2
+        only = list(dict.fromkeys(n.strip() for n in args.skills.split(",") if n.strip()))
+        if not only:
+            print("--skills was given no skill names.")
+            return 2
+    profile = args.profile or DEFAULT_PROFILE
+    if profile not in PROFILE_SEEDS:
+        print(f"Unknown profile: {profile!r}. Choose from {list(PROFILE_SEEDS)}.")
         return 2
-    return install(tools, args.mode, home, args.dry_run, args.profile, args.with_hooks,
-                   args.replace_adopted)
+    return install(tools, args.mode, home, args.dry_run, profile, args.with_hooks,
+                   args.replace_adopted, args.include_drafts, only)
 
 
 if __name__ == "__main__":

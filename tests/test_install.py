@@ -32,6 +32,7 @@ import importlib.util
 import io
 import json
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -539,7 +540,7 @@ EXPECTED_PROFILE_MEMBERSHIP = {
     "core": {"init-worktracking", "pr-describe", "project-bootstrap"},
     "spine": {"doc-author", "doc-revise", "doc-sync", "fix-batch", "house-review",
               "init-worktracking", "new-task", "pr-describe", "project-bootstrap",
-              "reconcile-worktrees", "review-depth", "spec-author", "spec-conformance",
+              "reconcile-worktrees", "spec-author", "spec-conformance",
               "spec-plan-readiness", "spec-quality", "test-author", "test-quality",
               "verifier-agent"},
 }
@@ -674,7 +675,7 @@ class ProfileTests(unittest.TestCase):
         handoff = next(d for d in inst.discover_skills() if d.name == "agent-handoff")
         desc = inst.description_of(handoff)
         self.assertFalse(desc.startswith(">"))
-        self.assertTrue(desc.startswith("Turns the current session"))
+        self.assertTrue(desc.startswith("Handoff briefs for agents"))
 
     def test_an_unrecognised_profile_places_nothing_and_exits_non_zero(self):
         # Scenario S-013: rejected the way an unrecognised tool is (S-009).
@@ -811,10 +812,11 @@ class DraftMarkerTests(unittest.TestCase):
     """Scenario S-015: a skill marked a draft is placed by no profile.
 
     Run against a fixture skill tree, deliberately, and not against `.agents/skills/`.
-    No skill there carries a draft marker as of 2026-08-05 (`review-depth`, the draft
-    this behaviour was filed on, was blessed by `feat-0035`), so a real-tree test would
-    prove nothing, and marking a real skill a draft to make one pass would regress that
-    blessing and falsify a shipped catalog row.
+    On 2026-08-05 no skill there carried a draft marker (`review-depth`, the draft this
+    behaviour was filed on, had been blessed by `feat-0035`, and was later retired into
+    `house-review` by `feat-0080`), so a real-tree test would have proved nothing. The
+    2026-11 overhaul added real drafts, but the fixture tree stays the oracle: a real-tree
+    test would change its answer every time a draft is promoted.
 
     The bug population is not the over-delivery this fixes. It is the inverse: a marker
     read too eagerly drops a shipped skill from every profile, and an adopter's next
@@ -2728,3 +2730,351 @@ class OrphanedRecordTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+def _meta_skill(skills_dir, name, description, status=None, invocation=None, refs=()):
+    """A fixture skill carrying any combination of `metadata.status` and `invocation`."""
+    d = skills_dir / name
+    d.mkdir(parents=True, exist_ok=True)
+    lines = ["---", f"name: {name}", f"description: {description}"]
+    meta = [f"  status: {status}"] if status else []
+    meta += [f"  invocation: {invocation}"] if invocation else []
+    if meta:
+        lines += ["metadata:"] + meta
+    lines += ["---", "", f"# {name}", ""]
+    lines += [f"Composes [`{r}`](../{r}/SKILL.md)." for r in refs]
+    (d / "SKILL.md").write_text("\n".join(lines) + "\n", encoding="utf-8")
+
+
+class _FixtureKit(unittest.TestCase):
+    """A fixture skills tree, rules module and manifest, swapped in for the real ones."""
+
+    def setUp(self):
+        self._tmp = tempfile.TemporaryDirectory()
+        self.root = Path(self._tmp.name)
+        self.skills = self.root / "skills"
+        self.rules = self.root / "rules"
+        self.skills.mkdir()
+        self.rules.mkdir()
+        self.home = self.root / "home"
+        self._real = (inst.SKILLS_DIR, inst.RULES_DIR, inst.PROFILE_SEEDS, inst.MANIFEST)
+        inst.SKILLS_DIR = self.skills
+        inst.RULES_DIR = self.rules
+        inst.MANIFEST = self.root / "manifest.json"
+        inst.PROFILE_SEEDS = {"core": ["alpha"], "spine": ["alpha"], "all": None}
+        (self.rules / "house-style.md").write_text("# kit house style\n", encoding="utf-8")
+        (self.rules / "review-quality.md").write_text("# kit review rubric\n",
+                                                      encoding="utf-8")
+
+    def tearDown(self):
+        (inst.SKILLS_DIR, inst.RULES_DIR, inst.PROFILE_SEEDS, inst.MANIFEST) = self._real
+        self._tmp.cleanup()
+
+    def _call(self, fn, *args, **kwargs):
+        buf = io.StringIO()
+        with contextlib.redirect_stdout(buf):
+            code = fn(*args, **kwargs)
+        return code, buf.getvalue()
+
+    def _install(self, tools=("claude",), mode="copy", profile="all", **kwargs):
+        return self._call(inst.install, list(tools), mode, self.home, False, profile,
+                          **kwargs)
+
+    def _main(self, *argv):
+        return self._call(inst.main, list(argv) + ["--home", str(self.home)])
+
+    def _placed(self, tool="claude"):
+        base = self.home / inst.TOOL_SUBPATHS[tool]
+        return {p.name for p in base.iterdir()} if base.is_dir() else set()
+
+
+class RulesDirectoryMergeTests(_FixtureKit):
+    """feat-0079, hazard 1: an existing rules directory the kit did not place.
+
+    Reproduced by the 2026-11 audit: such a directory was a CONFLICT as a whole, so no
+    lens was placed and every skill composing one ran without it. Now the kit's lenses
+    are placed into it one by one, and only a file already at a lens's path that the kit
+    did not place is a conflict.
+    """
+
+    def setUp(self):
+        super().setUp()
+        _meta_skill(self.skills, "alpha", "does alpha things when asked")
+        self.target = self.home / ".claude" / "rules"
+        self.target.mkdir(parents=True)
+        (self.target / "mine.md").write_text("my own lens\n", encoding="utf-8")
+        (self.target / "house-style.md").write_text("someone else's\n", encoding="utf-8")
+
+    def test_the_kit_lenses_are_placed_beside_files_it_did_not_place(self):
+        code, out = self._install()
+        self.assertEqual(code, 1, "a refused file is still a conflict")
+        self.assertEqual((self.target / "review-quality.md").read_text(encoding="utf-8"),
+                         "# kit review rubric\n", "the free lens must arrive")
+        self.assertEqual((self.target / "house-style.md").read_text(encoding="utf-8"),
+                         "someone else's\n")
+        self.assertEqual((self.target / "mine.md").read_text(encoding="utf-8"),
+                         "my own lens\n")
+        self.assertIn("CONFLICT house-style.md", out)
+        self.assertIn("1 CONFLICT(s)", out)
+
+    def test_a_rerun_is_stable_and_keeps_refusing_only_the_clash(self):
+        self._install()
+        code, out = self._install()
+        self.assertEqual(code, 1)
+        self.assertEqual(out.count("CONFLICT house-style.md"), 1)
+        self.assertEqual((self.target / "house-style.md").read_text(encoding="utf-8"),
+                         "someone else's\n")
+
+    def test_a_file_identical_to_the_kit_copy_is_not_a_conflict(self):
+        (self.target / "house-style.md").write_text("# kit house style\n", encoding="utf-8")
+        code, out = self._install()
+        self.assertEqual(code, 0, out)
+        self.assertNotIn("CONFLICT", out)
+
+    def test_uninstall_removes_only_the_files_it_placed(self):
+        self._install()
+        code, out = self._call(inst.uninstall, self.home, False)
+        self.assertEqual(code, 0)
+        self.assertTrue(self.target.is_dir(), "the directory is not the kit's to remove")
+        self.assertEqual(sorted(p.name for p in self.target.iterdir()),
+                         ["house-style.md", "mine.md"])
+
+    def test_uninstall_keeps_a_placed_file_edited_since(self):
+        self._install()
+        (self.target / "review-quality.md").write_text("edited\n", encoding="utf-8")
+        self._call(inst.uninstall, self.home, False)
+        self.assertEqual((self.target / "review-quality.md").read_text(encoding="utf-8"),
+                         "edited\n")
+
+    def test_check_reports_the_merged_module_current_and_ignores_the_clash(self):
+        self._install()
+        code, out = self._call(inst.check, self.home)
+        self.assertEqual(code, 0, out)
+        self.assertIn("ok        claude   rules", out)
+
+    def test_a_kit_change_to_a_placed_lens_is_refreshed_and_an_edit_is_kept(self):
+        self._install()
+        (self.rules / "review-quality.md").write_text("# kit rubric v2\n", encoding="utf-8")
+        self._install()
+        self.assertEqual((self.target / "review-quality.md").read_text(encoding="utf-8"),
+                         "# kit rubric v2\n")
+        (self.target / "review-quality.md").write_text("mine now\n", encoding="utf-8")
+        (self.rules / "review-quality.md").write_text("# kit rubric v3\n", encoding="utf-8")
+        _, out = self._install()
+        self.assertEqual((self.target / "review-quality.md").read_text(encoding="utf-8"),
+                         "mine now\n")
+        self.assertIn("preserved review-quality.md: you edited it", out)
+
+    @unittest.skipUnless(SYMLINKS_WORK, "this platform or account cannot create symlinks")
+    def test_symlink_mode_merges_too_rather_than_replacing_the_directory(self):
+        code, _ = self._install(mode="symlink")
+        self.assertFalse(self.target.is_symlink())
+        self.assertEqual((self.target / "mine.md").read_text(encoding="utf-8"),
+                         "my own lens\n")
+        self.assertTrue((self.target / "review-quality.md").is_file())
+
+
+@unittest.skipUnless(SYMLINKS_WORK, "this platform or account cannot create symlinks")
+class ForeignSymlinkTests(_FixtureKit):
+    """feat-0079, hazard 2: a same-named symlink pointing elsewhere is a CONFLICT.
+
+    It used to be relinked silently, which contradicts the promise that the tool never
+    clobbers what it did not place.
+    """
+
+    def setUp(self):
+        super().setUp()
+        _meta_skill(self.skills, "alpha", "does alpha things when asked")
+        self.mine = self.root / "my-alpha"
+        self.mine.mkdir()
+        (self.mine / "SKILL.md").write_text("my own alpha\n", encoding="utf-8")
+        self.link = self.home / ".claude" / "skills" / "alpha"
+        self.link.parent.mkdir(parents=True)
+        os.symlink(self.mine, self.link, target_is_directory=True)
+
+    def test_a_foreign_link_is_refused_and_left_pointing_where_it_did(self):
+        code, out = self._install(mode="symlink")
+        self.assertEqual(code, 1)
+        self.assertIn("CONFLICT  claude   alpha", out)
+        self.assertEqual(self.link.resolve(), self.mine.resolve())
+
+    def test_a_link_the_record_names_is_still_relinked(self):
+        # A moved checkout: the record says this tool linked the target to a source that
+        # was this kit's, so repointing it at the kit's current source is the tool's own.
+        # The record names the target under the resolved home, as `install()` writes it:
+        # on Windows the temporary home is an 8.3 short path that resolves to a long one,
+        # so recording the unresolved `self.link` described a record no run ever makes.
+        recorded = self.home.resolve() / ".claude" / "skills" / "alpha"
+        inst.save_manifest([{"tool": "claude", "name": "alpha", "target": str(recorded),
+                             "mode": "symlink", "source": str(self.mine)}], False)
+        code, out = self._install(mode="symlink")
+        self.assertEqual(code, 0, out)
+        self.assertIn("relinked", out)
+        self.assertEqual(self.link.resolve(), (self.skills / "alpha").resolve())
+
+
+class IncludeDraftsTests(_FixtureKit):
+    """feat-0079: `--include-drafts` places drafts and their closure, and names them."""
+
+    def setUp(self):
+        super().setUp()
+        _meta_skill(self.skills, "alpha", "does alpha things when asked")
+        _meta_skill(self.skills, "beta", "does beta things when asked")
+        _meta_skill(self.skills, "grill", "a draft that composes beta", status="draft",
+                    invocation="user", refs=["beta"])
+        _meta_skill(self.skills, "retro", "a draft", status="draft")
+        _meta_skill(self.skills, "zen", "a user-invoked draft that composes grill",
+                    status="draft", invocation="user", refs=["grill"])
+
+    def test_drafts_are_withheld_without_the_flag(self):
+        code, _ = self._install(profile="core")
+        self.assertEqual(code, 0)
+        self.assertEqual(self._placed(), {"alpha"})
+
+    def test_the_flag_places_every_draft_and_its_closure(self):
+        code, out = self._install(profile="core", include_drafts=True)
+        self.assertEqual(code, 0, out)
+        # beta is in no profile seed; it arrives because the draft grill composes it.
+        self.assertEqual(self._placed(), {"alpha", "beta", "grill", "retro", "zen"})
+        self.assertIn("Placing 3 draft skill(s)", out)
+        for name in ("grill", "retro", "zen"):
+            self.assertRegex(out, rf"{name}  -> .*\(draft")
+
+    def test_a_shipped_skill_linking_a_draft_needs_the_flag(self):
+        _meta_skill(self.skills, "alpha", "does alpha things when asked", refs=["retro"])
+        code, out = self._install(profile="core")
+        self.assertEqual(code, 2)
+        self.assertIn("--include-drafts", out)
+        code, out = self._install(profile="core", include_drafts=True)
+        self.assertEqual(code, 0, out)
+        self.assertIn("retro", self._placed())
+
+    def test_the_cli_dry_run_lists_every_draft_in_the_real_tree(self):
+        # The acceptance criterion, against the real kit and a scratch home: whatever
+        # drafts the other workstreams add, a preview with the flag names each one.
+        (inst.SKILLS_DIR, inst.RULES_DIR) = (self._real[0], self._real[1])
+        drafts = [d.name for d in inst.discover_skills() if _marked_draft(d)]
+        code, out = self._main("--dry-run", "--include-drafts", "--tools", "claude")
+        self.assertEqual(code, 0, out)
+        for name in drafts:
+            self.assertRegex(out, rf"{re.escape(name)}  -> .*\(draft")
+        self.assertFalse(self.home.exists(), "a preview writes nothing")
+
+
+class NamedSkillsTests(_FixtureKit):
+    """feat-0079: `--skills a,b` places the named skills plus their closure."""
+
+    def setUp(self):
+        super().setUp()
+        _meta_skill(self.skills, "alpha", "does alpha things when asked", refs=["beta"])
+        _meta_skill(self.skills, "beta", "does beta things when asked", refs=["gamma"])
+        _meta_skill(self.skills, "gamma", "does gamma things when asked")
+        _meta_skill(self.skills, "delta", "does delta things when asked")
+        _meta_skill(self.skills, "draft-one", "a draft", status="draft", refs=["delta"])
+
+    def test_one_named_skill_places_it_and_its_closure_and_prints_the_closure(self):
+        code, out = self._main("--skills", "alpha", "--tools", "claude")
+        self.assertEqual(code, 0, out)
+        self.assertEqual(self._placed(), {"alpha", "beta", "gamma"})
+        self.assertIn("this run places 3: alpha, beta, gamma", out)
+
+    def test_a_skill_with_no_links_installs_alone(self):
+        self._main("--skills", "delta", "--tools", "claude")
+        self.assertEqual(self._placed(), {"delta"})
+
+    def test_an_unknown_name_places_nothing(self):
+        code, out = self._main("--skills", "alpha,nope", "--tools", "claude")
+        self.assertEqual(code, 2)
+        self.assertIn("no skill is named 'nope'", out)
+        self.assertEqual(self._placed(), set())
+
+    def test_a_named_draft_needs_the_flag(self):
+        code, out = self._main("--skills", "draft-one", "--tools", "claude")
+        self.assertEqual(code, 2)
+        self.assertIn("pass --include-drafts", out)
+        code, out = self._main("--skills", "draft-one", "--include-drafts",
+                               "--tools", "claude")
+        self.assertEqual(code, 0, out)
+        self.assertEqual(self._placed(), {"draft-one", "delta"})
+
+    def test_skills_and_profile_together_are_refused(self):
+        code, out = self._main("--skills", "alpha", "--profile", "all")
+        self.assertEqual(code, 2)
+        self.assertEqual(self._placed(), set())
+
+
+class InvocationRenderingTests(_FixtureKit):
+    """feat-0079: a user-invoked skill reaches Claude Code with the rendered key.
+
+    Only the `claude` target renders. Every combination of `status` and `invocation` is
+    placed, so a draft the other workstreams add with either field, both, or neither is
+    covered without depending on their files.
+    """
+
+    COMBOS = [(s, i) for s in (None, "draft", "shipped") for i in (None, "user", "model")]
+
+    def setUp(self):
+        super().setUp()
+        _meta_skill(self.skills, "alpha", "does alpha things when asked")
+        for status, invocation in self.COMBOS:
+            _meta_skill(self.skills, f"s-{status}-i-{invocation}", "a combination fixture",
+                        status=status, invocation=invocation)
+
+    def _skill_md(self, tool, name):
+        return (self.home / inst.TOOL_SUBPATHS[tool] / name / "SKILL.md").read_text(
+            encoding="utf-8")
+
+    def test_every_combination_renders_on_claude_only_and_only_when_user_invoked(self):
+        code, out = self._install(tools=("claude", "opencode"), include_drafts=True)
+        self.assertEqual(code, 0, out)
+        for status, invocation in self.COMBOS:
+            name = f"s-{status}-i-{invocation}"
+            with self.subTest(name=name):
+                source = (self.skills / name / "SKILL.md").read_text(encoding="utf-8")
+                self.assertEqual(self._skill_md("opencode", name), source)
+                claude = self._skill_md("claude", name)
+                if invocation == "user":
+                    self.assertIn("\ndisable-model-invocation: true\n---\n", claude)
+                    self.assertEqual(claude.replace("disable-model-invocation: true\n", ""),
+                                     source)
+                else:
+                    self.assertEqual(claude, source)
+
+    def test_check_is_clean_after_a_rendered_install_and_names_a_stale_copy(self):
+        self._install(include_drafts=True)
+        code, out = self._call(inst.check, self.home)
+        self.assertEqual(code, 0, out)
+        with open(self.skills / "s-None-i-user" / "SKILL.md", "a", encoding="utf-8") as f:
+            f.write("A new paragraph.\n")
+        code, out = self._call(inst.check, self.home)
+        self.assertEqual(code, 1)
+        self.assertRegex(out, r"diverged\s+claude\s+s-None-i-user")
+        self._install(include_drafts=True)
+        self.assertIn("A new paragraph.", self._skill_md("claude", "s-None-i-user"))
+        self.assertEqual(self._call(inst.check, self.home)[0], 0)
+
+    @unittest.skipUnless(SYMLINKS_WORK, "this platform or account cannot create symlinks")
+    def test_symlink_mode_copies_a_rendered_skill_and_links_the_rest(self):
+        self._install(tools=("claude", "opencode"), mode="symlink", include_drafts=True)
+        claude = self.home / ".claude" / "skills"
+        self.assertFalse((claude / "s-None-i-user").is_symlink())
+        self.assertTrue((claude / "s-None-i-model").is_symlink())
+        self.assertTrue((self.home / ".agents" / "skills" / "s-None-i-user").is_symlink())
+        code, out = self._call(inst.check, self.home)
+        self.assertEqual(code, 0, out)
+
+    @unittest.skipUnless(SYMLINKS_WORK, "this platform or account cannot create symlinks")
+    def test_a_linked_skill_that_becomes_user_invoked_is_reported(self):
+        self._install(mode="symlink", profile="core")
+        _meta_skill(self.skills, "alpha", "does alpha things when asked", invocation="user")
+        code, out = self._call(inst.check, self.home)
+        self.assertEqual(code, 1)
+        self.assertIn("needs a rendered copy", out)
+        code, out = self._install(mode="symlink", profile="core")
+        self.assertEqual(code, 0, out)
+        self.assertFalse((self.home / ".claude" / "skills" / "alpha").is_symlink())
+        self.assertEqual(self._call(inst.check, self.home)[0], 0)
+
+    def test_the_budget_line_names_what_claude_keeps_out_of_context(self):
+        _, out = self._install(include_drafts=True)
+        self.assertIn("3 user-invoked skill(s)", out)

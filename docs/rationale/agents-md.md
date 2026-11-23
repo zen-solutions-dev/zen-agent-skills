@@ -38,6 +38,11 @@ Which way that settles, reshaping the skill or rewording its declaration, is a c
 rather than to this file, and renaming its headings to clear the warning would be satisfying the
 validator instead of the rule.
 
+**Settled 2026-11-23 by `feat-0077`.** The 2026-11 overhaul decided the question the paragraph above
+left open: `test-quality` is a lens, so its body was reshaped into `Intent`, `Workflow` and `Output`
+around the same rubric, and the warning cleared because the skill changed, not its headings' names.
+No shipped skill trips the shape rule today.
+
 The paragraph that rule replaced in `AGENTS.md`, as it stood:
 
 **A skill's shape is declared in the skill and enforced by

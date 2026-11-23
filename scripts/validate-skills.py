@@ -10,7 +10,8 @@ parser can read. It also checks that inline relative links resolve
 on disk, that `../<name>/SKILL.md` references point at a skill that actually
 exists, that every self-declared lens under `.agents/rules/` is referenced by at
 least one skill, that a skill declaring itself a lens is not built as a
-workflow, and warns when a skill asserts both draft and shipped status. Since the
+workflow, that `metadata.invocation` is `user` or `model` when present (feat-0079),
+and warns when a skill asserts both draft and shipped status. Since the
 2026-10 kit refresh it also checks what the rules module costs every session: a lens
 must carry `paths` frontmatter so Claude Code loads it on demand, and the rules files
 without it (the always-loaded core) stay under `ALWAYS_LOADED_MAX_LINES`. It flags an
@@ -57,6 +58,7 @@ _TEXTIO_ROOT = Path(__file__).resolve().parent.parent
 if str(_TEXTIO_ROOT) not in sys.path:
     sys.path.insert(0, str(_TEXTIO_ROOT))
 from scripts._textio import NotUTF8, read_text_utf8   # noqa: E402
+from scripts._skillmeta import INVOCATION_VALUES, RENDERED_KEY, metadata_fields   # noqa: E402
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 SKILLS_DIR = REPO_ROOT / ".agents" / "skills"
@@ -175,7 +177,7 @@ LENS_DECLARATION_LINES = 10
 #
 # Deliberately far narrower than LENS_DECLARATION_RE above, which matches the bare word. That
 # pattern is safe only because a rules directory holds nothing but lenses and a README; a
-# skill body is full of the word. `house-review`, `review-depth`, `spec-author`,
+# skill body is full of the word. `house-review`, the former `review-depth`, `spec-author`,
 # `test-author`, `verifier-agent` and `fix-batch` all name the lens they compose, and a
 # bare-word pattern would conscript every one of them. What separates a declaration from a
 # mention is the copula: a body saying it *is* a lens is classifying itself, and a body
@@ -941,7 +943,8 @@ def check_declared_shape(text: str, rel: str, warnings: list) -> None:
     error that one skill would fail the tree on landing, and the resolution is a decision
     about the skill rather than about this script. `check_status_contradiction` below is the
     prior art for the severity as well as for the shape: a body-content rule reported over
-    parsed text.
+    parsed text. `feat-0077` settled that decision on 2026-11-23 by reshaping `test-quality`
+    as a lens, so no shipped skill trips this today; it stays a warning for the next one.
     """
     if not declares_lens_shape(text):
         return
@@ -955,6 +958,26 @@ def check_declared_shape(text: str, rel: str, warnings: list) -> None:
         f"procedure. Renaming headings to clear this is not the fix: either the body is the "
         f"wrong shape or the declaration is, and which one is a decision about the skill."
     )
+
+
+def check_invocation(text: str, fm: dict, rel: str, errors: list) -> None:
+    """`metadata.invocation` must be `user` or `model` (feat-0079).
+
+    The value decides whether a Claude Code copy is rendered with
+    `disable-model-invocation: true`, and every reader treats a value it does not know
+    as model-invoked. So a typo would ship silently as the opposite of what was meant,
+    costing description budget on every session; failing it here is the only place it
+    can be caught. The rendered key itself is legal for Claude Code and rejected by
+    claude.ai, so a source that writes it is told where the declaration belongs.
+    """
+    value = metadata_fields(text).get("invocation")
+    if value is not None and value not in INVOCATION_VALUES:
+        errors.append(f"{rel}/SKILL.md: metadata.invocation is {value!r}; it must be one of "
+                      f"{', '.join(INVOCATION_VALUES)}")
+    if RENDERED_KEY in fm:
+        errors.append(f"{rel}/SKILL.md: {RENDERED_KEY!r} belongs only in a copy rendered for "
+                      f"Claude Code; declare `invocation: user` under `metadata` instead, and "
+                      f"the install paths render it")
 
 
 def check_status_contradiction(text: str, rel: str, warnings: list) -> None:
@@ -1050,6 +1073,7 @@ def main(skills_dir: Path = SKILLS_DIR) -> int:
         check_folded_hyphen_break(text, rel, errors)
         check_declared_shape(text, rel, warnings)
         check_status_contradiction(text, rel, warnings)
+        check_invocation(text, fm, rel, errors)
 
     # Checked once over the whole tree rather than per skill: "no skill references this
     # lens" is a fact about every skill together, and it is the one rule here that reads

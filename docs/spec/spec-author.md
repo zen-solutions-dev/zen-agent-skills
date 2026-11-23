@@ -23,6 +23,8 @@ has a lens but no author.
    constraints, scenarios, proposed surface, and open questions.
 2. Compose the `spec-quality` lens so the returned draft has a `spec-quality` verdict of `ready`.
 3. Represent an explicit human approval state that downstream decomposition can gate on.
+4. Align with the person before drafting: settle every decision the contract depends on through a
+   structured interview, so the draft records decisions the person made rather than assumptions.
 
 ## Non-Goals
 
@@ -37,6 +39,8 @@ has a lens but no author.
   than imposing a second one. `docs/spec/<slug>.md` is the documented fallback, used only when the
   repository has no spec location of its own.
 - The skill composes `spec-quality` rather than restating its rules inline.
+- The interview follows the `grill` skill's mechanism and is composed from it rather than designed
+  anew; when `grill` is not installed, the skill runs the same mechanism inline.
 - Specification work is read-only for implementation surfaces: a run creates or edits only the spec
   file, never implementation source.
 - Frontmatter carries a `status` field whose value is one of `draft` or `approved`. `approved` is
@@ -74,12 +78,10 @@ has a lens but no author.
 - **Then** the only file created or modified is the spec in the repository's spec location, and no
   implementation source file is written.
 
-### Scenario S-005: vague idea triggers one clarifying question
+### Scenario S-005: retired
 
-- **Given** an idea too vague to yield an observable contract (no discernible behavior change)
-- **When** spec-author runs
-- **Then** it asks the user exactly one clarifying question and writes no file until the answer
-  arrives.
+Retired on 2026-11-23 by `feat-0076` and superseded by `S-008`. It specified exactly one clarifying
+question, only for an idea too vague to yield a contract. The id is kept so it is never reused.
 
 ### Scenario S-006: the spec goes where the repository already keeps specs
 
@@ -93,6 +95,22 @@ has a lens but no author.
 - **When** spec-author writes the spec
 - **Then** it writes the spec to `docs/spec/<slug>.md`.
 
+### Scenario S-008: the interview settles decisions before any file is written
+
+- **Given** a source request that leaves at least one decision open which the contract depends on
+- **When** spec-author runs
+- **Then** before writing any file it asks the person numbered questions in rounds, each question
+  carrying a recommended answer worded so that "yes" accepts it, and it writes the spec only after
+  no open decision remains and the person has confirmed the shared understanding.
+
+### Scenario S-009: facts are looked up, not asked
+
+- **Given** an open point the repository can answer (what the code does, which files exist, what a
+  command prints)
+- **When** spec-author interviews the person
+- **Then** no question put to the person asks for that fact, and the fact is recorded with where it
+  was found.
+
 ## Proposed Surface
 
 | Element | Detail |
@@ -100,7 +118,8 @@ has a lens but no author.
 | Output file | `<slug>.md`, Markdown with YAML frontmatter, written to the repository's existing spec location; `docs/spec/<slug>.md` when the repository has none |
 | Frontmatter `status` | `draft` (author-set) or `approved` (human-set only) |
 | Body sections | Problem, Goals, Non-Goals, Constraints, Scenarios, Proposed Surface, Open Questions |
-| Scenario ids | stable `S-NNN`, never renumbered |
+| Scenario ids | stable `S-NNN`, never renumbered; a retired id stays in place, marked retired |
+| Interview round | numbered questions, each with a recommended answer worded so "yes" accepts it; ends when no open decision remains and the person confirms |
 
 ## Open Questions
 
@@ -116,3 +135,11 @@ closes the single divergence recorded in
 than the skill having erred: this spec was written for this repository before `spec-author` was
 generalised to run in repositories that already keep specs somewhere of their own. The amendment
 decided nothing new, and it needs a maintainer's re-approval.
+
+Amended on 2026-11-23 by `feat-0076` and re-checked to `ready` with the `spec-quality` lens: Goal 4
+and a Constraint make the skill interview the person before drafting, by composing `grill`;
+`S-005` (exactly one clarifying question) is retired and superseded by `S-008` (rounds of numbered
+questions with recommendations until no decision is open and the person confirms) and `S-009`
+(facts are looked up, never asked); the Proposed Surface gains an interview-round row and states
+how a retired id is kept. No id was renumbered or reused. `status` is deliberately left `approved`:
+**this amendment changes behavior and is pending the maintainer's re-approval.**
