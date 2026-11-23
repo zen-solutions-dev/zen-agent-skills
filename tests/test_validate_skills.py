@@ -1397,7 +1397,10 @@ class TestSupportingFileLinkChecks(unittest.TestCase):
         # feat-0077 added four: `tdd/references/examples.md`, `fix-batch/references/
         # claude-code.md`, `reconcile-worktrees/references/lessons.md` and
         # `systematic-debugging/references/red-flags.md`.
-        self.assertEqual(counts, {"markdown": 10, "template": 8, "other": 8})
+        # feat-0078 added four: `house-review/references/rationale.md`,
+        # `doc-sync/references/notes.md`, and `improve-architecture/references/vocabulary.md`
+        # and `report.md`.
+        self.assertEqual(counts, {"markdown": 14, "template": 8, "other": 8})
 
     def test_a_byte_cache_is_not_counted_as_a_supporting_file(self):
         # The count has to be a fact about the kit and not about whether the tests have

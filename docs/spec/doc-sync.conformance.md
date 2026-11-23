@@ -15,6 +15,11 @@ At fifteen scenarios this is the largest contract in the repository, and the one
 apply-path machinery, which is also the machinery that can damage a file. The rows about what
 `doc-sync` refuses to edit are the ones worth reading closely.
 
+**Citations re-checked 2026-11-23 (`feat-0078`)** after `doc-sync` was slimmed: its reasons and notes
+moved to [`references/notes.md`](../../.agents/skills/doc-sync/references/notes.md), and every
+clause this matrix quotes was kept in the skill body word for word. No behaviour changed and no row's
+status moved, so the audit was not re-run; only the citations were resolved again.
+
 ## What this audit can and cannot establish
 
 `doc-sync` is a prose skill, so evidence is a clause rather than a code path, and this establishes
