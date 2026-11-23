@@ -104,7 +104,7 @@ Where you draw the line between them is your call; the point is that the light p
 Requires Python 3.11 or newer. The floor and the newest release are both exercised by CI on Linux, macOS, and Windows; the kit does not claim a version it does not test.
 
 ```bash
-git clone https://github.com/hams-ollo/zen-agent-skills.git
+git clone https://github.com/zen-solutions-dev/zen-agent-skills.git
 cd zen-agent-skills
 ```
 

@@ -44,6 +44,7 @@ When the user is starting a fresh repository and wants the baseline set, produce
 - Name sources and authorities directly; no "studies show" or anonymous claims.
 - No em-dashes; use commas, colons, or parentheses (the kit's swappable [`.agents/rules/house-style.md`](../../rules/house-style.md) is the source of these writing conventions).
 - Write the file to the sensible location (repo root for README, a `docs/` folder for the rest) and tell the user where it landed.
+- When an agent is the reader (a `SKILL.md`, an `AGENTS.md` or `CLAUDE.md`, a reference file behind a link), also apply the writing-for-agents lens (in this kit, [`.agents/rules/writing-for-agents.md`](../../rules/writing-for-agents.md)).
 
 **What you may do with what you read** follows the repo's autonomy module (in this kit,
 [`.agents/rules/autonomy.md`](../../rules/autonomy.md)). `A10` applies to every run here, attended

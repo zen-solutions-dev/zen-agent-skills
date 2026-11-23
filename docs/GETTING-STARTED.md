@@ -106,7 +106,7 @@ You can replace `my-project` with the name of your project.
 Keep the kit in its own folder. It can then be reused across multiple projects.
 
 ```bash
-git clone https://github.com/hams-ollo/zen-agent-skills.git
+git clone https://github.com/zen-solutions-dev/zen-agent-skills.git
 cd zen-agent-skills
 ```
 
@@ -151,7 +151,7 @@ python scripts/install.py --profile all
 There is a popular installer called `npx skills` that works across many more assistants, and this kit works with it:
 
 ```bash
-npx skills add hams-ollo/zen-agent-skills
+npx skills add zen-solutions-dev/zen-agent-skills
 ```
 
 One thing to know before you choose it. Several skills in this kit are written to read a separate shared file for their standards, for example the checklist `house-review` uses to review code. That installer copies only the skill itself and not the shared file, so those skills arrive with the pointer but not the thing it points at. Nothing errors; the skill just quietly has less to work with.

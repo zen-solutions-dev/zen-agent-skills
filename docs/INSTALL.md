@@ -19,7 +19,7 @@ On systems where Python is exposed as `python3`, use `python3` in the commands b
 ## Get the kit
 
 ```bash
-git clone https://github.com/hams-ollo/zen-agent-skills.git
+git clone https://github.com/zen-solutions-dev/zen-agent-skills.git
 cd zen-agent-skills
 ```
 
@@ -148,7 +148,7 @@ To back out: remove the block from your settings to deactivate, and `--uninstall
 The kit is discoverable by [`npx skills`](https://github.com/vercel-labs/skills), the cross-agent installer indexed at skills.sh, with no manifest and no configuration: `.agents/skills/` is one of the layouts it walks.
 
 ```bash
-npx skills add hams-ollo/zen-agent-skills
+npx skills add zen-solutions-dev/zen-agent-skills
 ```
 
 **It installs the skill bodies and nothing else, which matters here.** Every skill in this kit composes a lens from [`.agents/rules/`](../.agents/rules/) through a relative reference, and that installer copies only each skill's `SKILL.md`, so those references resolve to nothing. Most skills lose the house-style module; `house-review` loses its entire rubric and severity scheme, because they live in the lens rather than in the skill. Verified against this repository on 2026-07-28.

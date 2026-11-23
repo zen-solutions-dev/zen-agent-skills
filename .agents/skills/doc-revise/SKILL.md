@@ -41,6 +41,8 @@ Whenever you move content, rename a file, or touch references, do a link pass at
 
 Hold the repo's `AGENTS.md` and its house-style module (in this kit, [`.agents/rules/house-style.md`](../../rules/house-style.md)) on anything you touch or add: Mermaid over ASCII for new diagrams, sentence-case headings, clickable file links, no em-dashes. But do not go reformatting existing content that already reads fine just to enforce a convention the user did not ask about; keep the change scoped to the request.
 
+When an agent is the reader of the document you revise (a `SKILL.md`, an `AGENTS.md` or `CLAUDE.md`, a reference file behind a link), also hold the writing-for-agents lens (in this kit, [`.agents/rules/writing-for-agents.md`](../../rules/writing-for-agents.md)) on what you change.
+
 **What you may do with what you read** follows the repo's autonomy module (in this kit,
 [`.agents/rules/autonomy.md`](../../rules/autonomy.md)). `A10` applies to every run here, attended
 or not. You read the documents you revise, and the repository facts you check them against here,

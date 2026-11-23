@@ -64,6 +64,37 @@ _spec = importlib.util.spec_from_file_location("check_provenance", MODULE_PATH)
 cp = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(cp)
 
+def independent_tally(root):
+    """Count the repository's records without the parser: (records, files).
+
+    The two repository tests below used to pin a literal count, which moved every time
+    material was folded in (`feat-0061` moved it from 8 to 9). The 2026-11 overhaul folds
+    in several upstream files from parallel sessions at once, and a literal edited by each
+    of them is a merge conflict that carries no information. This tally is the oracle
+    instead: one record per ```provenance fence opener in a markdown file under `.agents`,
+    and one per `source: https://` line in a hook's module docstring, read with nothing
+    but a regular expression. A parser grammar widened until it collects unrelated
+    `source:` lines, or narrowed until a real block drops out, disagrees with it, which is
+    the whole question the pinned count was asking (chore-0095).
+    """
+    records, files = 0, set()
+    for path in sorted((Path(root) / ".agents").rglob("*")):
+        if not path.is_file():
+            continue
+        text = path.read_text(encoding="utf-8", errors="replace")
+        suffix = path.suffix.lower()
+        if suffix == ".md":
+            count = len(re.findall(r"^```provenance[ \t]*$", text, re.M))
+        elif suffix == ".py" and path.parent.name == "hooks":
+            count = len(re.findall(r"^\s*source:\s*https://", text, re.M))
+        else:
+            count = 0
+        if count:
+            records += count
+            files.add(path.relative_to(root).as_posix())
+    return records, len(files)
+
+
 UPSTREAM = b"# upstream content\nthe bytes we adapted from\n"
 UPSTREAM_SHA = hashlib.sha256(UPSTREAM).hexdigest()
 URL = "https://raw.githubusercontent.com/moonray/repoprompt-workflows/main/.agents/skills/x/SKILL.md"
@@ -440,10 +471,10 @@ class HttpsOnlySourceTest(unittest.TestCase):
     def test_every_source_recorded_in_this_repository_is_https(self):
         # The real records, not fixtures. All eight were https:// before this tightening,
         # so it breaks nothing; this is the test that says so rather than a claim in a
-        # commit message that nobody can re-run. Nine since `feat-0061` folded in the
-        # `systematic-debugging` skill from an upstream library.
+        # commit message that nobody can re-run. The count is the independent tally's, so
+        # a fold-in moves it without an edit here (chore-0095).
         found, _ = cp.collect(REPO_ROOT)
-        self.assertEqual(len(found), 9)
+        self.assertEqual(len(found), independent_tally(REPO_ROOT)[0])
         for rel, record in found:
             with self.subTest(path=rel, line=record["line"]):
                 self.assertTrue(
@@ -1244,21 +1275,24 @@ class RepositoryRecordsTest(unittest.TestCase):
         ):
             self.assertIn(expected, recorded)
 
-    def test_the_recorded_set_is_nine_records_across_eight_files(self):
-        # Pins the count in both directions. A grammar widened until it collects unrelated
+    def test_the_recorded_set_matches_an_independent_tally(self):
+        # Checks the count in both directions. A grammar widened until it collects unrelated
         # `source:` lines raises it; one narrowed until a real block drops out lowers it,
         # and the second failure is the silent one.
         #
-        # The count is deliberately a count and not a property, unlike the gate set in
-        # `cloud-executable.md` that `chore-0049` reworded: the whole question here is how
-        # many blocks the grammar collects, so a property would answer a different one.
-        # It moves whenever material is folded in, and `feat-0061` moved it from 8 across 7
-        # by adding `systematic-debugging`, whose upstream is Jesse Vincent's `superpowers`.
+        # The count is still a count and not a property: the whole question here is how
+        # many blocks the grammar collects. What changed is where the expected number comes
+        # from: `independent_tally` derives it with a regular expression rather than a
+        # literal, so folding in material no longer needs this file edited (chore-0095).
+        # The floor keeps the tally honest too: eleven records across nine files is what
+        # the repository held when the literal was retired, and nothing removes provenance.
         found, unreadable = cp.collect(REPO_ROOT)
-        self.assertEqual(len(found), 9)
-        self.assertEqual(len({rel for rel, _ in found}), 8)
+        records, files = independent_tally(REPO_ROOT)
+        self.assertGreaterEqual(records, 11)
+        self.assertEqual(len(found), records)
+        self.assertEqual(len({rel for rel, _ in found}), files)
         # And the count is a full one rather than a narrowed one: if any file in scope
-        # could not be read, 9 would be what survived rather than what is there.
+        # could not be read, the count would be what survived rather than what is there.
         self.assertEqual(unreadable, [])
 
     def test_no_record_in_this_repository_is_a_placement_without_a_source(self):
