@@ -198,3 +198,71 @@ Everything is MIT and has provenance, so this is not a licence problem. It does 
 | F12 | low | `.agents/skills/improve-architecture/SKILL.md:46` | The hot-spot pipeline is POSIX-only (`sort \| uniq -c \| head`), while the same skill allows for Windows at :76. | Give a portable form, or say it needs a POSIX shell. |
 | F13 | low | `.agents/skills/zen/SKILL.md` (full flow, :41; :79, :97 compared with :103-106) | The full flow lists "`grill`, then `spec-author`", which invites running the interview twice, since `spec-author` composes `grill`. Only two of the four user-invoked skills are said to be started by a person. | Write "`spec-author` (which runs `grill`)", and mark all four user-invoked skills the same way. |
 | F14 | nit | `.tasks/done/feat-0079-*.md:141-154`; `tests/test_install.py:815`; `fix-batch/references/incidents.md:107` | The closed task has its checkboxes unticked. A docstring calls `review-depth` a current draft. The incidents note credits Matt Pocock's ideas in prose without a provenance block. | Tick the boxes that hold, update the docstring, and decide whether idea-level credit needs a block. |
+
+## Re-verification, 2026-11-23
+
+Re-run on `zen/overhaul-2026-11` at `4723d95` ("feat-0080: answer the independent verification and close the integration") by the same verifier. The verifier wrote none of the fixes and changed nothing apart from this section.
+
+### Verdict
+
+```text
+verdict: pass
+blocking_reasons: []
+```
+
+- **Commands.** Every declared command succeeded.
+- **Criteria.** Every criterion of `feat-0080` is now met.
+- **Findings.** F1 through F4 and F7 through F14 are resolved. F5 and F6 are deferred honestly to `chore-0096`.
+- **Open caveat (F3).** The one remaining gap is outside the code. One of the six CI cells, macOS on Python 3.11, never ran, because GitHub could not acquire a runner for it. The other five passed, both Windows cells included.
+
+### Commands, rerun
+
+```text
+$ python3 scripts/run-checks.py ; echo EXIT=$?
+10 passed, 0 failed, 0 could not run.
+Ran on Linux, Python 3.13.18. CI runs 3 operating systems x 2 Python versions, so this is one of six cells: passing here is necessary but not sufficient.
+EXIT=0
+$ install.py --home <scratch> --tools claude --include-drafts        # exit 0; 27 of 29, 10 drafts
+$ ... --check                                                        # 5 current, 0 diverged, 23 linked, 0 revised upstream, 0 unknown, 0 error(s).
+$ ... --uninstall                                                    # Uninstalled 28 target(s).
+$ build-adapters.py --marketplace --check                            # The committed marketplace is current: 19 skill(s)
+$ CLAUDE_CONFIG_DIR=<scratch> claude plugin validate . --strict      # √ Validation passed
+$ check-provenance.py                                                # 36 up to date, 3 drifted, 0 unlocatable, 0 error(s).
+```
+
+- **Install.** All five user-invoked skills still render `disable-model-invocation: true` in the copy that is placed, and still have none in the source.
+- **Provenance.** The three drifts are the same pre-existing `moonray/repoprompt-workflows` blocks as before. The three new blocks in `improve-architecture/references/vocabulary.md` (:70, :79, :88) are up to date.
+- **Commit trailers.** `git log 99619f0..4723d95 --format=%B | grep -ci co-authored` gives `0`.
+
+**CI, run 45269597448 on `4723d95`:** the run concluded `failure` because one job was cancelled.
+
+| Cell | Python 3.11 | Python 3.14 |
+|---|---|---|
+| ubuntu-latest | success | success |
+| windows-latest | success | success |
+| macos-latest | **cancelled** | success |
+
+The macOS 3.11 job's annotations read: "The job was not acquired by Runner of type hosted even after multiple attempts" and "Due to capacity constraints, jobs targeting macOS arm64 runners may experience longer queue times". The job has no steps and no log. It was never run, so it neither passed nor failed. The verifier did not re-run it, because the run belongs to PR #98.
+
+### Each finding
+
+| # | Status | Evidence at `4723d95` |
+|---|---|---|
+| F1 | resolved | `fix-batch/SKILL.md` prompt item 6 now reads "pick the layer and oracle through the `[test-quality](../test-quality/SKILL.md)` lens". `test-quality`'s description claim holds again. |
+| F2 | resolved | `.tasks/done/feat-0080-*.md:86-87`: "10,209 characters over 18 skills before, 6,827 over 17 after, of which 6,080 is model-facing in Claude Code". `CHANGELOG.md:25` closes `feat-0080`. |
+| F3 | partly open | 5 of 6 cells passed, including both Windows cells, so `49f77ac` is now proven on Windows. macOS 3.11 never ran, as described above. Re-run that one job before PR #98 merges. |
+| F4 | resolved | The Check 6 script was rerun on `vocabulary.md`, `retro/SKILL.md`, `agent-handoff/SKILL.md` and `fix-batch/references/incidents.md`. `retro` has no match at all. The only matches left are single terms or clauses (the `Interface` table row, "locality: bugs concentrate in one module", the 10-word "the phase boundary. A phase is a chunk of work" against the upstream docs page), with no pair of consecutive sentences. `vocabulary.md` now carries its own three provenance blocks. |
+| F5 | deferred, honestly | `.tasks/chore-0096-*.md` names every step from F5. Its acceptance is checkable ("Every step heading ... is followed, before the next heading, by a line starting 'Done when'"). The reason it gives holds: a criterion written only to clear a finding is worse than none. |
+| F6 | deferred, honestly | `chore-0096` requires either moving reference material out of the long skills or recording the limit in the lens. A nit: its counts are one line stale, because `fix-batch` is now 252 and `house-review` 257 after F1, F8 and F10. |
+| F7 | resolved | `spec-author`'s fallback now ends "then write the decisions record (decisions, terms, facts found, still open) that `grill` would have written." |
+| F8 | resolved | `house-review/SKILL.md:187`: `signals: reviewable_lines=412 directories=3 risk_flags=[] blast_radius=[] documentation_only=false`. |
+| F9 | resolved | `tdd`, `fix-batch`, `agent-handoff`, `test-quality` and `systematic-debugging` now each read "follows `[core.md](../../rules/core.md) (full text: [autonomy.md](...))`". `fix-batch` still restates which A-rules map to its own steps, which is acceptable because it adds information rather than duplicating the rules. |
+| F10 | resolved | `fix-batch`: "a separate fresh agent at high effort that is told it is a leaf". |
+| F11 | resolved | `retro`: "It edits no file in the repository until the person approves ... the only command it runs before then is the repository's own check command, once, in step 1." |
+| F12 | resolved | `improve-architecture` says the pipeline needs a POSIX shell and gives a `python -c` equivalent. |
+| F13 | resolved | `zen`'s full flow is now "`spec-author` (which runs the `grill` interview first)". `retro` and `improve-architecture` now say "A person starts it", like `fix-batch` and `reconcile-worktrees`. |
+| F14 | resolved | `feat-0079` has 0 unticked boxes. The `tests/test_install.py` docstring records that `review-depth` was retired. `incidents.md` names its source (`docs/engineering/code-review.md`). The maintainer chose idea-level credit with no provenance block, which is consistent with `AGENTS.md`, because no text was adapted. |
+
+### What a pass means here
+
+The pass is a statement about the evidence that was gathered: the mechanical gates pass, the criteria are met, and the findings are dispositioned. It does not certify quality. That is the job of the maintainer's review of PR #98 and of the seven spec amendments still awaiting approval. It also does not cover the macOS 3.11 cell, which has not run.
