@@ -1392,7 +1392,9 @@ class TestSupportingFileLinkChecks(unittest.TestCase):
         # feat-0072 added `quest-tracker/references/authoring-guide.md`, read in place and so
         # link-checked, and two files that are not markdown: the template page
         # `quest-tracker/templates/quest-tracker.html` and `quest-tracker/scripts/tracker.py`.
-        self.assertEqual(counts, {"markdown": 3, "template": 8, "other": 8})
+        # feat-0076 added three read-in-place references: `new-task/references/why-these-rules.md`
+        # and the glossary and decision-record formats under `domain-language/references/`.
+        self.assertEqual(counts, {"markdown": 6, "template": 8, "other": 8})
 
     def test_a_byte_cache_is_not_counted_as_a_supporting_file(self):
         # The count has to be a fact about the kit and not about whether the tests have

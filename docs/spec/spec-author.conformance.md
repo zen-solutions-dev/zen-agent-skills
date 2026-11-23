@@ -1,16 +1,17 @@
 ---
 title: spec-author conformance
 spec: docs/spec/spec-author.md
-audited: 2026-08-05
-revised: 2026-08-05 (chore-0027, the two output-location rows, the new S-006 and S-007 rows, and the coverage proof; the audit itself was not re-run)
+audited: 2026-11-23
+revised: 2026-11-23 (feat-0076, re-audited in full against the rewritten skill body after the interview amendment; S-005 retired, S-008 and S-009 added)
 ---
 
 # spec-author conformance matrix
 
 Spec-vs-implementation audit of [`spec-author`](../../.agents/skills/spec-author/SKILL.md) against
-[`spec-author.md`](spec-author.md). Produced by `chore-0025`, which backfilled the four approved
-specs that shipped without a matrix. `spec-author` shipped as `feat-0017` on 2026-07-24 and had
-never been audited against its own contract.
+[`spec-author.md`](spec-author.md). First produced by `chore-0025`, revised by `chore-0027`, and
+re-audited in full by `feat-0076` on 2026-11-23, because that task rewrote the skill body and
+amended the contract in the same change. Every row below was re-derived against the rewritten body;
+none was carried forward unread.
 
 ## What this audit can and cannot establish
 
@@ -23,55 +24,57 @@ still be ignored by the agent running it. The same limit is recorded in
 One scenario, `S-003`, specifies behavior in a **different** skill. It is audited against
 [`new-task`](../../.agents/skills/new-task/SKILL.md), which is where the contract places it.
 
+**Audited by the agent that wrote the change.** `feat-0076` rewrote the skill, amended the spec, and
+produced this matrix, so per `A7` this verdict is that agent's, not an independent one.
+
 ## Matrix
 
 | Section | Item | Status | Evidence | Note |
 |---|---|---|---|---|
-| Scenarios | S-001 draft from a raw idea | Conformed | "The spec format" section (the seven sections in fixed order, `status: draft` in the template) and Procedure step 4 | the seven body sections match the contract exactly and in the contract's order; step 4 pins `status: draft` on write. The file *location* half of this scenario is covered by the two output-location rows below, which `chore-0027` closed by amending the contract |
-| Scenarios | S-002 self-check with spec-quality | Conformed | Procedure step 3 / "Repeat until the verdict is `ready`. The spec you return is the `ready` version, not the first draft" | the final sentence is what satisfies "the file it writes is the `ready` version", which is the part of S-002 a looser wording would miss |
-| Scenarios | S-003 approval gate before decomposition | Conformed | [`new-task`](../../.agents/skills/new-task/SKILL.md) / "Refuse an unapproved spec. If `status` is not `approved`, stop and say so" | audited in `new-task` because that is where the scenario places the behavior. Recorded here as a cross-skill dependency: a future edit to `new-task` can silently break `spec-author`'s contract, and nothing relates the two documents |
-| Scenarios | S-004 read-only for implementation surfaces | Conformed | Procedure step 4 / "The run creates or edits **only that spec file**: never an implementation source file, test, or config" | the skill additionally permits updating a spec-directory index (`README.md`). That is a widening of "only that spec file", but the index lives under the spec directory, so it stays inside the scenario's "only file ... is the spec in the repository's spec location" boundary. Called out because the widening is real and a stricter reading would call it a divergence. `chore-0027` re-worded this scenario's location clause and deliberately preserved the boundary's shape, so the reasoning here is unchanged |
-| Scenarios | S-005 vague idea triggers one clarifying question | Conformed | Procedure step 1 / "ask the user exactly one clarifying question that would unblock the contract, and write no file until the answer arrives" | both halves are explicit: the count (`exactly one`) and the write barrier |
-| Scenarios | S-006 the spec goes where the repository already keeps specs | Conformed | "Where the spec goes" / "Find the repository's spec location before writing, do not assume one ... Match what you find" | added by `chore-0027`, which is why it is `Conformed` on arrival: it states behavior the skill has instructed since it shipped, and which the contract previously contradicted. It exists because pinning the location in `S-001`'s Then made that scenario branch on repository state its Given never set up |
-| Scenarios | S-007 a repository with no spec directory gets the documented fallback | Conformed | "Where the spec goes" / "Only when a repository has none of these does `docs/spec/<slug>.md` apply, as this kit's default" | the other half of the location rule, split out by `chore-0027` so each scenario's Given establishes the case its Then asserts. Keeping the fallback as a second clause inside `S-006` reintroduced the same Given/Then mismatch, and dropping it outright would have left the documented default with no scenario exercising it |
-| Proposed Surface | Output file: existing spec location, `docs/spec/<slug>.md` as fallback | Conformed | "Where the spec goes" / "Find the repository's spec location before writing, do not assume one ... Only when a repository has none of these does `docs/spec/<slug>.md` apply, as this kit's default", against the amended Proposed Surface row | was **Diverged** when `chore-0025` ran this audit, against a contract that pinned `docs/spec/<slug>.md`. `chore-0027` amended the contract to state discovery with the documented fallback, which is what the skill has always instructed. The two sides now agree |
-| Proposed Surface | Frontmatter `status`: `draft` author-set, `approved` human-set only | Conformed | "The spec format" / "**This skill only ever writes `status: draft`.** `approved` is a state a human sets" | stated twice, in the format section and again in step 5 |
-| Proposed Surface | Body sections (seven, named) | Conformed | "The spec format" template | present, in order, with "add none others" pinning the set closed |
-| Proposed Surface | Scenario ids stable `S-NNN`, never renumbered | Conformed | "The spec format" / "never renumbered or reused", and Notes / "Stable scenario ids are what make that traceability work, so never renumber them" | |
+| Scenarios | S-001 draft from a raw idea | Conformed | "The spec format" section (seven sections in fixed order, `status: draft` in the template) and Procedure step 4 / "Write the `ready` spec to the location above as `<slug>.md` with `status: draft`" | the location half is covered by S-006 and S-007 |
+| Scenarios | S-002 self-check with spec-quality | Conformed | Procedure step 3 / "Done when its verdict is `ready`; the spec you write is that version, not the first draft" | the second clause is what satisfies "the file it writes is the `ready` version" |
+| Scenarios | S-003 approval gate before decomposition | Conformed | [`new-task`](../../.agents/skills/new-task/SKILL.md) / "Refuse an unapproved spec. If `status` is not `approved`, stop and say so" | audited in `new-task` because the scenario places the behavior there; `feat-0076` slimmed `new-task` and kept this clause verbatim. Still a cross-skill dependency nothing enforces |
+| Scenarios | S-004 read-only for implementation surfaces | Conformed | Procedure step 4 / "edits **only that spec file** (and the spec index, if the repository keeps one): never source code, tests, config, the glossary, or a decision record" | the index widening is unchanged and stays inside the spec location. `feat-0076` kept this scenario intact by design: settled terms are **offered** to `domain-language` as its own step (step 5) rather than written during this run, so composing the interview did not widen the write surface |
+| Scenarios | S-005 retired | Retired | none: the scenario was retired by the `feat-0076` amendment | its behavior (exactly one clarifying question) is superseded by S-008. The skill no longer instructs it, which is the intended direction |
+| Scenarios | S-006 the spec goes where the repository already keeps specs | Conformed | "Where the spec goes" / "Find the repository's spec location before writing" ... "Match it." | |
+| Scenarios | S-007 a repository with no spec directory gets the documented fallback | Conformed | "Where the spec goes" / "Only when the repository has none does `docs/spec/<slug>.md` apply, as this kit's default" | |
+| Scenarios | S-008 the interview settles decisions before any file is written | Conformed | Procedure step 1 / "interview the person over the decision tree until its frontier is empty and they confirm the shared understanding", the inline fallback "ask in numbered rounds over every decision whose prerequisites are settled, give a recommended answer per question worded so "yes" accepts it", and "Write no file until the interview has closed" | the numbered, recommended, yes-accepts form is instructed twice: inline here, and in [`grill`](../../.agents/skills/grill/SKILL.md) step 3, which this step composes. `grill` is a draft, named rather than linked (see the task's Decisions), so the inline sentence is what carries the behavior in an install that lacks it |
+| Scenarios | S-009 facts are looked up, not asked | Conformed | Procedure step 1 / "Facts come from the repository, not the person: look each one up and record it with where it was found" | `grill` states the same rule as "Never ask the person a fact. Find it." and records each fact with its source in the decisions record |
+| Proposed Surface | Output file: existing spec location, `docs/spec/<slug>.md` as fallback | Conformed | "Where the spec goes" | same clauses as S-006 and S-007 |
+| Proposed Surface | Frontmatter `status`: `draft` author-set, `approved` human-set only | Conformed | "The spec format" / "**This skill only ever writes `status: draft`.**" | restated in step 5 |
+| Proposed Surface | Body sections (seven, named) | Conformed | "The spec format" template / "these sections in this order, no others" | |
+| Proposed Surface | Scenario ids stable `S-NNN`, never renumbered; a retired id stays in place | Conformed | "The spec format" / "never renumbered or reused" | the retired-id half is a property of the spec document, and `spec-author.md` itself is the instance: S-005 keeps its heading, marked retired |
+| Proposed Surface | Interview round | Conformed | same clauses as S-008 | |
 | Goals | 1. Draft a persistent spec with all seven parts | Conformed | Procedure steps 2 and 4 | covered by S-001 |
-| Goals | 2. Compose `spec-quality` to reach a `ready` verdict | Conformed | Procedure step 3, and the skill preamble / "composes the `spec-quality` lens ... rather than restating its rules here" | the preamble's "point at the lens, not copying it" is what keeps the two from drifting |
-| Goals | 3. Represent an explicit human approval state | Conformed | "The spec format" `status` rule plus step 5's handoff | |
-| Constraints | Composes `spec-quality` rather than restating it | Conformed | skill preamble | |
+| Goals | 2. Compose `spec-quality` to reach a `ready` verdict | Conformed | Procedure step 3, and the preamble / "composes two others rather than restating them" | |
+| Goals | 3. Represent an explicit human approval state | Conformed | "The spec format" `status` rule and step 5 | |
+| Goals | 4. Align with the person before drafting | Conformed | Procedure step 1, "Align before drafting" | covered by S-008 and S-009 |
+| Constraints | Composes `spec-quality` rather than restating it | Conformed | the preamble | |
+| Constraints | The interview follows `grill`, with an inline fallback | Conformed | Procedure step 1 / "When `grill` is not installed, run its mechanism inline" | |
 | Constraints | Read-only for implementation surfaces | Conformed | Procedure step 4 | same evidence as S-004 |
 | Constraints | `status` is one of `draft` or `approved`; never self-approves | Conformed | "The spec format" | |
-| Constraints | Specs go to the repository's existing spec location, `docs/spec/<slug>.md` as fallback | Conformed | see the Proposed Surface row above | same clause, recorded once against each section it appears in so neither reads as unchecked. Amended and closed by `chore-0027` together with that row and `S-001` |
-| Non-Goals | Does not decompose into tasks | Conformed | step 5 / "Do not decompose it yourself", and "When not to use" | |
-| Non-Goals | Does not write code, tests, or architecture | Conformed | step 4, and step 2's "you have drifted into plan territory" guard | |
-| Open Questions | None | Conformed | spec states `None.` | nothing to reconcile |
+| Constraints | Specs go to the repository's existing spec location, `docs/spec/<slug>.md` as fallback | Conformed | "Where the spec goes" | recorded once per section it appears in |
+| Non-Goals | Does not decompose into tasks | Conformed | step 5 / "Do not decompose it, and do not treat your draft as approved" | |
+| Non-Goals | Does not write code, tests, or architecture | Conformed | step 4, and step 2's plan-material rule | |
+| Open Questions | None | Conformed | spec states `None.` | |
 
 ## Coverage proof
 
-**Audited** (21 items): scenarios S-001 through S-007, two more than the nineteen at the original
-audit because `chore-0027` added `S-006` and `S-007`; Proposed Surface rows for output file,
-frontmatter `status`, body sections, and scenario ids; Goals 1 to 3; the four Constraints; the two
-Non-Goals; and the Open Questions section.
+**Audited** (26 items): scenarios S-001 to S-009, of which S-005 is retired; five Proposed Surface
+rows; Goals 1 to 4; five Constraints; two Non-Goals; the Open Questions section.
 
-**Unreconciled** (0 items): none. Every audited item is `Conformed`.
+**Unreconciled** (0 items): none.
 
-**Reconciled since the audit** (1 item):
+**Retired** (1 item): S-005, retired by the `feat-0076` amendment and superseded by S-008.
 
-| Item | Disposition | Reasoning |
-|---|---|---|
-| Output location: `docs/spec/<slug>.md` (spec) vs. discover-then-default (implementation) | **closed by amending the contract** (`chore-0027`, 2026-08-05) | `chore-0025` recorded this as **accepted-with-reason**: the implementation is deliberately broader than the contract, and the contract was the narrower document because it was written for this repository before the skill was generalised for adopters. Section 5 of `AGENTS.md` requires a skill to work in a repository that is not this one, and a skill that writes `docs/spec/` into a project already using `specs/` produces exactly the second spec directory nobody reads, which the skill body calls out by name. That disposition accepted the code side and named the repair: amend the spec. `chore-0027` did so, changing the Constraints, the Proposed Surface output-file row, and scenarios `S-001` and `S-004`, adding `S-006` and `S-007` to state the location rule and its documented fallback as observable behavior, renumbering nothing, and changing no skill body. The amended spec is still `status: approved` and needs a maintainer's re-approval. |
+**Not-built**: none.
 
-**Not-built**: none. Every scenario and every surface element has evidence.
+## Note on the risks this matrix leaves open
 
-## Note on the risk this matrix leaves open
-
-With the output-location divergence closed, the `S-003` row is the more interesting long-term risk,
-even though it is `Conformed`. It is the only scenario in this spec whose behavior lives in another
-skill's body, so the two can drift with
-nothing failing: `new-task` could lose its refusal clause and `spec-author`'s contract would be
-quietly broken with no test, no validator, and no matrix row turning red until someone re-runs this
-audit by hand. That is the class of gap the hooks module (`feat-0038`, `feat-0039`) exists to close,
-and a spec-closeout gate does not reach it.
+- `S-003` still lives in another skill's body, so `new-task` could lose its refusal clause with no
+  test failing. Unchanged since `chore-0025`.
+- `S-008` and `S-009` are now carried by two bodies, `spec-author`'s inline fallback and `grill`.
+  When `grill` is promoted and `spec-author` links it, the inline sentence can shrink to a pointer,
+  and this matrix's evidence for both rows has to be re-derived then.
+- The amendment is pending the maintainer's re-approval; until then this matrix audits a contract
+  nobody has re-approved.
