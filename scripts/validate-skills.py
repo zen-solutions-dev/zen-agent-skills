@@ -943,7 +943,8 @@ def check_declared_shape(text: str, rel: str, warnings: list) -> None:
     error that one skill would fail the tree on landing, and the resolution is a decision
     about the skill rather than about this script. `check_status_contradiction` below is the
     prior art for the severity as well as for the shape: a body-content rule reported over
-    parsed text.
+    parsed text. `feat-0077` settled that decision on 2026-11-23 by reshaping `test-quality`
+    as a lens, so no shipped skill trips this today; it stays a warning for the next one.
     """
     if not declares_lens_shape(text):
         return
