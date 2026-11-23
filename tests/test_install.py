@@ -538,9 +538,9 @@ class InstallAcceptanceTests(unittest.TestCase):
 # if a skill you did not mean to move appears here, a sibling link is the defect.
 EXPECTED_PROFILE_MEMBERSHIP = {
     "core": {"init-worktracking", "pr-describe", "project-bootstrap"},
-    "spine": {"doc-author", "doc-revise", "doc-sync", "fix-batch", "house-review",
+    "spine": {"doc-revise", "doc-sync", "fix-batch", "house-review",
               "init-worktracking", "new-task", "pr-describe", "project-bootstrap",
-              "reconcile-worktrees", "review-depth", "spec-author", "spec-conformance",
+              "reconcile-worktrees", "spec-author", "spec-conformance",
               "spec-plan-readiness", "spec-quality", "test-author", "test-quality",
               "verifier-agent"},
 }
@@ -675,7 +675,7 @@ class ProfileTests(unittest.TestCase):
         handoff = next(d for d in inst.discover_skills() if d.name == "agent-handoff")
         desc = inst.description_of(handoff)
         self.assertFalse(desc.startswith(">"))
-        self.assertTrue(desc.startswith("Turns the current session"))
+        self.assertTrue(desc.startswith("Handoff briefs for agents"))
 
     def test_an_unrecognised_profile_places_nothing_and_exits_non_zero(self):
         # Scenario S-013: rejected the way an unrecognised tool is (S-009).

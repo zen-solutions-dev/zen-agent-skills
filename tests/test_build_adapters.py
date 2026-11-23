@@ -296,7 +296,7 @@ class TestEmittedTreeResolves(unittest.TestCase):
                 text = (self.out / rel).read_text(encoding="utf-8")
                 line = next(l for l in text.splitlines() if l.startswith("description:"))
                 self.assertNotIn(">-", line)
-                self.assertTrue(line.startswith('description: "Turns the current session'), line)
+                self.assertTrue(line.startswith('description: "Handoff briefs for agents'), line)
 
     def test_each_adapter_carries_its_harness_frontmatter_and_the_banner(self):
         # Scenario S-002.
@@ -591,7 +591,11 @@ class TestPluginTarget(unittest.TestCase):
                     broken.append(f"{f.parent.name} -> {target}")
                 elif not resolved.resolve().is_relative_to(root):
                     escaped.append(f"{f.parent.name} -> {target}")
-        self.assertGreater(checked, 100, "expected the real kit's link volume")
+        # A floor that proves the walk read the real kit rather than an empty tree, not a
+        # count to track. Lowered from 100 by feat-0079: the plugin tree now withholds
+        # drafts, and the 2026-11 slimming turned neighbour links into backticks, which
+        # left 96. The tree must still hold every link the shipped skills make.
+        self.assertGreater(checked, 50, "expected the real kit's link volume")
         self.assertEqual(broken, [], f"{len(broken)} dangling link(s): {broken[:5]}")
         self.assertEqual(escaped, [], f"{len(escaped)} link(s) leaving the plugin: {escaped[:5]}")
 

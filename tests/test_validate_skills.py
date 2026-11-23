@@ -1189,14 +1189,14 @@ class TestDeclaredBodyShape(unittest.TestCase):
                          "the set of self-declared lenses changed; state it in the task "
                          "that changes it rather than letting the taxonomy drift")
 
-    def test_the_shipped_tree_reports_exactly_the_one_known_disagreement(self):
-        # The number the closeout states, asserted rather than described. One of the three
-        # declared lenses disagrees with the shape, and it stays a warning, so a green
-        # acceptance run is still a green run.
+    def test_the_shipped_tree_reports_no_shape_disagreement(self):
+        # The number the closeout states, asserted rather than described. Until feat-0077 one
+        # declared lens, `test-quality`, disagreed with the shape and stood as a warning;
+        # feat-0077 decided it is a lens and gave it `Intent`, `Workflow` and `Output`. Zero is
+        # now the pin, so a lens that drifts back into a workflow's shape fails here.
         code, out = _run(REPO_ROOT / ".agents" / "skills")
         self.assertEqual(code, 0, out)
-        self.assertEqual(out.count(self.FINDING), 1, out)
-        self.assertIn(f".agents/skills/test-quality/SKILL.md: {self.FINDING}", out)
+        self.assertEqual(out.count(self.FINDING), 0, out)
 
 
 class TestSupportingFileLinkChecks(unittest.TestCase):
@@ -1392,7 +1392,15 @@ class TestSupportingFileLinkChecks(unittest.TestCase):
         # feat-0072 added `quest-tracker/references/authoring-guide.md`, read in place and so
         # link-checked, and two files that are not markdown: the template page
         # `quest-tracker/templates/quest-tracker.html` and `quest-tracker/scripts/tracker.py`.
-        self.assertEqual(counts, {"markdown": 3, "template": 8, "other": 8})
+        # feat-0076 added three read-in-place references: `new-task/references/why-these-rules.md`
+        # and the glossary and decision-record formats under `domain-language/references/`.
+        # feat-0077 added four: `tdd/references/examples.md`, `fix-batch/references/
+        # claude-code.md`, `reconcile-worktrees/references/lessons.md` and
+        # `systematic-debugging/references/red-flags.md`.
+        # feat-0078 added four: `house-review/references/rationale.md`,
+        # `doc-sync/references/notes.md`, and `improve-architecture/references/vocabulary.md`
+        # and `report.md`.
+        self.assertEqual(counts, {"markdown": 14, "template": 8, "other": 8})
 
     def test_a_byte_cache_is_not_counted_as_a_supporting_file(self):
         # The count has to be a fact about the kit and not about whether the tests have

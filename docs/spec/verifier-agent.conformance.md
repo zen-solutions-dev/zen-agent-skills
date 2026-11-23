@@ -1,7 +1,7 @@
 ---
 title: verifier-agent conformance
 spec: docs/spec/verifier-agent.md
-audited: 2026-07-27
+audited: 2026-11-23
 ---
 
 # verifier-agent conformance matrix
@@ -70,3 +70,10 @@ Epic A item 8 branches, one is now exercised on real work
 ([`house-review.verification.md`](house-review.verification.md)) and two remain. Until those run, the
 strongest claim available for this skill is that its instructions match its contract and one of its
 three hardest paths has been observed behaving correctly once.
+
+**Re-audited on 2026-11-23 after `feat-0077` slimmed the skill.** Every quoted clause in the matrix
+above was re-checked against the rewritten body and still appears in it, in the step the row names;
+`scripts/check-citations.py` reports none unresolved. The rewrite added the fresh-context, leaf and
+high-effort dispatch guidance, which no scenario covers, so it adds no row; see the amendment note in
+[`verifier-agent.md`](verifier-agent.md).
+

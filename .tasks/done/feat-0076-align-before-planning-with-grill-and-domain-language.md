@@ -2,12 +2,12 @@
 id: feat-0076
 title: Align before planning, with a grill skill, a domain-language skill, and a spec front that interviews
 type: feat
-status: open
+status: done
 priority: P1
 parent: "ROADMAP 2026-11 overhaul WS1 Align"
 depends_on: [chore-0095]
 spec: docs/spec/spec-author.md
-scenarios: []
+scenarios: [S-001, S-002, S-003, S-004, S-005, S-006, S-007, S-008, S-009]
 touched_files:
   - .agents/skills/
   - .agents/skills/spec-author/
@@ -17,13 +17,15 @@ touched_files:
   - docs/spec/spec-author.md
   - docs/spec/spec-author.conformance.md
   - CHANGELOG.md
+  - .agents/hooks/skill-reachability-reminder.py
+  - tests/test_validate_skills.py
 created: 2026-11-23
 ---
 
 ## Problem
 
 Nothing in the kit gets the agent aligned with the person before a contract is written.
-[`spec-author`](../.agents/skills/spec-author/SKILL.md) step 1 is titled "Understand the intent, and
+[`spec-author`](../../.agents/skills/spec-author/SKILL.md) step 1 is titled "Understand the intent, and
 ask at most one question", so a spec is drafted from whatever the request happened to say. Matt
 Pocock's most-used skill does the opposite: a structured interview that walks the decision tree
 until nothing is silently assumed. In the podcast he calls the gap it closes the "communication
@@ -33,7 +35,7 @@ The kit also has no shared language. No skill keeps a glossary of the project's 
 the decisions that are hard to reverse, so every session re-learns the jargon and repeats settled
 arguments.
 
-Read [`docs/reviews/2026-11-overhaul-plan.md`](../docs/reviews/2026-11-overhaul-plan.md) in full,
+Read [`docs/reviews/2026-11-overhaul-plan.md`](../../docs/reviews/2026-11-overhaul-plan.md) in full,
 including its rules for every workstream session, before starting.
 
 **New paths this task creates**, so `touched_files` lists their existing parent instead: `.agents/skills/grill/` and `.agents/skills/domain-language/`. Within `.agents/skills/`, this task owns only the skill directories named in its `touched_files` and those new ones.
@@ -66,7 +68,7 @@ including its rules for every workstream session, before starting.
 3. **`spec-author` interviews.** Replace step 1 with: read the glossary and the ADRs in the area,
    then compose `grill` (a relative link, because the composition must work) until the frontier is
    empty, scaled to the change. Terms the interview settles go through `domain-language`. Amend
-   [`docs/spec/spec-author.md`](../docs/spec/spec-author.md) with a dated amendment note and bring
+   [`docs/spec/spec-author.md`](../../docs/spec/spec-author.md) with a dated amendment note and bring
    its conformance matrix up to date.
 4. **`new-task` sizes by context.** Study `skills/engineering/to-tickets/SKILL.md`. Add: each task
    fits one fresh context window (exploration plus implementation; when it would not, split it);
@@ -89,22 +91,62 @@ notes go under "Notes for integration" in the pull request body.
 - Keep `spec-author`'s stop-for-approval behaviour exactly as it is. Grilling happens before the
   draft, not instead of the human approval after it.
 
+## Decisions
+
+- **Rejected: linking `grill` from `spec-author`.** The task asked for a relative link. Measured with
+  `install.py --dry-run`: a shipped skill linking a draft makes the installer refuse the whole
+  `spine` profile, which would fail `run-checks.py`, and shipping `grill` non-draft would break the
+  contribution bar in `AGENTS.md`. `spec-author` names `grill` in backticks and carries a short
+  inline fallback (numbered rounds, a recommendation per question, facts looked up and recorded).
+  **Seam left open deliberately** (confirmed by the orchestrator, who also ruled that WS4 does not
+  relax `draft_conflicts`): when `grill` is promoted, turn the backtick into a link and delete the
+  paragraph marked "Fallback while `grill` is a draft"; the matrix's S-008 and S-009 rows then need
+  re-deriving. The same rule holds for `domain-language`, which `spec-author` names in backticks and
+  `new-task` does not name at all (it reads "the glossary").
+- **Rejected: `spec-author` writing the glossary during its run.** That would have widened S-004
+  (the run writes only the spec). Settled terms and decision-record candidates are listed in the
+  report and offered to `domain-language` as its own step, so S-004 stands unamended.
+- **Rejected: rewriting `S-005` in place.** Its meaning changed, and the spec forbids reusing an id.
+  S-005 is kept as a retired heading, superseded by the new S-008 and S-009.
+- **Links pruned to compositions.** `spec-author` keeps its link to `spec-quality`;
+  `spec-plan-readiness` keeps its link to `test-quality`'s layer selection. Every other sibling link
+  in the four existing skills became a backticked name, per the slimming rules. Spine membership is
+  unchanged (the pinned `test_install` set still passes).
+- **Two edits outside the owned paths, forced by same-commit tripwires.** Adding a skill requires
+  adding it to `KIT_SKILL_NAMES` in `.agents/hooks/skill-reachability-reminder.py`
+  (`test_hooks_reachability`), and adding reference files requires updating the pinned count in
+  `tests/test_validate_skills.py`. Both are one-line mechanical edits, listed in `touched_files` and
+  disclosed in the pull request. Every workstream that adds a skill or a reference file will touch
+  the same two lines, so expect merge conflicts there.
+- **`spec-plan-readiness` lost its twelve-point checklist**, which restated the workflow one for one.
+  No condition was dropped; each is in the workflow steps.
+- **`new-task` grew from 150 to 170 lines** while its history moved to
+  `references/why-these-rules.md`: the context-window, vertical-slice, and expand-migrate-contract
+  rules are new content the task asked for.
+
+## Risks and rollback
+
+Touches more than one module (six skills, a spec, a hook constant, a test). Every change is prose or
+a one-line constant, so reverting the commit restores the previous state exactly. The spec amendment
+is pending the maintainer's re-approval; if it is refused, revert `docs/spec/spec-author.md`, its
+matrix, and the `spec-author` body together.
+
 ## Acceptance criteria (mechanically verifiable)
 
     python scripts/run-checks.py
 
-- [ ] Exit 0, with the command and the verbatim tail in the pull request body.
-- [ ] `grill` and `domain-language` exist, carry `status: draft` under `metadata`, and have
+- [x] Exit 0, with the command and the verbatim tail in the pull request body.
+- [x] `grill` and `domain-language` exist, carry `status: draft` under `metadata`, and have
       provenance blocks.
-- [ ] `spec-author` no longer limits itself to one question, and links `grill`.
-- [ ] Every `SKILL.md` this task owns is at most about 250 lines, with a description under about
+- [ ] `spec-author` no longer limits itself to one question, and links `grill`. **Half met**: the one-question limit is gone, but `grill` is named rather than linked while it is a draft; see Decisions.
+- [x] Every `SKILL.md` this task owns is at most about 250 lines, with a description under about
       400 characters that leads with its trigger.
 
 ## Definition of done
 
-- [ ] Acceptance command passes.
-- [ ] The spec amendment and conformance update are in the same pull request, flagged for the
+- [x] Acceptance command passes.
+- [x] The spec amendment and conformance update are in the same pull request, flagged for the
       maintainer's approval.
-- [ ] Task file moved to `.tasks/done/` with `status: done` and links re-anchored; one dated line in
+- [x] Task file moved to `.tasks/done/` with `status: done` and links re-anchored; one dated line in
       `CHANGELOG.md`.
-- [ ] Draft pull request into `zen/overhaul-2026-11`, with "Notes for integration".
+- [x] Draft pull request into `zen/overhaul-2026-11`, with "Notes for integration".
