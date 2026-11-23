@@ -1,7 +1,7 @@
 ---
 title: systematic-debugging conformance
 spec: docs/spec/systematic-debugging.md
-audited: 2026-08-29
+audited: 2026-11-23
 ---
 
 # systematic-debugging conformance matrix
@@ -11,10 +11,17 @@ Spec-vs-implementation audit of
 [`systematic-debugging.md`](systematic-debugging.md). Produced at `feat-0061`'s closeout, which is
 the closeout [`README.md`](README.md) recorded this matrix as owed at.
 
-The contract carries **fifteen** scenarios rather than the thirteen it was approved with:
-`chore-0078` settled both of its Open Questions on 2026-08-29 and added `S-014` and `S-015`. That
-amendment is pending the author's re-approval, so the two rows below audit clauses a human has not
+The contract carries **sixteen** scenarios rather than the thirteen it was approved with:
+`chore-0078` settled both of its Open Questions on 2026-08-29 and added `S-014` and `S-015`, and
+`feat-0077` added `S-016` on 2026-11-23. Both amendments are pending the author's re-approval, so the
+three rows below audit clauses a human has not
 yet re-read.
+
+**Re-audited 2026-11-23 at `feat-0077`**, which amended the contract with `S-016`, the red command
+required before any hypothesis, and slimmed the skill body by moving its red flags and
+rationalizations into `references/red-flags.md`. Every citation below was re-checked against the
+current text; one Goals row was re-pointed because the sentence it quoted was cut in the slimming.
+The `S-016` amendment is pending the author's re-approval, like `chore-0078`'s.
 
 ## What this audit can and cannot establish
 
@@ -67,6 +74,12 @@ is the same class a third time. All five now have assertions and all five fail w
 is cut. All twenty-five fail the suite. A structural test that cannot fail is unchecked whatever it
 printed, and the survivors are why that sentence is worth more than the kills that preceded them.
 
+**`feat-0077` added twelve more, all killed.** Each removed or weakened one red-command obligation
+in the skill (the gate in step 2, the gate opening step 5, each property of the command, the
+no-tracked-file rule, a permission to edit a tracked file added beside it, the ordered construction
+list, tightening, step 2's completion condition, the `missing_input` wording, the record placement,
+and the provenance attribution), and the suite failed on every one.
+
 **What neither buys.** Nothing here observes an agent following the procedure. `feat-0062` is the
 task that did, and its result belongs in this matrix rather than only in a task file.
 
@@ -104,12 +117,13 @@ it did not choose, and the skill stays a draft until then.
 | Scenarios | S-013 the record is not written to disk unless asked for | Conformed | Procedure step 8 / "return the record inline and create no file" and "write the same record there and nowhere else"; the Inputs row for the record destination; `test_s013_no_destination_creates_no_file_and_a_destination_takes_the_same_record` | the checkable pair is stated as a pair. The suite asserts both halves plus the Inputs row, so making the destination required would fail even with the prose intact |
 | Scenarios | S-014 instrumentation lives in a copy, never in the tracked files | Conformed | Procedure step 3 / "Instrumentation goes in a copy this run made for the purpose." and "At no point during the run does any tracked source, test, or config file differ from its state at the start", covering a run that "reaches a verdict, is interrupted, or fails partway"; `test_s014_instrumentation_lives_in_a_copy_and_the_bound_is_every_point_in_the_run` | added by `chore-0078` and pending re-approval. The suite pins the every-point bound specifically, because the end-of-run phrasing is satisfied by the alternative this scenario exists to reject |
 | Scenarios | S-015 a repository that cannot be copied is answered, not refused | Conformed | Procedure step 3 / "Where no working copy can be made at all", which adds "no instrumentation, and continue read-only", records the weakened instrument in `reproduction`, and states "The run still reaches a verdict"; `test_s015_a_target_that_cannot_be_copied_still_reaches_a_verdict_read_only` | added by `chore-0078` and pending re-approval. `test_s014_names_no_tool_as_required_so_a_non_git_target_is_not_excluded` guards the other side of it, failing if the skill names a mechanism the contract deliberately left open |
+| Scenarios | S-016 no hypothesis is formed before a red command exists | Conformed | Procedure step 2, "Build a red command before you explain", defining the command as one "you have **already run at least once**" that "drives the real code path", "**fails on the reported symptom specifically**, not merely by erroring", is "**deterministic**, or, for an intermittent defect, has a **pinned, recorded reproduction rate**", is "**fast**" and "**runs without a person**"; "Build it **without changing a tracked file**"; the gate "No red command, no hypothesis phase." and step 5 opening "No red command, no hypothesis."; the "There is no way to observe it." branch naming "the access, artifact, or fixture that would let one be built"; `test_s016_no_red_command_no_hypothesis_and_the_failure_returns_a_verdict`, `test_the_red_command_carries_every_property_the_contract_names`, `test_the_red_command_is_built_without_changing_a_tracked_file`, `test_the_hypothesis_step_opens_on_the_gate` | added by `feat-0077` and pending re-approval. The command lives in `reproduction`, so the record's field set and the verdict set are unchanged, which the exact-set tests decide. Structural only: no run has yet exercised the gate on a real defect |
 | Proposed Surface | Verdicts: exactly one per run, three values | Conformed | the `## Verdicts` table, plus "Exactly one per run" and "There is no fourth"; `test_the_verdicts_are_exactly_the_three_the_contract_names` | decided as an exact set rather than by presence. A skill that kept all three and added a fourth fails, which a presence check would not catch |
 | Proposed Surface | Diagnosis record: ten fields, each with its presence condition | Conformed | the `## The diagnosis record` table; `test_every_record_field_carries_its_presence_condition` | every condition compared against the contract's own words. The skill adds that an unmet field "is **omitted**, not filled with a placeholder", which the contract implies and does not say |
 | Proposed Surface | Inputs: defect report, reproduction steps, investigation bound, record destination | Conformed | the `## Inputs` table; `test_the_four_inputs_appear_with_their_required_flags` | required flags compared as well as names, so a skill that made the bound mandatory would fail |
 | Goals | 1. A named root cause with the evidence that established it | Conformed | the opening line, "named cause with the evidence that established it", and step 5's confirm branch | covered by S-001 |
 | Goals | 2. A deterministic verdict, so an unattended run cannot end ambiguously | Conformed | `## Verdicts` / "a run that ends without one of these has not ended" | covered by S-002, S-004, and the exact-set test |
-| Goals | 3. A diagnosis that feeds `new-task` directly | Conformed | Procedure step 8, "the reason this skill sits upstream of `new-task` rather than beside it" | covered by S-006 |
+| Goals | 3. A diagnosis that feeds `new-task` directly | Conformed | Procedure step 8, "what a task file needs from `new-task` and cannot otherwise obtain" | covered by S-006. Re-pointed at `feat-0077`, whose slimming cut the sentence this row quoted before |
 | Goals | 4. Refuse to repair | Conformed | Procedure step 8 and the "When not to use" bullet | covered by S-005 |
 | Goals | 5. Bound the investigation | Conformed | Inputs / "The default bound is five disproved hypotheses" and Procedure step 6 | covered by S-004. The number is the skill's, per Open Question 2 |
 | Constraints | Read-only with respect to tracked files | Conformed | Procedure step 3's every-point bound and step 8's "leave every tracked file as you found it" | covered by S-005 and S-014. The contract's own bullet now points at those two rather than restating the rule |
@@ -123,12 +137,12 @@ it did not choose, and the skill stays a draft until then.
 
 ## Coverage proof
 
-**Scenarios**: 15 conformed + 0 diverged + 0 not-built = 15, which is every scenario in the
-contract as amended by `chore-0078`. Counted from the file: `grep -c "^### Scenario"
-docs/spec/systematic-debugging.md` returns 15, and the rows above carry `S-001` through `S-015` with
+**Scenarios**: 16 conformed + 0 diverged + 0 not-built = 16, which is every scenario in the
+contract as amended by `chore-0078` and `feat-0077`. Counted from the file: `grep -c "^### Scenario"
+docs/spec/systematic-debugging.md` returns 16, and the rows above carry `S-001` through `S-016` with
 no gap and no repeat.
 
-**Audited** (31 items): the fifteen scenarios; the three Proposed Surface elements (verdicts,
+**Audited** (32 items): the sixteen scenarios; the three Proposed Surface elements (verdicts,
 diagnosis record, inputs); the five Goals; the five Constraints; the Non-Goals as one row covering
 all seven; and both Open Questions.
 

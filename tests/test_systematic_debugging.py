@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 """Tests for the `systematic-debugging` skill (`feat-0061`).
 
-One test per scenario in `docs/spec/systematic-debugging.md`, S-001 through S-015, each named
+One test per scenario in `docs/spec/systematic-debugging.md`, S-001 through S-016, each named
 so the scenario it proves is identifiable. S-014 and S-015 arrived from `chore-0078`, which
-settled the contract's first Open Question on 2026-08-29.
+settled the contract's first Open Question on 2026-08-29; S-016, the red command required
+before any hypothesis, arrived from `feat-0077` on 2026-11-23.
 
 **These are structural assertions over the skill's prose, and that is a real bound rather than
 an oversight.** A skill body is instructions to a model, so a test can assert an instruction is
@@ -277,7 +278,7 @@ class TestScenarios(SkillTestCase):
 
     # S-002: a defect that will not reproduce is a verdict, not a failure.
     def test_s002_a_defect_that_will_not_reproduce_returns_a_verdict_and_no_cause(self):
-        branch = bullet(section(self.body, "### 2. Reproduce before you explain"),
+        branch = bullet(section(self.body, "### 2. Build a red command before you explain"),
                         "It does not reproduce.")
         self.assertContains(branch, "`verdict: not_reproducible`",
                             "the non-reproducing branch does not name its verdict")
@@ -359,7 +360,7 @@ class TestScenarios(SkillTestCase):
 
     # S-007: a report without any way to observe it is answered, not guessed at.
     def test_s007_a_report_with_no_way_to_observe_it_yields_no_cause_from_reading_alone(self):
-        branch = bullet(section(self.body, "### 2. Reproduce before you explain"),
+        branch = bullet(section(self.body, "### 2. Build a red command before you explain"),
                         "There is no way to observe it.")
         self.assertContains(branch, "`verdict: not_reproducible`",
                             "the unobservable branch does not name its verdict")
@@ -423,7 +424,7 @@ class TestScenarios(SkillTestCase):
 
     # S-011: a dispatched agent can tell its own defect from one it uncovered.
     def test_s011_an_isolated_agent_reproduces_against_the_tree_and_the_unmodified_base(self):
-        step = section(self.body, "### 2. Reproduce before you explain")
+        step = section(self.body, "### 2. Build a red command before you explain")
         self.assertContains(step, "run the reproduction twice",
                             "one run cannot distinguish an introduced defect from one found")
         self.assertContains(step, "against your\nworking tree, and against the unmodified base",
@@ -437,7 +438,7 @@ class TestScenarios(SkillTestCase):
 
     # S-012: an intermittent defect is classified rather than declared fixed.
     def test_s012_an_intermittent_defect_records_a_rate_and_needs_a_reliable_condition(self):
-        step = section(self.body, "### 2. Reproduce before you explain")
+        step = section(self.body, "### 2. Build a red command before you explain")
         self.assertContains(step, "record the **observed rate** in `reproduction`",
                             "an intermittent defect is not required to carry a rate")
         self.assertContains(
@@ -556,6 +557,98 @@ class TestScenarios(SkillTestCase):
                             "the no-copy path may end without a verdict, which turns a "
                             "portability limit into an ambiguous run")
 
+    # S-016: no hypothesis is formed before a red command exists.
+    def test_s016_no_red_command_no_hypothesis_and_the_failure_returns_a_verdict(self):
+        step = section(self.body, "### 2. Build a red command before you explain")
+        self.assertContains(step, "**No red command, no hypothesis phase.**",
+                            "step 2 does not state the gate, so a run may hypothesise without "
+                            "a command that can go red")
+        branch = bullet(step, "There is no way to observe it.")
+        self.assertContains(branch, "build a red command",
+                            "the no-observation branch is not tied to the red command, so a "
+                            "run that could not build one has no stated exit")
+        self.assertContains(branch, "the access, artifact, or fixture that would let one be built",
+                            "`missing_input` does not say what would let a red command be "
+                            "built, which is what makes the verdict actionable")
+        reproduces = bullet(step, "It reproduces.")
+        self.assertContains(reproduces, "You have a red command. Record in `reproduction`",
+                            "the red command is not recorded in `reproduction`, so the record "
+                            "has nowhere to carry it and a new field would be invented")
+
+
+class TestTheRedCommand(SkillTestCase):
+    """The feedback-loop-first phase `feat-0077` added, adapted from Matt Pocock's
+    `diagnosing-bugs`. One test per obligation, each scoped to the section that carries it."""
+
+    STEP2 = "### 2. Build a red command before you explain"
+    STEP5 = "### 5. One hypothesis at a time"
+
+    def test_the_red_command_carries_every_property_the_contract_names(self):
+        step = section(self.body, self.STEP2)
+        for phrase, why in (
+            ("you have **already run at least once**",
+             "a command nobody ran is a plan, not a red command"),
+            ("drives the real code path",
+             "a command that exercises a stand-in can go red for the wrong reason"),
+            ("**fails on the reported symptom specifically**, not merely by erroring",
+             "a command that fails on any error does not discriminate this defect"),
+            ("is **deterministic**, or, for an intermittent defect, has a **pinned, recorded "
+             "reproduction rate**", "a flaky command's red is not evidence"),
+            ("is **fast**", "a slow command makes every trial expensive enough to skip"),
+            ("**runs without a person**", "a command needing a person cannot run unattended"),
+        ):
+            with self.subTest(phrase=phrase[:40]):
+                self.assertContains(step, phrase, why)
+
+    def test_the_red_command_is_built_without_changing_a_tracked_file(self):
+        step = section(self.body, self.STEP2)
+        self.assertContains(step, "Build it **without changing a tracked file**",
+                            "nothing keeps the red command out of the tracked files, which "
+                            "would break step 3's every-point bound before step 3 is reached")
+        self.assertContains(step, "in a copy made as step 3 describes, or in a scratch location",
+                            "the red command is given nowhere legal to live")
+        permission = re.compile(r"(?i)\b(acceptable|permitted|allowed|fine|okay|may|can)\b")
+        for sentence in re.split(r"(?<=[.!?])\s+", flat(step)):
+            if re.search(r"(?i)tracked (source|file|test)", sentence):
+                with self.subTest(sentence=sentence[:60]):
+                    self.assertNotRegex(sentence, permission,
+                                        "a sentence in step 2 permits something about the "
+                                        "tracked files")
+
+    def test_an_ordered_list_of_ways_to_construct_one_is_given(self):
+        step = section(self.body, self.STEP2)
+        self.assertContains(step, "Ways to construct one, cheapest first:",
+                            "the ways to build a red command are not given an order")
+        items = re.findall(r"(?m)^(\d+)\. ", step)
+        self.assertGreaterEqual(len(items), 4,
+                                "fewer than four ways to construct a red command are listed")
+        self.assertEqual(items, [str(i) for i in range(1, len(items) + 1)],
+                         "the construction list is not one ordered list")
+
+    def test_the_red_command_is_tightened(self):
+        step = section(self.body, self.STEP2)
+        self.assertContains(step, "Then **tighten** it",
+                            "nothing asks for the red command to be improved once it exists")
+        for word in ("faster", "sharper", "more deterministic"):
+            with self.subTest(word=word):
+                self.assertRegex(flat(step), rf"\*\*tighten\*\* it: [^.]*\b{word}\b",
+                                 f"tightening does not name '{word}'")
+
+    def test_the_hypothesis_step_opens_on_the_gate(self):
+        """The gate stated once in step 2 is behind the reader by step 5. Stating it as the
+        first line of step 5 is what stops a run that skipped ahead."""
+        step = section(self.body, self.STEP5)
+        first = flat(step.split("\n\n")[1])
+        self.assertTrue(first.startswith("**No red command, no hypothesis.**"),
+                        "step 5 does not open by stating the gate")
+
+    def test_step_2_ends_on_a_completion_condition_naming_the_red_command(self):
+        step = section(self.body, self.STEP2)
+        self.assertContains(step, "Done when `reproduction` holds a red command you have watched "
+                                  "go red, or the run has returned",
+                            "step 2 has no completion condition, so a reader cannot tell when "
+                            "the hypothesis phase is open")
+
 
 class TestTheContractsConstraints(SkillTestCase):
     """Two obligations the scenario tests leave uncovered, both found by an independent
@@ -607,7 +700,7 @@ class TestWhatTheDogfoodAdded(SkillTestCase):
         """The dogfood's first two reproduction attempts failed, and not because the defect is
         intermittent: the writer simply did not hold the store for long enough. The contract
         asks for a rate, and what the run needed was a knob."""
-        step = section(self.body, "### 2. Reproduce before you explain")
+        step = section(self.body, "### 2. Build a red command before you explain")
         self.assertContains(
             step, "check whether you are the one varying it",
             "nothing tells a reader to look for an uncontrolled variable before calling a "
@@ -736,19 +829,39 @@ class TestTheFoldInIsAttributed(SkillTestCase):
         spec.loader.exec_module(module)
         return module
 
+    # The two upstream files the skill draws on, by raw URL. `feat-0077` added the second.
+    SOURCES = {
+        "https://raw.githubusercontent.com/obra/superpowers/main/skills/"
+        "systematic-debugging/SKILL.md",
+        "https://raw.githubusercontent.com/mattpocock/skills/main/skills/engineering/"
+        "diagnosing-bugs/SKILL.md",
+    }
+
     def test_the_provenance_block_carries_every_required_field(self):
         cp = self.parser()
         records = cp.parse_records(self.body)
-        self.assertEqual(len(records), 1, "the skill carries no provenance block, or more "
-                                          "than one where it draws on one upstream file")
-        record = records[0]
-        for key in cp.REQUIRED_KEYS:
-            with self.subTest(key=key):
-                self.assertTrue(record.get(key), f"the provenance block has no {key}")
-        self.assertTrue(record["source"].startswith("https://raw.githubusercontent.com/"),
-                        "the source is not a re-fetchable raw URL, so nothing can drift-check it")
-        self.assertRegex(record["sha256"], r"^[0-9a-f]{64}$",
-                         "the digest is not a sha256 of anything")
+        self.assertEqual({r.get("source") for r in records}, self.SOURCES,
+                         "the skill's provenance blocks are not exactly one per upstream file "
+                         "it draws on")
+        self.assertEqual(len(records), len(self.SOURCES),
+                         "an upstream file carries more than one provenance block")
+        for record in records:
+            for key in cp.REQUIRED_KEYS:
+                with self.subTest(source=record["source"][-40:], key=key):
+                    self.assertTrue(record.get(key), f"the provenance block has no {key}")
+            self.assertRegex(record["sha256"], r"^[0-9a-f]{64}$",
+                             "the digest is not a sha256 of anything")
+
+    def test_the_provenance_prose_says_what_came_from_each_upstream(self):
+        """Two blocks say two files were fetched. Only the prose says which ideas came from
+        which, and the red-command phase is the one a reader would otherwise misattribute."""
+        prov = section(self.body, "## Provenance")
+        self.assertContains(prov, "From Jesse Vincent's `superpowers`",
+                            "the prose does not attribute anything to the first upstream")
+        self.assertContains(prov, "From Matt Pocock's `diagnosing-bugs`",
+                            "the prose does not attribute anything to the second upstream")
+        self.assertRegex(flat(prov), r"From Matt Pocock's `diagnosing-bugs`: [^.]*red command",
+                         "the red command is not attributed to the upstream it came from")
 
     def test_the_departures_from_upstream_are_stated_rather_than_left_to_a_reader(self):
         """A digest answers whether upstream changed. It does not say what was deliberately
