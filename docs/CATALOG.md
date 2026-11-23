@@ -47,7 +47,7 @@ These skills turn an agreed contract into verified work. Each was dogfooded on r
 
 ## Drafts: built but not yet used on real work
 
-A **draft** is written and lives under [`.agents/skills/`](../.agents/skills/), but has not yet been used on real work and refined from it. No install places it unless you ask with `--include-drafts`, and the installer names what it held back on every run rather than dropping it silently. Try them, and expect rough edges: real use is what promotes a draft. What each still owes is tracked in [`ROADMAP.md`](../ROADMAP.md).
+A **draft** is written and lives under [`.agents/skills/`](../.agents/skills/), but has not yet been used on real work and refined from it. The Claude Code plugin never carries it, and the installer places it only when you ask with `--include-drafts`, and the installer names what it held back on every run rather than dropping it silently. Try them, and expect rough edges: real use is what promotes a draft. What each still owes is tracked in [`ROADMAP.md`](../ROADMAP.md).
 
 | Skill | Status | Invocation | What it does |
 |---|---|---|---|

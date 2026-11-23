@@ -22,6 +22,15 @@ re-approved on 2026-07-27 and this repository has no machine-readable way to say
 unapproved amendment inside"; re-approval of the paragraphs added by `feat-0034` is the author's and
 is not granted here.
 
+Amended 2026-11-23 (`feat-0079`, absorbing `chore-0077`) under the 2026-11 overhaul plan the
+maintainer approved that day. **This amendment is pending the maintainer's approval**; `status` is
+left reading `approved` for the reason the `feat-0034` paragraph gives. It adds S-021 to S-023: every
+target withholds a draft unless asked for, matching `install.md` S-015 and S-021; the plugin target
+renders a user-invoked skill for Claude Code; and the repository's committed marketplace is generated
+and drift-checked by this tool. S-015 changes in one clause: the plugin manifest's version is
+generated from the emitted content, and the marketplace entry carries none, where both used to carry
+one typed string.
+
 Amended 2026-08-19 (`chore-0043`) to state that a markdown link rendering as literal text is not a
 link and is emitted unchanged: scenario S-018, an exception to the rewrite rules S-003 through S-008.
 **This amendment is pending the author's re-approval.** It writes down the behaviour `bug-0028` gave
@@ -312,8 +321,12 @@ every test still pass, because no test asserts the reason.
 - **Then** it writes each skill's `SKILL.md` to `skills/<name>/SKILL.md`, keeping the skill in its own
   directory rather than flattening it into one, and writes `.claude-plugin/plugin.json` and
   `.claude-plugin/marketplace.json`, whose single listed plugin names the emitted root as its source
-  and carries the same name and version as the plugin manifest beside it. It reports the emitted files
-  and its counts, and exits zero.
+  and carries the same name as the plugin manifest beside it. It reports the emitted files and its
+  counts, and exits zero.
+- **And** (amended by `feat-0079`) the plugin manifest's version is a base version plus a digest of the
+  emitted skills and rules as semver build metadata, so it changes exactly when the content does, and
+  the marketplace entry carries no version of its own. Claude Code detects an update by comparing
+  version strings, so a typed one held every adopter on the old copy until someone bumped it.
 
 ### Scenario S-016: nothing in an emitted plugin tree points outside it
 
@@ -339,11 +352,43 @@ every test still pass, because no test asserts the reason.
   A `.claude-plugin/` left there becomes a committed, hand-maintained manifest, which is the second
   copy this tool exists to prevent.
 
+### Scenario S-021: a draft is emitted by no target unless asked for
+
+- **Given** a kit containing skills marked `status: draft` under `metadata`
+- **When** the tool runs for any target without the drafts request
+- **Then** no adapter, plugin skill, or supporting file is emitted for a draft, and the run names the
+  drafts it withheld; with the request, they are emitted like any other skill.
+- **And** when an emitted skill links a withheld draft as a sibling, the run refuses before writing
+  anything and names both skills, because the emitted link would dangle. Which side is wrong is a
+  person's call, as `install.md` S-015 says for the same collision.
+
+### Scenario S-022: only the plugin target renders a user-invoked skill
+
+- **Given** a skill declaring `invocation: user` under `metadata`
+- **When** the plugin target emits it
+- **Then** its `SKILL.md` carries `disable-model-invocation: true` as a top-level frontmatter key and
+  is otherwise the source's bytes, while the Cursor and VS Code adapters for the same skill carry no
+  such key. Claude Code is the one harness that reads it, and claude.ai rejects it.
+
+### Scenario S-023: the committed marketplace is generated, owned whole, and drift-checked
+
+- **Given** the repository's committed marketplace under `.claude-plugin/`
+- **When** the tool is asked to regenerate it
+- **Then** it writes `.claude-plugin/marketplace.json`, listing one plugin whose source is
+  `./.claude-plugin/plugin`, and replaces that plugin tree whole with what the plugin target would
+  emit for the shipped skills, so a skill removed from the kit leaves the plugin too. Drafts are never
+  included.
+- **And** when asked to check it instead, it writes nothing, and exits non-zero naming every file that
+  is missing, extra, or different from what a regeneration would write, and zero when there is none.
+
 ## Proposed Surface
 
 | Element | Detail |
 |---|---|
-| Invocation | `python scripts/build-adapters.py [--target <list>] [--out <dir>] [--dry-run]` |
+| Invocation | `python scripts/build-adapters.py [--target <list>] [--out <dir>] [--dry-run] [--include-drafts]`, or `python scripts/build-adapters.py --marketplace [--check]` |
+| `--include-drafts` | Also emit draft skills, per S-021 |
+| `--marketplace` | Regenerate the committed marketplace under `.claude-plugin/`, per S-023; ignores `--target` and `--out`, and refuses `--include-drafts` and `--dry-run` |
+| `--check` | With `--marketplace` only: compare instead of writing, exit 1 on drift, per S-023 |
 | `--target` | Comma-separated subset of the supported targets `cursor`, `vscode`, `plugin`; defaults to the two inlining targets, `cursor,vscode`. `plugin` is opt-in, per S-017 |
 | `--out` | Output project root; defaults to the working directory |
 | `--dry-run` | Preview: report what would be written, write nothing |

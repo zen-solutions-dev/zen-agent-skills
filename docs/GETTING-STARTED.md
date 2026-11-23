@@ -112,6 +112,15 @@ cd zen-agent-skills
 
 The kit is not copied into every project. Its skills are installed into your AI tool or translated into project-level files, depending on the tool you use.
 
+If you use Claude Code and do not need the newest draft skills, the plugin is the shortest route and needs no Python at all:
+
+```bash
+claude plugin marketplace add zen-solutions-dev/zen-agent-skills
+claude plugin install zen-agent-skills@zen-agent-skills
+```
+
+The plugin does not carry drafts, so it does not include `grill`. Choose the plugin or the installer below for Claude Code, not both: having both loads every skill twice. The [installation reference](INSTALL.md) covers updating and switching.
+
 ### 3. Preview the installation
 
 A preview shows what the installer would do without changing anything:
@@ -152,7 +161,7 @@ The newest skills, including `grill`, the interview this guide starts every chan
 python scripts/install.py --include-drafts
 ```
 
-Add the flag to whichever command above you chose. Expect rough edges, and say so when you hit one; that is how a draft gets finished.
+Add the flag to whichever command above you chose, for example `python scripts/install.py --tools claude --include-drafts`. If you installed the Claude Code plugin, remove it first: drafts come only through this installer, and one route per tool keeps every skill loaded once. Expect rough edges, and say so when you hit one; that is how a draft gets finished.
 
 ### 4a. If you already use `npx skills`
 

@@ -6,7 +6,16 @@ A portable library of agent skills that moves the rigor of AI-assisted work to t
 
 ## Quick start
 
-Requires Python 3.11 or newer and Git.
+**Claude Code, as a plugin** (recommended; no clone, no Python):
+
+```bash
+claude plugin marketplace add zen-solutions-dev/zen-agent-skills
+claude plugin install zen-agent-skills@zen-agent-skills
+```
+
+Update with `claude plugin marketplace update zen-agent-skills` then `claude plugin update zen-agent-skills@zen-agent-skills`. Plugin skills are namespaced (`/zen-agent-skills:new-task`), and the plugin carries no drafts.
+
+**Any harness, with the installer** (Python 3.11 or newer and Git), for OpenCode, for drafts, or to own your copy of the lenses:
 
 ```bash
 git clone https://github.com/zen-solutions-dev/zen-agent-skills.git
@@ -17,13 +26,14 @@ python scripts/install.py             # the default skill set, for Claude Code a
 
 The installer is idempotent, reports a conflict instead of overwriting a file it does not manage, and is reversed with `--uninstall`.
 
-To try the new drafts as well (see [what's new](#whats-new-in-this-release)):
+Drafts come only through the installer. To try them (see [what's new](#whats-new-in-this-release)):
 
 ```bash
-python scripts/install.py --include-drafts
+python scripts/install.py --tools claude --include-drafts
+python scripts/install.py --skills grill --include-drafts   # one skill and what it composes
 ```
 
-<!-- plugin install: filled in when feat-0079 lands -->
+**Use one route per harness.** The plugin and the installer's `claude` target place the same skills under different names, so having both loads every description twice. To try the drafts in Claude Code, use the installer for Claude Code instead of the plugin.
 
 Then, in your harness, start with **"grill me"** on the change you want to make, or ask `zen` which skill fits. For a new repository, start with `project-bootstrap`.
 
