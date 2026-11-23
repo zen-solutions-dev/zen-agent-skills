@@ -14,6 +14,14 @@ contract did not cover: both blocking preconditions true at once. S-005 and S-00
 implied accumulation and the skill body read as short-circuit. S-011 settles it, and the decision was to
 accumulate rather than short-circuit. Re-approved by the author on 2026-07-27.
 
+Amendment note, 2026-11-23 (`feat-0077`), **pending the maintainer's approval**: the skill body was
+slimmed and now says how the skill is dispatched when another agent runs it: with a fresh context
+rather than a fork of the implementing session, told it is a leaf that dispatches nothing, at high
+effort. That sharpens the independence this contract already requires and changes no scenario,
+input, output field, or verdict rule. The status stays `approved` on the reading that no contract
+term moved; if the maintainer reads the dispatch guidance as a contract term, it becomes a new
+scenario under Goals and this note records where it came from.
+
 ## Problem
 
 The spine can now write a contract, gate it, decompose it, implement it, derive tests from it, and
