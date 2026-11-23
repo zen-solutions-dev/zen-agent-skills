@@ -47,6 +47,21 @@ LINK = re.compile(r"\]\(([^)\s]+)")
 SKIP_PREFIXES = ("http://", "https://", "mailto:", "#")
 
 
+def _shipped_count():
+    """How many skills a default run emits, by a reader independent of the script.
+
+    Crude on purpose, like `_marked_draft` in test_install.py: a line that is exactly
+    `status: draft` inside the frontmatter. An expectation built from the script's own
+    draft reader would move with it if it ever misclassified a skill (feat-0079).
+    """
+    n = 0
+    for d in ba.discover_skills():
+        head = (d / "SKILL.md").read_text(encoding="utf-8").split("\n---", 1)[0]
+        if not any(line.strip() == "status: draft" for line in head.splitlines()):
+            n += 1
+    return n
+
+
 def _run(args):
     """Drive main(), returning (exit_code, captured_stdout)."""
     buf = io.StringIO()
@@ -387,8 +402,9 @@ class TestInvocationContract(unittest.TestCase):
 
     def test_a_single_target_emits_only_that_target(self):
         # Scenario S-001: one adapter per skill for the requested target, none for
-        # the other, plus a zero exit and the summary line.
-        expected = len(ba.discover_skills())
+        # the other, plus a zero exit and the summary line. Drafts are withheld by
+        # default since feat-0079, so the count is the shipped set.
+        expected = _shipped_count()
         with tempfile.TemporaryDirectory() as tmp:
             out = Path(tmp)
             code, printed = _run(["--target", "cursor", "--out", str(out)])
@@ -536,7 +552,7 @@ class TestPluginTarget(unittest.TestCase):
         # keys being present: a marketplace entry naming a different plugin, or a
         # source that is not the emitted root, installs something other than what
         # was built, and both are well-formed JSON.
-        expected = len(ba.discover_skills())
+        expected = _shipped_count()
         self.assertEqual(self.code, 0)
         self.assertEqual(len(list(self.out.glob("skills/*/SKILL.md"))), expected)
         self.assertEqual(list(self.out.glob(".cursor/rules/*")), [],
@@ -548,7 +564,11 @@ class TestPluginTarget(unittest.TestCase):
         listed, = market["plugins"]
         self.assertEqual(listed["source"], "./")
         self.assertEqual(listed["name"], plugin["name"])
-        self.assertEqual(listed["version"], plugin["version"])
+        # The version lives in plugin.json only, generated from the tree's content
+        # (feat-0079); an entry version would be overridden by it and warned about.
+        self.assertNotIn("version", listed)
+        self.assertRegex(plugin["version"], r"^\d+\.\d+\.\d+\+[0-9a-f]{12}$")
+        self.assertIn("zen-solutions-dev", plugin["repository"])
         self.assertIn(f"for {expected} skill(s)", self.printed)
         self.assertIn("2 plugin manifest file(s)", self.printed)
 
@@ -571,7 +591,11 @@ class TestPluginTarget(unittest.TestCase):
                     broken.append(f"{f.parent.name} -> {target}")
                 elif not resolved.resolve().is_relative_to(root):
                     escaped.append(f"{f.parent.name} -> {target}")
-        self.assertGreater(checked, 100, "expected the real kit's link volume")
+        # A floor that proves the walk read the real kit rather than an empty tree, not a
+        # count to track. Lowered from 100 by feat-0079: the plugin tree now withholds
+        # drafts, and the 2026-11 slimming turned neighbour links into backticks, which
+        # left 96. The tree must still hold every link the shipped skills make.
+        self.assertGreater(checked, 50, "expected the real kit's link volume")
         self.assertEqual(broken, [], f"{len(broken)} dangling link(s): {broken[:5]}")
         self.assertEqual(escaped, [], f"{len(escaped)} link(s) leaving the plugin: {escaped[:5]}")
 
@@ -1074,3 +1098,194 @@ class TestNameDestinationsCoverEveryInliningTarget(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+def _meta_skill(skills_dir, name, status=None, invocation=None, refs=(), lens=False):
+    d = skills_dir / name
+    d.mkdir(parents=True, exist_ok=True)
+    lines = ["---", f"name: {name}", f"description: does {name} things when asked"]
+    meta = [f"  status: {status}"] if status else []
+    meta += [f"  invocation: {invocation}"] if invocation else []
+    if meta:
+        lines += ["metadata:"] + meta
+    lines += ["---", "", f"# {name}", ""]
+    lines += [f"Composes [`{r}`](../{r}/SKILL.md)." for r in refs]
+    if lens:
+        lines.append("Follows [house style](../../rules/house-style.md).")
+    (d / "SKILL.md").write_text("\n".join(lines) + "\n", encoding="utf-8")
+
+
+class _FixtureKit(unittest.TestCase):
+    """A fixture skills tree and rules module swapped in for the real ones (feat-0079)."""
+
+    COMBOS = [(s, i) for s in (None, "draft", "shipped") for i in (None, "user", "model")]
+
+    def setUp(self):
+        self._tmp = tempfile.TemporaryDirectory()
+        self.root = Path(self._tmp.name)
+        self.skills = self.root / "skills"
+        self.rules = self.root / "rules"
+        self.skills.mkdir()
+        self.rules.mkdir()
+        (self.rules / "house-style.md").write_text("# house style\n", encoding="utf-8")
+        self.out = self.root / "out"
+        self._real = (ba.SKILLS_DIR, ba.RULES_DIR)
+        ba.SKILLS_DIR, ba.RULES_DIR = self.skills, self.rules
+        for status, invocation in self.COMBOS:
+            _meta_skill(self.skills, f"s-{status}-i-{invocation}", status, invocation,
+                        lens=True)
+
+    def tearDown(self):
+        ba.SKILLS_DIR, ba.RULES_DIR = self._real
+        self._tmp.cleanup()
+
+    def _names(self, pattern, suffix):
+        return {p.name[:-len(suffix)] if suffix else p.parent.name
+                for p in self.out.glob(pattern)}
+
+
+class TestDraftsAndInvocation(_FixtureKit):
+    """feat-0079 and chore-0077: drafts are withheld from every target unless asked for,
+    and only the plugin tree carries the rendered invocation key."""
+
+    def _expected(self, drafts):
+        return {f"s-{s}-i-{i}" for s, i in self.COMBOS if drafts or s != "draft"}
+
+    def test_every_target_withholds_drafts_by_default(self):
+        code, out = _run(["--target", "cursor,vscode,plugin", "--out", str(self.out)])
+        self.assertEqual(code, 0, out)
+        want = self._expected(drafts=False)
+        self.assertEqual(self._names(".cursor/rules/*.mdc", ".mdc"), want)
+        self.assertEqual(self._names(".github/prompts/*.prompt.md", ".prompt.md"), want)
+        self.assertEqual(self._names("skills/*/SKILL.md", ""), want)
+        self.assertIn("3 draft skill(s) withheld", out)
+
+    def test_the_flag_emits_drafts_on_every_target(self):
+        code, out = _run(["--target", "cursor,vscode,plugin", "--out", str(self.out),
+                          "--include-drafts"])
+        self.assertEqual(code, 0, out)
+        want = self._expected(drafts=True)
+        self.assertEqual(self._names(".cursor/rules/*.mdc", ".mdc"), want)
+        self.assertEqual(self._names("skills/*/SKILL.md", ""), want)
+
+    def test_only_the_plugin_tree_renders_and_only_for_user_invoked_skills(self):
+        _run(["--target", "cursor,vscode,plugin", "--out", str(self.out),
+              "--include-drafts"])
+        for status, invocation in self.COMBOS:
+            name = f"s-{status}-i-{invocation}"
+            with self.subTest(name=name):
+                plugin = (self.out / "skills" / name / "SKILL.md").read_text(encoding="utf-8")
+                self.assertEqual("disable-model-invocation: true" in plugin,
+                                 invocation == "user")
+                for adapter in (f".cursor/rules/{name}.mdc",
+                                f".github/prompts/{name}.prompt.md"):
+                    self.assertNotIn("disable-model-invocation",
+                                     (self.out / adapter).read_text(encoding="utf-8"))
+
+    def test_a_shipped_skill_linking_a_draft_refuses_the_run(self):
+        _meta_skill(self.skills, "composer", refs=["s-draft-i-None"])
+        code, out = _run(["--target", "cursor", "--out", str(self.out)])
+        self.assertEqual(code, 2)
+        self.assertIn("composer links 's-draft-i-None'", out)
+        self.assertFalse(self.out.exists(), "a refused run writes nothing")
+        code, _ = _run(["--target", "cursor", "--out", str(self.out), "--include-drafts"])
+        self.assertEqual(code, 0)
+
+
+class TestCommittedMarketplace(_FixtureKit):
+    """feat-0079: the committed marketplace is generated, owned whole, and drift-checked."""
+
+    def _build(self, check=False):
+        skills = [d for d in ba.discover_skills()
+                  if not ba.is_draft_text((d / "SKILL.md").read_text(encoding="utf-8"))]
+        parsed = {d: ba.split_frontmatter((d / "SKILL.md").read_text(encoding="utf-8"))
+                  for d in ba.discover_skills()}
+        buf = io.StringIO()
+        with contextlib.redirect_stdout(buf):
+            code = ba.build_marketplace(skills, parsed, check, repo_root=self.root)
+        return code, buf.getvalue()
+
+    def test_a_fresh_build_checks_clean_and_ships_no_draft(self):
+        self.assertEqual(self._build(check=True)[0], 1, "nothing committed yet")
+        self.assertEqual(self._build()[0], 0)
+        code, out = self._build(check=True)
+        self.assertEqual(code, 0, out)
+        plugin = self.root / ".claude-plugin" / "plugin"
+        self.assertEqual({p.parent.name for p in plugin.glob("skills/*/SKILL.md")},
+                         {f"s-{s}-i-{i}" for s, i in self.COMBOS if s != "draft"})
+        catalog = json.loads((self.root / ".claude-plugin" / "marketplace.json")
+                             .read_text(encoding="utf-8"))
+        self.assertEqual(catalog["plugins"][0]["source"], "./.claude-plugin/plugin")
+        self.assertTrue((plugin / ".claude-plugin" / "plugin.json").is_file())
+        self.assertFalse((plugin / ".claude-plugin" / "marketplace.json").exists())
+
+    def test_check_names_a_changed_an_added_and_a_removed_file(self):
+        self._build()
+        plugin = self.root / ".claude-plugin" / "plugin"
+        (plugin / "rules" / "house-style.md").write_text("hand edit\n", encoding="utf-8")
+        (plugin / "skills" / "stray.md").write_text("x\n", encoding="utf-8")
+        (plugin / "skills" / "s-None-i-None" / "SKILL.md").unlink()
+        code, out = self._build(check=True)
+        self.assertEqual(code, 1)
+        self.assertIn("rules/house-style.md: differs", out)
+        self.assertIn("skills/stray.md: in the committed tree, and no longer generated", out)
+        self.assertIn("skills/s-None-i-None/SKILL.md: missing", out)
+
+    def test_a_rebuild_replaces_the_tree_whole(self):
+        self._build()
+        stray = self.root / ".claude-plugin" / "plugin" / "skills" / "gone"
+        stray.mkdir()
+        self._build()
+        self.assertFalse(stray.exists())
+
+    def test_the_version_changes_exactly_when_the_content_does(self):
+        self._build()
+        manifest = self.root / ".claude-plugin" / "plugin" / ".claude-plugin" / "plugin.json"
+        first = json.loads(manifest.read_text(encoding="utf-8"))["version"]
+        self._build()
+        self.assertEqual(json.loads(manifest.read_text(encoding="utf-8"))["version"], first)
+        (self.rules / "house-style.md").write_text("# house style v2\n", encoding="utf-8")
+        self._build()
+        self.assertNotEqual(json.loads(manifest.read_text(encoding="utf-8"))["version"],
+                            first)
+
+    def test_marketplace_and_check_reject_flags_that_do_not_apply(self):
+        self.assertEqual(_run(["--check"])[0], 2)
+        self.assertEqual(_run(["--marketplace", "--include-drafts"])[0], 2)
+
+
+class TestTheCommittedPluginTree(unittest.TestCase):
+    """feat-0079, against the real committed tree under .claude-plugin/."""
+
+    PLUGIN = REPO_ROOT / ".claude-plugin" / "plugin"
+
+    def test_it_is_current(self):
+        code, out = _run(["--marketplace", "--check"])
+        self.assertEqual(code, 0, out)
+
+    def test_every_relative_link_resolves_inside_the_plugin(self):
+        # A plugin is copied to a cache directory on install, so a lens a skill composes
+        # must travel inside it: every link has to land on a file under the plugin root.
+        root = self.PLUGIN.resolve()
+        for skill_md in sorted(self.PLUGIN.glob("skills/*/SKILL.md")):
+            text = skill_md.read_text(encoding="utf-8")
+            spans = ba.code_span_ranges(text) + ba.fenced_block_ranges(text)
+            for m in LINK.finditer(text):
+                target = m.group(1).split("#")[0]
+                if not target or target.startswith(SKIP_PREFIXES) or any(
+                        a <= m.start() < b for a, b in spans):
+                    continue
+                landed = (skill_md.parent / target).resolve()
+                with self.subTest(skill=skill_md.parent.name, link=target):
+                    self.assertTrue(landed.is_relative_to(root), landed)
+                    self.assertTrue(landed.exists(), landed)
+
+    def test_the_rendered_key_appears_exactly_where_the_source_declares_user(self):
+        for skill_md in sorted(self.PLUGIN.glob("skills/*/SKILL.md")):
+            source = REPO_ROOT / ".agents" / "skills" / skill_md.parent.name / "SKILL.md"
+            src_text = source.read_text(encoding="utf-8")
+            with self.subTest(skill=skill_md.parent.name):
+                self.assertEqual("disable-model-invocation: true" in
+                                 skill_md.read_text(encoding="utf-8"),
+                                 bool(re.search(r"(?m)^\s+invocation:\s*user\s*$",
+                                                src_text.split("\n---", 1)[0])))

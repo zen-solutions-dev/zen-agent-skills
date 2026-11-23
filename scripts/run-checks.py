@@ -294,6 +294,12 @@ def gates():
              [[PY, "-m", "unittest", "discover", "-s", "tests", "-p", "test_*.py"]]),
         Gate("backlog", [[PY, ".tasks/validate.py", "--strict"]]),
         Gate("adapters dry run", [[PY, "scripts/build-adapters.py", "--dry-run"]]),
+        # Added by feat-0079. The Claude Code marketplace is a generated tree committed
+        # under .claude-plugin/, because that is what `claude plugin marketplace add`
+        # fetches; a committed copy of generated output drifts the first time a skill
+        # changes without it. This fails when it has, and names every file.
+        Gate("plugin tree",
+             [[PY, "scripts/build-adapters.py", "--marketplace", "--check"]]),
         Gate("install dry run", [[PY, "scripts/install.py", "--dry-run"] + install_home]),
         # Exercises the real placement path, including POSIX symlink mode, which the dry
         # run does not cover. Running it twice proves idempotence; the uninstall proves

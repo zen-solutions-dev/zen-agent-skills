@@ -78,6 +78,13 @@ is left reading `approved` per the convention in [`README.md`](README.md): `veri
 `blocked` on a spec that is not approved, so flipping the field would make the verification run for
 this very amendment unanswerable.
 
+**Amended 2026-11-23 (`feat-0079`) under the 2026-11 overhaul plan the maintainer approved that day.
+Pending the maintainer's approval of this amendment itself.** S-027 adds the `invocation` field under
+`metadata`, which the kit uses to mark a skill a person starts by name. Every reader treats a value it
+does not recognise as model-invoked, so a typo ships as the opposite of what was meant; this validator
+is the one place it can fail. `status` is left reading `approved` for the reason the paragraph above
+gives.
+
 **Amended 2026-07-29 (`bug-0008`) on the author's explicit instruction, and re-approved.** S-020 and
 S-021 add the two remaining rules of the skill schema this validator did not check: no angle brackets in
 `description`, and an allow-list of frontmatter properties. Both are hard failures at the consumer.
@@ -535,6 +542,17 @@ validator is the kit-level lint that enforces that bar.
   skills, which was discipline rather than a guarantee since `AGENTS.md` stated that rule and nothing
   checked it, and `autonomy.md` by five, for the twenty-one days since `A10` was added to it. Both
   facts were invisible to every gate.
+
+### Scenario S-027: `metadata.invocation` is `user` or `model`
+
+- **Given** a `SKILL.md` whose frontmatter `metadata` block declares `invocation`
+- **When** the validator runs
+- **Then** a value of `user` or `model`, in any case, passes alongside any `status`, and any other
+  value records an error naming the field and the two permitted values and exits non-zero.
+- **And** a `SKILL.md` whose frontmatter carries `disable-model-invocation` records an error that says
+  to declare `invocation: user` under `metadata` instead, because that key belongs only in a copy
+  rendered for Claude Code and claude.ai rejects it. An `invocation:` line in the body is prose and is
+  not read.
 
 ## Proposed Surface
 
