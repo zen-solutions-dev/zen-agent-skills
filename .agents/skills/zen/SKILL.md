@@ -38,8 +38,8 @@ Conventions: your answer follows [`house-style.md`](../../rules/house-style.md).
 
 The full chain is something a change earns. Ask in this order; the first yes wins.
 
-1. **Does a person have to agree the behaviour before it is built?** Full flow: `grill`, then
-   `spec-author`, approval, and the rest of the chain below.
+1. **Does a person have to agree the behaviour before it is built?** Full flow: `spec-author`
+   (which runs the `grill` interview first), approval, and the rest of the chain below.
 2. **Does it span more than one sitting, or go to another agent?** Task file: `new-task` writes one
    file with an acceptance command, and `verifier-agent` checks it before it lands. No spec.
 3. **Otherwise, direct.** Make the change, run the project's acceptance command, and ask for
@@ -101,9 +101,10 @@ step is also useful on its own. *(draft)* marks a skill not yet promoted.
 **Learn**:
 
 - `retro` *(draft)*: after a build, especially one that went sideways. A repeated correction
-  becomes a check; a judgement call becomes a written standard.
+  becomes a check; a judgement call becomes a written standard. A person starts it.
 - `improve-architecture` *(draft)*: a spare moment, or a bug with no good seam to test it at. Finds
-  deepening refactors in the hot spots; a chosen one goes back to `grill` or `new-task`.
+  deepening refactors in the hot spots; a chosen one goes back to `grill` or `new-task`. A person
+  starts it.
 
 **Handoffs and context**:
 

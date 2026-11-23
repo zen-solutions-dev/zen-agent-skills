@@ -184,6 +184,7 @@ proof.
 
 ```text
 depth: standard (R7)            # or: deep anchors [ci.yml] (R2), remainder standard (R7)
+signals: reviewable_lines=412 directories=3 risk_flags=[] blast_radius=[] documentation_only=false
 changeset: <range> | working tree | <paths>, supplied | resolved
 coverage: all reviewable files read | 14 of 31 read; src/legacy/ not read
 excluded: [path: class, ...]

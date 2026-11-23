@@ -812,10 +812,11 @@ class DraftMarkerTests(unittest.TestCase):
     """Scenario S-015: a skill marked a draft is placed by no profile.
 
     Run against a fixture skill tree, deliberately, and not against `.agents/skills/`.
-    No skill there carries a draft marker as of 2026-08-05 (`review-depth`, the draft
-    this behaviour was filed on, was blessed by `feat-0035`), so a real-tree test would
-    prove nothing, and marking a real skill a draft to make one pass would regress that
-    blessing and falsify a shipped catalog row.
+    On 2026-08-05 no skill there carried a draft marker (`review-depth`, the draft this
+    behaviour was filed on, had been blessed by `feat-0035`, and was later retired into
+    `house-review` by `feat-0080`), so a real-tree test would have proved nothing. The
+    2026-11 overhaul added real drafts, but the fixture tree stays the oracle: a real-tree
+    test would change its answer every time a draft is promoted.
 
     The bug population is not the over-delivery this fixes. It is the inverse: a marker
     read too eagerly drops a shipped skill from every profile, and an adopter's next

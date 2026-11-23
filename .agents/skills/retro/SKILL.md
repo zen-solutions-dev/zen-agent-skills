@@ -19,7 +19,8 @@ is almost always to **choose determinism**: a mistake with a fixed shape becomes
 (a type, a lint rule, a test, a hook, a CI job), and only a genuine judgement call becomes a written
 standard, which review reads and implementation does not.
 
-It reports and proposes. It changes nothing until the person approves a proposal by its id.
+It reports and proposes. It edits no file in the repository until the person approves a proposal by
+its id; the only command it runs before then is the repository's own check command, once, in step 1.
 
 Conventions: proposals that touch an agent-facing document (`AGENTS.md`, a `SKILL.md`, a standards
 file) are written against the [`writing-for-agents.md`](../../rules/writing-for-agents.md) lens; your
@@ -69,11 +70,11 @@ reason.
 | **No-op instruction** | Does a line in a steering file change nothing against the model's default? | Delete it. |
 | **Missing information** | Was something the agent needed simply unavailable to it (logs, a service's state)? | Read-only access, or a command that surfaces it. |
 
-**Classify a standards violation before proposing a rule.** A mechanical violation (a banned call,
-an import shape, a file location, a fixed pattern) gets a deterministic check, full stop: a custom
-rule in the repository's own linter, a hook, or a CI job, whichever its language and existing
-guardrails make cheapest. Default to building the check over writing the rule. The standards file is
-for what no check could decide: cross-file consistency, matching the surrounding style, naming.
+**Classify a standards violation before proposing a rule.** When the violation has a fixed shape (a
+banned call, an import pattern, a file in the wrong place), propose a check that fails on it and
+nothing else: usually a rule in the linter the repository already runs, otherwise a hook or a CI
+step, whichever costs least there. Only when no check could decide the question (consistency across
+files, fitting the surrounding style, naming) does it belong in the standards file.
 
 Keep the split between implementation and review in mind. The implementing agent carries the most
 context, so a rule only review needs belongs in the standards file that review reads (`house-review`

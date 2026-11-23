@@ -102,7 +102,8 @@ a new capability may take several. Write no file until the interview has closed.
 Fallback while `grill` is a draft (delete this paragraph when it is promoted and linked): if `grill`
 is not installed, ask in rounds over the frontier, numbered, with a recommended answer per question
 worded so "yes" accepts it; look facts up yourself and record where each was found; put only
-decisions to the person; stop when the frontier is empty and the person confirms.
+decisions to the person; stop when the frontier is empty and the person confirms; then write the
+decisions record (decisions, terms, facts found, still open) that `grill` would have written.
 
 Keep the terms the interview settled, and any decision that is hard to reverse, surprising, and a
 real trade-off: they go to `domain-language` after the spec is written (step 5).

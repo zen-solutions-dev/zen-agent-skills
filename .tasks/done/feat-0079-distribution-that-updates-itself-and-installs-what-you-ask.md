@@ -138,20 +138,20 @@ additive: removing `.claude-plugin/` withdraws it.
 
     python scripts/run-checks.py
 
-- [ ] Exit 0, with the command and the verbatim tail in the pull request body.
-- [ ] New tests cover: both hazards, `--include-drafts`, `--skills` closure, invocation rendering on
+- [x] Exit 0, with the command and the verbatim tail in the pull request body.
+- [x] New tests cover: both hazards, `--include-drafts`, `--skills` closure, invocation rendering on
       the Claude Code paths only, and drafts excluded from adapters.
-- [ ] A dry run into a scratch home with `--include-drafts --tools claude` lists every draft.
-- [ ] The marketplace commands above succeed against a scratch configuration, or the pull request
+- [x] A dry run into a scratch home with `--include-drafts --tools claude` lists every draft.
+- [x] The marketplace commands above succeed against a scratch configuration, or the pull request
       says exactly why they could not be run here.
 
 ## Definition of done
 
-- [ ] Acceptance command passes.
-- [ ] Spec amendments and conformance updates flagged for the maintainer's approval.
-- [ ] Task file moved to `.tasks/done/` with `status: done` and links re-anchored; one dated line in
+- [x] Acceptance command passes.
+- [x] Spec amendments and conformance updates flagged for the maintainer's approval.
+- [x] Task file moved to `.tasks/done/` with `status: done` and links re-anchored; one dated line in
       `CHANGELOG.md`.
-- [ ] Draft pull request into `zen/overhaul-2026-11`, with "Notes for integration".
+- [x] Draft pull request into `zen/overhaul-2026-11`, with "Notes for integration".
 
 ## Decisions
 

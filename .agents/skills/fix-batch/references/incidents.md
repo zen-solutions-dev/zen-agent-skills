@@ -107,6 +107,6 @@ comes up.
 Added by `feat-0077` from the 2026-11 overhaul, which studied Matt Pocock's workflow. A forked agent
 inherits the parent's exploration and assumptions into a context that should hold one task, and a
 dispatched agent that may dispatch its own can fan a batch out past what anyone verifies: a review
-in his published docs fanned out to more than fifty agents. His working default is medium effort for
+fanned out to more than fifty agents, as reported on the `code-review` docs page of his `mattpocock/skills` repository (`docs/engineering/code-review.md`). This is credit for an observation and a working default, not adapted text, so it carries no provenance block. His working default is medium effort for
 nearly everything, raised for verification, because high effort spends the context window on early
 exploration.

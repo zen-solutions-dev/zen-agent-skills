@@ -46,6 +46,10 @@ direction given, rank files and directories by how often they changed in the win
 git log -n 200 --name-only --format= | sort | uniq -c | sort -rn | head -30
 ```
 
+That pipeline needs a POSIX shell. Anywhere else, count the same `git log -n 200 --name-only
+--format=` output with whatever the platform has, for example
+`python -c "import sys, collections; [print(n, p) for p, n in collections.Counter(l.strip() for l in sys.stdin if l.strip()).most_common(30)]"`.
+
 Take the top cluster as the scope. When changes are scattered with no clear cluster, widen the
 window once, then take the top directories. Read the repository's glossary and its decision records
 (ADRs) for the scoped area, if they exist: a decision record is a constraint, not a candidate.
