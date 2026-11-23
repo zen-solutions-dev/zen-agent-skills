@@ -34,8 +34,12 @@ replace a full `spec-quality` review, or choose product scope.
 ## Workflow
 
 1. **Readable inputs.** A missing or unreadable spec is a `source: spec` gap; a missing or unreadable
-   task decomposition is a `source: plan` gap. Either one short-circuits: return `blocked`, leave
-   both maps empty, evaluate nothing else, and omit `first_safe_task`.
+   task decomposition is a `source: plan` gap. So is an approved spec whose text changed after its
+   approval: run the digest script that ships with [`spec-author`](../spec-author/SKILL.md)
+   (`scripts/spec_digest.py`), and treat `changed` or `malformed` as
+   a `source: spec` gap naming the spec as waiting on re-approval. Any of these short-circuits:
+   return `blocked`, leave both maps empty, evaluate nothing else, and omit `first_safe_task`. An
+   `unbound` approval is not a gap; say in the report that it is not tied to any text.
 2. **Spec blockers.** Use `spec-quality` as supporting input when available, without requiring a
    full pass. Convert only what affects whether implementation may begin into `source: spec` gaps,
    each with the rewrite or decision needed:

@@ -17,8 +17,9 @@ this is a permanent, common state rather than a queue that will one day be empty
 
 The convention, in use since 2026-07-27 and written down here on 2026-08-06 (`chore-0030`):
 
-1. **Leave `status: approved`.** The field records the last contract a human agreed to, which is
-   still true of everything the amendment did not touch.
+1. **Leave `status: approved`, and any `approved_digest`.** The fields record the last contract a
+   human agreed to and the exact text they read, which stays true of everything the amendment did
+   not touch.
 2. **Add a dated note to the spec's header**, under the existing approval line, naming the date, the
    amending task's id, and the scenarios or sections that changed. State the pending state in the
    words **pending the author's re-approval**, so the queue is at least findable with a search.
@@ -26,8 +27,11 @@ The convention, in use since 2026-07-27 and written down here on 2026-08-06 (`ch
    as auditing an approved contract in full.
    [`build-adapters.conformance.md`](build-adapters.conformance.md) and
    [`install.conformance.md`](install.conformance.md) both do this.
-4. **Re-approval is the author's**, granted by editing the note. No agent grants it, and no agent
-   changes `status`.
+4. **Re-approval is the author's**, granted by re-reading the spec, recording the digest
+   `spec-author`'s [`spec_digest.py`](../../.agents/skills/spec-author/scripts/spec_digest.py) prints
+   for it as `approved_digest`, and editing the note. No agent grants it, and no agent changes
+   `status` or `approved_digest`: changing the digest so a check passes is editing the judge
+   (`A11`).
 
 ### Why an amended spec does not go back to `draft`
 
@@ -40,35 +44,41 @@ unapproved spec, so one changed scenario would stall every other task waiting on
 Reopening to `draft` was tried once, on [`house-review`](house-review.md) (`chore-0012`), and the
 note recording it is still in that spec's header.
 
-### Why there is no third status value, and no marker key yet
+**Since 2026-11-23 (`feat-0083`) a bound spec stalls anyway, and on purpose.** An approved spec that
+carries an `approved_digest` reads `changed` once amended, and `verifier-agent`, `new-task`, and
+`spec-plan-readiness` block on it until the author re-approves. That is the stall the paragraph
+above avoided, chosen deliberately by the maintainer: verifying or decomposing against text nobody
+approved launders it into evidence, which is the reason `verifier-agent` blocks on a draft at all.
+Going back to `draft` still gains nothing, and loses the record of what was last approved.
+
+### Why there is no third status value, and what the approval digest is
 
 Five things read a spec's `status`: `verifier-agent` blocks on anything but `approved`; `new-task`
 refuses to decompose it; [`doc-sync`](../../.agents/skills/doc-sync/SKILL.md) classifies a document
 carrying one as a contract and therefore never edits it; the
 [spec-closeout gate](../../.agents/hooks/spec-conformance-gate.py) tests it against a terminal-status
-set that excludes `approved` on purpose, with a test pinning that; and the table below. Two of those
-five would need a behavioural branch, `verifier-agent` and `new-task`, since both compare the value
-against `approved` and stop when it differs; the other three read the field's presence, or a closed
-terminal-status set a new value falls outside harmlessly, or display it. Two branches on the spine's
-verification and decomposition gates, plus a new concept for every reader of every spec, in exchange
-for a distinction the header note already carries where a reader is already looking.
+set that excludes `approved` on purpose, with a test pinning that; and the table below. A third value
+would need a behavioural branch in every reader that compares against `approved`, plus a new concept
+for every reader of every spec. So `status` keeps its two values.
 
-A separate frontmatter key would be cheaper, and stays the preferred form if this is ever mechanised.
-Frontmatter here is governed by nothing: the six-key allow-list in
-[`validate-skills.py`](../../scripts/validate-skills.py) applies to `.agents/skills/*/SKILL.md` only.
-A key naming the amending task's id and date would leave `status` meaning exactly what it means
-today, and would let a check answer "which approved specs carry an unreviewed amendment" without any
-consumer of `status` changing behaviour.
+What this page long called "the preferred form if this is ever mechanised", a separate frontmatter
+key, exists since 2026-11-23 (`feat-0083`), with a stronger job than the one first imagined. It does
+not name an amendment; it binds an approval to the text approved. `approved_digest` is the SHA-256 of
+the spec's body as [`spec_digest.py`](../../.agents/skills/spec-author/scripts/spec_digest.py)
+computes it, recorded by the author when approving. The script, which only reads, then answers for
+any spec whether it is `bound` (the text matches), `unbound` (approved, tied to no text), `changed`
+(edited since approval), or `malformed`, and lists the queue:
 
-It is deliberately not introduced yet, for one reason. Such a key earns its keep only through that
-check, and the check is honest only once every spec already in this state carries the key. Every spec
-listed below is already in it, and each states its pending state in different words. Most say
-*pending the author's re-approval*; `house-review` says its frontmatter is left at `approved` for the
-author to confirm at closeout; `doc-sync` and `spec-author` say the amendment needs a maintainer's
-re-approval, and those two keep the note at the foot of the document rather than in the header.
-Retrofitting means editing every one of those approved contracts, which is the author's pass and not
-an agent's. Until it happens, this state lives in prose, and prose is
-not machine-readable: that is the known cost of this convention, not an oversight in it.
+```bash
+python .agents/skills/spec-author/scripts/spec_digest.py --queue docs/spec
+```
+
+**Every spec approved before 2026-11-23 is `unbound`**, by the maintainer's choice: each is bound when
+the author re-reads it, rather than all at once, which would have declared every pending amendment
+below approved without anyone reading it. So the protection reaches a spec only once it is re-read,
+and until then the readers treat `unbound` as approved and say in their reports that it is tied to
+no text. The table below stays as the record of **what** each pending amendment changed, which the
+digest cannot say: it tells you that the text moved, not where.
 
 ### The author's re-approval queue
 
@@ -79,7 +89,8 @@ since `chore-0049`, and
 `validate-skills` five, since `chore-0047`, again since `chore-0054`, again since `chore-0065`, and again since `feat-0064`.
 The 2026-11 overhaul added a second to `house-review` (`feat-0078`), `spec-author` (`feat-0076`)
 and `systematic-debugging` (`feat-0077`), and a first to `verifier-agent` (`feat-0077`); WS4 (`feat-0079`) added one more each to `install`,
-`build-adapters` and `validate-skills`.
+`build-adapters` and `validate-skills`. `feat-0083`, the approval digest, added one more each to
+`spec-author` and `verifier-agent`.
 
 | Spec | Amendment | Amended |
 |---|---|---|
@@ -88,17 +99,18 @@ and `systematic-debugging` (`feat-0077`), and a first to `verifier-agent` (`feat
 | [`doc-sync`](doc-sync.md) | `skipped` and `not_audited` split into two fields (`chore-0027`) | 2026-08-05 |
 | [`house-review`](house-review.md) | `S-014` to `S-018`, the evidence gate and finding signature (`feat-0040`); `S-019` to `S-024`, the spec and standards axes and the depth selection absorbed from the retired `review-depth`, with `S-018` reworded and the spec-judgement non-goal narrowed (`feat-0078`) | 2026-08-05, 2026-11-23 |
 | [`install`](install.md) | `S-015`, the draft-skill axis (`feat-0036`); `S-016` to `S-018`, Goal 10 and `--replace-adopted`, the adopted-versus-derived axis (`bug-0018`); `S-019` to `S-023`, the rules merge, a foreign symlink, `--include-drafts`, `--skills`, and invocation rendering, with the Non-Goal keeping drafts out of adapters withdrawn (`feat-0079`) | 2026-08-05, 2026-08-07, 2026-11-23 |
-| [`spec-author`](spec-author.md) | `S-006` and `S-007`, the spec location (`chore-0027`); Goal 4 and the interview: `S-005` retired, `S-008` and `S-009` added (`feat-0076`) | 2026-08-05, 2026-11-23 |
+| [`spec-author`](spec-author.md) | `S-006` and `S-007`, the spec location (`chore-0027`); Goal 4 and the interview: `S-005` retired, `S-008` and `S-009` added (`feat-0076`); the approval digest: a Constraint, two surface rows, `S-010` and `S-011` (`feat-0083`) | 2026-08-05, 2026-11-23 |
 | [`systematic-debugging`](systematic-debugging.md) | `S-014` and `S-015`, where instrumentation may live and what happens where it cannot live anywhere, settling both Open Questions before anything was built against the contract (`chore-0078`); `S-016`, no red command means no hypothesis phase (`feat-0077`) | 2026-08-29, 2026-11-23 |
 | [`validate-skills`](validate-skills.md) | `S-022`, the code-span and fence exception (`chore-0039`); `S-023` and the "what it reads" surface entry, the lens-composition rule (`chore-0047`); `S-024` and the `Output` and "what it reads" surface entries, the supporting-file link rule (`chore-0054`); `S-025` and the same two surface entries again, the non-skill `.agents/` markdown link rule (`chore-0065`); `S-026` and the "what it reads" entry again, the universal-lens rule (`feat-0064`); `S-027`, `metadata.invocation` (`feat-0079`) | 2026-08-19, 2026-08-20, 2026-08-21, 2026-08-27, 2026-08-29, 2026-11-23 |
-| [`verifier-agent`](verifier-agent.md) | a dated note on dispatching the verifier with a fresh context, as a leaf, at high effort; no scenario changes, so whether it needs re-approval at all is the maintainer's call (`feat-0077`) | 2026-11-23 |
+| [`verifier-agent`](verifier-agent.md) | a dated note on dispatching the verifier with a fresh context, as a leaf, at high effort; no scenario changes, so whether it needs re-approval at all is the maintainer's call (`feat-0077`); the approval digest: the approval Constraint, `S-012` and `S-013` (`feat-0083`) | 2026-11-23 |
 
 The `house-review` row was missed when this table was first written, and how it was missed is the
 argument for eventually replacing this table with a marker key. That spec's note says its
 frontmatter is "left at `approved` for the author to confirm at closeout" rather than using the
 words *pending* or *re-approval*, so it is invisible to the search that finds the rest of this
 table. A convention carried in prose can only be found by a reader who already knows every
-phrasing it has ever taken.
+phrasing it has ever taken. Since `feat-0083` the digest finds a changed spec whatever its note says,
+but only once the spec is bound; for the specs still `unbound`, this table is the record.
 
 ## One file kind per question asked
 

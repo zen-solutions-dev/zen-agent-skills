@@ -59,9 +59,16 @@ Optional:
 Check **both** preconditions that produce `blocked`, so an unrunnable verification is never dressed
 up as a result.
 
-- **Is the contract approved?** If a spec is supplied and its `status` is not `approved`, the run is
-  blocked: verifying against a draft launders an unapproved contract into evidence. If no spec is
-  supplied at all, that is not a blocker; continue, and record that conformance was not assessed.
+- **Is the contract approved, and is it the text that was approved?** If a spec is supplied, run
+  `python <spec-author's directory>/scripts/spec_digest.py <spec>`: the script ships with
+  [`spec-author`](../spec-author/SKILL.md), installed beside this skill, which also defines the
+  digest for a tree that carries no script.
+  `not-approved`, `changed`, or `malformed` blocks the run: verifying against a draft, or against
+  text edited after its approval, launders an unapproved contract into evidence. Name which, and for
+  `changed` say that the approved text was edited and waits on the person's re-approval. `unbound`
+  is not a blocker: continue, and record in `findings` that the approval is not tied to any text. If
+  no spec is supplied at all, that is not a blocker either; continue, and record that conformance
+  was not assessed.
 - **Is there a command to run?** If no verification command is declared, or a declared command's
   runner is absent, the run is blocked, naming what is missing. Do not substitute a command you
   think is equivalent, relax one that fails to launch, or read the code and call that verification.
