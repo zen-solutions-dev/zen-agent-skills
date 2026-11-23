@@ -96,12 +96,13 @@ decision records when they exist (`GLOSSARY.md`, `docs/adr/`, or the repository'
 them). Use the glossary's terms throughout.
 
 Then compose `grill`: interview the person over the decision tree until its frontier is empty and
-they confirm the shared understanding. When `grill` is not installed, run its mechanism inline: ask
-in numbered rounds over every decision whose prerequisites are settled, give a recommended answer
-per question worded so "yes" accepts it, and close with the same decisions record. Scale it to the
-change: a narrow bug may settle in one round, a new capability may take several. Facts come from the
-repository, not the person: look each one up and record it with where it was found. Write no file
-until the interview has closed.
+they confirm the shared understanding. Scale it to the change: a narrow bug may settle in one round,
+a new capability may take several. Write no file until the interview has closed.
+
+Fallback while `grill` is a draft (delete this paragraph when it is promoted and linked): if `grill`
+is not installed, ask in rounds over the frontier, numbered, with a recommended answer per question
+worded so "yes" accepts it; look facts up yourself and record where each was found; put only
+decisions to the person; stop when the frontier is empty and the person confirms.
 
 Keep the terms the interview settled, and any decision that is hard to reverse, surprising, and a
 real trade-off: they go to `domain-language` after the spec is written (step 5).
