@@ -46,9 +46,9 @@ The 2026-11 overhaul, compared against Matt Pocock's skills and written up in [t
 - **Align before you plan.** `grill` interviews you until no decision is silently assumed, and `spec-author` now runs that interview before it drafts. `domain-language` keeps the glossary and decision records.
 - **Build test-first.** `tdd` drives new code one red-green slice at a time, and every agent `fix-batch` dispatches starts with a fresh context.
 - **Close the loop.** `retro` turns a repeated correction into a check, so nobody has to make it twice. `improve-architecture` finds where the codebase fights an agent.
-- **Review on two axes.** `house-review` checks the spec and the written standards separately, and chooses its own depth; `review-depth` is folded into it. `pr-describe` states every change's merge danger.
+- **Review on two axes.** `house-review` checks the spec and the written standards separately, and chooses its own depth; `review-depth` is retired into it. `pr-describe` states every change's merge danger.
 - **A router.** `zen` says which skill fits where you are.
-- **Lighter to carry.** Skills are slimmed, and orchestrators a person starts by name no longer spend the agent's description budget.
+- **Lighter to carry.** Skills are slimmed, orchestrators a person starts by name no longer spend the agent's description budget, and any skill installs alone with `--skills`.
 
 The new skills are drafts until they have been used on real work; see [no skill ships cold](#no-skill-ships-cold). The full list, with status, is in [`docs/CATALOG.md`](docs/CATALOG.md).
 
