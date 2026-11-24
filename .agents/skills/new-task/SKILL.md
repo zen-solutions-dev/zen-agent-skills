@@ -95,7 +95,7 @@ When the input is a spec, four obligations hold inside the normal procedure:
 3. Read `AGENTS.md` (its acceptance command, quality bar and conventions), `.tasks/_TEMPLATE.md`,
    `docs/agents/zen.md` when it exists (its `acceptance`, `glossary` and `default_mode`), and the
    glossary and decision records if the repository keeps them. Say once whether each fact came from
-   `docs/agents/zen.md` or from discovery. When its block does not parse, use none of it, discover instead, and say that `python .tasks/validate.py` shows why.
+   `docs/agents/zen.md` or from discovery. When its block does not parse or names a newer `config_version`, use none of it, discover instead, and say that `python .tasks/validate.py` shows why; a configured path that does not exist is discovered instead too, and said.
 4. Find the next id per type: take the higher of `.tasks/.scaffold.json` `id_high_water` and the
    highest `NNNN` per type in `.tasks/` and `.tasks/done/`. Ids are never reused.
 5. Read any roadmap Feature or existing task the input names, noting whether each dependency is in

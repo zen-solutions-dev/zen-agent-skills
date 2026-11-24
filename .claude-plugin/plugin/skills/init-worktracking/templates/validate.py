@@ -720,7 +720,10 @@ def zen_config_findings(repo_root):
         return found
 
     version = values.get("config_version")
-    if version is not None and version.isdigit() and int(version) > ZEN_CONFIG_VERSION:
+    # ASCII digits, no sign, no leading zero: `str.isdigit()` would accept a full-width
+    # or superscript digit, which int() then reads differently from a person.
+    whole = version is not None and re.fullmatch(r"[1-9][0-9]*", version) is not None
+    if whole and int(version) > ZEN_CONFIG_VERSION:
         # Reported alone (S-007): the newer format's keys would otherwise read as
         # unknown, burying the one fix that matters under findings that are not faults.
         return [f"config_version is {version}, and this validator reads versions up to "
@@ -730,7 +733,7 @@ def zen_config_findings(repo_root):
         found.append(f"unknown key {key!r}")
     if version is None:
         found.append("config_version is required")
-    elif not version.isdigit() or int(version) < 1:
+    elif not whole:
         found.append(f"config_version {version!r} must be a positive whole number")
 
     for key, allowed in ZEN_CHOICES.items():
@@ -756,7 +759,7 @@ def zen_config_findings(repo_root):
         if value == "none":
             continue
         target = root / value
-        if ("\\" in value or Path(value).is_absolute()
+        if ("\\" in value or value.startswith(("/", "~"))
                 or ":" in value.split("/")[0]
                 or not (target.resolve() == resolved_root
                         or resolved_root in target.resolve().parents)):

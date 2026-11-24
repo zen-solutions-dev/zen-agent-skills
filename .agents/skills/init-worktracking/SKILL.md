@@ -135,28 +135,34 @@ fresh scaffold; the person may decline it.
    directory, the standards documents (the conventions section of `AGENTS.md`, a style guide), the
    acceptance command from step 3, the default branch (`git symbolic-ref refs/remotes/origin/HEAD`),
    integration branch names in `git branch -a`, and, for an external tracker with its command-line
-   tool signed in, the label list (`gh label list`, `glab label list`). A section is **settled** when
-   exploration found exactly one candidate for each of its keys.
+   tool signed in, the label list (`gh label list`, `glab label list`; an error message or a
+   non-zero exit means it could not be read). A section is **settled** when every key in it has
+   exactly one candidate the repository shows; `merge_policy`, `default_mode` and role labels never
+   have one, so their sections are always asked.
 2. **Ask one section at a time**, in this order, skipping settled ones: the tracker and its role
    labels (`ready-agent`, `ready-human`, `needs-info`, `blocked`, `out-of-scope`, external trackers
    only); documents (`glossary`, `adr_dir`, `spec_dir`, `standards`); how work lands (`acceptance`,
    `base_branch`, `integration_prefix`, `merge_policy`); agent work (`default_mode`, `session_logs`,
    `memory`). Lead each with the recommended answer, so one word accepts it. Recommend `hitl` as the
    default mode unless the person says agents here run unattended. A fact the repository does not
-   have is `none`, and a fact nobody knows yet is left out.
-3. **On a re-run**, keep every line of the existing file byte-identical, prose and comments
-   included; propose values only for keys it lacks, and change a key only when the person asks for
-   it during the run.
+   have is `none`, and a fact nobody knows yet is left out. For `tracker: other`, ask for a paragraph
+   saying how to create, read, label and close an item, and put it below the block.
+3. **On a re-run**, first run `python .tasks/validate.py`; when the block does not parse, write
+   nothing and ask the person to repair it by hand. Otherwise keep every line of the existing file
+   byte-identical, prose and comments included; propose values only for keys it lacks, appended at
+   the end of the block, and change a key only when the person asks for it during the run.
 4. **Show the whole draft**: the file from `templates/zen.md.tmpl`, and the pointer block for
    `AGENTS.md` from [`templates/agent-skills.md.tmpl`](templates/agent-skills.md.tmpl).
 
 5. **Write only on confirmation**: `docs/agents/zen.md`; the `## Agent skills` section in
-   `AGENTS.md`, replaced in place when it exists and never duplicated (with no `AGENTS.md`, put the
-   block in your reply instead, and create no file for it); and a `memory` file that does not exist
+   `AGENTS.md`, replaced in place when it exists (it ends at the next heading of level two or
+   higher) and otherwise appended at the end (with no `AGENTS.md`, put the block in your reply
+   instead, and create no file for it); and a `memory` file that does not exist
    yet, holding one heading line. Then run `python .tasks/validate.py` and fix what it reports.
 6. **Labels**: for each `role.` label a `github` or `gitlab` tracker lacks, print
-   `gh label create "<label>"` or `glab label create --name "<label>"`, escaping a `"` as `\"`. When
-   the label list could not be read, print one for every configured label and say why. Run none.
+   `gh label create '<label>'` or `glab label create --name '<label>'`, writing each `'` in a label
+   as `'\''`. When the label list could not be read, print one for every configured label other
+   than `none` and say why. Print none for `tasks` or `other`, and run none.
 
 Done when the person confirmed or declined the draft; on confirmation, `validate.py` reports no error
 against `docs/agents/zen.md`, `AGENTS.md` holds one `## Agent skills` section, and every missing

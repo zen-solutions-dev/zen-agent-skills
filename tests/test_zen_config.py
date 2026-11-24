@@ -197,6 +197,52 @@ class ZenConfigTests(Fixture):
                                              "config_version: 3\nfuture_key: x"),
                                 "config_version is 3")
 
+    def test_s020_unicode_digits_signs_and_leading_zeros_fail(self):
+        for value in ("\uff11", "+1", "01", "1.0"):
+            self.assert_one_finding(GOOD.replace("config_version: 1", f"config_version: {value}"),
+                                    "positive whole number")
+
+    def test_s013_a_home_path_fails_for_a_key_other_than_session_logs(self):
+        self.assert_one_finding(GOOD.replace("glossary: GLOSSARY.md", "glossary: ~/g.md"),
+                                "glossary", "inside the repository")
+
+    def test_s037_the_value_is_split_at_the_first_colon_and_quotes_are_kept(self):
+        self.write_config(GOOD.replace("acceptance: python -m pytest",
+                                       "acceptance: make check: all"))
+        for module in self.each():
+            values, problems = module.parse_zen_config(
+                (self.root / "docs" / "agents" / "zen.md").read_text(encoding="utf-8"))
+            self.assertEqual(values["acceptance"], "make check: all")
+        self.assert_one_finding(GOOD.replace("glossary: GLOSSARY.md", 'glossary: "GLOSSARY.md"'),
+                                "glossary", "does not exist")
+
+    def test_s037_none_is_lower_case_only(self):
+        self.assert_one_finding(GOOD.replace("adr_dir: none", "adr_dir: None"),
+                                "adr_dir", "does not exist")
+
+    def test_s038_crlf_line_endings_and_tabs_decide_the_same(self):
+        self.write_config(GOOD.replace("\n", "\r\n").replace("glossary: ", "glossary:\t"))
+        for module in self.each():
+            self.assertEqual(self.findings(module), [])
+
+    def test_s038_every_finding_is_reported_in_one_run(self):
+        self.write_config(GOOD.replace("tracker: github", "tracker: jira")
+                          .replace("default_mode: hitl", "default_mode: auto"))
+        for module in self.each():
+            self.assertEqual(len(self.findings(module)), 2)
+
+    def test_s038_strict_reports_the_same_and_links_mode_does_not_check(self):
+        self.write_config(GOOD.replace("tracker: github", "tracker: jira"))
+        for module in self.each():
+            buf = io.StringIO()
+            with contextlib.redirect_stdout(buf):
+                self.assertEqual(module.main(["--strict"]), 1)
+            self.assertIn("tracker 'jira'", buf.getvalue())
+            buf = io.StringIO()
+            with contextlib.redirect_stdout(buf):
+                module.main(["--links", "*.md"])
+            self.assertNotIn("zen", buf.getvalue())
+
     def test_s008_a_tracker_outside_the_set_fails(self):
         self.assert_one_finding(GOOD.replace("tracker: github", "tracker: jira"),
                                 "tracker", "jira", "gitlab")
