@@ -19,9 +19,9 @@ Format follows the record `feat-0024` established at
 
 ## The run
 
-A real one, not a staged one. Issue [#1](https://github.com/hams-ollo/zen-agent-skills/issues/1) was
+A real one, not a staged one. Issue [#1](https://github.com/zen-solutions-dev/zen-agent-skills/issues/1) was
 opened for the work `feat-0031` describes, the task file was given `external: "#1"`, and pull request
-[#2](https://github.com/hams-ollo/zen-agent-skills/pull/2) was drafted following the procedure this
+[#2](https://github.com/zen-solutions-dev/zen-agent-skills/pull/2) was drafted following the procedure this
 very change added to `pr-describe`.
 
 | Step | Outcome |

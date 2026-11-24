@@ -46,6 +46,17 @@ profile unless asked"; `--skills` (`S-022`) places a named set and its closure; 
 `metadata.invocation: user` reaches Claude Code rendered (`S-023`). The Non-Goal that kept the draft
 axis out of adapter generation is withdrawn: `build-adapters.md` is amended by the same task.
 
+**Amended 2026-11-23 (`chore-0033`) on the author's explicit instruction, which that task file
+carries. Pending the author's re-approval: the amendment is written, the approval is not this
+task's to grant.** The implementation was ahead of its contract and this moves the contract, not the
+code. `S-024` to `S-027` state `--check`, which `chore-0031` shipped and `bug-0020`, `bug-0022` and
+`bug-0056` refined, including how it treats the adopted rules module, in the terms `S-016` and
+`build-adapters.md` `S-010` and `S-014` already use. `S-028` states `--with-hooks` (`feat-0038`):
+placed, recorded, and not activated. `S-029` states what every command does with a record that parses
+but is the wrong shape (`bug-0024`). The Proposed Surface gains both flags and a `Hooks module`
+element, and its `Record` row now describes the per-file digest map every entry carries. Each exit
+code in these scenarios was confirmed by running the tool against throwaway homes on 2026-11-23.
+
 **Amended 2026-07-28 (`bug-0003`) and re-approved by the author on 2026-07-28.** S-007 was scoped to
 the home it was given and S-012 was added. The original wording, "remove the recorded targets and empty the record",
 was satisfied by an implementation that removed every recorded target from every home ever installed
@@ -350,11 +361,115 @@ overwritten exists only as a branch.
   that has fallen behind its source as diverged, and reports a linked skill whose source has since
   become user-invoked as needing a rendered copy.
 
+### Scenario S-024: `--check` reports a current install as current, and writes nothing
+
+- **Given** a home holding targets this tool placed and recorded, none of which has changed since,
+  and a kit whose copies have not changed since either
+- **When** the tool is run with `--check` against that home
+- **Then** it reports one line per recorded target beneath that home, each `ok`, followed by a count
+  per status, and exits zero.
+- **And** a target that is a symbolic link to its own source is reported `linked` rather than
+  compared, because it is the source and cannot be stale, and it does not change the exit code.
+- **And** the check writes nothing, whatever it finds: no installed file and no byte of the record.
+  An adopter may have edited an installed file on purpose, so whether to re-install is a person's
+  call and never this mode's.
+- **And** it reads only the entries beneath the home it was given, per `S-012`, so the state of
+  another recorded home never changes this one's answer.
+
+### Scenario S-025: a derived target that no longer matches the kit is named, with both digests, at exit 1
+
+- **Given** an installed skill, or an installed hooks module, whose files differ from the kit's
+  current copy, because an installed file was edited, the kit's file was revised, or a file exists on
+  one side only
+- **When** the tool is run with `--check`
+- **Then** that target is reported `diverged`, naming each differing file with an abbreviated digest
+  of the installed copy and of the kit's, the targets that still match are reported `ok`, and the run
+  exits 1.
+- **And** a target removed from disk altogether is reported `diverged` and named, at exit 1, because
+  absence is a divergence a check that only opens the files it can find would miss.
+- **And** a user-invoked skill's copy is compared against the rendered bytes a re-install would
+  place, per `S-023`.
+
+### Scenario S-026: a check that cannot answer says so at exit 2, which outranks a divergence
+
+- **Given** a recorded entry beneath the home that carries no per-file digests, because it predates
+  them or its map is empty
+- **When** the tool is run with `--check`
+- **Then** that entry is reported `unknown`, never `ok`, and the run exits 2, because a clean result
+  for a state nobody recorded is the silence the check exists to remove.
+- **And** the remedy is stated per entry: a derived entry is told to re-install, and the adopted rules
+  module is told to run `--replace-adopted`, because re-installing that module preserves it and
+  records nothing, per `S-017`.
+- **And** an entry whose source no longer exists in the kit is reported `error`, at exit 2, for the
+  same reason: nothing could be compared.
+- **And** when nothing is recorded beneath the home at all, the run says nothing can be checked and
+  exits 2, not zero. An empty record cannot be told from a deleted one (`S-005`), so it says nothing
+  about what is on disk.
+- **And** within one run exit 2 outranks exit 1, since a report holding an unanswerable entry cannot
+  be trusted as a whole. `--check` given together with `--uninstall` is refused at exit 2 with
+  nothing removed, because either precedence drops half the request and one half deletes files.
+
+### Scenario S-027: `--check` faults an adopted file only when the kit's copy moved and the file is untouched
+
+- **Given** an installed home whose rules module carries a recorded baseline
+- **When** the tool is run with `--check`
+- **Then** a rules file the adopter edited is not a fault while the kit's copy of it has not moved
+  since the install: the module is reported `ok` and the run exits zero.
+- **And** when the kit's copy has moved since the install, the installed file is compared against the
+  baseline recorded when it was placed, never against the kit's current copy. Where every file the
+  kit revised still matches its baseline, nothing of the adopter's is at stake and the installed copy
+  is simply stale, so the module is reported `diverged` at exit 1. Otherwise the module is reported
+  `revised` at exit zero, naming which revised files are the adopter's and which a re-install would
+  refresh; that includes the case where what moved is only a file the kit added or stopped shipping.
+- **And** a file this install placed that is now missing from the installed module is reported
+  `diverged` at exit 1, naming it, while a file the adopter added beside the kit's is ignored in both
+  directions.
+- **And** this is the same line `S-016` draws for placement and `build-adapters.md` `S-010` and
+  `S-014` draw for the other distribution path. The rules module is **adopted**, so an adopter's edit
+  is theirs and is never reported as a fault, and only the kit's own untouched copy falling behind is.
+  A skill's contents are **derived**, so any difference is reported, per `S-025`.
+
+### Scenario S-028: `--with-hooks` places the hooks module and activates nothing
+
+- **Given** a run requesting `--with-hooks` for one or more tools
+- **When** the tool runs
+- **Then** the kit's hooks module is placed for each requested tool at that tool's own hook path,
+  recorded as one entry carrying a digest per file like any derived target, and the summary counts
+  the hooks placed.
+- **And** nothing is activated: no harness settings file is created or edited. For Claude Code the
+  run says the hooks are inactive and prints the registration block a person would merge into their
+  settings; for OpenCode it says where the module landed and whether the plugin that would read it is
+  present there, reporting the placement `LIVE` or `INERT`. Every tool that received the module is
+  told about it.
+- **And** without the flag no hooks module is placed or recorded, a preview places and records none
+  per `S-006`, a re-run replaces the module rather than reporting a conflict per `S-003`, and
+  `--uninstall` removes it per `S-007` with no flag of its own.
+- **And** the reason activation stays with a person: a hook is the only thing the kit ships that runs
+  inside an adopter's session, and editing their settings is a harness setting change the Non-Goals
+  rule out and the record could not cleanly reverse.
+
+### Scenario S-029: a record that parses but is the wrong shape stops every command at exit 2
+
+- **Given** an install record that parses as JSON but is not shaped like one: it has no `entries`
+  list, an entry that is not an object, an entry with no `target` or a `target` that is not a
+  non-empty string, or an optional field of the wrong type
+- **When** the tool is run in any mode: placing, `--uninstall`, or `--check`, previewed or not
+- **Then** it names the record's path and what is wrong with it, down to the offending entry by index
+  and by name where it has one, places nothing, removes nothing, checks nothing, leaves the record
+  byte-for-byte unchanged, and exits 2.
+- **And** 2 rather than 1, because 1 means `--check` found a divergence and here nothing was compared.
+- **And** a placing run refuses rather than reading the record as empty, because proceeding would
+  write a fresh record over the damaged one and lose every target it records under other homes, the
+  one irreversible outcome available.
+- **And** a record whose bytes do not parse at all is read as no record, as a deleted one is per
+  `S-005`, since it never named an install; and a key the tool does not recognise leaves a record
+  valid, so a record written by a later version is not mistaken for damage.
+
 ## Proposed Surface
 
 | Element | Detail |
 |---|---|
-| Invocation | `python scripts/install.py [--tools <list>] [--profile <name> \| --skills <list>] [--include-drafts] [--mode <symlink\|copy>] [--home <dir>] [--dry-run] [--replace-adopted] [--uninstall]` |
+| Invocation | `python scripts/install.py [--tools <list>] [--profile <name> \| --skills <list>] [--include-drafts] [--mode <symlink\|copy>] [--home <dir>] [--dry-run] [--with-hooks] [--replace-adopted] [--uninstall \| --check]` |
 | `--tools` | Comma-separated subset of the supported tools; defaults to all of them |
 | `--profile` | Which skills to place: `core` (the separable front door), `spine` (the delivery loop), or `all`. Defaults to `spine`, which is smaller than `all`. Each is expanded to its closure over sibling references before anything is placed |
 | `--skills` | Comma-separated skill names placed with their closure over sibling references, per S-022. Replaces `--profile` |
@@ -364,14 +479,17 @@ overwritten exists only as a branch.
 | `--dry-run` | Preview: report what would be placed, write nothing |
 | `--replace-adopted` | Overwrite the installed rules module with the kit's copy, discarding the adopter's edits to it. Its own flag and not a `--mode` value, per S-018. Without it, an edited file is preserved and reported |
 | `--uninstall` | Remove the recorded targets beneath `--home` and drop those entries from the record, leaving entries for other homes |
+| `--check` | Report, per recorded target beneath `--home`, whether it still matches the kit, as `ok`, `linked`, `revised`, `diverged`, `unknown`, or `error`, per S-024 to S-027. Writes nothing. Refused alongside `--uninstall` |
+| `--with-hooks` | Also place the hooks module, per S-028. Opt-in: it is placed and recorded, and the run prints how to activate it rather than activating it |
 | Placed per tool | Each skill's directory under that tool's discovery path, plus the rules module as their sibling |
+| Hooks module | With `--with-hooks` only: the kit's `.agents/hooks/` placed at `<home>/.claude/hooks` for Claude Code and `<home>/.agents/hooks` for OpenCode, recorded as one entry named `hooks`. Derived, like a skill directory, so a re-run replaces it and `--check` compares it per S-025. No settings file is written |
 | Adopted material | The rules module only. Placed file by file so an untouched file can be refreshed while an edited one beside it is kept, and so a file the adopter added is left alone. Skill directories are derived and are replaced wholesale |
 | Draft marker | Carried by the skill itself, in the `metadata` frontmatter property the skill schema permits: `metadata.status: draft`. No marker, or any other value, means shipped |
 | Invocation marker | Carried by the skill: `metadata.invocation: user`. Rendered as `disable-model-invocation: true` into the Claude Code copy only, per S-023 |
 | Merged rules module | A rules directory the tool did not place is recorded with mode `merged` and only the files the tool placed, per S-019 |
-| Record | A manifest of the targets this tool created, enabling re-run recognition in copy mode |
-| Exit code | non-zero on an unrecognised tool or profile, a profile colliding with a draft marker, or any unmanaged-target conflict, zero otherwise |
-| Output | one line per target with its outcome, then a summary carrying the placed count and the description-character total per profile; conflicts, any closure expansion, any skills held back as drafts, and any adopted file preserved rather than replaced additionally summarised, the last named per file |
+| Record | A manifest of the targets this tool created, enabling re-run recognition in copy mode. Each entry names its target, tool, name, placement mode, and source, and carries a per-file digest map: the SHA-256 of every file placed, keyed by its path relative to the target (for a rendered copy, the rendered bytes, per S-023). The map is the baseline `--check` compares against and the line S-016 draws between an untouched and an edited adopted file. An entry without one has no baseline (S-026). A record that parses but is the wrong shape stops every command (S-029); one that does not parse is read as no record (S-005) |
+| Exit code | non-zero on an unrecognised tool or profile, a profile colliding with a draft marker, or any unmanaged-target conflict, zero otherwise. For every command, 2 when the record parses but is the wrong shape, before anything is placed, removed, or checked (S-029). For `--check`: 0 when every entry beneath the home is `ok`, `linked`, or `revised`; 1 when one is `diverged`; 2 when one is `unknown` or `error`, when nothing is recorded beneath the home, or when it is combined with `--uninstall`, 2 outranking 1 (S-024 to S-027) |
+| Output | one line per target with its outcome, then a summary carrying the placed count and the description-character total per profile; conflicts, any closure expansion, any skills held back as drafts, and any adopted file preserved rather than replaced additionally summarised, the last named per file. With `--with-hooks`, one activation note per tool that received the module (S-028). For `--check`, one line per recorded target beneath the home carrying its status and what differs, then a count per status and a remedy line for each of `diverged`, `revised`, and `unknown` that is present |
 
 A note on what the default change does **not** do, because the quiet version of it would be a defect.
 Defaulting to `spine` means `agent-handoff` and `human-handoff` stop being refreshed by a default run.

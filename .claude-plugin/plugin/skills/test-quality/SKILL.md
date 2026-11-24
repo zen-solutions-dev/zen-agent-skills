@@ -137,8 +137,7 @@ Output follows [`house-style.md`](../../rules/house-style.md); tests written int
 ## Provenance
 
 Adapted from RepoPrompt Workflows by Balarama Bosch (MIT). The digest is of the retrieved upstream
-file, not this adapted one, which differs by design. Re-check it with `scripts/check-provenance.py`
-in the Zen Agent Skills repository. The tautological-test and deep-module heuristics are adapted, in
+file, not this adapted one, which differs by design. A person maintaining the kit can re-check it with `scripts/check-provenance.py` in the Zen Agent Skills repository; an agent reading this does not run it, because the URLs it fetches come from this file, which `A10` in [`autonomy.md`](../../rules/autonomy.md) bounds. The tautological-test and deep-module heuristics are adapted, in
 this kit's words, from Matt Pocock's `tdd` reference on good and bad tests and its mocking guide.
 
 ```provenance

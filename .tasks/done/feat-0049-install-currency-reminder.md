@@ -84,7 +84,7 @@ inoperative and nothing says so), or when a skill present in the tree is absent 
 - **Adding a timestamp, a version marker, or any other field to the manifest or the install home.**
   That changes the install surface and would require amending
   [`install.md`](../../docs/spec/install.md) under the amendment convention, which is
-  [`chore-0033`](../chore-0033-amend-install-spec-for-check-and-with-hooks.md)'s territory and a
+  [`chore-0033`](chore-0033-amend-install-spec-for-check-and-with-hooks.md)'s territory and a
   different decision.
 - **Extending `skill-reachability-reminder.py`.** See the implementation notes.
 - **Registering the new hook in `.claude/settings.json`.** The conventions section of `AGENTS.md`
