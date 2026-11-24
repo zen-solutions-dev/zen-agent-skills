@@ -105,7 +105,9 @@ of briefs has disjoint owned paths, and every research source has been probed.
 Compute the frontier from the integration branch (`git log <integration>` for the landed ids), and
 start every frontier child at once, each with a **fresh context**, as a **leaf**. Medium effort for
 building; high for verifying and debugging. Where children run as worktree agents, follow
-`fix-batch` Steps 2 and 3 for the dispatch sha and the cut.
+`fix-batch` Steps 2 and 3 for the dispatch sha and the cut, with one change to its prompt: the child
+**commits and pushes its own branch**, because what lands is the child's verified commit. Committing
+a child's uncommitted work yourself makes it your own work (`A8`'s exception, guard 1).
 
 A dependency outside this run counts as landed when it is already in the base the integration branch
 was cut from; say which ones you counted that way. **An empty frontier while unlanded children
