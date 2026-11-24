@@ -144,6 +144,27 @@ unattended runs, a `permissions.deny` rule on the merge commands enforces this b
 *Cited, with a qualification:* the shape is exercised by `pr-describe`; the specific ceiling is a
 decision recorded in `ROADMAP.md` Epic E rather than a rule this kit has already run under.
 
+**The one exception: an orchestrator landing other agents' work on an integration branch.** An
+**integration branch** is a branch cut for one run to collect its children's work, which reaches a
+person as one draft pull request. An orchestrator may merge a child's branch into it only when every
+guard below holds; if any one fails, `A8` applies unchanged and the child's branch waits for a person.
+
+1. **Not its own work.** The orchestrator authored none of the change. A commit it wrote, or a fix
+   it made to a child's work, makes that work its own, and its own work is never merged by it.
+2. **Verified by someone else.** An agent other than the author and other than the orchestrator
+   returned a passing verdict on the exact commit being merged (`A7`), and the orchestrator has
+   read that verdict's evidence. Unverified, `fail` or `blocked` work does not land.
+3. **The integration branch only.** Never the base branch, and never a branch a person or another
+   run owns.
+4. **A person merges into `developer` or `main`.** The integration branch goes to a person as a draft
+   pull request, and that merge, like every merge into the base branch, is theirs alone. Where the
+   repository calls its base branch something else, the same holds for it.
+
+*Cited:* decision `D1` of the 2026-11-24 "Marjana" overhaul, taken by the maintainer, and that
+overhaul's own run (2026-11-24), where one orchestrating session dispatched five workstream
+sessions to land on `zen/marjana-2026-11-24` and reach the maintainer as one pull request into
+`main`. The skill that runs the pattern is `orchestrate`.
+
 ## Scope
 
 These are defaults, not laws. A skill may state a local exception, and a downstream adopter may

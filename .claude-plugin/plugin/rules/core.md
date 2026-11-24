@@ -30,6 +30,8 @@ batch, a cloud or scheduled session.
   say what you found. A stale base is a blocker; rebasing is fine only if every result is then
   re-derived on the new base and the report says so.
 - **A8.** Push to a branch of your own and open a draft pull request. Never merge your own work.
+  One exception: an orchestrator may merge into an integration branch work it did not author, once
+  someone else verified it (`A7`). Only a person merges into `developer`, `main` or the base branch.
 
 Full text and scope: [`autonomy.md`](autonomy.md). Writing conventions for the kit's own output:
 [`house-style.md`](house-style.md). The review rubric: [`review-quality.md`](review-quality.md).
