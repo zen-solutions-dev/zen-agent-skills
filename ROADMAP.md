@@ -30,7 +30,7 @@ A deep clean of context bloat and drift, planned and approved on 2026-11-24 in [
 - **WS-C Orchestrate and build** ([`feat-0092`](.tasks/done/feat-0092-marjana-orchestrate-and-build.md)), **shipped 2026-11-24**: rule `D1` in the autonomy lens, the draft `orchestrate` and `research` skills, and the build and verify skills brought current.
 - **WS-D Ship, learn and lenses** ([`feat-0093`](.tasks/done/feat-0093-marjana-ship-learn-and-lenses.md)), **shipped 2026-11-24**: review stops after one fix round, `retro` ratchets and prunes, and the lenses keep documents honest.
 - **WS-E Platform and gates** ([`feat-0094`](.tasks/done/feat-0094-marjana-platform-and-gates.md)), **shipped 2026-11-24**: a "Done when" validator warning, a roadmap draft-status check, a description budget that counts what Claude Code loads, a hermetic home for the test gate, undecodable-name tests, and one shared link reader (`feat-0090`).
-- **Integration** ([`feat-0095`](.tasks/feat-0095-marjana-integrate-verify-and-ship.md)): in flight on 2026-11-24.
+- **Integration** ([`feat-0095`](.tasks/done/feat-0095-marjana-integrate-verify-and-ship.md)), **closed 2026-11-24**: independently verified (`pass`), the retro's ten proposals recorded for approval, and one draft pull request into `main` for the maintainer to merge.
 - **Recorded, not built this round**: retro proposals `R-003` and `R-004` stay owed. Whether the drafts `quest-tracker` and `agent-observatory` are Tier A skills or the maintainer's own tooling is decided at their promotion.
 
 ## Shipped and archived sections

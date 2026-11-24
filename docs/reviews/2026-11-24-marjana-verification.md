@@ -1,6 +1,6 @@
 # 2026-11-24 Marjana overhaul: independent verification
 
-Verification of the integration branch `zen/marjana-2026-11-24` at `6793cb64c0dc26f2650a4ae2855ab3fe01ce99d1` against `origin/main` at `220282ad97e07d95295214e9deb6f0cbfac001bb`, for [`feat-0095`](../../.tasks/feat-0095-marjana-integrate-verify-and-ship.md) (rule `A7`). Written by following [`verifier-agent`](../../.agents/skills/verifier-agent/SKILL.md). The contract for the round is the [Marjana plan](2026-11-24-marjana-plan.md). Report only: nothing else in the tree was changed.
+Verification of the integration branch `zen/marjana-2026-11-24` at `6793cb64c0dc26f2650a4ae2855ab3fe01ce99d1` against `origin/main` at `220282ad97e07d95295214e9deb6f0cbfac001bb`, for [`feat-0095`](../../.tasks/done/feat-0095-marjana-integrate-verify-and-ship.md) (rule `A7`). Written by following [`verifier-agent`](../../.agents/skills/verifier-agent/SKILL.md). The contract for the round is the [Marjana plan](2026-11-24-marjana-plan.md). Report only: nothing else in the tree was changed.
 
 The branch had not moved: `git rev-parse origin/zen/marjana-2026-11-24` printed `6793cb64c0dc26f2650a4ae2855ab3fe01ce99d1`. Every check below ran on a checkout of that commit, on Linux, Python 3.13.18, one of the six CI cells.
 

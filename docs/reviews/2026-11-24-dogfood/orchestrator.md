@@ -1,6 +1,6 @@
 # Dogfood record: the orchestrator (2026-11-24)
 
-The orchestrating cloud session for the Marjana round, `feat-0095`. It wrote no skill text. It planned, briefed, relayed, reviewed by delegation, and landed. This record covers the kit skills it ran on that work; each workstream's own record covers the skills that workstream owns.
+The orchestrating cloud session for the Marjana round, `feat-0095`. It wrote no workstream's skill text: it planned, briefed, relayed, reviewed by delegation, and landed. At integration it made small edits of its own (`2763c36`: `orchestrate`, `research`, `fix-batch`, `spec-author` and the `zen-config` spec, from the reviewers' nits), which the pull request lists as its own work. This record covers the kit skills it ran on that work; each workstream's own record covers the skills that workstream owns.
 
 | Skill | Ran on | Evidence | Verdict | What it exposed |
 |---|---|---|---|---|
@@ -12,4 +12,5 @@ The orchestrating cloud session for the Marjana round, `feat-0095`. It wrote no 
 | `reconcile-worktrees` | Landing on the integration branch. | `git rev-parse origin/<branch>` compared with the verified sha, then `git merge --ff-only <sha>`, for WS-D. | works | See `orchestrate`, finding 1. |
 | `agent-handoff` | Every child brief. | Seven briefs, each built from context pointers (the task file, the plan, report sections) rather than retyped content, with owned paths, a branch, the acceptance command, the report fields, and "merge the integration tip before you report". | works | none |
 
-Not exercised by the orchestrator: `retro` and `pr-describe` run at the close of `feat-0095` and are recorded there.
+| `retro` | This orchestration, plus a failures-first sample of one child (WS-C, outputs only) and the round's review records. | [`2026-11-24-retro-marjana.md`](../2026-11-24-retro-marjana.md): ten proposals, `R-201` to `R-210`, report only, each waiting for the maintainer's approval by id. | works | The sampled-sessions input added in this round worked on its first use. With only a child's outputs to read, the report has to say that friction the child never wrote down is missed, and it did. |
+| `pr-describe` | The one pull request into `main`. | Its body, starting from WS-D's draft (`ws-d-drafts.md`) and filled with what landed: the merge danger, two one-way doors, and the stack offer stated but not taken because the maintainer asked for one pull request. | works | The offer step fit a case where the person has already said how they want the change split; the body says so, rather than performing the split. |

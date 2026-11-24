@@ -50,7 +50,7 @@ The 2026-11-24 "Marjana" round, a deep clean planned in [the Marjana plan](docs/
 - **Lighter to carry.** This repository's always-loaded `AGENTS.md` fell from about 28 KB to about 9 KB, the two scaffolds no longer spend an adopter's description budget, and the installer's budget figure now counts only what Claude Code loads.
 - **New gates for the drift this round found**: a warning for a workflow step with no completion criterion, and a roadmap check that fails when a skill's stated status disagrees with its frontmatter.
 
-Every skill this round touched was run on the round's own work, recorded in [the dogfood records](docs/reviews/2026-11-24-dogfood/README.md).
+Each skill this round touched was run on the round's own work or a scratch adopter repository, or is recorded as not exercised with the reason (`systematic-debugging` met no defect that needed it), in [the dogfood records](docs/reviews/2026-11-24-dogfood/README.md).
 
 The 2026-11 overhaul before it, compared against Matt Pocock's skills and written up in [the overhaul plan](docs/reviews/2026-11-overhaul-plan.md), adds the front and the back of the loop:
 

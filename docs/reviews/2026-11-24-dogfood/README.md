@@ -1,6 +1,6 @@
 # Dogfood records: the 2026-11-24 Marjana round
 
-Every skill this round touched was run on the round's own work, or on a realistic scratch target outside the repository where real work could not exercise it. Each run is recorded with its evidence by the session that ran it. A skill that was not exercised is recorded as such, with the reason.
+Each skill this round touched was run on the round's own work, or on a realistic scratch target outside the repository where real work could not exercise it, or is recorded as not exercised. Each run is recorded with its evidence by the session that ran it. A skill that was not exercised is recorded as such, with the reason.
 
 | Record | Session | Skills it owns or ran |
 |---|---|---|

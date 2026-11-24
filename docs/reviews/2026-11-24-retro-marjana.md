@@ -5,7 +5,7 @@
 **Sources (A6).**
 - The orchestrating session itself, read directly.
 - A sample of the seven child sessions, drawn failures first: WS-C (`feat-0092`). It pushed once before its checks were green, its own verifier first returned `fail`, and its landing review held the round's one landing blocker. Only its outputs were read (its reports, commits and dogfood record), not its transcript, so friction it never wrote down is missed.
-- The round's review records: five landing reviews and five focused re-checks, by fresh-context subagents, and the independent verification.
+- The round's review records: five landing reviews and five focused re-checks, by fresh-context subagents, and [the independent verification](2026-11-24-marjana-verification.md) (verdict `pass` on `6793cb6`, nine findings).
 
 Proposal ids start at `R-201`, so they cannot collide with the `R-001` to `R-008` series or with WS-D's report-only `R-101` to `R-106`.
 
@@ -32,7 +32,10 @@ proposals:
       mechanical conflicts only. Meanwhile, WS-C's D1 text, landed in c0579ad, says "A landing that
       needs a merge commit or a conflict resolution goes back to the child". WS-E was then sent back,
       and it cost one extra round trip and one extra re-check (52d3d19).
-    recurrence: 2 merges against the rule, 1 send-back, in one round of 5 children
+    recurrence: 2 merges against the rule, 1 send-back, in one round of 5 children. The independent
+      verification (finding F1) re-derived both merges with git merge-tree and found that only the
+      conflicted files changed and that each resolution was correct; it rated the rule breach major and
+      left the ruling to the maintainer
     proposal: >-
       Decide between two options. (a) Keep fast-forward only. The cost is one round trip per child
       after the first, in landing order. (b) Allow an orchestrator merge commit whose conflicts are

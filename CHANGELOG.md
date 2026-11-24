@@ -64,6 +64,8 @@ Contents, derived from the task log (2026-07-23 to 2026-07-29, now in [`docs/his
 
 ## Task log
 
+- [x] (2026-11-24) Closed [`feat-0095`](.tasks/done/feat-0095-marjana-integrate-verify-and-ship.md): five workstreams landed after one review and one re-check each, an independent verification (`pass`), a retro (`R-201` to `R-210`), and one pull request into `main`.
+
 - [x] (2026-11-24) Closed [`feat-0094`](.tasks/done/feat-0094-marjana-platform-and-gates.md): a "Done when" warning (`R-005`), a roadmap status check that fails on a stale exception (`P3`), a budget headline of what Claude Code loads (`P11`), a hermetic test home (`R-001`), undecodable-name tests (`R-007`).
 
 - [x] (2026-11-24) Closed [`feat-0090`](.tasks/done/feat-0090-one-span-aware-reader-for-links-and-profile-edges.md): one span-aware link reader in `scripts/_skillmeta.py`, shared by the validator, installer and adapters, so a link inside a code span or fence is not an install edge. Placements unchanged; closes `chore-0059`.

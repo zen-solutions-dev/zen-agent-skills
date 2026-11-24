@@ -110,7 +110,8 @@ never because a commit message mentions it. Start every frontier child at once, 
 **fresh context**, as a **leaf**. Medium effort for building; high for verifying and debugging.
 Where children run as worktree agents, follow `fix-batch` Steps 2 and 3 for the dispatch sha and
 the cut, with one change to its prompt: the child **commits and pushes its own branch**, because
-what lands is the child's verified commit. Committing a child's uncommitted work yourself makes it your own work (`A8`'s exception, guard 1).
+what lands is the child's verified commit. Committing a child's uncommitted work yourself makes it
+your own work (`A8`'s exception, guard 1).
 
 A dependency outside this run counts as landed when it is already in the base the integration branch
 was cut from; say which ones you counted that way. **An empty frontier while unlanded children
@@ -146,8 +147,9 @@ an answer or a named owner.
 5. **Land** a `pass` on the integration branch by reading and following
    [`reconcile-worktrees`](../reconcile-worktrees/SKILL.md): **fast-forward only, to the verified
    sha**. A child whose branch has moved past that sha, or has not merged the tip, or whose
-   landing would need a conflict resolution, goes back to merge the tip and be verified again. This is the one merge an orchestrator may make, under every guard of
-   `A8`'s exception: work you did not author, verified by someone else, the integration branch only.
+   landing would need a conflict resolution, goes back to merge the tip and be verified again.
+   This is the one merge an orchestrator may make, under every guard of `A8`'s exception: work
+   you did not author, verified by someone else, the integration branch only.
 6. **Push after every landing.** After any restart of this session, check the remote state
    (`git status -sb`, `git log origin/<integration>..<integration>`) before anything else.
 7. **A `fail` or `blocked`** goes back to a fresh child with the verdict's reasons. **Cap: two
