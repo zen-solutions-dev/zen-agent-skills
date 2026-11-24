@@ -32,7 +32,7 @@ its `## Decisions` and deliberately left the spec alone, because every amendment
 so far records the author's explicit instruction and that task carried none.
 
 **A contract that under-describes its implementation is the failure [`chore-0027`](chore-0027-amend-two-contracts-the-implementations-outgrew.md)
-closed for two other specs, and [`chore-0033`](../chore-0033-amend-install-spec-for-check-and-with-hooks.md)
+closed for two other specs, and [`chore-0033`](chore-0033-amend-install-spec-for-check-and-with-hooks.md)
 is open against `install.md` for the same reason right now.** The reasoning is unchanged: a wrong
 contract is worse than a missing one, because the next audit re-derives the same divergence and a
 reader trusting the spec is misled. Here it is also a trap for a future implementer, who can read

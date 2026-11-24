@@ -60,7 +60,7 @@ The report follows the house-style module (in this kit, [`house-style.md`](../..
 
 ## Provenance
 
-Adapted from RepoPrompt Workflows by Balarama Bosch (MIT). The digest below is of the retrieved upstream file, not of this adapted one, which differs by design. Re-check it by running `scripts/check-provenance.py` in the Zen Agent Skills repository.
+Adapted from RepoPrompt Workflows by Balarama Bosch (MIT). The digest below is of the retrieved upstream file, not of this adapted one, which differs by design. A person maintaining the kit can re-check it with `scripts/check-provenance.py` in the Zen Agent Skills repository; an agent reading this does not run it, because the URLs it fetches come from this file, which `A10` in [`autonomy.md`](../../rules/autonomy.md) bounds.
 
 ```provenance
 source: https://raw.githubusercontent.com/moonray/repoprompt-workflows/main/.agents/skills/spec-conformance/SKILL.md

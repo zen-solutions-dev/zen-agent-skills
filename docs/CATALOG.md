@@ -69,7 +69,7 @@ Four rules modules under [`.agents/rules/`](../.agents/rules/) install alongside
 | Lens | What it governs |
 |---|---|
 | [`house-style.md`](../.agents/rules/house-style.md) | How prose reads to a person: no em-dashes, sentence-case headings, named sources, Mermaid for diagrams. Universal. |
-| [`autonomy.md`](../.agents/rules/autonomy.md) | What an agent may do when nobody is watching, and what it may do with material it did not write. Universal; [`core.md`](../.agents/rules/core.md) is its one-line-per-rule summary every session loads. |
+| [`autonomy.md`](../.agents/rules/autonomy.md) | What an agent may do when nobody is watching, what it may do with material it did not write (`A10`), and that it may not edit the check that judges its work (`A11`). Universal; [`core.md`](../.agents/rules/core.md) is its one-line-per-rule summary every session loads. |
 | [`review-quality.md`](../.agents/rules/review-quality.md) | The review rubric and severities, including the spec and standards axes `house-review` runs. |
 | [`writing-for-agents.md`](../.agents/rules/writing-for-agents.md) | How a document behaves when an agent reads it: descriptions as pointers, completion criteria, the no-op test, model- versus user-invoked. New in the 2026-11 overhaul. |
 
@@ -100,12 +100,13 @@ The [hooks module](../.agents/hooks/README.md) is the answer to the second kind.
 | `install-currency-reminder` | reminder | a session starts in the kit's own repository and its install record no longer agrees with the working tree, so the copies you are working with are stale, have no digest baseline to be checked against, or were never installed. `install.py --check` has always been able to answer this; nothing ever asked it, and eighteen stale skills went unreported for ten days as a result |
 | `worktree-boundary-reminder` | reminder | a shell command run inside a linked git worktree looks like it writes and names a path outside that worktree. Claude Code refuses an edit tool aimed at the main checkout but does not track where a `cp`, a `mv`, or a redirect writes, and its sandbox does not run on native Windows |
 | `instruction-provenance-reminder` | reminder | a session starts with an `AGENTS.md`, `CLAUDE.md`, settings file, or MCP config that no commit vouches for: outside any repository, as in a Downloads folder, or present in one without being committed. Harnesses load these before anything else runs, so a planted one is an instruction from a stranger, and this is what names it |
+| `observatory-event` | reminder | a turn finishes and a local observatory may be watching. It injects nothing and blocks nothing: it appends one line to a spool file that nothing reads unless the [observatory](OBSERVATORY.md) is running |
 
 These are the only things the kit ships that run inside your session, so they are opt-in (`install.py --with-hooks`) and you activate them yourself.
 
 ## What the kit borrows, and how you can check it
 
-Some of what is above came from somewhere else, chiefly Balarama Bosch's [repoprompt-workflows](https://github.com/moonray/repoprompt-workflows) (MIT): four of the Epic B lenses, the review lens, and both hooks. Attribution for all of it is in [`NOTICE`](../NOTICE).
+Some of what is above came from somewhere else, chiefly Balarama Bosch's [repoprompt-workflows](https://github.com/moonray/repoprompt-workflows) (MIT): four of the Epic B lenses, the review lens, and two of the hooks, `delegation-reminder` and `spec-conformance-gate`. Attribution for all of it is in [`NOTICE`](../NOTICE).
 
 Prose credit on its own decays, though. This kit's own roadmap once credited a skill to an upstream workflow that had never been vendored here, and by the time anyone noticed, the folder that would have settled it was gone. So since `feat-0043` every adapted file also carries a **provenance block**: the exact upstream file it came from, the author, the license, the date it was retrieved, and the SHA256 of the bytes that were retrieved. Running `scripts/check-provenance.py` re-fetches each recorded source and tells you whether upstream has moved since.
 

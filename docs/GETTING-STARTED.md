@@ -22,6 +22,7 @@ The kit does not build a product for you by itself. It gives you a repeatable wa
 The repository contains:
 
 - 🧰 Reusable agent skills in [`.agents/skills/`](../.agents/skills/).
+- 🧩 A Claude Code plugin marketplace in [`.claude-plugin/`](../.claude-plugin/), which updates itself.
 - 📦 An installer for Claude Code and OpenCode in [`scripts/install.py`](../scripts/install.py).
 - 🔌 Project adapters for Cursor and VS Code or Copilot in [`scripts/build-adapters.py`](../scripts/build-adapters.py).
 - ✅ A skill checker in [`scripts/validate-skills.py`](../scripts/validate-skills.py).
@@ -212,7 +213,7 @@ Try:
 
 The `grill` skill asks a few questions at a time, each with a recommended answer you can accept with a "yes". It looks facts up in the project rather than asking you, so the questions that reach you are real decisions. It ends with a short record of what you decided.
 
-Then turn the decisions into work. For a small change, `new-task` writes one task with a clear acceptance check. For behaviour someone has to agree before it is built, `spec-author` writes a short specification first and waits for your approval. If you are unsure which, ask `zen`.
+Then turn the decisions into work. For a small change, `new-task` writes one task with a clear acceptance check. For behaviour someone has to agree before it is built, `spec-author` writes a short specification first and waits for your approval. If you are unsure which, ask `zen` (a draft, placed with `--include-drafts`).
 
 ### 7. Work in small loops
 
@@ -311,7 +312,7 @@ The kit is most useful when it reduces repeated confusion.
 
 You can use the kit without adopting its full work-tracking system.
 
-Install the skills for your tool, then use one skill when the need appears. If you cannot remember which, ask `zen`:
+Install the skills for your tool, then use one skill when the need appears. If you cannot remember which, ask `zen`, itself a draft:
 
 - 🔥 `grill` for being interviewed about a plan or idea until nothing is silently assumed. A draft.
 - 📝 `doc-author` for a new, code-grounded guide.

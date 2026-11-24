@@ -2,7 +2,7 @@
 id: chore-0092
 title: The roadmap's description-budget figures are stale and the collision cluster they name is measurably not the worst one
 type: chore
-status: open
+status: done
 priority: P2
 parent: "ROADMAP Epic E #6: fixture-based skill evaluation suite"
 depends_on: []
@@ -13,7 +13,7 @@ created: 2026-09-01
 
 ## Problem
 
-Two lines of [`ROADMAP.md`](../ROADMAP.md), in Epic E item 6 and in "Out of scope by design", carry
+Two lines of [`ROADMAP.md`](../../ROADMAP.md), in Epic E item 6 and in "Out of scope by design", carry
 the same figure and the same claim:
 
 ```text
@@ -38,7 +38,7 @@ skills discovered: 22 | drafts: ['agent-observatory', 'systematic-debugging'] | 
 ```
 
 So neither "twenty skills" nor "759 characters" is current under either reading of the set. This is
-the case the writing section of [`house-style.md`](../.agents/rules/house-style.md) forbids by name, a
+the case the writing section of [`house-style.md`](../../.agents/rules/house-style.md) forbids by name, a
 count written in prose beside the thing it counts, and it is the same failure mode as the four
 instances that rule already lists: the sentence looked permanently true and stopped being true the
 moment a skill was added, which nobody thinks of as touching the roadmap.
@@ -65,7 +65,7 @@ roadmap item: Epic E item 6 names trigger disambiguation as the half no external
 a fixture suite built to these priorities would spend its budget on the cluster that needs it least.
 
 Found by the 2026-09-01 review, recorded as finding 4 in
-[`docs/reviews/2026-09-01-optimization-and-gap-review.md`](../docs/reviews/2026-09-01-optimization-and-gap-review.md).
+[`docs/reviews/2026-09-01-optimization-and-gap-review.md`](../../docs/reviews/2026-09-01-optimization-and-gap-review.md).
 
 ## Scope
 
@@ -111,6 +111,24 @@ the move this task is correcting.
 
 ## Decisions
 
+- **2026-11-23: re-measured rather than copied, as the implementation notes asked, and the numbers
+  had moved further than the task expected.** The overhaul shortened every description. Through
+  `install.description_of`: 29 skills discovered, 10 drafts, 19 shipped; the 19 shipped total 7,568
+  characters at a mean of 398, all 29 total 11,660 at a mean of 402. Jaccard over lowercased content
+  words of four or more letters with a stop list, over the shipped 19: mean 0.0344; highest
+  `fix-batch` / `reconcile-worktrees` 0.127, `spec-plan-readiness` / `test-author` 0.121,
+  `spec-conformance` / `test-author` 0.115, `doc-author` / `doc-revise` 0.113, `spec-author` /
+  `test-author` 0.111. With drafts, `tdd` / `test-author` 0.161 and `tdd` / `test-quality` 0.131
+  lead. The stop list is not the 2026-09-01 one, which was not recorded, so the two rankings are
+  compared by order, not by value.
+- **The Epic E item 6 sentence no longer carries a figure inline.** It states the property (the
+  descriptions overlap) and a following sentence carries both dated measurements, so the next skill
+  falsifies a dated record rather than a standing claim. `test-author` / `verifier-agent` is named
+  as the 2026-09-01 third pair; on 2026-11-23 it is not in the top five.
+- **The second occurrence is in the 2026-08-18 review-pass record, not in "Out of scope by
+  design"** as the task said. It is a dated record, so its figures were kept as what that pass
+  measured, put in the past tense, and given the 2026-11-23 re-measurement in parentheses.
+
 - **Rewriting the colliding descriptions was considered and rejected as out of scope.** The overlap is
   real, but lowering a similarity number with no evaluation to check the change against optimises the
   measurement rather than the behaviour, which is the failure Epic E item 6 already names.
@@ -119,18 +137,24 @@ the move this task is correcting.
 
     python scripts/run-checks.py
 
-- [ ] `grep -c "759 characters" ROADMAP.md` returns 0.
-- [ ] `grep -c "twenty skills whose descriptions" ROADMAP.md` returns 0.
-- [ ] Every remaining figure in the two corrected passages carries the date it was measured.
-- [ ] The corrected cluster list names the pairs measured highest, including
+- [x] `grep -c "759 characters" ROADMAP.md` returns 0.
+- [x] `grep -c "twenty skills whose descriptions" ROADMAP.md` returns 0.
+- [x] Every remaining figure in the two corrected passages carries the date it was measured.
+- [x] The corrected cluster list names the pairs measured highest, including
       `test-author` / `verifier-agent`, which the current sentence omits.
-- [ ] No file outside `ROADMAP.md` is modified.
+- [x] No file outside `ROADMAP.md` is modified.
 
 ## Definition of done
 
-- [ ] Acceptance command(s) pass locally.
-- [ ] Conventions in AGENTS.md's conventions section followed.
-- [ ] `doc-sync` run over the reader-facing documents and its findings applied or dismissed with a
+- [x] Acceptance command(s) pass locally.
+- [x] Conventions in AGENTS.md's conventions section followed.
+- [x] `doc-sync` run over the reader-facing documents and its findings applied or dismissed with a
       reason.
-- [ ] File moved to `.tasks/done/`, `status: done`, with its relative links re-anchored for the extra
+- [x] File moved to `.tasks/done/`, `status: done`, with its relative links re-anchored for the extra
       directory level; one dated line added to `CHANGELOG.md` referencing this task id.
+
+## Closeout (2026-11-23)
+
+`grep -c "759 characters" ROADMAP.md` and `grep -c "twenty skills whose descriptions" ROADMAP.md`
+both return 0. No file outside `ROADMAP.md` changed for this task. Acceptance command
+`python scripts/run-checks.py`, run with the rest of the release-readiness branch.

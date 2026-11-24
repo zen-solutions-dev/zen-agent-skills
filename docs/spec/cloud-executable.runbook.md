@@ -14,7 +14,7 @@ that is the record.
 
 | Check | How | If it is missing |
 |---|---|---|
-| GitHub is connected to your Claude account | Open [claude.ai/code](https://claude.ai/code) and see whether `hams-ollo/zen-agent-skills` is selectable | Authorize the Claude GitHub App, or run `/web-setup` in a terminal to sync your `gh` token |
+| GitHub is connected to your Claude account | Open [claude.ai/code](https://claude.ai/code) and see whether `zen-solutions-dev/zen-agent-skills` is selectable | Authorize the Claude GitHub App, or run `/web-setup` in a terminal to sync your `gh` token |
 | The branch is on the remote and carries the hook fix | `git log --oneline -1 origin/developer` and `git merge-base --is-ancestor 7703632 origin/developer` | `git push`, or pick a branch that does contain `7703632` |
 | Your local work is committed | `git status` | Commit it. The cloud VM clones from GitHub, not from your disk, so uncommitted work is invisible to it |
 | **The task the prompt dispatches is still open** | `ls .tasks/ \| grep bug-0020`, and confirm it is **not** in `.tasks/done/` | Stop. The prompt below is stale and the scenario is unrunnable until the spec names an open task. This row exists because that is exactly what happened: the prompt dispatched `bug-0018`, which closed one day after this file was written, and nothing reported it for twelve days (`chore-0051`) |
@@ -27,7 +27,7 @@ mechanism over.
 ## Start the session
 
 1. Go to [claude.ai/code](https://claude.ai/code).
-2. New session, repository `hams-ollo/zen-agent-skills`.
+2. New session, repository `zen-solutions-dev/zen-agent-skills`.
 3. **Branch: `developer`.** Not `main`. Epic E merged into `developer` on 2026-08-08 at `74e2661`,
    and `feat/epic-e-delegated-execution` was deleted by the repository's automatic head-branch
    deletion, so the branch this step named until then no longer exists. `developer` carries
