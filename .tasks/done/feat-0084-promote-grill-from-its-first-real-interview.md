@@ -49,6 +49,7 @@ created: 2026-11-23
 ## Decisions
 
 - **The maintainer asked for a readable round (2026-11-24).** After the interview they said the questions "came out like in a code block" and were "quite dense", and asked that `grill` use the harness's multiple-choice question interface, with free text available. The source was the skill's own step 3 example, a fenced `text` block, which the run copied. Step 3 now uses a structured question tool where the harness has one (recommendation first and labelled, alternatives as options, free text always open), and plain prose paragraphs, never a code block, where it does not. Kept harness-neutral in the body, as the portability contract requires.
+- **A test change, approved by the maintainer under `A11` (2026-11-24).** The new links from `spec-author`, `test-author` and `fix-batch` grow the default `spine` profile from 17 to 20 skills (`grill`, `domain-language`, `tdd`; description budget 6,827 to 7,947 characters), which the pinned `EXPECTED_PROFILE_MEMBERSHIP` in `tests/test_install.py` caught as designed. The named difference was exactly the three intended skills, and the maintainer chose to update the pin rather than drop the links.
 - **Rejected: linking `domain-language` from `grill`.** `grill` points at it for the glossary but does not run it as a step, so the name stays in backticks and installing `grill` does not pull `domain-language` with it.
 
 ## Promotion (2026-11-24, approved by the maintainer in writing)
