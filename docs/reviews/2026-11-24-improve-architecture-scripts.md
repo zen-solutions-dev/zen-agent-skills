@@ -65,7 +65,7 @@ Terms are those of [`vocabulary.md`](../../.agents/skills/improve-architecture/r
 - **Deletion test:** each copy is shallow. Deleting `sibling_refs` moves one regex into its caller; deleting one `fenced_block_ranges` changes nothing for the other.
 - **Proposed deepening:** one shared module, beside `_skillmeta.py`, exposing `code_ranges(text)`, `link_targets(text)` and `sibling_edges(text)`, called by the validator, the installer, the adapter builder and `check-provenance.py`. The shipped `.tasks/validate.py` copy stays copied, as `AGENTS.md` and the AST test require.
 - **Wins:** locality (what counts as code is decided once); leverage (four callers, one interface); the profile edge `AGENTS.md` calls load-bearing is read by the same rule the validator checks.
-- **Already filed:** [`feat-0090`](../../.tasks/feat-0090-one-span-aware-reader-for-links-and-profile-edges.md) covers the validator, installer and adapter builder. It does not name `check-provenance.py`; the fence divergence above is new evidence for widening it or for a follow-up.
+- **Already filed:** [`feat-0090`](../../.tasks/done/feat-0090-one-span-aware-reader-for-links-and-profile-edges.md) covers the validator, installer and adapter builder. It does not name `check-provenance.py`; the fence divergence above is new evidence for widening it or for a follow-up.
 - **Dependency category:** in-process.
 
 ### 3. One owner for skill frontmatter and discovery (Strong, in-process)
