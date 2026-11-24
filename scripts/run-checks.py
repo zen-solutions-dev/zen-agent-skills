@@ -61,10 +61,13 @@ Standard library only.
 """
 from __future__ import annotations
 
+import os
 import platform
 import re
+import shutil
 import subprocess
 import sys
+import tempfile
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
@@ -113,10 +116,15 @@ class Gate:
     than hidden: an in-process gate cannot be run standalone, and it is the one gate whose
     crash could take the aggregator down with it, which `run_gate` handles explicitly.
     A gate carries commands or a check, never both.
+
+    `hermetic_home` (feat-0094, retro R-001) runs the commands with `HOME`, `USERPROFILE`
+    and `XDG_CONFIG_HOME` pointed at a scratch directory seeded with decoy instruction
+    files, then removes it. See `hermetic_home_env`.
     """
 
-    def __init__(self, name, commands, cleanup=None, check=None):
+    def __init__(self, name, commands, cleanup=None, check=None, hermetic_home=False):
         self.name = name
+        self.hermetic_home = hermetic_home
         self.commands = commands
         self.cleanup = cleanup
         self.check = check
@@ -462,8 +470,11 @@ def gates():
     install_home = ["--home", THROWAWAY_HOME]
     return [
         Gate("lint skills", [[PY, "scripts/validate-skills.py"]]),
+        # Hermetic about the home directory since feat-0094 (retro R-001): a test that
+        # reads the real home now fails in CI the way it fails on a maintainer's machine.
         Gate("test suite",
-             [[PY, "-m", "unittest", "discover", "-s", "tests", "-p", "test_*.py"]]),
+             [[PY, "-m", "unittest", "discover", "-s", "tests", "-p", "test_*.py"]],
+             hermetic_home=True),
         Gate("backlog", [[PY, ".tasks/validate.py", "--strict"]]),
         Gate("adapters dry run", [[PY, "scripts/build-adapters.py", "--dry-run"]]),
         # Added by feat-0079. The Claude Code marketplace is a generated tree committed
@@ -525,6 +536,39 @@ def gates():
     ]
 
 
+# What a person's home holds that a test must never read by accident (R-001). Each decoy
+# says what it is, so a test that trips over one fails with a message naming the cause.
+HOME_DECOYS = {
+    ".claude/CLAUDE.md": "# Decoy from run-checks.py (R-001)\n\nA test read the real "
+                         "home directory. Give it a fixture home instead.\n",
+    ".claude/settings.json": '{"_decoy": "run-checks.py R-001: a test read the real home"}\n',
+    "AGENTS.md": "# Decoy from run-checks.py (R-001)\n\nA test read the real home "
+                 "directory. Give it a fixture home instead.\n",
+}
+
+
+def hermetic_home_env(home):
+    """The environment for a hermetic gate: the current one with every home pointed at `home`.
+
+    All three variables, because the readers differ: `Path.home()` reads `HOME` on POSIX
+    and `USERPROFILE` on Windows, and XDG-aware tools (git among them) read
+    `XDG_CONFIG_HOME` before either. The decoys are written into `home` first, so a test
+    that reads the real home in CI meets instruction files the way it would on a
+    maintainer's machine, rather than an empty runner home that lets it pass (R-001: CI
+    passed all six cells while the same suite failed thirty tests locally).
+    """
+    home = Path(home)
+    for relative, content in HOME_DECOYS.items():
+        target = home / relative
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_text(content, encoding="utf-8")
+    (home / ".config").mkdir(exist_ok=True)
+    env = dict(os.environ)
+    env.update(HOME=str(home), USERPROFILE=str(home),
+               XDG_CONFIG_HOME=str(home / ".config"))
+    return env
+
+
 def _script_of(command):
     """The repository-relative script a command runs, when it names one.
 
@@ -536,7 +580,7 @@ def _script_of(command):
     return command[1]
 
 
-def _run(command, runner=None):
+def _run(command, runner=None, env=None):
     """Execute one command. Returns (ok, unrunnable, output).
 
     The missing-script check happens before the call, and it is not belt-and-braces: a
@@ -555,7 +599,11 @@ def _run(command, runner=None):
         return False, True, f"could not run: {script} does not exist"
     runner = subprocess.run if runner is None else runner
     try:
-        done = runner(command, cwd=str(REPO_ROOT), capture_output=True, text=True)
+        # `env` is passed only when a gate asks for one, so a runner stand-in written
+        # before `hermetic_home` existed keeps the signature it was written against.
+        extra = {} if env is None else {"env": env}
+        done = runner(command, cwd=str(REPO_ROOT), capture_output=True, text=True,
+                      **extra)
     except OSError as exc:
         # The interpreter itself could not be started. Rarer than the case above, and
         # still distinct from a command that ran and returned non-zero.
@@ -593,10 +641,21 @@ def run_gate(gate, runner=None):
     """
     if gate.check is not None:
         return _run_check(gate)
+    if gate.hermetic_home:
+        scratch = tempfile.mkdtemp(prefix="zen-hermetic-home-")
+        try:
+            return _run_commands(gate, runner, hermetic_home_env(scratch))
+        finally:
+            shutil.rmtree(scratch, ignore_errors=True)
+    return _run_commands(gate, runner, None)
+
+
+def _run_commands(gate, runner, env):
+    """The command half of `run_gate`, with the environment it was given."""
     collected = []
     status = "ok"
     for command in gate.commands:
-        ok, unrunnable, output = _run(command, runner)
+        ok, unrunnable, output = _run(command, runner, env)
         collected.append(output)
         if unrunnable:
             status = "unrunnable"
@@ -606,7 +665,7 @@ def run_gate(gate, runner=None):
             break
     cleanup_ok = True
     if gate.cleanup is not None:
-        ok, _unrunnable, output = _run(gate.cleanup, runner)
+        ok, _unrunnable, output = _run(gate.cleanup, runner, env)
         if not ok:
             cleanup_ok = False
             collected.append("cleanup did not complete:\n" + output)

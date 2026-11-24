@@ -12,6 +12,8 @@ instead: S-004's filesystem claim, and S-005's claim about a checked-in workflow
 """
 import importlib.util
 import io
+import os
+import json
 import platform
 import re
 import shutil
@@ -479,6 +481,72 @@ class RealSubprocessTests(unittest.TestCase):
                     with self.subTest(gate=g.name, script=script):
                         self.assertTrue((REPO_ROOT / script).exists(),
                                         f"{g.name} names a script that does not exist")
+
+
+class HermeticHomeTests(unittest.TestCase):
+    """R-001 (feat-0094): the test gate runs with a home that is not anyone's real home.
+
+    `docs/reviews/2026-11-retro-pr-108.md` R-001: thirty tests read the real home through
+    the hook under test, so they failed on the maintainer's machine, which has a
+    `~/.claude/CLAUDE.md`, and passed on all six CI cells, whose homes hold none. The test
+    files were fixed by `chore-0097`; this is the guard for the next one. The scratch home
+    is seeded with decoy instruction files, so a test that reads the real home sees them in
+    CI too and fails there the same way it would on a person's machine.
+
+    Real subprocesses throughout, for the reason `RealSubprocessTests` gives: what matters
+    is the environment a child process actually receives.
+    """
+
+    PROBE = ("import os, json; print(json.dumps({k: os.environ.get(k) for k in "
+             "('HOME', 'USERPROFILE', 'XDG_CONFIG_HOME')}))")
+
+    def _hermetic(self, code):
+        return rc.Gate("probe", [[rc.PY, "-c", code]], hermetic_home=True)
+
+    def test_the_test_suite_gate_is_hermetic(self):
+        suite = [g for g in rc.gates() if g.name == "test suite"]
+        self.assertEqual(len(suite), 1)
+        self.assertTrue(suite[0].hermetic_home)
+
+    def test_every_home_variable_points_at_one_scratch_directory(self):
+        status, output, _ = rc.run_gate(self._hermetic(self.PROBE))
+        self.assertEqual(status, "ok", output)
+        seen = json.loads(output.strip().splitlines()[-1])
+        real = str(Path.home())
+        self.assertEqual(seen["HOME"], seen["USERPROFILE"])
+        self.assertNotEqual(seen["HOME"], real)
+        self.assertEqual(Path(seen["XDG_CONFIG_HOME"]), Path(seen["HOME"]) / ".config")
+
+    def test_the_scratch_home_holds_the_decoys(self):
+        code = ("import os, pathlib; h = pathlib.Path(os.environ['HOME']); "
+                "print(sorted(str(p.relative_to(h)).replace(os.sep, '/') "
+                "for p in h.rglob('*') if p.is_file()))")
+        status, output, _ = rc.run_gate(self._hermetic(code))
+        self.assertEqual(status, "ok", output)
+        for decoy in (".claude/CLAUDE.md", ".claude/settings.json", "AGENTS.md"):
+            with self.subTest(decoy=decoy):
+                self.assertIn(decoy, output)
+
+    def test_a_test_that_reads_the_real_home_fails_under_the_gate(self):
+        # The constructed bad input: a check that assumes the home holds no CLAUDE.md, the
+        # assumption chore-0097's thirty tests made. Under the hermetic gate it fails
+        # wherever it runs, which is the property R-001 asks for.
+        code = ("import pathlib, sys; "
+                "sys.exit(1 if (pathlib.Path.home() / '.claude' / 'CLAUDE.md').exists() else 0)")
+        status, _, _ = rc.run_gate(self._hermetic(code))
+        self.assertEqual(status, "failed")
+
+    def test_the_scratch_home_is_removed_afterwards(self):
+        status, output, _ = rc.run_gate(self._hermetic(
+            "import os; print(os.environ['HOME'])"))
+        self.assertEqual(status, "ok", output)
+        self.assertFalse(Path(output.strip().splitlines()[-1]).exists())
+
+    def test_a_gate_that_does_not_ask_inherits_the_environment(self):
+        status, output, _ = rc.run_gate(rc.Gate("probe", [[rc.PY, "-c", self.PROBE]]))
+        self.assertEqual(status, "ok", output)
+        self.assertEqual(json.loads(output.strip().splitlines()[-1])["HOME"],
+                         os.environ.get("HOME"))
 
 
 class SummaryTests(unittest.TestCase):
