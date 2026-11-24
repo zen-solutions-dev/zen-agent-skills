@@ -26,7 +26,7 @@ python scripts/install.py             # the default skill set, for Claude Code a
 
 The installer is idempotent, reports a conflict instead of overwriting a file it does not manage, and is reversed with `--uninstall`.
 
-Drafts come only through the installer. Four skills are drafts today, `agent-observatory`, `quest-tracker`, `sitrep` and `systematic-debugging` (`install.py --dry-run` prints the current list). To try them:
+Drafts come only through the installer; `install.py --dry-run` prints the current list of drafts. To try them:
 
 ```bash
 python scripts/install.py --tools claude --include-drafts
