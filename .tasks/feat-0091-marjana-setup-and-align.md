@@ -23,6 +23,9 @@ touched_files:
   - .tasks/_TEMPLATE.md
   - .tasks/validate.py
   - GLOSSARY.md
+  - tests/test_zen_config.py
+  - tests/test_validate_skills.py
+  - .claude-plugin/
   - docs/spec/
   - docs/
 created: 2026-11-24
@@ -46,11 +49,21 @@ Every skill rediscovers, on every run, where a repository keeps its tracker, glo
 - `GLOSSARY.md`: the terms this round settles (orchestrator, child session, integration branch, frontier, AFK, human-in-the-loop, one-way door, two-way door), kept with `domain-language`.
 - `P10` and the slimming rules for every skill you own.
 
+Only the `D2` items above trace to `docs/spec/zen-config.md`; the rest of the scope (`grill`, `domain-language`, `project-bootstrap`, the quality bar, `chore-0074`, `GLOSSARY.md`, `P2`, `P10`, the `zen` hints, the `mode` field) declares no spec and is checked by the dogfood record and the acceptance command.
+
 **Out of scope:** `orchestrate`, `research`, `autonomy.md`, `core.md` (WS-C); `install.py` (WS-E prints the pointer line).
 
 ## Risks and rollback
 
 The `zen-config` path and format become a one-way door once adopters use them; the spec waits for the maintainer's approval in the final pull request, and nothing outside this repository reads the file before then.
+
+**Sequencing, by the plan rather than the readiness gate.** The plan has this one task write the spec and build against it in the same round, with approval at the final pull request (plan, "Rules for every workstream session" and decision `D2`). `spec-plan-readiness` therefore returns `blocked` on a draft spec, and that verdict stands until the maintainer approves; the build is offered for review, not landed as approved.
+
+**Rollback.** Nothing here has reached an adopter: every surface ships only when the integration branch merges. Before that, reverting this branch's commits undoes all of it. After it, each surface reverts on its own: the `invocation: user` lines in two skills; the `zen-config` and `mode` checks, one block each in both validator copies (an absent `docs/agents/zen.md` and an empty `mode` were valid before and stay valid, so no adopter file is invalidated by a revert); the template changes, which affect only repositories scaffolded afterwards.
+
+**Test strategy.** The validator scenarios (S-001 to S-013, S-019, S-020, S-027, S-028) are unit and filesystem tests in `tests/test_zen_config.py`, run against both validator copies. The conversational scenarios (S-014 to S-018, S-021 to S-026, S-029, S-030) are evidenced by recorded runs in the dogfood record and audited in `docs/spec/zen-config.conformance.md`; a scenario no run exercised is recorded as not exercised.
+
+**The first real run** on this repository had no person present. The values exploration settled were written; the contested ones were written as recommended and routed to the maintainer, and the file says so. Against S-015 and S-025 that is a deviation, recorded in the conformance matrix rather than hidden.
 
 ## Acceptance criteria (mechanically verifiable)
 
@@ -59,6 +72,7 @@ The `zen-config` path and format become a one-way door once adopters use them; t
 - [ ] `docs/spec/zen-config.md` exists with Given/When/Then scenarios, and `docs/agents/zen.md` parses with the shipped `validate.py`.
 - [ ] `grep -n "invocation: user" .agents/skills/project-bootstrap/SKILL.md .agents/skills/init-worktracking/SKILL.md` finds both.
 - [ ] `docs/reviews/2026-11-24-dogfood/ws-b.md` has a row for every skill this task owns.
+- [ ] `python3 -m unittest tests.test_zen_config` passes, and `docs/spec/zen-config.conformance.md` exists.
 
 ## Definition of done
 
