@@ -95,15 +95,18 @@ For a **research** child, first test that every source it needs is reachable fro
 run, and list what is not. Tell it to use [`research`](../research/SKILL.md), to report what it could
 not reach, and never to reconstruct it from memory.
 
-**A `hitl` item is never delegated.** It stays in this conversation, with the person.
+**A `hitl` item is never delegated whole.** Its decision is settled here, with the person; its
+build half then goes out as an `afk` child with that decision in the brief, or is done here and
+listed in the pull request as your own unverified work.
 
 Done when every child in the next wave has a brief that runs without this conversation, every pair
 of briefs has disjoint owned paths, and every research source has been probed.
 
 ### Step 3: dispatch the frontier
 
-Compute the frontier from the integration branch (`git log <integration>` for the landed ids), and
-start every frontier child at once, each with a **fresh context**, as a **leaf**. Medium effort for
+Compute the frontier after `git fetch`: a child has landed when its verified commit is in the
+remote integration branch (`git merge-base --is-ancestor <verified-sha> origin/<integration>`), never
+because a commit message mentions it. Start every frontier child at once, each with a **fresh context**, as a **leaf**. Medium effort for
 building; high for verifying and debugging. Where children run as worktree agents, follow
 `fix-batch` Steps 2 and 3 for the dispatch sha and the cut, with one change to its prompt: the child
 **commits and pushes its own branch**, because what lands is the child's verified commit. Committing
@@ -122,7 +125,8 @@ is with the person.
 
 ### Step 4: hold the conversation
 
-While children run, this session answers and asks the person, and does **no implementation**. Its
+While children run, this session answers and asks the person, and does **no implementation** beyond
+a `hitl` item's build half that Step 2 kept here. Its
 context stays free for the person, the decisions and the memory. Check progress cheaply and rarely;
 the child's report, not its transcript, is the evidence.
 
@@ -137,10 +141,11 @@ an answer or a named owner.
    file it says it moved) before trusting the rest.
 4. **Verify**: read and follow [`verifier-agent`](../verifier-agent/SKILL.md) through a verifier
    you dispatch with a fresh context, as a leaf, at high effort: neither the child nor you, and not
-   briefed by the child (`A7`), on the exact head commit reported.
+   briefed by the child (`A7`), on the exact head commit reported. Carry the verified sha from the
+   verdict's `verified_by` field into Step 5.
 5. **Land** a `pass` on the integration branch by reading and following
-   [`reconcile-worktrees`](../reconcile-worktrees/SKILL.md): **fast-forward only**. A child that has
-   not merged the tip, or whose landing would need a conflict resolution, goes back to merge the tip
+   [`reconcile-worktrees`](../reconcile-worktrees/SKILL.md): **fast-forward only, to the verified
+   sha**. A child whose branch has moved past that sha, or has not merged the tip, or whose landing would need a conflict resolution, goes back to merge the tip
    and be verified again. This is the one merge an orchestrator may make, under every guard of
    `A8`'s exception: work you did not author, verified by someone else, the integration branch only.
 6. **Push after every landing.** After any restart of this session, check the remote state
@@ -177,8 +182,8 @@ every review finding is fixed, dismissed with a reason, or listed for the person
    accepted offers to [`retro`](../retro/SKILL.md).
 3. **Queue a `retro`** over about one child session in five, failures first.
 
-Done when every child has a dated memory entry, every friction point has an offer or a reason
-there was none, and the sampled sessions are named.
+Done when every decision, problem or preference the run produced has a dated entry in the index,
+every friction point has an offer or a reason there was none, and the sampled sessions are named.
 
 ## The relay format
 
@@ -203,19 +208,8 @@ Detail: <only what changes their next move>
 
 ## Optional: Claude Code cloud sessions
 
-Skip this section in any other harness. In Claude Code on the web, a child can be a separate cloud
-session, and the remote-session tools carry the transport:
-
-- `create_session` starts a child with its brief as the prompt; `send_message` is how a child
-  reports back and how you reply to it.
-- `list_events` overflows without a tight filter: pass `kinds` (for example `["result"]`) and a
-  small `limit`, and use it only to check that a child is alive. The report is the evidence.
-- `send_later` schedules the fallback check-in.
-- A worker restart can drop a branch's upstream tracking and leave a landing unpushed: Step 5's
-  push-and-check rule is the guard.
-- A cloud environment's network policy can refuse a host. Probe from the environment the child will
-  run in; a refusal can clear after a worker restart, and some sites stop automated clients at a bot
-  check, which is recorded as unreachable and never worked around.
+In Claude Code on the web, a child can be a separate cloud session; the transport and its traps are
+in [`references/claude-code.md`](references/claude-code.md). Skip it in any other harness.
 
 ## Conventions
 

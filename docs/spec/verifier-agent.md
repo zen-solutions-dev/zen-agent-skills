@@ -32,8 +32,9 @@ place in the fixed order.
 
 Amended 2026-11-24 by feat-0092, **pending the maintainer's approval**: two additions, neither of
 which changes a scenario, an input, or a verdict rule. The report gains a last field, `verified_by`,
-naming the agent and the model that produced the verdict and whether that agent is separate from the
-implementer; it is the record `A7` already asked for in prose. The skill also gains one optional line:
+naming the agent and the model that produced the verdict, whether that agent is separate from the
+implementer, and the full sha of the exact commit the verdict covers; it is the record `A7` already
+asked for in prose, and the sha is what an integration-branch landing checks before it lands. The skill also gains one optional line:
 where the harness lets the dispatcher choose the verifier's model, a different model family from the
 implementer's is a stronger independent check. That line is guidance on dispatch, like the
 `feat-0077` note above, and adds no scenario.
@@ -214,7 +215,7 @@ one that ran and passed.
 | `conformance` | The audited and unreconciled sets carried from `spec-conformance`, each unreconciled item with its recorded disposition, or an explicit note that conformance was not assessed |
 | `criteria` | Per acceptance criterion: `met` or `unmet`, and the evidence naming a command result, code location, or test, or stating that no evidence was found |
 | `findings` | Defects observed during verification and not repaired |
-| `verified_by` | The agent and the model that produced the verdict, and whether that agent is separate from the implementer (added 2026-11-24 by `feat-0092`) |
+| `verified_by` | The agent and the model that produced the verdict, whether that agent is separate from the implementer, and the full sha of the commit the verdict covers (added 2026-11-24 by `feat-0092`) |
 | Report delivery | Returned inline by default; written to `docs/spec/<spec>.verification.md` only when a report destination is supplied |
 
 ## Open Questions

@@ -149,9 +149,11 @@ decision recorded in `ROADMAP.md` Epic E rather than a rule this kit has already
 person as one draft pull request. An orchestrator may merge a child's branch into it only when every
 guard below holds; if any one fails, `A8` applies unchanged and the child's branch waits for a person.
 
-1. **Not its own work.** The orchestrator authored none of the change, directly or by dictating it
-   in a brief. A commit it wrote, or a fix it made to a child's work, makes that work its own, and
-   its own work is never merged by it.
+1. **Not its own work.** The orchestrator authored none of the change, directly or by dictating it:
+   a brief that carries replacement text, a patch or a diff for the child to apply dictates it, and
+   so does relaying a reviewer's suggested fix verbatim. A brief that names the finding and leaves
+   the fix to the child does not. A commit it wrote, or a fix it made to a child's work, makes that
+   work its own, and its own work is never merged by it.
 2. **Verified by someone else.** An agent that is neither the author nor the orchestrator, and was
    not dispatched or briefed by the author, returned a passing verdict on the exact commit being
    merged (`A7`); it is the latest verdict on that commit, no earlier `fail` on it is unanswered, and

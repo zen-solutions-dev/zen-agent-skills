@@ -20,9 +20,9 @@ or pins what existing code does today. Building something new test-first is `tdd
 contract or legacy code that already has a shape is this skill.
 
 It runs after implementation and before reconciliation, so test evidence is available when changes
-are verified and landed. It composes two lenses by reference and does not restate their rules:
-[`spec-quality`](../spec-quality/SKILL.md) gates the input spec, and [`test-quality`](../test-quality/SKILL.md)
-governs every layer and oracle choice.
+are verified and landed. It composes two lenses and does not restate their rules: read each when its step names it and
+follow it. [`spec-quality`](../spec-quality/SKILL.md) gates the input spec, and
+[`test-quality`](../test-quality/SKILL.md) governs every layer and oracle choice.
 
 ## When to use
 
@@ -75,7 +75,7 @@ Notes). Well-formedness is not approval, so the next
 check does not stand in for this one: `spec-quality` returns `ready` for a draft that is
 answerable, which is exactly the state a spec sits in while it waits for a human.
 
-Then apply the [`spec-quality`](../spec-quality/SKILL.md) lens to it. If the verdict would be
+Then read the [`spec-quality`](../spec-quality/SKILL.md) lens now and follow it on this spec. If the verdict would be
 `needs_revision`, stop without writing tests and report the exact spec gaps that must be fixed
 first: you cannot derive faithful tests from an untestable contract. Then extract every scenario
 (each `S-NNN`), the Proposed Surface (what you test against), and the Constraints that affect test
@@ -112,7 +112,8 @@ run green under the proposed runner.
 
 ### 3. Map each scenario to tests, composing test-quality
 
-For each scenario, choose the test design by composing [`test-quality`](../test-quality/SKILL.md):
+For each scenario, read [`test-quality`](../test-quality/SKILL.md) now and follow it to choose the
+test design:
 name the plausible defect, pick the **lowest faithful layer** that still reproduces the risk, and
 define an **exact observable oracle** (a return value, state change, error, side effect, or persisted
 format), never a "does not crash" or field-presence check. Record the layer and oracle you chose and

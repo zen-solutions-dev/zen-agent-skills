@@ -69,9 +69,10 @@ One contiguous block the person can copy in a single action, in this order. Poin
 already exist (specs, task files, decision records, commits, pull requests) by path or URL rather
 than restating them. Redact secrets and personal data.
 
-1. **Role and mode.** Who the agent is and what mode it is in, named as a boundary: an analysis is
-   not an implementation. "You are doing an architectural deep-dive, not implementation. The
-   deliverable is a written analysis."
+1. **Job and kind of work.** What the agent is there to do, and the kind of work, named as a
+   boundary: an analysis is not an implementation. "You are doing an architectural deep-dive, not
+   implementation. The deliverable is a written analysis." Where the task also carries an `afk` or
+   `hitl` mode, state it here as well; it is a separate setting.
 2. **Context and reach.** "You start with a fresh context and no memory of the session that wrote
    this." For a subagent, add: "You are a leaf: dispatch no agents of your own."
 3. **Do-not-touch constraints.** What it must not modify or do, concretely (directories, files,
@@ -107,7 +108,7 @@ written to, and `git status` shows nothing new in the working tree unless the pe
 ## Example skeleton
 
 ```
-You are <role>. Mode: <analysis | implementation | review>. Deliverable: <what>.
+You are <the job>. Kind of work: <analysis | implementation | review>. Deliverable: <what>.
 You start with a fresh context. <For a subagent: You are a leaf; dispatch no agents.>
 
 Do not: <constraint 1; why>. <constraint 2; why>.

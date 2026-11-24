@@ -113,12 +113,13 @@ Every prompt includes, in substance:
    build environment the acceptance command needs.
 5. **Do not commit and do not stage.** Leave every change uncommitted and unstaged for review,
    unless the person said otherwise: staged changes are invisible to a bare `git diff`.
-6. **How to produce the test the acceptance command runs**, when it does not exist yet: use
-   [`test-author`](../test-author/SKILL.md), pick the layer and oracle through the
-   [`test-quality`](../test-quality/SKILL.md) lens, and **name the mode**. A bug or chore with no approved
+6. **How to produce the test the acceptance command runs**, when it does not exist yet: read
+   [`test-author`](../test-author/SKILL.md) now and follow it, read the
+   [`test-quality`](../test-quality/SKILL.md) lens and follow it for the layer and oracle, and
+   **name the mode**. A bug or chore with no approved
    spec is **characterization** mode; only a task carrying an approved spec and `S-NNN` ids is
-   acceptance mode. New behaviour built test-first goes through [`tdd`](../tdd/SKILL.md) where the
-   target has it.
+   acceptance mode. For new behaviour built test-first, read [`tdd`](../tdd/SKILL.md) and follow it
+   where the target has it.
 7. **An honest blocker over an improvisation**: "If the task's premise is wrong, or you hit a
    blocker you cannot resolve inside your worktree, stop and report it rather than guessing." An
    agent that quietly makes it work hides a defect in the task authoring.
@@ -164,8 +165,8 @@ dismissed one has been sent back to the same agent with the explanation.
 [the delegate report contract](#the-delegate-report-contract) before running anything. A missing
 field is not accepted: a verifier that runs against the work cannot see what the report omits.
 
-**Then run [`verifier-agent`](../verifier-agent/SKILL.md) against the worktree**, yourself or
-through a separate fresh agent at high effort that is told it is a leaf, never the agent whose work
+**Then read [`verifier-agent`](../verifier-agent/SKILL.md) now and follow it against the
+worktree**, yourself or through a separate fresh agent at high effort that is told it is a leaf, never the agent whose work
 it is. It returns:
 
 - **`pass`**: criteria, commands and (where a spec applies) conformance check out. Continue to the

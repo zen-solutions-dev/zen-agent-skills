@@ -44,7 +44,7 @@ item 8 evaluation records are for.
 | Scenarios | S-010 no report destination is supplied | Conformed | Step 5 / "By default the report is returned inline and no file is created", and Inputs / the optional report destination | stated twice, consistently |
 | Proposed Surface | Inputs, required and optional | Conformed | Inputs section / the required and optional lists | matches the surface exactly, including "You never invent one" for the command |
 | Proposed Surface | `verdict`, `blocking_reasons`, `commands`, `conformance`, `criteria`, `findings` | Conformed | Output format / the fenced field list and its Rules | field order in the skill matches the surface's order; `blocking_reasons` non-empty exactly when the verdict is not `pass` |
-| Proposed Surface | `verified_by` | Conformed | Output format / "`verified_by` names the agent and the model that produced the verdict, and whether that agent is separate from the implementer" | added by `feat-0092`, pending the maintainer's approval of the amended contract; Step 5's done-when requires it filled |
+| Proposed Surface | `verified_by` | Conformed | Output format / "`verified_by` names the agent and the model that produced the verdict, whether that agent is separate from the implementer, and the full sha of the exact commit the verdict covers" | added by `feat-0092`, pending the maintainer's approval of the amended contract; Step 5's done-when requires it filled |
 | Proposed Surface | Report delivery | Conformed | Step 5 and Inputs | inline by default, file only when a destination is supplied |
 
 ## Coverage proof

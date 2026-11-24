@@ -99,8 +99,8 @@ Done when every declared command has a recorded exit status and evidence excerpt
 
 ### 3. Compose spec-conformance for the contract half
 
-When a spec is supplied, apply [`spec-conformance`](../spec-conformance/SKILL.md) to obtain the
-matrix and its coverage proof. Use its result; do not re-derive its classifications.
+When a spec is supplied, read [`spec-conformance`](../spec-conformance/SKILL.md) now and follow it
+to obtain the matrix and its coverage proof. Use its result; do not re-derive its classifications.
 
 When consuming a conformance report that already exists, first confirm its evidence still resolves
 against the current code: spot-check that each cited location still holds what the matrix says. This
@@ -198,8 +198,9 @@ Rules:
 - `findings` holds defects observed but not repaired, never a list of changes made.
 - `evidence`, wherever it names a code location, carries the `review-quality` evidence shape, or its
   absence form. `where` stays the short pointer; `evidence` is what a reader checks it against.
-- `verified_by` names the agent and the model that produced the verdict, and whether that agent is
-  separate from the implementer.
+- `verified_by` names the agent and the model that produced the verdict, whether that agent is
+  separate from the implementer, and the full sha of the exact commit the verdict covers. A landing
+  checks that sha; a later commit on the same branch is unverified.
 
 ## Notes
 

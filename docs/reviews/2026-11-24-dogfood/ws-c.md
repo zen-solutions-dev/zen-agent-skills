@@ -31,3 +31,10 @@ changed), *broken* (ran and failed, not fixed here), *not exercised* (with the r
 | `test-author` | Read in full by leaf D on the scratch target. | Its own "When not to use" sends test-first new code to `tdd`, and leaf D followed that route. | not exercised (routed away correctly) | None. Leaf D suggested that `tdd`'s Inputs borrow test-author's bootstrap rule for a target with no test setup. Recorded, not adopted. |
 | `test-quality` | Leaf D, while writing the scratch tests. | Its trust-boundary pass flagged process execution and produced an option-injection test (`--all` passed as a branch name). The fix was `--end-of-options`. Its review checklist removed one redundant tracer test. | works | None. Leaf D suggested that its trust-boundary line name option injection as well as shell interpolation. Recorded, not adopted. |
 | `systematic-debugging` (draft) | Nothing. No defect in WS-C's work needed a debugging run. Every failure had a known cause on first read: the count test, the hook constant, the plugin tree. | n/a | not exercised | None. Its second independent run is still owed (`feat-0063`). |
+
+**Landing review (2026-11-24).** The orchestrator's fresh-context reviewer of `908beeb` found one
+major gap that no WS-C verifier had caught: landing took the child branch as it stood at fetch time,
+not the commit that was verified. `verifier-agent`'s `verified_by` now records the verified sha,
+`orchestrate` carries it into the landing, and `reconcile-worktrees` lands that sha by fast-forward
+only after checking that the branch still points at it. The same round fixed seven minor findings
+and one nit; two citations wait on WS-D's text.

@@ -36,8 +36,9 @@ asked, and the session keeps working meanwhile.
 Test, from where the researcher will run, that every named source answers: fetch one page or clone
 the repository. List what does not answer and why (refused, not found, needs a sign-in). Then start
 the researcher with a **fresh context**, as a **leaf** that dispatches nothing, at medium effort,
-briefed by reading and following [`agent-handoff`](../agent-handoff/SKILL.md) Step 3, with the question, the sources, the baseline, the reach list, and
-where the file goes.
+briefed by reading and following [`agent-handoff`](../agent-handoff/SKILL.md) Step 3, with the
+question, the sources, the baseline, the reach list, and where the file goes. Where no child can be
+started, run Steps 2 and 3 here and say so in the file.
 
 Done when every source is marked reached or unreachable with the reason, and the researcher is
 running with a brief that names the output path.

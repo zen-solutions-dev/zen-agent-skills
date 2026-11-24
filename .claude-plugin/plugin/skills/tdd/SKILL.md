@@ -12,8 +12,8 @@ license: MIT
 # tdd
 
 Build behaviour test-first, in thin vertical slices: one failing test, the least code that passes
-it, then the next. The test design bar comes from the [test-quality](../test-quality/SKILL.md) lens,
-which this skill composes on every cycle; this skill supplies the loop around it.
+it, then the next. For the test design bar, read the [test-quality](../test-quality/SKILL.md) lens now and follow
+it on every cycle; this skill supplies the loop around it.
 
 ## When to use
 

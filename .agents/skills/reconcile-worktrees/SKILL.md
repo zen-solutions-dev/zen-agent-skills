@@ -17,11 +17,12 @@ nothing on the main checkout on the person's behalf, and never read "no conflict
 "safe". The incidents behind each rule are in [`references/lessons.md`](references/lessons.md).
 
 This is the landing step of the spine: `new-task` authors the task files, `fix-batch` dispatches
-them, and this skill combines changes that are already trusted. A worktree not yet verified goes
-through [`verifier-agent`](../verifier-agent/SKILL.md) first, run by you or by a separate agent
+them, and this skill combines changes that are already trusted. A worktree not yet verified is
+verified first: read [`verifier-agent`](../verifier-agent/SKILL.md) now and follow it, run by you or by a separate agent
 started with a **fresh context**, told it is a **leaf**, at **high effort**; never by the agent that
 did the work. Its report must meet the
-[delegate report contract](../fix-batch/SKILL.md#the-delegate-report-contract), or it does not land.
+[delegate report contract](../fix-batch/SKILL.md#the-delegate-report-contract), which you read and
+check it against, or it does not land.
 
 Landing is where this skill stops, not where the spine stops: a freshly consolidated batch is the
 change most likely to have invalidated reader-facing documents, so `doc-sync` runs next over the
@@ -153,16 +154,21 @@ git -C <worktree> ls-files --others --exclude-standard
 `A8` in [`core.md`](../../rules/core.md). A child that has merged the current integration tip into
 its pushed branch lands with `--ff-only`. One that has not, often because another child landed
 since, goes back to its author to merge the tip and be re-verified on the new commit; never merge it
-yourself. Land, test, then push, one child at a time:
+yourself. **What lands is the verified commit**, the sha in the verdict's `verified_by`, never the
+branch as it stands at fetch time: a child that pushed after verification has unverified work on
+top. Land, test, then push, one child at a time:
 
 ```
 git fetch origin
 git switch <integration>
 git merge --ff-only origin/<integration>     # bring the local branch up to the remote tip
-git merge --ff-only origin/<child-branch>    # refused unless the child holds that tip
+git rev-parse origin/<child-branch>          # must equal <verified-sha>; on a mismatch, stop
+git merge --ff-only <verified-sha>           # refused unless that commit holds the tip
 <acceptance command>                         # or at least the affected tests, on the landed tip
 git push origin <integration>
 ```
+
+A mismatch sends the child back to be verified on its current head; it does not land.
 
 A red run is undone locally and never pushed: with a fast-forward and a clean tree,
 `git reset --keep ORIG_HEAD` returns the branch to its previous tip. Never `git reset --hard` while
