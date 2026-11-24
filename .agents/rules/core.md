@@ -31,7 +31,8 @@ batch, a cloud or scheduled session.
   re-derived on the new base and the report says so.
 - **A8.** Push to a branch of your own and open a draft pull request. Never merge your own work.
   One exception: an orchestrator may merge into an integration branch work it did not author, once
-  someone else verified it (`A7`). Only a person merges into `developer`, `main` or the base branch.
+  an agent that is neither its author nor the orchestrator, nor briefed by the author, passed that
+  exact commit (`A7`). Only a person merges into the base branch (`developer`, `main`).
 
 Full text and scope: [`autonomy.md`](autonomy.md). Writing conventions for the kit's own output:
 [`house-style.md`](house-style.md). The review rubric: [`review-quality.md`](review-quality.md).

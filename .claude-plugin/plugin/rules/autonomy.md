@@ -149,21 +149,29 @@ decision recorded in `ROADMAP.md` Epic E rather than a rule this kit has already
 person as one draft pull request. An orchestrator may merge a child's branch into it only when every
 guard below holds; if any one fails, `A8` applies unchanged and the child's branch waits for a person.
 
-1. **Not its own work.** The orchestrator authored none of the change. A commit it wrote, or a fix
-   it made to a child's work, makes that work its own, and its own work is never merged by it.
-2. **Verified by someone else.** An agent other than the author and other than the orchestrator
-   returned a passing verdict on the exact commit being merged (`A7`), and the orchestrator has
-   read that verdict's evidence. Unverified, `fail` or `blocked` work does not land.
-3. **The integration branch only.** Never the base branch, and never a branch a person or another
-   run owns.
-4. **A person merges into `developer` or `main`.** The integration branch goes to a person as a draft
-   pull request, and that merge, like every merge into the base branch, is theirs alone. Where the
-   repository calls its base branch something else, the same holds for it.
+1. **Not its own work.** The orchestrator authored none of the change, directly or by dictating it
+   in a brief. A commit it wrote, or a fix it made to a child's work, makes that work its own, and
+   its own work is never merged by it.
+2. **Verified by someone else.** An agent that is neither the author nor the orchestrator, and was
+   not dispatched or briefed by the author, returned a passing verdict on the exact commit being
+   merged (`A7`); it is the latest verdict on that commit, no earlier `fail` on it is unanswered, and
+   the orchestrator has read its evidence. Unverified, `fail` or `blocked` work does not land.
+3. **A fast-forward onto the integration branch only.** The child merges the integration tip into
+   its own branch first, so the verified commit is the commit that lands. A landing that needs a
+   merge commit or a conflict resolution goes back to the child. Never the base branch, and never a
+   branch a person or another run owns.
+4. **A person merges into the base branch** (`developer` or `main` here, whatever the repository
+   protects elsewhere). The integration branch goes to that person as a draft pull request, and that
+   merge is theirs alone.
 
-*Cited:* decision `D1` of the 2026-11-24 "Marjana" overhaul, taken by the maintainer, and that
-overhaul's own run (2026-11-24), where one orchestrating session dispatched five workstream
-sessions to land on `zen/marjana-2026-11-24` and reach the maintainer as one pull request into
-`main`. The skill that runs the pattern is `orchestrate`.
+The orchestrator's **own commits** on the integration branch (the plan, generated files, its own
+fixes) are not landed under this exception: they are its own work, so they go through verification
+like any child's, or are listed in the pull request body as unverified.
+
+*Cited, with a qualification:* decision `D1` of the 2026-11-24 "Marjana" overhaul, taken by the
+maintainer. This text was written while that overhaul was still running (2026-11-24, before any
+workstream had landed), so it records the decision and the plan, not a finished run of it. The skill
+that runs the pattern is `orchestrate`.
 
 ## Scope
 
