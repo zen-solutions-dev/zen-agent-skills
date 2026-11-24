@@ -2,7 +2,7 @@
 id: chore-0098
 title: A documentation-only change runs the documentation gates and a secret scan, nothing else
 type: chore
-status: in_progress
+status: done
 priority: P2
 parent: "docs/reviews/2026-11-retro-pr-108.md R-008"
 depends_on: []
@@ -25,11 +25,11 @@ created: 2026-11-24
 
 ## Problem
 
-The maintainer's standing rule: "A docs-only pull request runs a docs check and a secret scan, nothing else (CI minutes cost money). Decide from the changed paths in one script that the local pre-PR check reads too, count a moved file at both its old and new path, and run the tests when the answer is missing." This repository did not work that way. [`checks.yml`](../.github/workflows/checks.yml) ran all ten gates on six cells for every pull request, including a one-line README fix, and nothing scanned for credentials at all. The first real run of `retro` found it ([`2026-11-retro-pr-108.md`](../docs/reviews/2026-11-retro-pr-108.md), `R-008`), and the maintainer approved the proposal on 2026-11-24.
+The maintainer's standing rule: "A docs-only pull request runs a docs check and a secret scan, nothing else (CI minutes cost money). Decide from the changed paths in one script that the local pre-PR check reads too, count a moved file at both its old and new path, and run the tests when the answer is missing." This repository did not work that way. [`checks.yml`](../../.github/workflows/checks.yml) ran all ten gates on six cells for every pull request, including a one-line README fix, and nothing scanned for credentials at all. The first real run of `retro` found it ([`2026-11-retro-pr-108.md`](../../docs/reviews/2026-11-retro-pr-108.md), `R-008`), and the maintainer approved the proposal on 2026-11-24.
 
 ## Scope
 
-**In scope:** one module, [`_change_scope.py`](../scripts/_change_scope.py), that decides from the changed paths whether a change is documentation only; [`run-checks.py`](../scripts/run-checks.py) reading it, running only `DOCS_GATES` for a docs-only change and naming the rest as skipped; a stdlib secret scan, [`scan-secrets.py`](../scripts/scan-secrets.py), as a gate in both scopes; `checks.yml` fetching full history so CI has a base to diff against; the amendment to `cloud-executable.md` this behaviour needs, since its `S-001` said every gate runs.
+**In scope:** one module, [`_change_scope.py`](../../scripts/_change_scope.py), that decides from the changed paths whether a change is documentation only; [`run-checks.py`](../../scripts/run-checks.py) reading it, running only `DOCS_GATES` for a docs-only change and naming the rest as skipped; a stdlib secret scan, [`scan-secrets.py`](../../scripts/scan-secrets.py), as a gate in both scopes; `checks.yml` fetching full history so CI has a base to diff against; the amendment to `cloud-executable.md` this behaviour needs, since its `S-001` said every gate runs.
 
 **Out of scope:** changing which checks the rulesets require (see Decisions); scanning git history for secrets already committed; high-entropy secret detection.
 
@@ -54,11 +54,15 @@ It changes what the acceptance command runs, which every task here depends on. T
 - [x] Every unknown case answers `full` (`DecisionTests`).
 - [x] The secret scan finds a planted token of each shape, exits 1, and does not echo it; this repository is clean.
 - [x] `cloud-executable.md` amended with `S-021` and `S-022`, pending re-approval; its matrix re-derived; `check-citations.py` 0 unresolved.
-- [ ] Existing tests pass, and all six CI cells pass on the pull request.
+- [x] Existing tests pass, and all six CI cells pass on the pull request.
 
 ## Definition of done
 
-- [ ] Acceptance command passes locally and in CI.
+- [x] Acceptance command passes locally and in CI.
 - [x] Conventions in AGENTS.md's conventions section followed.
 - [x] `doc-sync` over the reader-facing documents: `AGENTS.md`'s acceptance-command section updated; `docs/spec/README.md`'s table and re-approval queue updated.
-- [ ] File moved to `.tasks/done/`, `status: done`; one dated line in `CHANGELOG.md` (proposed in the pull request body).
+- [x] File moved to `.tasks/done/`, `status: done`; one dated line in `CHANGELOG.md` (proposed in the pull request body).
+
+## Closeout (2026-11-24, by `chore-0100`)
+
+Closed by [`chore-0100`](chore-0100-marjana-context-and-ledgers.md) on 2026-11-24, which found it done but open ([Marjana inventory, open-task triage](../../docs/reviews/2026-11-24-marjana-inventory.md)). The work merged as pull request #115 (`34345e5`); all six CI cells passed on `194cb8b`; `cloud-executable.conformance.md` already rows S-021 and S-022 as conformed, audited by this task, so the conformance step is complete. **Still owed, and not this closeout's to give:** the author's re-approval of the `S-021` and `S-022` amendment to `cloud-executable.md`.

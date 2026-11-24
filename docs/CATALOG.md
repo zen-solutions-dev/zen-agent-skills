@@ -80,7 +80,7 @@ Four rules modules under [`.agents/rules/`](../.agents/rules/) install alongside
 | `repo-explainer` | planned | A "start here" guided tour of an unfamiliar codebase. Strong for client onboarding. |
 | `sop-drafter` | planned | Turn a described workflow into a documented standard operating procedure. |
 | `security-audit` | planned | Repeatable dependency and secret scan with a written summary. |
-| `adr` | planned | Architecture decision records / decision log entries. |
+| `adr` | covered | No separate skill: the shipped `domain-language` writes an architecture decision record when a decision is hard to reverse. |
 
 ## Tier C: hyper-specific (personal, stays out of the shared kit)
 

@@ -312,7 +312,7 @@ The kit is most useful when it reduces repeated confusion.
 
 You can use the kit without adopting its full work-tracking system.
 
-Install the skills for your tool, then use one skill when the need appears. If you cannot remember which, ask `zen`, the router:
+Install the skills for your tool, then use one skill when the need appears. If you cannot remember which, ask `zen`, the router. The default `spine` profile places most of the skills below; `zen`, `retro`, `agent-handoff` and `human-handoff` need `--profile all` or the plugin (measured 2026-11-24 with `install.py --dry-run`):
 
 - 🔥 `grill` for being interviewed about a plan or idea until nothing is silently assumed.
 - 📝 `doc-author` for a new, code-grounded guide.
