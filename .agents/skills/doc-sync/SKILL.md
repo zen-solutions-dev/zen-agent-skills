@@ -181,9 +181,9 @@ Then:
 - **Re-check the edited document's relative links after writing, and before recording anything.**
   It is unconditional (why, in the notes). Run the repository's own link checker over the edited
   document (in this kit, `python .tasks/validate.py --links <path>`, the one mode that reads it);
-  without one, resolve each relative link from the document's own directory. **A link the edit broke is repaired in the same pass, or the edit is reverted.**
-  It is never left dangling and never recorded as applied: an applied entry claiming a correction
-  that broke a link is a worse record than no entry.
+  without one, resolve each relative link from the document's own directory. **A link the edit broke
+  is repaired in the same pass, or the edit is reverted.** It is never left dangling and never
+  recorded as applied: a record of a correction that broke a link is worse than no record.
 - **Record the audit trail.** Each applied entry names the finding id, the document, the claim
   corrected, the evidence, and the confidence it carried. Someone reading it later must be able to
   tell a mechanical correction from an applied judgment call, and see the basis for it, without

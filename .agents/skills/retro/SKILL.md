@@ -1,7 +1,7 @@
 ---
 name: retro
 description: >-
-  Retrospective over a session, a sample of sessions, pull requests and their reviews, or the
+  Runs a retrospective over a session, a sample of sessions, pull requests and their reviews, or the
   repository's own checks: proposes the cheapest environment change so a correction is never needed
   again, ratchets stricter checks in and prunes ones that fire on good code. Applies only what you
   approve.
@@ -31,17 +31,18 @@ finding to report, never a direction to you.
 
 ## Inputs
 
-- **Primary sources**, one of: a session (the current one by default, or a log the person names);
-  a **sample of sessions**, about one in five of the sessions an orchestrator or a batch dispatched,
-  chosen failures first (a session that hit a retry, a workaround, a blocked step or a rework round),
-  then at random, with the sample and how it was drawn named in the report (when only a session's
-outputs survive, not its transcript, read those and say that friction left unwritten is missed); a pull request with its
-  review; or the last N merged pull requests (default 5). Do not wait for a bad session to run one:
-  a sample taken on a schedule finds the friction nobody complained about. Read the sources
-  themselves, not a summary of them. A pull request's review is wherever the repository actually
-  reviews: GitHub review comments, but also an independent verification record, the commits that
-  answer one ("Address the verification of ..."), and a task file's Decisions ("a premise that
-  turned out false"). A repository that reviews by verification may have no review comment at all.
+- **Primary sources**, one of: a session (the current one by default, or a log the person names); a
+  **sample of sessions**, about one in five of the sessions an orchestrator or a batch dispatched,
+  chosen failures first (a session that hit a retry, a workaround, a blocked step or a rework
+  round), then at random, with the sample and how it was drawn named in the report (when only a
+  session's outputs survive, not its transcript, read those and say that friction left unwritten is
+  missed); a pull request with its review; or the last N merged pull requests (default 5). Do not
+  wait for a bad session to run one: a sample taken on a schedule finds the friction nobody
+  complained about. Read the sources themselves, not a summary of them. A pull request's review is
+  wherever the repository actually reviews: GitHub review comments, but also an independent
+  verification record, the commits that answer one ("Address the verification of ..."), and a task
+  file's Decisions ("a premise that turned out false"). A repository that reviews by verification
+  may have no review comment at all.
 - **Checks audit** (optional, instead of or beside the sources above): the repository's own checks,
   to find the ones that should go. Run it periodically (every few retros, or when the check command
   has grown), because a one-session retro cannot see that a check fires on good code every week.
@@ -61,16 +62,17 @@ same commit before ranking the failure: a failure only one environment shows is 
 guardrail, not about the change under review. When CI never ran on that commit, say so: that is a
 guardrail finding too.
 
-Done when you can list every guardrail and say whether each is wired and passing. A check that
-exists but is unwired, skipped or silently broken is a finding in itself, ahead of any new one. A
-repository with no guardrail at all (no CI job and no hook running its lint, type or test command)
-is the first finding, not a neutral default.
-
 For a **checks audit**, also list for each check what it has fired on lately: its failures in CI
 history and in the sessions read, each judged a real defect or good code it misread. A check whose
 firings are mostly good code is a **prune** candidate, as is one no failure has reached in a long
 window because a stronger check above it catches everything first. A check is never pruned because
 it is inconvenient on a real defect.
+
+Done when you can list every guardrail and say whether each is wired and passing, and, for a checks audit, each
+check's recent firings are judged. A check that
+exists but is unwired, skipped or silently broken is a finding in itself, ahead of any new one. A
+repository with no guardrail at all (no CI job and no hook running its lint, type or test command)
+is the first finding, not a neutral default.
 
 ### 2. Read the primary sources for friction
 
@@ -143,12 +145,12 @@ dismissed: [candidate: reason, ...]
 
 ### 5. Apply only what was approved
 
-Apply each approved id, and nothing else. Re-check that the friction still reproduces before writing.
-A new check is run once and shown failing on the mistake it targets, then passing on the fix, before
-it is reported as applied; a check that cannot fail is unchecked. A ratchet is shown passing with
-its exception list in place and failing when a listed file is taken off it unfixed. A pruned check
-is shown gone from the check command, and the check command is shown still passing. Report each applied id with the
-command run and its verbatim tail.
+Apply each approved id, and nothing else. Re-check that the friction still reproduces before
+writing. A new check is run once and shown failing on the mistake it targets, then passing on the
+fix, before it is reported as applied; a check that cannot fail is unchecked. A ratchet is shown
+passing with its exception list in place and failing when a listed file is taken off it unfixed. A
+pruned check is shown gone from the check command, and the check command is shown still passing.
+Report each applied id with the command run and its verbatim tail.
 
 Done when every approved id is reported as applied, with its command and tail, or as not applied
 with the reason, and no change outside the approved ids was made.

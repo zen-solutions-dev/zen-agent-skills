@@ -64,7 +64,7 @@ directory the file actually lives in, the same rule the CI docs link step applie
 `.github/` and `docs/` trees. The checker's other modes walk the tracker directory only, so they
 would report clean without having read the edited document at all (`bug-0014`).
 
-## Why the three habits in Step 2
+## Why the habits in Step 2
 
 Moved here from the procedure on 2026-11-24 (`feat-0093`), which kept the habits and shed the
 argument. **Formatting does not define a claim**: prose wraps, so a qualifier and the subject it

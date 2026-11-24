@@ -139,13 +139,12 @@ and is labelled as one. Skip anything the repository's tooling already enforces.
 the change adds beside a workaround as the lens's fig-leaf smell directs: a comment that explains
 why the code is wrong licenses it rather than fixing it.
 
-Where subagents exist and you may dispatch them, run each axis in its own fresh-context subagent, told it is a leaf that
-dispatches nothing further, and give it only the changeset identity, the depth, the lens, and its
-own sources. Otherwise (a leaf, or no subagents), run the axes in sequence: finish the spec axis, through Step 6,
-and write its findings down before reading for the standards axis. Where the harness offers a
-reviewer from a different model family, it may run one axis as a second opinion; its findings pass
-the same gate, and the person filters them, because a second reviewer is more often overzealous
-than right.
+Where subagents exist and you may dispatch them, run each axis in its own fresh-context subagent,
+told it is a leaf that dispatches nothing further, and give it only the changeset identity, the
+depth, the lens, and its own sources. Otherwise (a leaf, or no subagents), run the axes in sequence:
+finish the spec axis, through Step 6, and write its findings down before reading for the standards
+axis. A reviewer from another model family, where the harness offers one, may run an axis as a
+second opinion; its findings pass the same gate, and the person filters them.
 
 Give each candidate the lens's **evidence shape** as you form it; a defect in absent code (a
 missing test, an unhandled branch) takes the absence form, never a quote of code that does not
@@ -214,7 +213,8 @@ closing line per axis are written, and nothing in the repository was edited or c
 
 A broad review run again over a fixed change never converges: it reads the fix as new work and
 finds new things to say each time. So after the one fix round, re-check only what the first review
-asked for, from its findings (their signatures) and the range the fix added.
+asked for, from its findings (their signatures) and the range the fix added. Read
+[`review-quality.md`](../../rules/review-quality.md) now, if this run has not, for its gate.
 
 1. For each finding, read the code it cited at the fix's revision and rerun its evidence: the quote
    for a defect, the search for an absence. Mark it **fixed** (the quote no longer resolves, or the
