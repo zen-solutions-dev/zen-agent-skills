@@ -30,12 +30,12 @@ Drafts come only through the installer. To try them (see [what's new](#whats-new
 
 ```bash
 python scripts/install.py --tools claude --include-drafts
-python scripts/install.py --skills grill --include-drafts   # one skill and what it composes
+python scripts/install.py --skills sitrep --include-drafts  # one skill and what it composes
 ```
 
 **Use one route per harness.** The plugin and the installer's `claude` target place the same skills under different names, so having both loads every description twice. To try the drafts in Claude Code, use the installer for Claude Code instead of the plugin.
 
-Then, in your harness, start with **"grill me"** on the change you want to make, or ask `zen` which skill fits (both are drafts, so they arrive with `--include-drafts` rather than through the plugin or a default install). For a new repository, start with `project-bootstrap`.
+Then, in your harness, start with **"grill me"** on the change you want to make, or ask `zen` which skill fits. Both come with the plugin; with the installer, `grill` is in the default profile and `zen` in `--profile all`. For a new repository, start with `project-bootstrap`.
 
 Cursor and VS Code or Copilot use project-level adapters instead, and narrower profiles keep the description budget small. Both are in [`docs/INSTALL.md`](docs/INSTALL.md), with uninstall and troubleshooting.
 
@@ -50,7 +50,7 @@ The 2026-11 overhaul, compared against Matt Pocock's skills and written up in [t
 - **A router.** `zen` says which skill fits where you are.
 - **Lighter to carry.** Skills are slimmed, orchestrators a person starts by name no longer spend the agent's description budget, and any skill installs alone with `--skills`.
 
-The new skills are drafts until they have been used on real work; see [no skill ships cold](#no-skill-ships-cold). The full list, with status, is in [`docs/CATALOG.md`](docs/CATALOG.md).
+Six of the new skills, `grill`, `domain-language`, `tdd`, `retro`, `improve-architecture` and `zen`, were promoted from drafts once each had been used on real work and refined from it; `systematic-debugging` stays a draft until its second run. See [no skill ships cold](#no-skill-ships-cold). The full list, with status, is in [`docs/CATALOG.md`](docs/CATALOG.md).
 
 ## Why it exists
 
@@ -136,7 +136,7 @@ flowchart LR
 
 `project-bootstrap` and `init-worktracking` set a repository up once, in front of all of this. A change starts with a grilling: the agent interviews you until every decision is made, looking facts up rather than asking. Behaviour a person must agree becomes a written specification, and once you approve it, tasks each sized to one fresh context window. The spec and its tasks are gated for readiness together, and a blocked verdict authorizes nothing. Work is built test-first or dispatched to isolated agents, tested against the spec's scenarios, audited against the contract, independently verified with evidence, and reviewed on two axes. Only then is it reconciled, its stale documents found, and its pull request described with its merge danger. `retro` closes the loop by turning what went wrong into a check.
 
-Three report-only lenses are composed by the skills above rather than run on their own: `spec-quality`, `test-quality`, and `review-quality`. Not sure where you are? Ask `zen`, the draft router, once you have installed the drafts.
+Three report-only lenses are composed by the skills above rather than run on their own: `spec-quality`, `test-quality`, and `review-quality`. Not sure where you are? Ask `zen`, the router.
 
 ### Choosing a path
 

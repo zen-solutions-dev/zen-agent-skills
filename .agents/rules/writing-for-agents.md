@@ -119,6 +119,8 @@ Pick model-invoked only when the agent must reach the skill on its own, or anoth
   is a leaf that dispatches nothing further.
 - Every step ends on a clear, demanding completion criterion, on a line of its own beginning
   "Done when".
+- A summary, verdict rule or opening promise that restates a step is re-read against that step
+  whenever either is edited; prefer pointing at the step to restating it.
 
 ## Provenance
 
