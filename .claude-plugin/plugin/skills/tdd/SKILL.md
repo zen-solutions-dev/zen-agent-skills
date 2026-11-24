@@ -81,10 +81,17 @@ bullet**: the thinnest test that exercises the path end to end through the seam.
   collaborators.
 
 Run it. It must fail, and the failure must be the one you expect: an assertion about the missing
-behaviour, not an import error, a typo, or a broken fixture. A test that passes before any code is
-written is testing nothing new; fix it or drop it.
+behaviour, not an import error, a typo, or a broken fixture. For a new module, first write an
+interface-only stub (the function exists and returns a wrong value), so the first red is an
+assertion rather than an import error.
 
-Done when the test fails, and its failure message names the missing behaviour.
+A test that passes before any code is written is testing nothing new; fix it or drop it. The one
+exception is a decided degenerate-input behaviour the minimal code already satisfies: keep it only
+after breaking the code on purpose and seeing the test fail, with that failure quoted, the same
+run-it-both-ways rule as for fixtures below.
+
+Done when the test fails, and its failure message names the missing behaviour, or, for a kept
+degenerate-input test, its failure against the deliberately broken code is quoted.
 
 ### 4. Green: write only enough code to pass
 

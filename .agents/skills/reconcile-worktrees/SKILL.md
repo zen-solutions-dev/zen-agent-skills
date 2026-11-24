@@ -13,8 +13,8 @@ metadata:
 
 Bring the verified contents of one or more isolated worktrees or child branches into the main working
 tree as a clean, reviewable diff, or onto an integration branch: overwrite nothing silently, commit
-nothing on the main checkout on the person's behalf, and never read "no conflicts reported" as "safe". The incidents behind each rule are in
-[`references/lessons.md`](references/lessons.md).
+nothing on the main checkout on the person's behalf, and never read "no conflicts reported" as
+"safe". The incidents behind each rule are in [`references/lessons.md`](references/lessons.md).
 
 This is the landing step of the spine: `new-task` authors the task files, `fix-batch` dispatches
 them, and this skill combines changes that are already trusted. A worktree not yet verified goes
@@ -32,7 +32,7 @@ combined result. Offer it in Step 7 even when the diff looks internal.
 - **The main checkout**, the default: the result is an uncommitted diff for a person to decide on.
 - **An integration branch**: one branch that many children's work lands on before one pull request
   reaches a person. Each child is a pushed branch rather than a local worktree, and landing is a
-  merge and a push (Step 5). You land there only work you did not author and that someone else
+  fast-forward and a push (Step 5). You land there only work you did not author and that someone else
   verified, per the integration-branch exception to `A8` in [`core.md`](../../rules/core.md); a
   person merges the integration branch into the base branch (`developer` or `main`).
 
@@ -41,7 +41,7 @@ combined result. Offer it in Step 7 even when the diff looks internal.
 
 ## Procedure
 
-### Step 1: find each worktree's real base, the landing branch's, and check every report
+### Step 1: find each worktree's or child's base and the landing branch's, and check every report
 
 ```
 git worktree list
@@ -52,6 +52,10 @@ they coincide only while the worktree has no commits of its own. Get the real ba
 `git merge-base <worktree-branch> HEAD`, or use the dispatch sha `fix-batch` recorded. Flag any
 worktree whose base differs from the main checkout's `HEAD`: its diff may no longer represent only
 its own changes.
+
+For a child branch on an integration branch, `git fetch origin` first; the base is
+`git merge-base origin/<integration> origin/<child-branch>`. A child whose base is not the current
+`origin/<integration>` tip has not merged it, and Step 5 sends it back rather than landing it.
 
 **The landing branch gets the same rule.** Cut it from the target branch's current tip, and merge the
 target back in before opening a pull request, then rerun the acceptance command locally:
@@ -64,15 +68,16 @@ git merge origin/<target-branch>
 A branch that lags its target cannot see files authored after the cut, so it passes alone while the
 merge fails, and a CI trigger that skips leaves the green branch run as the only signal.
 
-**Then check each worktree's delegate report against the contract.** A worktree whose report misses a
-required field does not land, however clean its diff. Close the gap with one of the contract's two
-remedies (ask the same agent for exactly the missing fields, or get the field from the narrowest
-source yourself, which for a missing validation result means running the acceptance command in that
-worktree) and record which one in Step 7. A worktree with no report at all is the same case: rebuild
+**Then check each worktree's or child's delegate report against the contract.** One whose report
+misses a required field does not land, however clean its diff. Close the gap with one of the
+contract's two remedies (ask the same agent for exactly the missing fields, or get the field from
+the narrowest source yourself, which for a missing validation result means running the acceptance
+command in that worktree or on that child branch) and record which one in Step 7. A worktree with no report at all is the same case: rebuild
 the fields yourself from the diff and a real run, saying you were the source, or leave it unlanded.
 
-Done when every worktree has a known base, the landing branch includes its target's tip, and every
-report conforms or the worktree is marked unlanded.
+Done when every worktree and every child branch has a known base, the landing branch includes its
+target's tip, and every worktree's and child's report conforms or that worktree or child is marked
+unlanded.
 
 ### Step 2: enumerate all three kinds of change in each worktree
 
@@ -90,7 +95,7 @@ git -C <worktree> ls-files --others --exclude-standard    # new files git is not
 - **`--binary` is required** for any binary file, or the patch cannot be applied.
 
 For a child branch on an integration branch the list is `git diff --name-status
-<integration>...<child-branch>`; it has no untracked files.
+origin/<integration>...origin/<child-branch>`; it has no untracked files.
 
 Record the full `git status --short` file list per worktree now, not just its count: Step 8 checks
 the landing against it path by path. Then read every file's diff, not just the stat, even if you
@@ -144,23 +149,31 @@ git -C <worktree> ls-files --others --exclude-standard
 - **The untracked copy is not optional** and has no patch equivalent. Skip it and the agent's new
   files never land, `git apply` reports success, and Step 8 deletes the only copy.
 
-**On an integration branch**, a child that has merged the current integration tip into its pushed
-branch lands by fast-forward; one that has not, often because another child landed since, lands by a
-merge after Step 4's overlap checks. Push after every landing, not once at the end:
+**On an integration branch, only a fast-forward lands**, per the integration-branch exception to
+`A8` in [`core.md`](../../rules/core.md). A child that has merged the current integration tip into
+its pushed branch lands with `--ff-only`. One that has not, often because another child landed
+since, goes back to its author to merge the tip and be re-verified on the new commit; never merge it
+yourself. Land, test, then push, one child at a time:
 
 ```
 git fetch origin
 git switch <integration>
-git merge --ff-only <child-branch>    # when the child already holds the integration tip
-git merge <child-branch>              # otherwise, after Step 4
+git merge --ff-only origin/<integration>     # bring the local branch up to the remote tip
+git merge --ff-only origin/<child-branch>    # refused unless the child holds that tip
+<acceptance command>                         # or at least the affected tests, on the landed tip
 git push origin <integration>
 ```
 
-After each landing, re-run the affected tests (the combination is a new, untested state) and
-re-check `git status` before the next one.
+A red run is undone locally and never pushed: with a fast-forward and a clean tree,
+`git reset --keep ORIG_HEAD` returns the branch to its previous tip. Never `git reset --hard` while
+uncommitted work is present. Report that child as not landed, with the failing output.
 
-Done when every eligible worktree is applied with its untracked files, or every eligible child is
-merged and pushed, each followed by a green test run, and every skipped one is named.
+After each landing on the main checkout, re-run the affected tests (the combination is a new,
+untested state) and re-check `git status` before the next one.
+
+Done when every eligible worktree is applied with its untracked files and followed by a green test
+run, or every eligible child is fast-forwarded, green on the landed tip, and only then pushed; every
+child sent back or undone is named with its reason, and every skipped one is named.
 
 ### Step 6: normalize split bookkeeping
 
@@ -178,7 +191,7 @@ repository's equivalent, passes on it.
 Show exactly what landed or is about to land, file by file, what you verified at each step, and
 which report remedy you used per worktree. On the main checkout, run no `git add`, `git commit` or
 `git push` unless explicitly asked: the output is a trustworthy diff for a human decision, not the
-decision. On an integration branch, list each landed child with its merge or fast-forward commit,
+decision. On an integration branch, list each landed child with its fast-forwarded commit,
 confirm `git log origin/<integration>..` is empty, and leave the merge into the base branch to a
 person.
 
