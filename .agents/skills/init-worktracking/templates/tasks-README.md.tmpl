@@ -22,7 +22,7 @@ Run the shipped checker before dispatching work to agents:
 
     python .tasks/validate.py
 
-It verifies frontmatter schema, id uniqueness, that every `depends_on` resolves to a real task and no ring of them closes back on itself, that every relative markdown link resolves from the directory the file is actually in, and (with `--strict`) that every `touched_files` path exists. It exits non-zero on any error, so it drops cleanly into CI or a pre-commit hook.
+It verifies frontmatter schema, id uniqueness, that every `depends_on` resolves to a real task and no ring of them closes back on itself, that every relative markdown link resolves from the directory the file is actually in, and (with `--strict`) that every `touched_files` path exists. When the repository has `docs/agents/zen.md`, the setup file the agent skills read, it also checks that file's `zen-config` block, and a task's optional `mode`. It exits non-zero on any error, so it drops cleanly into CI or a pre-commit hook.
 
 ## Lifecycle
 
@@ -42,6 +42,8 @@ It verifies frontmatter schema, id uniqueness, that every `depends_on` resolves 
 | `spec` | Optional. Path to the approved spec this task implements. |
 | `scenarios` | Optional. The `S-NNN` scenario ids from that spec this task covers. |
 | `external` | Optional. The upstream issue this task serves, as `#123` or `owner/repo#123`. |
+| `mode` | Optional. `afk` (runs with nobody watching) or `hitl` (a person stays in the loop); empty takes `default_mode` from `docs/agents/zen.md`, else `hitl`. |
+| `conformance` | Optional. Where the conformance audit of `spec` is recorded, when it is not `<spec>.conformance.md` beside the spec. |
 | `touched_files` | Every file the task expects to read or modify, each of which must already exist. |
 | `created` | ISO date the task was authored. |
 

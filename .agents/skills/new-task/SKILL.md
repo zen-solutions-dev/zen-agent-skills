@@ -29,7 +29,12 @@ An agent that reads only `AGENTS.md`, the task file, and its `touched_files` can
   through every layer it needs (schema, logic, interface, test) and is verifiable on its own. A
   horizontal slice ("all the models", "all the tests") is verifiable only once its siblings land.
 - **Honest `touched_files`**: the full read and write surface, found by inspecting the repository.
-  Too narrow blocks the agent; too wide lets it wander into a parallel agent's files.
+  Too narrow blocks the agent; too wide lets it wander into a parallel agent's files. **A document
+  the change falsifies is in scope by construction**: when the task edits code, prose or a docstring
+  that a conformance matrix quotes or an approved spec pins, grep the specs and matrices for the
+  symbol, test name or quoted phrase first, and put every hit in `touched_files`. Reconciling such a
+  row means re-deriving its verdict before moving its citation; a dated measurement is a record and
+  stays as it was.
 - **A real `parent`**: the roadmap Feature or Epic it serves, or, in a repository without
   `ROADMAP.md` (the `init-worktracking` lite tier), one line of free text naming the goal. Never a
   pointer to a file the repository does not have.
@@ -42,6 +47,12 @@ An agent that reads only `AGENTS.md`, the task file, and its `touched_files` can
   section when none hold. This is the same rule `spec-plan-readiness` applies, so a task that fires
   it without notes is blocked at the gate.
 - **Tight scope with an explicit out-of-scope list.**
+- **A `mode`**, from the door and the blast radius: `afk` when the work is well specified, low risk
+  and easy to verify; `hitl` when it holds a one-way door, a wide blast radius, or a change hard to
+  review. Leave it empty to take `default_mode` from `docs/agents/zen.md`.
+- **Built to the repository's quality bar** (prototype, production or library), the line in its
+  `AGENTS.md`. Acceptance criteria ask for what that bar demands and no more. When `AGENTS.md`
+  states no bar, ask once and use the answer for every task in the run.
 - **The project's words.** Titles and bodies use the glossary's terms when the repository keeps one.
 
 ## Wide refactors: expand, migrate, contract
@@ -81,8 +92,10 @@ When the input is a spec, four obligations hold inside the normal procedure:
 1. Confirm `.tasks/` exists. If not, point the person to `init-worktracking` and stop.
 2. Note whether `ROADMAP.md` exists. Its absence is the lite tier, a valid state that changes what
    `parent` may name (step 4); do not offer to create one.
-3. Read `AGENTS.md` (its technical commands, conventions, and work-altitude model),
-   `.tasks/_TEMPLATE.md`, and the glossary and decision records if the repository keeps them.
+3. Read `AGENTS.md` (its acceptance command, quality bar and conventions), `.tasks/_TEMPLATE.md`,
+   `docs/agents/zen.md` when it exists (its `acceptance`, `glossary` and `default_mode`), and the
+   glossary and decision records if the repository keeps them. Say once whether each fact came from
+   `docs/agents/zen.md` or from discovery. When its block does not parse, use none of it, discover instead, and say that `python .tasks/validate.py` shows why.
 4. Find the next id per type: take the higher of `.tasks/.scaffold.json` `id_high_water` and the
    highest `NNNN` per type in `.tasks/` and `.tasks/done/`. Ids are never reused.
 5. Read any roadmap Feature or existing task the input names, noting whether each dependency is in
@@ -115,7 +128,8 @@ Done when every path and every claim in the draft has been checked.
 ### 4. Decompose and name the parent
 
 - Size each task to one fresh context window; prefer tracer bullets; sequence wide refactors as
-  expand, migrate, contract. Put ordering in `depends_on`.
+  expand, migrate, contract. Put ordering in `depends_on`, and put the riskiest slice first: the
+  one most likely to change the plan, so the plan changes before work is built on it.
 - Parent: with `ROADMAP.md`, the Feature served (if none fits, propose a one-line Feature for the
   forward plan and add it only with assent); without one, one line of free text in the form the
   repository's template seeds.
@@ -132,7 +146,7 @@ and fill every section: frontmatter (`id`, `type`, `status: open`, `priority`, `
 `depends_on`, `touched_files`, `created`, plus `spec` and `scenarios` when they apply); **Problem**
 with relative links to the exact code; **Scope**, in and out, naming every file to be created;
 **Implementation notes** when Problem and Scope leave room; **Risks and rollback** only when the rule
-fires, checked against the `touched_files` you wrote; **Acceptance criteria** with the literal
+fires, checked against the `touched_files` you wrote; `mode` set or deliberately left empty; **Acceptance criteria** with the literal
 command; **Definition of done** from the template.
 
 Done when every confirmed task has its file, every frontmatter field that applies is set, every

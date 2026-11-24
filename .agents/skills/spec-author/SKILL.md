@@ -31,7 +31,8 @@ To review a spec without authoring one, run `spec-quality` alone.
 
 ## Where the spec goes
 
-Find the repository's spec location before writing: an existing directory such as `docs/spec/`,
+When the repository has `docs/agents/zen.md` and it sets `spec_dir`, that is the spec location; say
+so, and say when you discovered the location instead. When its block does not parse, use none of it, discover instead, and say that `python .tasks/validate.py` shows why. Otherwise find the repository's spec location before writing: an existing directory such as `docs/spec/`,
 `specs/`, `docs/rfcs/`, or `design/`, and how the specs there are named. Match it. Only when the
 repository has none does `docs/spec/<slug>.md` apply, as this kit's default. When the convention is
 ambiguous, ask.

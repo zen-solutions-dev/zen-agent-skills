@@ -32,16 +32,26 @@ questions you can ask now without guessing at an answer you have not heard.
 
 ## Procedure
 
-### 1. Read before you ask
+### 1. Get the problem and its why
+
+Open by asking the person for the problem and why it matters, unless the request already states
+both. A request that names only a *what* ("add a retry flag") gets an answer no better than the what;
+the why is what lets you propose something better. The person drives: they may narrow the interview
+to one question at a time, and then you ask one at a time.
+
+Done when you can state the problem and its why in one sentence each, in the person's words.
+
+### 2. Read before you ask
 
 Read what the work touches: the request, the code or documents in the area, the project glossary
-and decision records if any exist (`GLOSSARY.md`, `docs/adr/`, or wherever the repository keeps
-them). Use the glossary's terms in every question.
+and decision records. Their paths are the `glossary` and `adr_dir` keys of `docs/agents/zen.md` when
+the repository has that file; otherwise look for `GLOSSARY.md`, `docs/adr/`, or wherever the
+repository keeps them, and say which source you used. When its block does not parse, use none of it, discover instead, and say that `python .tasks/validate.py` shows why. Use the glossary's terms in every question.
 
 Done when you can name the first frontier, and every glossary term the request touches is one you will
 use as the glossary defines it.
 
-### 2. Split facts from decisions
+### 3. Split facts from decisions
 
 **Facts are your job; decisions are the person's.** A fact is anything the environment can answer:
 what the code does, which files exist, what a command prints, what a config sets. A decision is a
@@ -56,7 +66,7 @@ choice between options someone could reasonably disagree about.
 
 Done when every frontier question is a decision, and every fact it depends on is found or running.
 
-### 3. Ask one round
+### 4. Ask one round
 
 Ask the whole frontier as one round. Number every question, continuing the numbering across
 rounds. Each question carries its options, your recommended answer worded so that "yes" accepts it,
@@ -82,23 +92,26 @@ Wait for the answers.
 
 Done when the round is sent and nothing more is asked until they come back.
 
-### 4. Recompute the frontier
+### 5. Recompute the frontier
 
 Each answer reshapes the tree: settled decisions unblock the decisions hanging from them, and an
 answer can open a branch nobody saw. Record each settled decision in one line as it lands. When the
 person uses a term two ways, or a term the glossary defines differently, put that to them as a
 question in the next round. Returned lookups settle their facts. When a returned fact bears on a
 decision already settled, put that to the person in the next round as its own question; never
-reconcile it silently inside another recommendation. Then go back to step 3, unless the new
-frontier is empty: then go to step 5.
+reconcile it silently inside another recommendation. Then go back to step 4, unless the new
+frontier is empty: then go to step 6.
 
 Done when every answer in the round is recorded as a one-line decision, every term conflict it
 raised is queued as a question, and the new frontier is either named or empty.
 
-### 5. Close
+### 6. Close
 
 The interview is done when the frontier is empty, every branch has been visited, and nothing is left
-silently assumed. Then ask the person to confirm the shared understanding, in one sentence that
+silently assumed. Before closing, sort everything not decided into three kinds: a **deferred
+decision** (clear enough to decide, deliberately left for a named owner), **fog** (in scope, but not
+yet sharp enough to decide or to write a task for), and **out of scope** (will not be done here, and
+never graduates into a task). Then ask the person to confirm the shared understanding, in one sentence that
 restates the whole. Act on nothing until they confirm.
 
 Done when they have confirmed and the decisions record below is written.
@@ -127,8 +140,14 @@ decomposes with it, so keep it plain and complete:
 ### Facts found
 - <fact> (source: <file, command, or lookup>)
 
-### Still open
+### Deferred
 - <a decision the person deferred, with its owner>, or `None.`
+
+### Fog
+- <in scope, not yet sharp enough to decide or to write a task for>, or `None.`
+
+### Out of scope
+- <what will not be done here, and why>, or `None.`
 ```
 
 Each term in **Terms** is a candidate for the project glossary, which `domain-language` keeps. When
