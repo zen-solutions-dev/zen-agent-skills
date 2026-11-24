@@ -16,18 +16,21 @@ git log -n 200 --name-only --format= -- scripts/ | sort | uniq -c | sort -rn | h
 
 | Changes | Path |
 |---|---|
-| 17 | `scripts/install.py` |
-| 15 | `scripts/validate-skills.py` |
+| 34 | `scripts/install.py` |
+| 23 | `scripts/validate-skills.py` |
+| 15 | `scripts/build-adapters.py` |
 | 12 | `scripts/observatory/serve.py` |
-| 10 | `scripts/build-adapters.py` |
+| 10 | `scripts/check-provenance.py` |
 | 9 | `scripts/observatory/ui/index.html` |
-| 8 | `scripts/check-provenance.py` |
 | 7 | `scripts/run-checks.py` |
 | 5 | `scripts/observatory/ingest.py` |
 | 4 | `scripts/check-citations.py` |
 | 1 or 2 each | `observatory/pricing.json`, `observatory/db.py`, `scan-secrets.py`, `_textio.py`, `_skillmeta.py`, `_change_scope.py` |
 
-Only 48 commits touch `scripts/`, so the 200-commit window is its whole history. Left out of the ranking: `observatory/pricing.json`, a rate table that changes by design. Nothing else in `scripts/` is a ledger or generated tree. The top cluster taken as the scope is `install.py`, `validate-skills.py`, `build-adapters.py`, `observatory/serve.py` and `check-provenance.py`, with `_skillmeta.py` and `observatory/db.py` read because the candidates land in them.
+Only 81 commits touch `scripts/`, so the 200-commit window is its whole history. **Corrected
+2026-11-24** in the landing review's fix round: the first run counted from a shallow clone (48
+commits, `install.py` 17); the table above is recounted on a full clone (`git fetch --unshallow`).
+The same five files lead either way, so the scope and the candidates are unchanged. Left out of the ranking: `observatory/pricing.json`, a rate table that changes by design. Nothing else in `scripts/` is a ledger or generated tree. The top cluster taken as the scope is `install.py`, `validate-skills.py`, `build-adapters.py`, `observatory/serve.py` and `check-provenance.py`, with `_skillmeta.py` and `observatory/db.py` read because the candidates land in them.
 
 No glossary or decision record (ADR) exists for `scripts/`. [`AGENTS.md`](../../AGENTS.md) acts as one: the stdlib rule, the profile-edge rule, and the shipped `.tasks/validate.py` copy are constraints, not candidates.
 

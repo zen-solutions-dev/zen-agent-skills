@@ -109,8 +109,8 @@ These habits decide whether this step finds anything (why each matters is in the
   sentence.
 - **Confirm the referent, not just the token**: establish what kind of thing is claimed to exist
   before looking for it.
-- **An undated "currently" or "now" is a claim like any other**: ground it, and when the document is
-  a record rather than a current-state page, the fix is a date, not a rewrite.
+- **An undated "currently" or "now" in a current-state document is a claim like any other**:
+  ground it. Ledgers stay skipped, whatever tense they use.
 
 **A claim you cannot tie to a fact produces no finding at all.** Not a low-confidence finding, not a
 note: nothing. A report padded with ungrounded suspicion is one the reader stops trusting.

@@ -22,7 +22,7 @@ The same underlying state renders three different ways. Decide which reader you 
 
 ## Pick the form
 
-Two output shapes cover almost everything the user asks for:
+These output shapes cover almost everything the user asks for:
 
 - **Handoff document**: a standalone Markdown file when the reader needs something durable to work from (onboarding, an open-questions doc, a status packet). Save it into the repo's docs location.
 - **Message**: a short, ready-to-send note when the user just needs to tell someone something (a Slack or email update, a nudge, a question). Keep it to the point.
@@ -48,7 +48,7 @@ Underneath the audience tuning, all three readers need the same four things. Ren
 3. **What is open or needs a decision.** The questions or blockers. Phrase decisions as decisions, with enough context for the reader to actually choose, and a recommendation where you have one. For a partner asking to unblock work, this is usually the heart of the handoff.
 4. **What is next and who owns it.** The forward path and the ownership, so nothing falls into the gap between people.
 
-Done when all four are present in the audience's register, or one is stated as empty ("nothing is blocked").
+Done when all four are present in the audience's register, or one is stated as empty ("nothing is blocked"). A questionnaire skips this section: its own steps below say when it is done.
 
 ## Questionnaire mode
 

@@ -49,7 +49,11 @@ says so.
 review runs once, the author fixes once, and a second run reads only the first review's findings
 (by signature) plus any blocker the fix introduced, then stops and hands what is still open to a
 person. It answers the non-converging review loop the [sources delta](../reviews/2026-11-24-sources-delta.md)
-records. The Modes row gains the re-check. No existing scenario's obligation changes; the skill's
+records. The Modes row gains the re-check and a Re-check output row is added. Two clauses are amended with
+it, because the re-check would otherwise break them: the Constraint that the skill "reads nothing"
+from signatures now names the re-check as the one place it reads them (counting repeats across runs
+stays out of scope), and the Non-Goal on running commands now allows a re-check to rerun a read-only
+command a first-review finding cited, and nothing else. No existing scenario's obligation changes; the skill's
 wording behind several of them was compressed, and its conformance matrix was re-audited the same
 day. The fig-leaf smell and the optional second reviewer from another model family are lens and
 procedure guidance, not contract, and add no scenario. The frontmatter stays at `approved` per the
@@ -101,7 +105,9 @@ only the diff it was given, or hardcode a severity scheme, and nothing would obj
   is `test-quality`. The spec axis judges one change against its own contract and reports findings,
   not a matrix.
 - Creating or editing a pull request, which is `pr-describe`.
-- Running the test suite or any build command as part of forming the review.
+- Running the test suite or any build command as part of forming the review. A re-check (S-025)
+  may rerun a read-only command that a first-review finding cited as its evidence, and nothing
+  else.
 
 ## Constraints
 
@@ -112,7 +118,8 @@ only the diff it was given, or hardcode a severity scheme, and nothing would obj
   rubric, citing the standard) live in the same lens. The depth signals and selection rule live in
   the skill.
 - Counting how often a signature repeats across runs, and judging a repeated finding futile, are out
-  of this contract. The skill emits signatures and reads nothing from them.
+  of this contract. The skill emits signatures; the only place it reads them is a re-check (S-025),
+  which looks up the first review's findings by signature.
 - Changeset resolution is shared with `pr-describe`, so "review this" and "describe this" resolve to
   the same range in the same repository state.
 - The default output is Markdown, so the skill works in any harness. A harness may carry the same
@@ -333,6 +340,7 @@ only the diff it was given, or hardcode a severity scheme, and nothing would obj
 | Axes | Spec (against the contract: `spec-missing`, `spec-extra`, `spec-wrong`) and standards (against the repository's written standards plus the lens rubric), run as independent passes, never reranked against each other |
 | Depth | `quick`, `standard` or `deep`, from an explicit request or rules R1 to R7 over five signals; risk-flagged files are anchors at `deep` with a re-measured remainder capped at `standard`; unmeasurable selects `standard` |
 | Output | A header block (depth and rule, changeset and whether supplied or resolved, coverage, exclusions, sources per axis, gate drop count when anything was dropped), then a Spec section and a Standards section, each with its own verdict and inspected files and findings ordered by severity, each finding with `file:line`, its evidence, its signature, the issue, why, and fix |
+| Re-check output | One line per first-review signature marked `fixed`, `open` or `disputed`, the count of each mark, any blocker the fix introduced, and whether the review is closed or what a person must decide (S-025) |
 | Side effects | None. No file is written, no commit is made |
 
 ## Open Questions

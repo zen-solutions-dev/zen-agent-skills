@@ -57,7 +57,9 @@ Before reading the session, find what the repository already runs: its check com
 its CI workflows, the branch protection or rulesets that decide which checks a merge requires (and
 on which branches), its pre-commit hooks, and its written standards (`CODING_STANDARDS.md`,
 `CONTRIBUTING.md`, the agent-instructions file, and the user-level instruction files the agent runs
-under). Run the check command once and keep its tail. When it fails, compare with CI's result on the
+under). Run the check command once and keep its tail. When the working tree has uncommitted changes,
+say whose they are if you can, and run it on a clean export of the commit instead (`git archive`, or
+a fresh worktree), so the tail describes a commit. When it fails, compare with CI's result on the
 same commit before ranking the failure: a failure only one environment shows is a finding about the
 guardrail, not about the change under review. When CI never ran on that commit, say so: that is a
 guardrail finding too.
@@ -80,8 +82,8 @@ Walk the session or the review thread and mark each moment the agent was correct
 way, searched for something more than once, or ran an expensive command. For pull requests, every
 review comment is a candidate; a comment that recurs across pull requests is a strong one.
 
-Done when every correction and every review comment is either tied to a candidate below or dismissed with a
-reason.
+Done when every correction and every review comment is either tied to a candidate below or dismissed
+with a reason, or, for a checks-audit-only run, this step is skipped and said to be.
 
 ### 3. Classify each candidate
 

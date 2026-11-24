@@ -45,6 +45,10 @@ direction given, rank files and directories by how often they changed in the win
 git log -n 200 --name-only --format= | sort | uniq -c | sort -rn | head -30
 ```
 
+First run `git rev-parse --is-shallow-repository`: a shallow clone (the default in many cloud
+sessions) counts only the history it fetched. When it prints `true`, deepen with
+`git fetch --unshallow`, or say in the scope line that the counts are from a shallow clone.
+
 That pipeline needs a POSIX shell. Anywhere else, count the same `git log -n 200 --name-only
 --format=` output with whatever the platform has, for example
 `python -c "import sys, collections; [print(n, p) for p, n in collections.Counter(l.strip() for l in sys.stdin if l.strip()).most_common(30)]"`.

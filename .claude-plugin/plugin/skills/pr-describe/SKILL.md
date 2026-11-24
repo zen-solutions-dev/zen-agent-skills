@@ -133,11 +133,13 @@ it asks the reviewer to scrutinise everything to protect one file. When the Door
 the change is large (more than about 600 changed lines outside generated files and ledgers, or more
 than five directories), offer a split, and draft it rather than performing it:
 
-- **The order**: a run of two-way pull requests first, each reverting cleanly on its own, ending in
-  the one carrying the one-way door. Where the irreversible part can sit behind a flag that ships
-  off, say so: the flag turns its pull request two-way until the flag is switched on.
-- **The look per part**: human review is mandatory on the one-way part only. The two-way parts may
-  merge on the evidence in their bodies, under whatever approval rule the repository already sets.
+- **The order**: a run of two-way pull requests first, each reverting cleanly on its own, then the
+  one-way doors last, **each in its own part**, so no review of one door is diluted by another.
+  Where the irreversible part can sit behind a flag that ships off, say so: the flag turns its pull
+  request two-way until the flag is switched on.
+- **The look per part**: human review is mandatory on every one-way part, and only there. The
+  two-way parts may merge on the evidence in their bodies, under whatever approval rule the
+  repository already sets.
 - **What it costs**: name the files each part takes and any part that cannot build or pass its
   checks without a later one; a part that cannot stand alone is merged into its neighbour, not
   shipped broken.
@@ -146,7 +148,7 @@ Present the stack as an offer with each part's title, files and Door, after the 
 person decides; splitting a branch rewrites history, so it is theirs to run, and this skill drafts
 one body per part only when asked.
 
-Done when the offer is made with every part's files and Door and the one-way part named, or the
+Done when the offer is made with every part's files and Door and each one-way part named, or the
 branch is under the size bar, or its Door is two-way and no offer is due.
 
 #### Close the linked issue, when a task names one

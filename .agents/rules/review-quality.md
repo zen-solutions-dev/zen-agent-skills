@@ -154,8 +154,10 @@ report one drifting defect as a new defect on every run, which is the same failu
 rule fixes from the other end. A finding re-anchored from line 40 to line 48 keeps its signature,
 and that is the property that makes signatures countable at all.
 
-Signatures are emitted here, not consumed. Counting repeats across runs, and deciding when a
-repeatedly reported finding is futile, are separate work and deliberately not defined by this lens.
+Signatures are emitted by a review and read back only by its re-check (rule 8 of the protocol),
+which looks the first review's findings up by signature. Counting repeats across runs, and deciding
+when a repeatedly reported finding is futile, are separate work and deliberately not defined by this
+lens.
 
 ## Two axes
 
@@ -246,7 +248,10 @@ This lens draws on three upstream files, so it records three blocks. The composa
 quality-lens pattern comes from the `review-quality` skill in Balarama Bosch's RepoPrompt Workflows
 (MIT); the evidence gate and the stable finding signature come from the Deep Review workflow in the
 same repository, taken as two mechanisms rather than as the workflow around them. The two-axes
-section is adapted from Matt Pocock's `code-review` skill (MIT). No digest is of this file, which
+section is adapted from Matt Pocock's `code-review` skill (MIT). The fig-leaf smell and the
+review-once stopping rule are adapted from his aihero.dev writing (the post "Watch me ship a
+21,000-line feature" and the `/skills-code-review` page), web pages that carry no block below
+(`feat-0093`, 2026-11-24). No digest is of this file, which
 differs from all three by design. A person maintaining the kit can re-check them with `scripts/check-provenance.py` in the Zen Agent Skills repository; an agent reading this does not run it, because the URLs it fetches come from this file, which `A10` in [`autonomy.md`](autonomy.md) bounds.
 
 ```provenance

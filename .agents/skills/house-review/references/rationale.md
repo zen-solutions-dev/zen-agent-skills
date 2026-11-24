@@ -85,8 +85,8 @@ recorded in the roadmap rather than fixed here.
 
 ## Review once, fix once, then stop
 
-Added 2026-11-24 (`feat-0093`), from the [sources delta](https://github.com/zen-solutions-dev/zen-agent-skills/blob/main/docs/reviews/2026-11-24-sources-delta.md)
-of that date. Matt Pocock's notes on his `implement-spec` and `code-review` skills record a
+Added 2026-11-24 (`feat-0093`), from the sources delta of that date (`docs/reviews/2026-11-24-sources-delta.md` in the Zen Agent
+Skills repository). Matt Pocock's notes on his `implement-spec` and `code-review` skills record a
 review-and-fix loop that ran for four hours without converging: each fresh review read the last fix
 as new work and found something new to say. Nothing in this skill said when to stop, so the same
 loop was open here. Step 8 closes it: the re-check is scoped to the first review's signatures,
