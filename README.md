@@ -35,13 +35,24 @@ python scripts/install.py --skills sitrep --include-drafts  # one skill and what
 
 **Use one route per harness.** The plugin and the installer's `claude` target place the same skills under different names, so having both loads every description twice. To try the drafts in Claude Code, use the installer for Claude Code instead of the plugin.
 
-Then, in your harness, start with **"grill me"** on the change you want to make, or ask `zen` which skill fits. Both come with the plugin; with the installer, `grill` is in the default profile and `zen` in `--profile all`. For a new repository, start with `project-bootstrap`.
+Then, in each repository, run `init-worktracking` once: it sets up task tracking and **configures the skills for that repository** in `docs/agents/zen.md` (tracker, glossary, specs, acceptance command, branches, whether work defaults to running unattended), asking you one section at a time. For a new repository, start with `project-bootstrap`, which hands over to it. After that, start with **"grill me"** on the change you want to make, or ask `zen` which skill fits. Both come with the plugin; with the installer, `grill` is in the default profile and `zen` in `--profile all`.
 
 Cursor and VS Code or Copilot use project-level adapters instead, and narrower profiles keep the description budget small. Both are in [`docs/INSTALL.md`](docs/INSTALL.md), with uninstall and troubleshooting.
 
 ## What's new in this release
 
-The 2026-11 overhaul, compared against Matt Pocock's skills and written up in [the overhaul plan](docs/reviews/2026-11-overhaul-plan.md), adds the front and the back of the loop:
+The 2026-11-24 "Marjana" round, a deep clean planned in [the Marjana plan](docs/reviews/2026-11-24-marjana-plan.md) from [what Matt Pocock's newest work teaches](docs/reviews/2026-11-24-sources-delta.md) and [an inventory of this repository's own dust](docs/reviews/2026-11-24-marjana-inventory.md):
+
+- **Configure once per repository.** `init-worktracking` now ends by configuring the skills: one committed file, `docs/agents/zen.md`, says where this repository keeps its tracker, glossary, specs and acceptance command, so no skill has to rediscover it. The format is a [draft contract](docs/spec/zen-config.md) checked by the scaffolded `validate.py`.
+- **Orchestrate a day of work.** The `orchestrate` draft runs one session that holds the conversation with you while child agents research and build on their own branches, lands each verified commit on one integration branch, and hands you one pull request. The `research` draft writes one cited report per question. The autonomy rules now say exactly which merge an orchestrator may make (`A8`).
+- **AFK or human in the loop, named.** A task can say `mode: afk` or `mode: hitl`, set from how reversible the change is and how far it reaches.
+- **Review once, fix once, then stop.** `house-review` re-checks only the fixed findings after one fix round. `retro` samples sessions, ratchets a stricter check in with an exception list, and prunes checks that fire on good code.
+- **Lighter to carry.** This repository's always-loaded `AGENTS.md` fell from about 28 KB to about 9 KB, the two scaffolds no longer spend an adopter's description budget, and the installer's budget figure now counts only what Claude Code loads.
+- **New gates for the drift this round found**: a warning for a workflow step with no completion criterion, and a roadmap check that fails when a skill's stated status disagrees with its frontmatter.
+
+Every skill this round touched was run on the round's own work, recorded in [the dogfood records](docs/reviews/2026-11-24-dogfood/README.md).
+
+The 2026-11 overhaul before it, compared against Matt Pocock's skills and written up in [the overhaul plan](docs/reviews/2026-11-overhaul-plan.md), adds the front and the back of the loop:
 
 - **Align before you plan.** `grill` interviews you until no decision is silently assumed, and `spec-author` now runs that interview before it drafts. `domain-language` keeps the glossary and decision records.
 - **Build test-first.** `tdd` drives new code one red-green slice at a time, and every agent `fix-batch` dispatches starts with a fresh context.
@@ -50,7 +61,7 @@ The 2026-11 overhaul, compared against Matt Pocock's skills and written up in [t
 - **A router.** `zen` says which skill fits where you are.
 - **Lighter to carry.** Skills are slimmed, orchestrators a person starts by name no longer spend the agent's description budget, and any skill installs alone with `--skills`.
 
-Six of the new skills, `grill`, `domain-language`, `tdd`, `retro`, `improve-architecture` and `zen`, were promoted from drafts once each had been used on real work and refined from it; `systematic-debugging` stays a draft until its second run. See [no skill ships cold](#no-skill-ships-cold). The full list, with status, is in [`docs/CATALOG.md`](docs/CATALOG.md).
+Six of the new skills, `grill`, `domain-language`, `tdd`, `retro`, `improve-architecture` and `zen`, were promoted from drafts once each had been used on real work and refined from it; `systematic-debugging` stays a draft until its second run, and this round's `orchestrate` and `research` are drafts until they have been refined from real use. See [no skill ships cold](#no-skill-ships-cold). The full list, with status, is in [`docs/CATALOG.md`](docs/CATALOG.md).
 
 ## Why it exists
 
@@ -193,7 +204,7 @@ Write once, adapt thin: a skill's logic lives only in its `SKILL.md`. Per-harnes
 
 A skill is not a library your code calls in a sandbox. It is prose an agent reads and acts on, in your repository, usually with permission to write files and run commands. Review one before installing it, with the same standard you would apply to a script you were about to run, and especially for skills obtained from outside this repository.
 
-Each `SKILL.md` is a single readable file with no indirection, which is deliberate: it is what makes that review possible.
+Each `SKILL.md` is a single readable file with no indirection, which is deliberate: it is what makes that review possible. The same goes for this kit: read a skill, keep what is useful, and write your own. Matt Pocock's [`mattpocock/skills`](https://github.com/mattpocock/skills), which this kit has learned from, is worth reading the same way.
 
 To report a security issue, follow [`SECURITY.md`](SECURITY.md). Please do not open a public issue for it.
 
