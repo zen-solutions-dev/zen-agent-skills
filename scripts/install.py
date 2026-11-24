@@ -935,8 +935,8 @@ def install(tools, mode, home: Path, dry: bool, profile: str = DEFAULT_PROFILE,
     # the first number away and the old headline overstated a session's cost.
     if only is None and not placed_drafts:
         print(f"{tag}Description budget: {budgets[profile]} characters for this profile, "
-              f"what Claude Code loads: model-invoked only (" + ", ".join(f"{n}={budgets[n]}" for n in PROFILE_SEEDS)
-              + ").")
+              f"what Claude Code loads: model-invoked only ("
+              + ", ".join(f"{n}={budgets[n]}" for n in PROFILE_SEEDS) + ").")
     else:
         print(f"{tag}Description budget: {model_invoked_budget(skills)} characters for this "
               f"selection, what Claude Code loads: model-invoked only (profiles: "
