@@ -124,6 +124,17 @@ is needed for an added gate, which is what `chore-0049`'s amendment was for.
 
 Reversible by reverting one commit. Nothing depends on the check existing.
 
+## Decisions
+
+- **2026-11-23, looked at by the release-readiness session and left open, because it is not
+  documentary.** The deliverable is a new checker, its tests, a host decision with a rejected
+  option, and possibly a new gate in `run-checks.py`, which is a feature rather than a release
+  correction. Its dependency, `chore-0033`, closed in the same pass, so it is unblocked. The drift it exists to
+  catch was live: on 2026-11-23 the release audit found `docs/spec/README.md`'s per-spec scenario
+  counts stale for `spec-author` and `verifier-agent` after `feat-0083` added scenarios to both. The
+  same pass corrected them by hand, for the fifth time, and checked all 13 counts against their
+  specs' headings; the closing paragraph's totals are dated records and were left.
+
 ## Acceptance criteria (mechanically verifiable)
 
     python scripts/run-checks.py

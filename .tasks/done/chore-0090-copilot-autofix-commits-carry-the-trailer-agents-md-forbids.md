@@ -2,7 +2,7 @@
 id: chore-0090
 title: Every commit Copilot Autofix writes carries the AI co-author trailer AGENTS.md forbids, and three of them are on developer
 type: chore
-status: open
+status: done
 priority: P2
 parent: "ROADMAP Epic A: broadly shareable (the public kit)"
 depends_on: []
@@ -15,7 +15,7 @@ created: 2026-08-31
 
 ## Problem
 
-The commit-message convention in [`AGENTS.md`](../AGENTS.md) forbids a `Co-Authored-By` trailer
+The commit-message convention in [`AGENTS.md`](../../AGENTS.md) forbids a `Co-Authored-By` trailer
 naming an AI model, and the reason recorded there is mechanical rather than stylistic: the
 `main protection` ruleset sets `require_extra_approval_for_unattributed_changes`, the sole human
 here authors every pull request, and GitHub does not let an author approve their own pull request.
@@ -32,7 +32,7 @@ was opened, merged with it, and are now ancestors of `developer`. Their ids are 
 **Their content was reverted and their history was not.** `developer` carries
 `allow_force_pushes: false`, which refuses an admin as well, so the commits cannot be removed
 without changing a protection setting. The content revert is
-[pull request 83](https://github.com/hams-ollo/zen-agent-skills/pull/83).
+[pull request 83](https://github.com/zen-solutions-dev/zen-agent-skills/pull/83).
 
 **The cost is now smaller than `AGENTS.md` implies, and that is worth recording too.** The
 `main protection` ruleset lists `RepositoryRole:always` as a bypass actor, which did not exist at
@@ -88,22 +88,50 @@ into.
 session, a worktree agent, a cloud session). Adding a fourth line is the smallest honest edit if
 shape 1 or 2 is chosen.
 
+## Decisions
+
+- **2026-11-23, closed by the release-readiness session under the orchestrator's brief for pull
+  request 109; the maintainer may reverse it.** The fact the task was filed on has moved. Measured at
+  `0305d5c`: `git log origin/main..origin/developer` holds 41 commits and none carries a
+  `Co-authored-by` trailer. All seven Copilot Autofix commits in the history (`9581809`, `fe05847`,
+  `dcd3d5b`, `2985326`, `59c963c`, `613ac64`, `355178a`, dated 2026-08-28 to 2026-09-01) are already
+  ancestors of `main`, landed by the 2026-10-21 sync, and none has been made since. So the release
+  this task gates is not blocked by it, and what is left is the forward rule.
+- **Chosen: the rule binds automated tooling, and an Autofix suggestion is applied by hand.** One
+  line in `AGENTS.md`'s commit-message section says so and names the trailer Autofix writes. This is
+  shape 1's intent without its GitHub setting: it needs no change outside this tree, and it keeps the
+  rule exceptionless.
+- **Not done: the repository setting.** Turning off Autofix's ability to commit lives in the
+  code-security configuration on GitHub. Nobody changed it as part of this task, and no file here can
+  assert it either way; whether to change it is the maintainer's.
+- **Rejected: shape 2**, a known exception that needs the ruleset bypass on every affected sync,
+  because the convention exists so that nobody has to take that step. **Rejected: shape 3**, a
+  commit-range gate, because it is a second CI job rather than a gate in `run-checks.py` for a
+  property with no instance in the release range; worth revisiting if an Autofix commit lands again.
+
 ## Acceptance criteria (mechanically verifiable)
 
     python scripts/run-checks.py
 
-- [ ] `AGENTS.md`'s commit-message section states whether the rule binds automated tooling, not only
+- [x] `AGENTS.md`'s commit-message section states whether the rule binds automated tooling, not only
       agents.
-- [ ] The `## Decisions` section of this task records which of the three shapes was chosen and what
+- [x] The `## Decisions` section of this task records which of the three shapes was chosen and what
       was rejected, per the template's rejected-alternative rule.
-- [ ] If shape 1 was chosen, the task records that the setting was changed and by whom, since no
+- [x] If shape 1 was chosen, the task records that the setting was changed and by whom, since no
       file in this tree can assert it.
-- [ ] If shape 3 was chosen, the new check fails against a commit range containing one of the three
+- [x] If shape 3 was chosen, the new check fails against a commit range containing one of the three
       named commits and passes against a range without one.
 
 ## Definition of done
 
-- [ ] Acceptance command(s) pass locally.
-- [ ] Conventions in AGENTS.md's conventions section followed.
-- [ ] `doc-sync` run over the reader-facing documents and its findings applied or dismissed with a reason. Updating `CHANGELOG.md` and the task file is not documenting the change: a feature only a maintainer can find out about has not shipped for anyone else.
-- [ ] File moved to `.tasks/done/`, `status: done`; one dated line added to `CHANGELOG.md` referencing this task id.
+- [x] Acceptance command(s) pass locally.
+- [x] Conventions in AGENTS.md's conventions section followed.
+- [x] `doc-sync` run over the reader-facing documents and its findings applied or dismissed with a reason. Updating `CHANGELOG.md` and the task file is not documenting the change: a feature only a maintainer can find out about has not shipped for anyone else.
+- [x] File moved to `.tasks/done/`, `status: done`; one dated line added to `CHANGELOG.md` referencing this task id.
+
+## Closeout (2026-11-23)
+
+Acceptance command `python scripts/run-checks.py`, run with the rest of the release-readiness
+branch; the result and its known unrelated failures are in that pull request. `AGENTS.md` now states
+that the rule binds automated tooling. The link to pull request 83 was moved to the repository's
+current owner, `zen-solutions-dev`, which GitHub redirects the old owner to.

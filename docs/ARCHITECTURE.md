@@ -19,6 +19,8 @@ flowchart LR
   B --> D[build-adapters.py]
   C --> E[Global skill discovery]
   D --> F[Project-local adapters]
+  D --> J[Committed plugin marketplace]
+  J --> K[Claude Code plugin install]
   A --> G[validate-skills.py]
   H[AGENTS.md and tasks] --> I[Skill maintenance]
   I --> A
@@ -67,6 +69,8 @@ A `--profile` selects how many skills to place (`core`, `spine`, or `all`), and 
 - `.agents/rules/` and `.agents/skills/<skill-name>/`, the shared material both adapter sets link to.
 
 A third target, `plugin`, emits a Claude Code plugin tree instead: `skills/<name>/SKILL.md` plus `rules/`, under a `.claude-plugin/` manifest pair. It is opt-in rather than part of the default target set, because a plugin is a distribution channel rather than a project-local adapter. It is also the one target that rewrites nothing: its layout mirrors the source geometry with the `.agents/` segment dropped, so all three link classes below already resolve, and each skill is copied verbatim.
+
+The same plugin tree is also committed here, under `.claude-plugin/`, so `claude plugin marketplace add zen-solutions-dev/zen-agent-skills` installs the shipped skills and updates them as this repository moves. `build-adapters.py --marketplace` regenerates it whole, and `--marketplace --check`, one of the acceptance gates, fails when the committed tree differs from what would be generated. It holds shipped skills only, so the drafts reach a person through the installer's `--include-drafts`.
 
 An adapter does not sit where the skill sits, so inlining a body verbatim would break every relative link in it. Three classes are rewritten as the body is inlined: a sibling skill becomes the adapter generated beside it, the rules module becomes `../../.agents/rules/<file>`, and a skill-local template becomes `../../.agents/skills/<name>/<path>`. Both adapter directories are two levels below the project root, so the shared material has one location rather than one per target. An existing `.agents/rules/` file is never overwritten, since that module is swappable and a project's own copy outranks the kit's.
 

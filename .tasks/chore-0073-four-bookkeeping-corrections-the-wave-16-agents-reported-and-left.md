@@ -102,6 +102,19 @@ ordering, and it is stated in the scope rather than left to judgment.
 
 Reversible by reverting one commit. No contract changes, so no re-approval is affected.
 
+## Decisions
+
+- **2026-11-23, looked at by the release-readiness session and left open, because what remains is
+  not small.** Item 1 is done: `chore-0091` added the `title` row to `.tasks/README.md`, and both
+  field tables now have 12 rows. Item 4 had already resolved itself: `house-style.md` no longer
+  mentions `chore-0057` at all (`grep -n chore-0057 .agents/rules/house-style.md` returns nothing).
+  Items 2 and 3 are untouched and are the whole remaining task: retag the `S-023`, `S-024` and
+  `S-025` test sets in `tests/test_validate_skills.py` (`TestLensComposition` still names
+  `feat-0048` in its class docstring and first test), then re-derive the `S-023`, `S-024` and `S-025`
+  rows of `validate-skills.conformance.md` in the same pass. That is roughly 37 tests and two matrix
+  rows under the history rules in the scope above, which is a task's worth of care rather than a
+  release-week tidy-up. Item 1 and item 4 can be struck from the scope when it is picked up.
+
 ## Acceptance criteria (mechanically verifiable)
 
     python -m unittest discover -s tests -p "test_*.py" && python scripts/run-checks.py

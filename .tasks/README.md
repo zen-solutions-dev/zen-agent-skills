@@ -35,6 +35,7 @@ The re-anchoring step is in that list because its absence was invisible for mont
 | Field | Meaning |
 |---|---|
 | `id` | Stable task id, matches the filename prefix. |
+| `title` | One-line imperative summary of the work. |
 | `type` | `bug` \| `feat` \| `chore` \| `epic`. |
 | `status` | `open` \| `in_progress` \| `blocked` \| `done`. |
 | `priority` | `P0` (blocks a shipped output) \| `P1` \| `P2`. |

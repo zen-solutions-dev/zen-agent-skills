@@ -138,7 +138,7 @@ Recorded because a verification that only lists faults is not a verification.
 ### Cross-platform limitation closed, 2026-08-07
 
 All six CI matrix cells passed on
-[run 31213244638](https://github.com/hams-ollo/zen-agent-skills/actions/runs/31213244638):
+[run 31213244638](https://github.com/zen-solutions-dev/zen-agent-skills/actions/runs/31213244638):
 `ubuntu-latest` and `macos-latest` and `windows-latest`, each on Python 3.11 and 3.14. Since
 `checks.yml` now calls `run-checks.py` and nothing else, every one of those cells is a full run of
 the acceptance command, so the `partial` criterion "standard library only; passes Windows, macOS, and

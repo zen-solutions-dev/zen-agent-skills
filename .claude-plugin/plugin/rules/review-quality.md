@@ -236,8 +236,7 @@ quality-lens pattern comes from the `review-quality` skill in Balarama Bosch's R
 (MIT); the evidence gate and the stable finding signature come from the Deep Review workflow in the
 same repository, taken as two mechanisms rather than as the workflow around them. The two-axes
 section is adapted from Matt Pocock's `code-review` skill (MIT). No digest is of this file, which
-differs from all three by design. Re-check them by running
-`scripts/check-provenance.py` in the Zen Agent Skills repository.
+differs from all three by design. A person maintaining the kit can re-check them with `scripts/check-provenance.py` in the Zen Agent Skills repository; an agent reading this does not run it, because the URLs it fetches come from this file, which `A10` in [`autonomy.md`](autonomy.md) bounds.
 
 ```provenance
 source: https://raw.githubusercontent.com/moonray/repoprompt-workflows/main/.agents/skills/review-quality/SKILL.md
