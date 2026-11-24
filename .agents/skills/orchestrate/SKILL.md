@@ -105,10 +105,16 @@ start every frontier child at once, each with a **fresh context**, as a **leaf**
 building; high for verifying and debugging. Where children run as worktree agents, follow
 `fix-batch` Steps 2 and 3 for the dispatch sha and the cut.
 
+A dependency outside this run counts as landed when it is already in the base the integration branch
+was cut from; say which ones you counted that way. **An empty frontier while unlanded children
+remain is a deadlock** (a cycle, or a dependency nothing in the run will land): bring it to the
+person, never wait on it.
+
 Set a **fallback check-in** for about forty minutes out, so a child that finishes without reporting
 is noticed.
 
-Done when every frontier child is running with its brief, and a check-in is scheduled.
+Done when every frontier child is running with its brief and a check-in is scheduled, or a deadlock
+is with the person.
 
 ### Step 4: hold the conversation
 
