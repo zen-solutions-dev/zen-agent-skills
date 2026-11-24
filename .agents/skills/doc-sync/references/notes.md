@@ -51,6 +51,12 @@ It is not a documentation task. It likely belongs in the repository's task track
 Running it after each change costs less than running it before a release, because the drift is
 fresh and the cause is still obvious.
 
+## Why the link re-check is unconditional
+
+The composed editing discipline in `doc-revise` verifies links after a structural change, and
+correcting a stale claim is usually not one. So the re-check belongs in this skill's apply step, and
+it runs on every applied edit rather than only on the ones that look structural.
+
 ## Why the link checker's mode matters here
 
 In this kit `python .tasks/validate.py --links <path>` resolves every relative link against the

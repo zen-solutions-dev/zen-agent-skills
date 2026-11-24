@@ -45,8 +45,9 @@ Work down the list; the first yes wins.
    loop. Tell the compaction what the next phase needs, so the summary keeps it.
 
 These are judgement calls, and the same boundary can go either way on two days. Asking them in order,
-at the boundary, is the discipline. Done when one move is chosen and you can say in one sentence why
-the ones above it did not apply. Steps 2 to 4 below apply when the move is a handoff or a subagent.
+at the boundary, is the discipline. Steps 2 to 4 below apply when the move is a handoff or a subagent.
+
+Done when one move is chosen and you can say in one sentence why the ones above it did not apply.
 
 ## Step 2: gather the real state
 
@@ -95,6 +96,9 @@ conversation.
 Return the brief inline for the person to paste. When it must travel as a file, write it outside the
 working tree (the operating system's temporary directory) unless the person names a place, so a
 handoff never lands in a repository by accident.
+
+Done when the person has the brief as one copyable block, or the absolute path of the file it was
+written to, and `git status` shows nothing new in the working tree unless the person named that place.
 
 ## Example skeleton
 

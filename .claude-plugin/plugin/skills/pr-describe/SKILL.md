@@ -65,6 +65,10 @@ Settled; not up for re-litigation:
    changeset there are no commit messages, so draw intent from any matching `.tasks/` files,
    the branch name, or the user. Note the files/areas touched and the test files among them.
 
+Done when the changeset is fixed (a committed range, working-tree changes, or both) and you can
+name every area and every test file it touches, or you have stopped because there is nothing to
+describe.
+
 ### Step 2: draft the PR body
 
 Write a description grounded only in what the diff and commits support. Never invent a
@@ -154,6 +158,9 @@ The contract behind this is `docs/spec/tracker-links.md` in the Zen Agent Skills
 Other trackers use the same shape with a different token, so the rule is the placement, not
 the vocabulary.
 
+Done when every section in the body rests on the diff, the commits or a task file, Merge danger is
+last, and every issue a completed task names has its own closing line or a stated reason it has none.
+
 ### Step 3: draft the changelog entry (by inspection)
 
 1. Look for `CHANGELOG.md` (or `HISTORY.md`/`CHANGES.md`). If present, infer its style from
@@ -170,6 +177,10 @@ Do not rewrite existing changelog history. Output the new entry as text; then **
 append just that entry at the correct spot (an additive, never-clobbering local edit) if the
 user wants it written for them.
 
+Done when exactly one new entry exists in the changelog's own style (or as a Keep a Changelog entry
+when there is none), it cites the work-item id the way existing entries do, and no existing entry
+was changed.
+
 ### Step 4: output and offer the gh command
 
 Print both artifacts clearly separated. Then surface, but do not run, the commands the user
@@ -180,6 +191,9 @@ can execute themselves, for example:
 
 If `gh` is not installed, say the body is ready to paste into GitHub directly. The skill
 never calls `gh` or the GitHub API itself.
+
+Done when both artifacts are printed, every command is shown and none was run, and a user without
+`gh` has been told to paste the body.
 
 ## Notes
 

@@ -70,8 +70,9 @@ this" and "describe this" mean one range:
      (`git diff HEAD` plus untracked files). Do not dead-end.
    - Both empty: nothing to review, say so and stop.
 
-Report this changeset as **resolved**. Done when the changeset and its `supplied` or `resolved`
-label are fixed.
+Report this changeset as **resolved**.
+
+Done when the changeset and its `supplied` or `resolved` label are fixed.
 
 ### Step 2: pick the depth
 
@@ -125,6 +126,9 @@ first, then application logic, then tests, then documentation.
 silently truncated one is not. Offer the remainder as a second pass. An explicit path scope is the
 user pre-bounding the review for you; honor it and do not widen.
 
+Done when every file in the reviewable set has been read at the Step 2 depth or is named as not
+read.
+
 ### Step 4: find the contract and the standards
 
 - **Spec sources**, in order: a path the user gave; the task file the branch completes (its Problem,
@@ -159,6 +163,10 @@ what is absent, and the rerunnable search. Reaching for a quote of code that doe
 mistake here. Then **validate every candidate finding against the real code before it becomes a
 reported finding**, and drop anything you cannot substantiate.
 
+Done when each axis has run against only its own sources, the first axis's findings were written
+down before the second began wherever they shared a context, and every candidate has its evidence
+shape.
+
 ### Step 6: run the evidence gate, then sign each finding
 
 Resolve every candidate's quote as the lens's gate directs, reading the file **at the revision
@@ -179,6 +187,9 @@ which carries no line number, so a re-anchored finding keeps its identity.
 
 **Depth does not touch this step.** A `quick` review is a smaller read, never a lower standard of
 proof.
+
+Done when every candidate has taken exactly one of the gate's branches, the drop count is known, and
+every surviving finding carries a signature.
 
 ### Step 7: write the review (report-only)
 
@@ -222,15 +233,13 @@ distinguishable from one that never looked.
 
 Do not edit or commit anything. Applying the fixes is a separate action.
 
-## Running this in Claude Code
+Done when the header block, both axis sections with their verdict and inspected files, and the
+closing line per axis are written, and nothing in the repository was edited or committed.
 
-This section is Claude Code specific; the Markdown review above works in any harness. Under a
-workflow that expects structured findings, emit the same validated findings through the host's
-findings tool (for example `ReportFindings`). The rubric, severities, the validate-before-reporting
-rule, the evidence gate, and each finding's evidence and signature are identical either way; only
-the output channel changes. A channel with no field for the quote or signature carries them inside
-the fields it has. The built-in `/code-review` is a fast bug hunt at a level the user picks; when
-the user wants it instead, pass the depth through as quick `low`, standard `medium`, deep `max`.
+## Running this in a specific harness
+
+The review above works in any harness. How it maps onto Claude Code (a host findings tool, and the
+built-in `/code-review`) is in [`references/claude-code.md`](references/claude-code.md).
 
 ## Notes
 
@@ -240,6 +249,8 @@ the user wants it instead, pass the depth through as quick `low`, standard `medi
   shape, the gate's branches, the signature format and the standards-axis rules.
 - A finding that recurs across reviews is a candidate for a deterministic check rather than a
   standing comment; `retro` is where that conversion happens.
+- This body runs past the kit's 250-line guide because the excess is steps, gates and the output
+  contract every run needs; move only reference material out.
 
 ## Provenance
 

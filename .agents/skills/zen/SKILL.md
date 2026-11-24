@@ -30,6 +30,8 @@ Conventions: your answer follows [`house-style.md`](../../rules/house-style.md).
 3. **Read before you recommend.** Before you say what a skill does or that a step can be skipped,
    read that skill's `SKILL.md` if it is installed; the summaries below are for orientation. Name
    any draft you recommend as a draft, and say it needs `install.py --include-drafts`.
+   Done when every skill the reply will name has had its `SKILL.md` read or is said to be not
+   installed, and every draft among them is marked as one.
 4. **Reply with the hint.** The skill to start now, one line on why, and the skill that usually
    follows it. Done when the reply names exactly one next skill, or says plainly that no skill fits
    and the person should just do the work.

@@ -143,6 +143,7 @@ Done when every decision in the record appears in the draft, as contract or as a
 ### 3. Self-check with spec-quality
 
 Run [`spec-quality`](../spec-quality/SKILL.md) over the draft. For every finding, revise and re-run.
+
 Done when its verdict is `ready`; the spec you write is that version, not the first draft.
 
 ### 4. Write the file, and only the file
@@ -150,6 +151,9 @@ Done when its verdict is `ready`; the spec you write is that version, not the fi
 Write the `ready` spec to the location above as `<slug>.md` with `status: draft`. The run creates or
 edits **only that spec file** (and the spec index, if the repository keeps one): never source code,
 tests, config, the glossary, or a decision record.
+
+Done when the spec file exists at that location, and no file other than it and the spec index has
+changed in this run.
 
 ### 5. Report and stop for approval
 
@@ -161,6 +165,9 @@ State that the spec is `status: draft` and that a human must set `status: approv
 not decompose it, and do not treat your draft as approved. For an amendment, say instead that
 `status` was left `approved`, that the dated note records the amendment as pending re-approval, and,
 when the spec carried a digest, that it now reads `changed` until the person re-approves.
+
+Done when the person has the counts, every Open Question, the settled terms and record candidates,
+and a plain statement of what approval the spec now waits on, and nothing has been decomposed.
 
 ## Conventions
 

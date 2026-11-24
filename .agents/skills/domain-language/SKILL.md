@@ -92,6 +92,9 @@ List the terms added or changed, the records written, the terms deferred, and ev
 glossary-versus-code finding with its location. An empty findings list means you grepped and found
 none; say what you grepped for.
 
+Done when every term touched in this run, every record written or declined, and every
+glossary-versus-code finding appears in the report, each finding with a file and line.
+
 ## Conventions
 
 Your report follows the house style ([`house-style.md`](../../rules/house-style.md)). What you may
