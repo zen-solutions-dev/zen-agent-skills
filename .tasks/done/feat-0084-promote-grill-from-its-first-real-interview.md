@@ -2,7 +2,7 @@
 id: feat-0084
 title: Promote grill from its first real interview, ahead of the next piece of kit work
 type: feat
-status: in_progress
+status: done
 priority: P1
 parent: "ROADMAP 2026-11 overhaul: drafts the overhaul added"
 depends_on: []
@@ -22,7 +22,7 @@ created: 2026-11-23
 
 ## The real use
 
-2026-11-23, the `kit-refresh-audit` session. `zen` routed the maintainer's next piece of kit work, [`feat-0051`](feat-0051-a-paired-evaluation-harness-seeded-from-the-closed-task-corpus.md) (the paired evaluation harness), to `grill` and then `new-task`. `grill` interviewed the maintainer in three rounds and a close (Q1 to Q18), with two facts sent to fresh-context leaf subagents (the `claude plugin eval` CLI and sign-in state; the October eval-slice branch). The frontier emptied, the maintainer confirmed a one-sentence restatement, and the record is [`2026-11-feat-0051-decisions.md`](../docs/reviews/2026-11-feat-0051-decisions.md): 15 decisions, 5 terms, 5 facts, 2 items still open with owners.
+2026-11-23, the `kit-refresh-audit` session. `zen` routed the maintainer's next piece of kit work, [`feat-0051`](../feat-0051-a-paired-evaluation-harness-seeded-from-the-closed-task-corpus.md) (the paired evaluation harness), to `grill` and then `new-task`. `grill` interviewed the maintainer in three rounds and a close (Q1 to Q18), with two facts sent to fresh-context leaf subagents (the `claude plugin eval` CLI and sign-in state; the October eval-slice branch). The frontier emptied, the maintainer confirmed a one-sentence restatement, and the record is [`2026-11-feat-0051-decisions.md`](../../docs/reviews/2026-11-feat-0051-decisions.md): 15 decisions, 5 terms, 5 facts, 2 items still open with owners.
 
 **Met:** it interviewed a person ahead of a real task.
 
@@ -43,21 +43,30 @@ created: 2026-11-23
 ## Link conversion (on promotion)
 
 - `spec-author` to `grill`: delete the paragraph in `spec-author` step 1 that begins "Fallback while `grill` is a draft (delete this paragraph when it is promoted and linked)", turn the first `grill` mention into a relative link, and remove the sentence saying `grill` "is named" rather than linked.
-- Then re-derive rows `S-008` and `S-009` of [`spec-author.conformance.md`](../docs/spec/spec-author.conformance.md): both cite the fallback's wording as evidence ("the fallback 'ask in rounds over the frontier ...'" and "Procedure step 1 fallback / 'look facts up yourself ...'"), so with the fallback gone their evidence must move to the composed `grill` steps 2 and 3, and the note that "the inline sentence is what carries the behavior in an install that lacks it" no longer holds. The `Interview round` surface row cites "same clauses as S-008" and moves with it. Run `python scripts/check-citations.py` after.
+- Then re-derive rows `S-008` and `S-009` of [`spec-author.conformance.md`](../../docs/spec/spec-author.conformance.md): both cite the fallback's wording as evidence ("the fallback 'ask in rounds over the frontier ...'" and "Procedure step 1 fallback / 'look facts up yourself ...'"), so with the fallback gone their evidence must move to the composed `grill` steps 2 and 3, and the note that "the inline sentence is what carries the behavior in an install that lacks it" no longer holds. The `Interview round` surface row cites "same clauses as S-008" and moves with it. Run `python scripts/check-citations.py` after.
 - `spec-author` is in the `spine` profile, so the link pulls `grill` into `spine`: recompute profile counts and report them.
+
+## Decisions
+
+- **The maintainer asked for a readable round (2026-11-24).** After the interview they said the questions "came out like in a code block" and were "quite dense", and asked that `grill` use the harness's multiple-choice question interface, with free text available. The source was the skill's own step 3 example, a fenced `text` block, which the run copied. Step 3 now uses a structured question tool where the harness has one (recommendation first and labelled, alternatives as options, free text always open), and plain prose paragraphs, never a code block, where it does not. Kept harness-neutral in the body, as the portability contract requires.
+- **Rejected: linking `domain-language` from `grill`.** `grill` points at it for the glossary but does not run it as a step, so the name stays in backticks and installing `grill` does not pull `domain-language` with it.
+
+## Promotion (2026-11-24, approved by the maintainer in writing)
+
+All three refinements applied, plus the readable-round change above. `metadata.status: draft` removed. `spec-author`'s fallback paragraph deleted and `grill` linked from its opening; rows `S-008` and `S-009` of `spec-author.conformance.md` re-derived against the composed skill, every quoted phrase checked against the file by hand, `check-citations.py` reporting 0 unresolved. The link pulls `grill` into the `spine` profile.
 
 ## Acceptance criteria (mechanically verifiable)
 
     python scripts/run-checks.py
     python .tasks/validate.py
 
-- [ ] The real interview's decisions record exists and is linked from this task.
-- [ ] Refinements applied to `grill/SKILL.md`.
-- [ ] `metadata.status: draft` removed; the fallback paragraph deleted; the link made; `S-008`, `S-009` and the surface row re-derived; `check-citations.py` passes.
-- [ ] `zen` and `docs/CATALOG.md` updated (with `kit-release-ready`); `python scripts/build-adapters.py --marketplace` rerun.
+- [x] The real interview's decisions record exists and is linked from this task.
+- [x] Refinements applied to `grill/SKILL.md`.
+- [x] `metadata.status: draft` removed; the fallback paragraph deleted; the link made; `S-008`, `S-009` and the surface row re-derived; `check-citations.py` passes.
+- [x] `zen` and `docs/CATALOG.md` updated (with `kit-release-ready`); `python scripts/build-adapters.py --marketplace` rerun.
 
 ## Definition of done
 
-- [ ] Acceptance commands pass.
-- [ ] `doc-sync` over the reader-facing documents, findings applied or dismissed.
+- [x] Acceptance commands pass.
+- [x] `doc-sync` over the reader-facing documents, findings applied or dismissed.
 - [ ] Moved to `.tasks/done/`, links re-anchored; a dated `CHANGELOG.md` line proposed in the pull request body.

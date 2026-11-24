@@ -2,7 +2,7 @@
 id: feat-0087
 title: Promote retro from its first real run, over pull request 108
 type: feat
-status: in_progress
+status: done
 priority: P1
 parent: "ROADMAP 2026-11 overhaul: drafts the overhaul added"
 depends_on: []
@@ -22,7 +22,7 @@ created: 2026-11-23
 
 ## The real use
 
-Run on 2026-11-23 by the `kit-refresh-audit` session over [zen-solutions-dev/zen-agent-skills#108](https://github.com/zen-solutions-dev/zen-agent-skills/pull/108), with [#98](https://github.com/zen-solutions-dev/zen-agent-skills/pull/98) read for recurrence. The report is [`2026-11-retro-pr-108.md`](../docs/reviews/2026-11-retro-pr-108.md): eight proposals (`R-001` to `R-008`), eight dismissals, and a guardrail inventory. Step 1's check command failed locally on 30 tests that CI passes, which became `R-001`; a retro that trusted CI's green result would have missed it.
+Run on 2026-11-23 by the `kit-refresh-audit` session over [zen-solutions-dev/zen-agent-skills#108](https://github.com/zen-solutions-dev/zen-agent-skills/pull/108), with [#98](https://github.com/zen-solutions-dev/zen-agent-skills/pull/98) read for recurrence. The report is [`2026-11-retro-pr-108.md`](../../docs/reviews/2026-11-retro-pr-108.md): eight proposals (`R-001` to `R-008`), eight dismissals, and a guardrail inventory. Step 1's check command failed locally on 30 tests that CI passes, which became `R-001`; a retro that trusted CI's green result would have missed it.
 
 **Half met.** The run happened. "An approved proposal has landed" has not: no proposal is approved yet. This task stays open until the maintainer approves at least one id and it lands (applied by its own task, with the show-it-failing rule from step 5). Promoting before then would be the faked use the rule forbids.
 
@@ -45,19 +45,23 @@ Run on 2026-11-23 by the `kit-refresh-audit` session over [zen-solutions-dev/zen
 - `house-review` to `retro`: `house-review` line "standing comment; `retro` is where that conversion happens." becomes a relative link, **only if** the composition should become an install edge. It should not: `house-review` does not compose `retro`, it only points the reader at it, and the link would pull a user-invoked skill into every profile that carries `house-review`. Recommended: keep the backtick name. Decide with the maintainer.
 - `retro` to `house-review`: `retro` step 3 names `house-review` as the reader of the standards file. `retro` does not run `house-review` either. Same recommendation: keep the backtick name.
 
+## Promotion (2026-11-24, approved by the maintainer in writing)
+
+The maintainer approved `R-006`, and it landed in this change: one checklist line in `writing-for-agents.md`, "A summary, verdict rule or opening promise that restates a step is re-read against that step whenever either is edited; prefer pointing at the step to restating it." It is a written standard, not a check, so step 5's failing-then-passing rule does not apply; what was confirmed first is that the lens had no such line. Its evidence, three self-contradicting skills (`verifier-agent`, `spec-author`, `retro`) across two pull requests, stays in the retro report, not in the lens. `R-001` to `R-005`, `R-007` and `R-008` are not approved yet and are not applied. All three refinements applied; `metadata.status: draft` removed. `house-review` and `retro` keep naming each other in backticks, as recommended: neither runs the other.
+
 ## Acceptance criteria (mechanically verifiable)
 
     python scripts/run-checks.py
     python .tasks/validate.py
 
 - [x] The real run's report exists under `docs/reviews/`.
-- [ ] At least one `R-` id approved by the maintainer and landed, with its failing-then-passing evidence.
-- [ ] Refinements above applied to `retro/SKILL.md`.
-- [ ] `metadata.status: draft` removed; the `(draft)` mark removed from `zen`; `docs/CATALOG.md` row moved out of drafts (coordinated with `kit-release-ready`, which owns the docs).
-- [ ] `python scripts/build-adapters.py --marketplace` rerun so the plugin tree carries it.
+- [x] At least one `R-` id approved by the maintainer and landed, with its failing-then-passing evidence.
+- [x] Refinements above applied to `retro/SKILL.md`.
+- [x] `metadata.status: draft` removed; the `(draft)` mark removed from `zen`; `docs/CATALOG.md` row moved out of drafts (coordinated with `kit-release-ready`, which owns the docs).
+- [x] `python scripts/build-adapters.py --marketplace` rerun so the plugin tree carries it.
 
 ## Definition of done
 
-- [ ] Acceptance commands pass.
-- [ ] `doc-sync` over the reader-facing documents, findings applied or dismissed.
+- [x] Acceptance commands pass.
+- [x] `doc-sync` over the reader-facing documents, findings applied or dismissed.
 - [ ] Moved to `.tasks/done/`, links re-anchored; a dated `CHANGELOG.md` line (proposed in the pull request body, since `kit-release-ready` owns the file).

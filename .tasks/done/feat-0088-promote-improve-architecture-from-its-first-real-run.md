@@ -2,7 +2,7 @@
 id: feat-0088
 title: Promote improve-architecture from its first real run, over the kit's own tooling
 type: feat
-status: in_progress
+status: done
 priority: P1
 parent: "ROADMAP 2026-11 overhaul: drafts the overhaul added"
 depends_on: []
@@ -22,7 +22,7 @@ created: 2026-11-23
 
 ## The real use
 
-Run on 2026-11-23 by the `kit-refresh-audit` session on this kit. Step 1's hot-spot command chose the tooling cluster (`validate-skills.py`, `install.py`, `build-adapters.py`, `observatory/serve.py`, `docs/spec/README.md`); step 2's walk ran in one fresh-context leaf subagent; step 3 wrote the offline HTML report to the temporary directory. The durable record is [`2026-11-architecture-review.md`](../docs/reviews/2026-11-architecture-review.md): four candidates, the top one a latent defect reproduced in this session (the installer treats a sibling link inside a fenced example as a profile edge; the validator does not).
+Run on 2026-11-23 by the `kit-refresh-audit` session on this kit. Step 1's hot-spot command chose the tooling cluster (`validate-skills.py`, `install.py`, `build-adapters.py`, `observatory/serve.py`, `docs/spec/README.md`); step 2's walk ran in one fresh-context leaf subagent; step 3 wrote the offline HTML report to the temporary directory. The durable record is [`2026-11-architecture-review.md`](../../docs/reviews/2026-11-architecture-review.md): four candidates, the top one a latent defect reproduced in this session (the installer treats a sibling link inside a fenced example as a profile edge; the validator does not).
 
 **Half met.** The report exists. "A person acted on" it has not happened: the maintainer has not yet picked, or rejected, a candidate. This task stays open until they do, and the pick becomes a task (step 6).
 
@@ -45,19 +45,23 @@ Run on 2026-11-23 by the `kit-refresh-audit` session on this kit. Step 1's hot-s
 
 None. No shipped skill links `improve-architecture`, and it links no draft.
 
+## Promotion (2026-11-24, approved by the maintainer in writing)
+
+The maintainer acted on the report: they picked candidate 2, the top recommendation, and it became [`feat-0090`](../feat-0090-one-span-aware-reader-for-links-and-profile-edges.md). All four refinements applied; `metadata.status: draft` removed.
+
 ## Acceptance criteria (mechanically verifiable)
 
     python scripts/run-checks.py
     python .tasks/validate.py
 
 - [x] The real run's report exists, offline HTML plus the durable record under `docs/reviews/`.
-- [ ] The maintainer picked a candidate (it became a task) or rejected each with a reason.
-- [ ] Refinements above applied.
-- [ ] `metadata.status: draft` removed; `zen` and `docs/CATALOG.md` updated (with `kit-release-ready`).
-- [ ] `python scripts/build-adapters.py --marketplace` rerun.
+- [x] The maintainer picked a candidate (it became a task) or rejected each with a reason.
+- [x] Refinements above applied.
+- [x] `metadata.status: draft` removed; `zen` and `docs/CATALOG.md` updated (with `kit-release-ready`).
+- [x] `python scripts/build-adapters.py --marketplace` rerun.
 
 ## Definition of done
 
-- [ ] Acceptance commands pass.
-- [ ] `doc-sync` over the reader-facing documents, findings applied or dismissed.
+- [x] Acceptance commands pass.
+- [x] `doc-sync` over the reader-facing documents, findings applied or dismissed.
 - [ ] Moved to `.tasks/done/`, links re-anchored; a dated `CHANGELOG.md` line proposed in the pull request body.

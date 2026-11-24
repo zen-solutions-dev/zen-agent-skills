@@ -2,7 +2,7 @@
 id: feat-0086
 title: Promote tdd from its first real run, on the hook test isolation fix
 type: feat
-status: in_progress
+status: done
 priority: P1
 parent: "ROADMAP 2026-11 overhaul: drafts the overhaul added"
 depends_on: []
@@ -24,7 +24,7 @@ created: 2026-11-23
 
 Not redone here. The sibling session `kit-test-fixes` used `tdd` on 2026-11-23 to make the instruction-provenance hook tests independent of the machine they run on, and recorded the use in its own task, `chore-0097` (`.tasks/done/chore-0097-make-two-hook-tests-independent-of-the-machine-they-run-on.md`, section "Real-use record: `systematic-debugging` and `tdd`"), on branch `zen/chore-test-isolation-9a7f1c`, commit `cbb70e5`. Named in backticks rather than linked, because the file is not on this branch until that work merges into `developer`; it becomes a link at the rebase in Phase 3.
 
-The fix it built is the one this session's `retro` found from the other side: 30 tests in `tests/test_hooks_instruction_provenance.py` failing on the maintainer's machine because they read the real home directory ([`2026-11-retro-pr-108.md`](../docs/reviews/2026-11-retro-pr-108.md), `R-001`).
+The fix it built is the one this session's `retro` found from the other side: 30 tests in `tests/test_hooks_instruction_provenance.py` failing on the maintainer's machine because they read the real home directory ([`2026-11-retro-pr-108.md`](../../docs/reviews/2026-11-retro-pr-108.md), `R-001`).
 
 **Met, pending merge.** The red test was seen failing for the right reason on every platform, then green. The condition holds once `chore-0097` is in `developer`; this task does not promote before that, and Phase 3 checks it after the rebase.
 
@@ -47,18 +47,22 @@ The fix it built is the one this session's `retro` found from the other side: 30
 - `fix-batch` to `tdd`: prompt item "New behaviour built test-first goes through `tdd` where the target has it." becomes a link. This one composes: the dispatched agent is told to use it.
 - After both, recompute the install profiles (`python scripts/install.py --dry-run` per profile) and report the change in counts; `docs/INSTALL.md`'s profile table belongs to `kit-release-ready`.
 
+## Promotion (2026-11-24, approved by the maintainer in writing)
+
+`chore-0097` merged into `developer` in pull request 110, so the condition holds: [`chore-0097`](chore-0097-make-two-hook-tests-independent-of-the-machine-they-run-on.md). All three refinements applied (the I/O-seam exception to the mocking rule, a "Fixing test infrastructure" section, and the environment-dependent note); `metadata.status: draft` removed. `test-author` and `fix-batch` now link `tdd`, which pulls it into the `spine` profile.
+
 ## Acceptance criteria (mechanically verifiable)
 
     python scripts/run-checks.py
     python .tasks/validate.py
 
-- [ ] `chore-0097` is in `.tasks/done/` on `developer` after the Phase 3 rebase.
-- [ ] Refinements above applied to `tdd/SKILL.md`.
-- [ ] `metadata.status: draft` removed; links converted; `zen` and `docs/CATALOG.md` updated (with `kit-release-ready`).
-- [ ] `python scripts/build-adapters.py --marketplace` rerun.
+- [x] `chore-0097` is in `.tasks/done/` on `developer` after the Phase 3 rebase.
+- [x] Refinements above applied to `tdd/SKILL.md`.
+- [x] `metadata.status: draft` removed; links converted; `zen` and `docs/CATALOG.md` updated (with `kit-release-ready`).
+- [x] `python scripts/build-adapters.py --marketplace` rerun.
 
 ## Definition of done
 
-- [ ] Acceptance commands pass.
-- [ ] `doc-sync` over the reader-facing documents, findings applied or dismissed.
+- [x] Acceptance commands pass.
+- [x] `doc-sync` over the reader-facing documents, findings applied or dismissed.
 - [ ] Moved to `.tasks/done/`, links re-anchored; a dated `CHANGELOG.md` line proposed in the pull request body.

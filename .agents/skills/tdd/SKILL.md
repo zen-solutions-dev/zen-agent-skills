@@ -7,8 +7,6 @@ description: >-
   code is being written; distinct from test-author, which derives tests from a spec or pins legacy
   behaviour after the fact.
 license: MIT
-metadata:
-  status: draft
 ---
 
 # tdd
@@ -75,8 +73,12 @@ bullet**: the thinnest test that exercises the path end to end through the seam.
   example, the spec. A test whose expected value restates the implementation is a **tautology**:
   it passes by construction, and is rejected.
 - Mock only at system boundaries: external services, time, randomness, and sometimes the
-  filesystem or a database. Never mock your own modules. When a boundary is hard to substitute,
-  inject it as a parameter rather than constructing it inside the code under test.
+  filesystem or a database. Never mock your own modules' logic. When a boundary is hard to
+  substitute, inject it as a parameter rather than constructing it inside the code under test.
+  The one exception: when the boundary already sits inside your own module (a function whose only
+  job is to read the filesystem or the environment), wrap that function rather than changing
+  production code for a test-only need. It is an exception for an I/O seam, not a licence to mock
+  collaborators.
 
 Run it. It must fail, and the failure must be the one you expect: an assertion about the missing
 behaviour, not an import error, a typo, or a broken fixture. A test that passes before any code is
@@ -121,8 +123,19 @@ the work, by `verifier-agent` or a reviewer, reads this report.
 Done when every behaviour on the step 2 list is reported as covered or deliberately left untested
 with a reason, and the test command is given with the result it printed in this run.
 
+## Fixing test infrastructure
+
+Sometimes the code you write is a fixture, not production code: a sandbox, a helper, a test base
+class. The loop still holds, but the danger changes. A broken fixture does not miss a behaviour; it
+makes existing tests pass while testing nothing. So the red test for a fixture is one that goes red
+when the fixture's guard is removed, or when the behaviour the fixture isolates is switched off in
+memory, and green with it in place. Run it both ways and report both.
+
 ## Notes
 
+- **Behaviour that depends on the environment** (which shell is on `PATH`, which platform, whether
+  a service answers) does not fit a single red-green run, and mocking the environment proves little.
+  Run the real check under each environment it depends on, and report each command with its result.
 - Worked good-versus-bad examples (behaviour against implementation coupling, a tautology against a
   literal, a boundary mock against an internal mock, injecting a boundary) are in
   [references/examples.md](references/examples.md).
@@ -146,7 +159,8 @@ Adapted, in this kit's own words, from Matt Pocock's `tdd` skill and its two ref
 seam-first agreement with a note per seam, vertical slices as tracer bullets, the tautology and
 implementation-coupling anti-patterns, and the boundary-only mock list are his. The numbered
 procedure with completion criteria, the unattended-run decision record, the refactor-while-green
-step, and the composition with `test-quality` are this repository's.
+step, the composition with `test-quality`, the I/O-seam exception, and the test-infrastructure and
+environment rules are this repository's, the last three from its first real use (`chore-0097`).
 
 ```provenance
 source: https://raw.githubusercontent.com/mattpocock/skills/main/skills/engineering/tdd/SKILL.md

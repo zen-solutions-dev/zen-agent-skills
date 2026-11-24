@@ -6,7 +6,6 @@ description: >-
   instead. Hints only; it never starts a skill.
 license: MIT
 metadata:
-  status: draft
   invocation: user
 ---
 
@@ -24,6 +23,8 @@ Conventions: your answer follows [`house-style.md`](../../rules/house-style.md).
 1. **Place the person.** From what they said and what the repository shows (a `.tasks/` directory,
    a spec under `docs/spec/`, an open branch, a failing command), name the stage they are in: no
    project yet, an idea, a plan, a build, a change to verify, a change to ship, or a look back.
+   Look beyond the current checkout too: another worktree or an unmerged branch may already hold
+   work on the same thing (`git worktree list`, `git branch -a`), and that changes the route.
    Done when you can name one stage, or you have asked the one question that decides it.
 2. **Pick the lightest path that fits**, using [the light paths](#the-light-paths) first and the
    flows only when the change has earned them. Done when you have one path and its reason.
@@ -42,9 +43,11 @@ The full chain is something a change earns. Ask in this order; the first yes win
 
 1. **Does a person have to agree the behaviour before it is built?** Full flow: `spec-author`
    (which runs the `grill` interview first), approval, and the rest of the chain below.
-2. **Does it span more than one sitting, or go to another agent?** Task file: `new-task` writes one
+2. **Are there decisions only the person can make, but no behaviour anyone else must agree?**
+   `grill` on its own, then `new-task` writes the task files from its decisions record. No spec.
+3. **Does it span more than one sitting, or go to another agent?** Task file: `new-task` writes one
    file with an acceptance command, and `verifier-agent` checks it before it lands. No spec.
-3. **Otherwise, direct.** Make the change, run the project's acceptance command, and ask for
+4. **Otherwise, direct.** Make the change, run the project's acceptance command, and ask for
    `house-review` if the change warrants one.
 
 ## The flows
@@ -61,9 +64,9 @@ step is also useful on its own. *(draft)* marks a skill not yet promoted.
 
 **Align**, before anything is written down:
 
-- `grill` *(draft)*: "grill me". An interview in rounds until no decision is silently assumed.
+- `grill`: "grill me". An interview in rounds until no decision is silently assumed.
   Facts are looked up; only decisions go to the person. Start here for any real change.
-- `domain-language` *(draft)*: a term is settled or contested, or a decision is hard to reverse.
+- `domain-language`: a term is settled or contested, or a decision is hard to reverse.
   Keeps the glossary and writes an ADR only when one is earned.
 
 **Plan**:
@@ -76,7 +79,7 @@ step is also useful on its own. *(draft)* marks a skill not yet promoted.
 
 **Build**:
 
-- `tdd` *(draft)*: new code, test-first, one red-green slice at a time.
+- `tdd`: new code, test-first, one red-green slice at a time.
 - `fix-batch`: two or more independent task files to parallel agents, each in its own worktree,
   each starting fresh. A person starts it.
 - `systematic-debugging` *(draft)*: something is broken and the cause is unknown. Builds a red
@@ -102,9 +105,9 @@ step is also useful on its own. *(draft)* marks a skill not yet promoted.
 
 **Learn**:
 
-- `retro` *(draft)*: after a build, especially one that went sideways. A repeated correction
+- `retro`: after a build, especially one that went sideways. A repeated correction
   becomes a check; a judgement call becomes a written standard. A person starts it.
-- `improve-architecture` *(draft)*: a spare moment, or a bug with no good seam to test it at. Finds
+- `improve-architecture`: a spare moment, or a bug with no good seam to test it at. Finds
   deepening refactors in the hot spots; a chosen one goes back to `grill` or `new-task`. A person
   starts it.
 

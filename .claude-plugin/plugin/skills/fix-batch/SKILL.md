@@ -129,7 +129,8 @@ Every prompt includes, in substance:
    [`test-author`](../test-author/SKILL.md), pick the layer and oracle through the
    [`test-quality`](../test-quality/SKILL.md) lens, and **name the mode**. A bug or chore with no approved
    spec is **characterization** mode; only a task carrying an approved spec and `S-NNN` ids is
-   acceptance mode. New behaviour built test-first goes through `tdd` where the target has it.
+   acceptance mode. New behaviour built test-first goes through [`tdd`](../tdd/SKILL.md) where the
+   target has it.
 7. **An honest blocker over an improvisation**: "If the task's premise is wrong, or you hit a
    blocker you cannot resolve inside your worktree, stop and report it rather than guessing." An
    agent that quietly makes it work hides a defect in the task authoring.
