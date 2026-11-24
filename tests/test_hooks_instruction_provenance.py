@@ -54,14 +54,53 @@ def _payload(cwd, source="startup", event="SessionStart"):
     return {"hook_event_name": event, "source": source, "cwd": str(cwd)}
 
 
+def _fence(test, sandbox):
+    """Make every directory above `sandbox` look empty to the hook, for one test.
+
+    The hook walks from the launch directory to the filesystem root, by design, so without
+    this a test's result depends on the machine: on Windows the temporary directory is under
+    the person's home, and a real `~/.claude/CLAUDE.md` there is found by every test. The
+    fence wraps the hook's two filesystem lookups, the file probe and the work-tree search,
+    and leaves everything inside the sandbox, the walk included, as the hook does it.
+    """
+    real_entry, real_work_tree = ipr._entry, ipr.find_work_tree
+
+    def inside(path):
+        path = Path(path)
+        return path == sandbox or sandbox in path.parents
+
+    def entry(directory, relative):
+        return real_entry(directory, relative) if inside(directory) else None
+
+    def work_tree(start):
+        found = real_work_tree(start)
+        return found if found is not None and inside(found) else None
+
+    for name, replacement in (("_entry", entry), ("find_work_tree", work_tree)):
+        patcher = mock.patch.object(ipr, name, replacement)
+        patcher.start()
+        test.addCleanup(patcher.stop)
+
+
 class _Tmp(unittest.TestCase):
-    """A fresh directory for each test, plus a separate fake home outside it."""
+    """A fresh sandbox for each test: its root, and a separate fake home beside it.
+
+    Nothing above the sandbox is visible to the hook (see `_fence`), so no test depends on
+    what the machine keeps above its temporary directory.
+    """
 
     def setUp(self):
-        self.root = Path(tempfile.mkdtemp()).resolve()
-        self.home = Path(tempfile.mkdtemp()).resolve()
-        self.addCleanup(shutil.rmtree, self.root, ignore_errors=True)
-        self.addCleanup(shutil.rmtree, self.home, ignore_errors=True)
+        self.sandbox = Path(tempfile.mkdtemp(dir=self.sandbox_parent())).resolve()
+        self.addCleanup(shutil.rmtree, self.sandbox, ignore_errors=True)
+        self.root = self.sandbox / "root"
+        self.home = self.sandbox / "home"
+        self.root.mkdir()
+        self.home.mkdir()
+        _fence(self, self.sandbox)
+
+    def sandbox_parent(self):
+        """Where the sandbox is made; None is the platform's temporary directory."""
+        return None
 
     def repo(self, path=None, object_format=None):
         path = path or self.root
@@ -434,6 +473,38 @@ class ScopeAndSourceTests(_Tmp):
         (self.root / "AGENTS.md").write_text("x", encoding="utf-8")
         self.assertIsNone(
             ipr.evaluate(_payload(self.root, event="PostToolUse"), home=self.home))
+
+
+class NothingAboveTheSandboxLeaksInTests(_Tmp):
+    """What sits above a test's temporary directory must not change its result.
+
+    The hook walks from the launch directory up to the filesystem root, by design. On
+    Windows the temporary directory is under the person's home, so a real
+    `~/.claude/CLAUDE.md` sat above every test here: 30 of them failed on one maintainer's
+    machine while CI passed. This plants that shape on every platform, in the directory
+    directly above the sandbox: memory files, a project file, and a git repository that
+    would turn "outside any git repository" into "not committed".
+    """
+
+    def sandbox_parent(self):
+        above = Path(tempfile.mkdtemp()).resolve()
+        self.addCleanup(shutil.rmtree, above, ignore_errors=True)
+        if GIT:
+            _git("init", "-q", cwd=above)
+        (above / ".claude").mkdir()
+        for name in ("AGENTS.md", "CLAUDE.md", ".claude/CLAUDE.md", "GEMINI.md",
+                     ".claude/settings.json", ".mcp.json"):
+            (above / name).write_text("planted above the sandbox", encoding="utf-8")
+        return above
+
+    def test_an_empty_folder_is_still_silent(self):
+        self.assertEqual([], ipr.findings(self.root, self.home))
+        self.assertIsNone(ipr.evaluate(_payload(self.root), home=self.home))
+
+    def test_a_planted_file_is_still_named_as_outside_any_repository(self):
+        (self.root / "AGENTS.md").write_text("x", encoding="utf-8")
+        self.assertEqual([(self.root / "AGENTS.md", ipr.OUTSIDE)],
+                         ipr.findings(self.root, self.home))
 
 
 class NeverRunsTests(unittest.TestCase):
