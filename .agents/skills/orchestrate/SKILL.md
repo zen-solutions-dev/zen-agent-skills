@@ -67,7 +67,9 @@ This is a draft. Its first real run, and what it taught, is in
 4. Ask the person only the one-way-door questions: **at most four per round**, each standing on its
    own (it may be read without anything above it), the recommended option first. Record every
    two-way decision you took instead of asking, with the revert that would undo it.
-5. Commit the plan (children, doors, decisions) to the integration branch and push.
+5. Commit the plan (children, doors, decisions) to the integration branch and push. This commit, and
+   any other you make there, is your own work: list it in the pull request body as unverified, or
+   have it verified like a child's.
 
 Done when the integration branch exists on the remote at the target tip plus the plan commit, and
 every one-way door in the plan carries the person's recorded answer.
@@ -131,12 +133,14 @@ an answer or a named owner.
 2. **Check the report** against the fields in Step 2. A missing field is asked for once.
 3. **Spot-check two or three of its claims** against the tree (a line it cites, a count it gives, a
    file it says it moved) before trusting the rest.
-4. **Verify** with [`verifier-agent`](../verifier-agent/SKILL.md), run by an agent that is neither
-   the child nor you (`A7`), on the exact head commit reported.
-5. **Land** a `pass` on the integration branch with
-   [`reconcile-worktrees`](../reconcile-worktrees/SKILL.md): a fast-forward where the child merged
-   the tip. This is the one merge an orchestrator may make, under every guard of `A8`'s exception:
-   work you did not author, verified by someone else, the integration branch only.
+4. **Verify**: read and follow [`verifier-agent`](../verifier-agent/SKILL.md) through a verifier
+   you dispatch with a fresh context, as a leaf, at high effort: neither the child nor you, and not
+   briefed by the child (`A7`), on the exact head commit reported.
+5. **Land** a `pass` on the integration branch by reading and following
+   [`reconcile-worktrees`](../reconcile-worktrees/SKILL.md): **fast-forward only**. A child that has
+   not merged the tip, or whose landing would need a conflict resolution, goes back to merge the tip
+   and be verified again. This is the one merge an orchestrator may make, under every guard of
+   `A8`'s exception: work you did not author, verified by someone else, the integration branch only.
 6. **Push after every landing.** After any restart of this session, check the remote state
    (`git status -sb`, `git log origin/<integration>..<integration>`) before anything else.
 7. **A `fail` or `blocked`** goes back to a fresh child with the verdict's reasons. **Cap: two
@@ -148,11 +152,14 @@ empty.
 
 ### Step 6: close with one review, one fix, then stop
 
-1. Run **one** review of the whole integration branch with `house-review`, by a fresh-context
-   reviewer that wrote none of it, on both axes (the plan, then the written standards).
-2. Dispatch **one** fix child for the findings you accept, then re-check **only the fixed
-   findings**. A second broad review does not converge; do not run one.
-3. Run `doc-sync` over the reader-facing documents, and the acceptance command on the tip.
+1. Run **one** review of the whole integration branch: a reviewer with a fresh context, as a leaf,
+   that wrote none of it, reads and follows [`house-review`](../house-review/SKILL.md) on both axes
+   (the plan, then the written standards).
+2. Dispatch **one** fix child, fresh and a leaf, for the findings you accept. Its branch is verified
+   and landed like any child's (Step 5), and the re-check covers **only the fixed findings**. A
+   second broad review does not converge; do not run one.
+3. Read and follow [`doc-sync`](../doc-sync/SKILL.md) over the reader-facing documents, then run the
+   acceptance command on the tip.
 4. Write the body with [`pr-describe`](../pr-describe/SKILL.md), offering a stacked split when the
    branch is large and holds a one-way door, and open **one draft pull request** into the base
    branch. Never merge it: that is the person's.
@@ -205,7 +212,8 @@ session, and the remote-session tools carry the transport:
 - A worker restart can drop a branch's upstream tracking and leave a landing unpushed: Step 5's
   push-and-check rule is the guard.
 - A cloud environment's network policy can refuse a host. Probe from the environment the child will
-  run in; a refusal can clear after a worker restart, and some hosts refuse cloud addresses outright.
+  run in; a refusal can clear after a worker restart, and some sites stop automated clients at a bot
+  check, which is recorded as unreachable and never worked around.
 
 ## Conventions
 
