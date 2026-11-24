@@ -10,8 +10,9 @@ This file is a **swappable module**, the third beside [`house-style.md`](house-s
 This one governs what an agent may do **when nobody is watching**: in a worktree, in a batch, in a
 cloud session, in any run where the answer to "should I?" cannot be a question put to a person.
 
-**One rule is not scoped that way.** `A10` governs what an agent may do with material it did not
-author, which is a property of the material rather than of the run, so **`A10` applies to every run,
+**Two rules are not scoped that way.** `A10` governs what an agent may do with material it did not
+author, which is a property of the material rather than of the run, and `A11` governs what it may do
+to whatever judges its work, which is a property of the judge. **`A10` and `A11` apply to every run,
 attended or not.** `A1` to `A9` keep the unattended scope above.
 
 **Scope: universal.** Every skill in this kit references this module, and `validate-skills.py` fails
@@ -118,6 +119,20 @@ In Claude Code, `worktree.baseRef: "head"` in settings removes the commonest cau
 worktrees otherwise branch from the remote default branch.
 
 *Cited:* two incidents on 2026-08-20, one from each end (`bug-0043`).
+
+**A11. Do not edit the judge. The acceptance command, the tests it runs, and any threshold your work
+is measured against are not yours to change unless your task scopes that change.**
+When a check fails, presume the defect is in the work. If you conclude the check itself is wrong,
+report that as a finding with your evidence, separately from the work, and leave the work unfinished
+until a person agrees. Never reach "done" by deleting, skipping, loosening, or special-casing what
+measures it: every done condition carries that boundary whether or not anyone wrote it down. When
+your task does scope a change to a test or a check, report it apart from the code it judges, so a
+reviewer sees both.
+
+*Cited internally, with outside research for the class, and marked as such:* the shape is exercised
+here by `bug-0013` and `bug-0010`. ImpossibleBench (Zhong, Raghunathan and Carlini,
+arXiv:2510.20270) and METR (5 June 2025) measure the failure. The form follows `loop-design-check` in
+everything-claude-code (Affaan Mustafa, MIT).
 
 ## Landing: what you may do with the result
 

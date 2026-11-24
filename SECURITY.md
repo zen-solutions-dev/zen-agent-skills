@@ -19,6 +19,14 @@ One script does make network calls, and it is named here rather than left to be 
 
 The shape worth naming for a reporter: a pull request can add a provenance block, and its `source:` URL is a destination a maintainer's later run will contact from their machine. That is a review question about what a pull request adds, not a defect in the script, but it is the reason the URLs are recorded in plain text and `--list` exists.
 
+### Instruction files are instructions
+
+The same holds one level up from a skill. `AGENTS.md`, `CLAUDE.md`, a project's `.claude/settings.json`, and an `.mcp.json` are loaded by the harness as instructions or as programs to run, before the agent has read anything, and they are loaded by **location**: from the directory a session starts in and, for memory files, from every directory above it. A web page can save such a file into a Downloads folder without a click, and a planted one there was reported in October 2026 to steer coding agents in most test runs. There is no patch, because loading those files is how the tools are meant to work.
+
+This kit makes `AGENTS.md` canonical in every repository it scaffolds, so it owes you the other half. Rule `A10` treats material an agent did not author as data, but it cannot reach a file the harness loaded first. The opt-in [`instruction-provenance-reminder.py`](.agents/hooks/instruction-provenance-reminder.py) closes that gap at session start: it names every such file that sits outside any repository or is not in git's index, and tells the agent to treat it under `A10`. It reads git's index file directly rather than running `git`, because a planted folder can carry a `.git/config` that git would execute.
+
+What it cannot do is tell you a committed file is safe. A commit means someone with push access wrote it. Read the instruction files of any repository you did not write before your first session in it, and never start an agent in Downloads or your home folder.
+
 ## Supported versions
 
 The kit is distributed from `main`, and `main` is the only supported version. Releases are tagged (the first is `v0.1.0`, 2026-07-29) so that a report can name the version it was found against, but a tag is a marker in the history rather than a maintained branch: fixes land on `main` and are not backported to an earlier tag. Adopters pick them up by pulling and re-running the installer.
@@ -65,4 +73,5 @@ If a report turns out to be a design decision rather than a defect, you will get
 - **Preview first.** `install.py` and `build-adapters.py` both take `--dry-run`, and several skills default to a reporting mode that changes nothing.
 - **Install to a throwaway home while evaluating**: `python scripts/install.py --dry-run --home ./.tmp/zen-home`.
 - **Apply the same review standard to skills from outside this repository.** A skill obtained elsewhere carries whatever intent its author gave it.
+- **Apply it to instruction files too.** Read an unfamiliar repository's `AGENTS.md`, `CLAUDE.md`, `.claude/settings.json`, and `.mcp.json` before your first session there, and install the hooks (`install.py --with-hooks`) to be told at session start about any that no commit vouches for.
 - **Keep a human on destructive and outward-facing steps**: deletions, force-pushes, publishing, spending, and anything touching credentials.

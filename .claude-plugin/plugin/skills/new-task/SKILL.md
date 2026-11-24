@@ -62,8 +62,11 @@ only there.
 
 When the input is a spec, four obligations hold inside the normal procedure:
 
-- **Refuse an unapproved spec.** If `status` is not `approved`, stop and say so. Decomposing a draft
-  commits the repository to a contract no human agreed to.
+- **Refuse an unapproved spec, or one edited since its approval.** Run the digest script that ships
+  with [`spec-author`](../spec-author/SKILL.md) (`scripts/spec_digest.py`) on the spec. `not-approved`,
+  `changed`, `malformed`, or `unreadable`: stop and say which. Decomposing a draft, or text changed after a person
+  approved it, commits the repository to a contract no human agreed to. `unbound` may be decomposed;
+  say in your report that the approval is not tied to any text.
 - **Cover every scenario exactly once.** Each `S-NNN` maps to at least one task; each task carries
   its ids in `scenarios` and the spec path in `spec`. A scenario deliberately not implemented gets a
   stated rationale.
