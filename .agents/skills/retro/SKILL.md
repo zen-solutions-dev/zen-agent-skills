@@ -68,11 +68,11 @@ firings are mostly good code is a **prune** candidate, as is one no failure has 
 window because a stronger check above it catches everything first. A check is never pruned because
 it is inconvenient on a real defect.
 
-Done when you can list every guardrail and say whether each is wired and passing, and, for a checks audit, each
-check's recent firings are judged. A check that
-exists but is unwired, skipped or silently broken is a finding in itself, ahead of any new one. A
-repository with no guardrail at all (no CI job and no hook running its lint, type or test command)
-is the first finding, not a neutral default.
+Done when you can list every guardrail and say whether each is wired and passing, and, for a checks
+audit, each check's recent firings are judged. A check that exists but is unwired, skipped or
+silently broken is a finding in itself, ahead of any new one. A repository with no guardrail at all
+(no CI job and no hook running its lint, type or test command) is the first finding, not a neutral
+default.
 
 ### 2. Read the primary sources for friction
 
