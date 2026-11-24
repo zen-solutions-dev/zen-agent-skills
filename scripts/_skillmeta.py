@@ -104,7 +104,6 @@ def code_span_ranges(text):
     return ranges
 
 
-
 def fenced_block_ranges(text):
     """Character ranges `(start, end)` of the fenced code blocks in `text`.
 
@@ -132,7 +131,6 @@ def fenced_block_ranges(text):
                 start = None
         offset += len(line)
     return ranges
-
 
 
 def literal_ranges(text):

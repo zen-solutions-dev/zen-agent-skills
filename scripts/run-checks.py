@@ -277,12 +277,12 @@ COUNT_RES = (
 # stale and `chore-0100` (WS-A) is rewriting in parallel; once that lands, each key here
 # fires "no longer needed" and is deleted. An exception is a debt with a name, not a
 # setting: adding one is a decision for whoever reviews the change.
-ROADMAP_STATUS_EXCEPTIONS = frozenset({
-    "draft:domain-language", "draft:grill", "draft:improve-architecture",
-    "draft:retro", "draft:tdd", "draft:zen",
-    # Keyed by the stale value, so a different wrong count is a new finding, not this one.
-    "count:ship=19", "count:drafts=10",
-})
+#
+# Emptied 2026-11-24 when chore-0100's true "Current state" landed: the eight keys the
+# check shipped with (six promoted skills named as drafts, and `count:ship=19` and
+# `count:drafts=10`) all stopped firing. A count key names its stale value, so a
+# different wrong count is a new finding rather than this one.
+ROADMAP_STATUS_EXCEPTIONS = frozenset()
 
 
 def skill_statuses(repo_root):
@@ -296,7 +296,11 @@ def skill_statuses(repo_root):
             text = skill_md.read_text(encoding="utf-8")
         except (OSError, UnicodeDecodeError):
             continue  # validate-skills.py reports an unreadable body; not this gate's subject
-        found[skill_md.parent.name] = _skillmeta.is_draft_text(text)
+        # A directory name holding a byte that is not UTF-8 arrives as a surrogate escape,
+        # which a strict stream cannot print; it is escaped for the report. No roadmap can
+        # name such a skill, so nothing is compared against the raw name (landing review).
+        name = os.fsencode(skill_md.parent.name).decode("utf-8", "backslashreplace")
+        found[name] = _skillmeta.is_draft_text(text)
     return found
 
 
@@ -311,17 +315,17 @@ def current_state_section(text):
 
 
 def _sentences(block):
-    """The sentences of a markdown block, split outside code spans."""
+    """`(offset, sentence)` for each sentence of a markdown block, split outside code spans."""
     masked = list(block)
     for start, end in _skillmeta.code_span_ranges(block):
         masked[start:end] = "x" * (end - start)
     masked = "".join(masked)
     pieces, last = [], 0
     for match in SENTENCE_END_RE.finditer(masked):
-        pieces.append(block[last:match.start()])
+        pieces.append((last, block[last:match.start()]))
         last = match.end()
-    pieces.append(block[last:])
-    return [p for p in pieces if p.strip()]
+    pieces.append((last, block[last:]))
+    return [(offset, p) for offset, p in pieces if p.strip()]
 
 
 def roadmap_status_findings(text, statuses):
@@ -342,10 +346,12 @@ def roadmap_status_findings(text, statuses):
     findings, claims = [], 0
     listed_drafts = set()
     any_draft_list = False
+    first_list_line = first
     counted = []
     for number, block in markdown_blocks(body):
-        line = first + number - 1
-        for sentence in _sentences(block):
+        for offset, sentence in _sentences(block):
+            # Cited at the sentence's own line, not the block's or the heading's.
+            line = first + number - 1 + block.count("\n", 0, offset)
             names = [n for n in BACKTICKED_RE.findall(sentence) if n in statuses]
             # The words are read with every code span removed, because a span is a name
             # and not prose: `draft-two` would otherwise make its own sentence a claim.
@@ -356,38 +362,42 @@ def roadmap_status_findings(text, statuses):
                 kind = "shipped"
             else:
                 continue
-            counted.append(prose)
-            if kind == "draft" and names:
+            counted.append((line, prose))
+            if kind == "draft" and names and not any_draft_list:
                 any_draft_list = True
+                first_list_line = line
             for name in names:
                 claims += 1
+                at = line + sentence.count("\n", 0, max(sentence.find(f"`{name}`"), 0))
                 if kind == "draft":
                     listed_drafts.add(name)
                     if not statuses[name]:
-                        findings.append((f"draft:{name}", line,
+                        findings.append((f"draft:{name}", at,
                                          f"`{name}` is named as a draft, and its SKILL.md "
                                          f"carries no `status: draft`"))
                 elif statuses[name]:
-                    findings.append((f"shipped:{name}", line,
+                    findings.append((f"shipped:{name}", at,
                                      f"`{name}` is named as shipped, and its SKILL.md "
                                      f"carries `status: draft`"))
     if any_draft_list:
         for name in sorted(n for n, draft in statuses.items()
                            if draft and n not in listed_drafts):
-            findings.append((f"missing:{name}", first,
+            findings.append((f"missing:{name}", first_list_line,
                              f"`{name}` carries `status: draft` and is missing from "
                              f"every draft list in this section"))
     actual = {"skills": len(statuses),
               "drafts": sum(1 for d in statuses.values() if d),
               "ship": sum(1 for d in statuses.values() if not d)}
-    flat = " ".join(" ".join(counted).replace("*", "").split())
-    for noun, pattern in COUNT_RES:
-        for match in pattern.finditer(flat):
-            claims += 1
-            said = int(match.group(1))
-            if said != actual[noun]:
-                findings.append((f"count:{noun}={said}", first,
-                                 f"says {said} {noun}, and the tree holds {actual[noun]}"))
+    for line, prose in counted:
+        flat = " ".join(prose.replace("*", "").split())
+        for noun, pattern in COUNT_RES:
+            for match in pattern.finditer(flat):
+                claims += 1
+                said = int(match.group(1))
+                if said != actual[noun]:
+                    findings.append((f"count:{noun}={said}", line,
+                                     f"says {said} {noun}, and the tree holds "
+                                     f"{actual[noun]}"))
     return findings, claims
 
 
@@ -457,13 +467,19 @@ def check_roadmap(repo_root=None, status_exceptions=None):
             else:
                 failing_status.append(key)
                 lines.append(f"{ROADMAP}:{number}: {message}")
-        for key in sorted(exceptions - fired):
+        # A stale key fails the gate (plan principle 9, the prune half). Reported only,
+        # it was invisible on a passing run, and while it stood it excused any later
+        # regression that happened to produce the same key (landing review, 2026-11-24).
+        stale = sorted(exceptions - fired)
+        for key in stale:
             lines.append(f"{ROADMAP}: exception {key!r} no longer needed; delete it from "
                          f"ROADMAP_STATUS_EXCEPTIONS in scripts/run-checks.py.")
+        failing_status.extend(f"stale:{key}" for key in stale)
         status_note = (f"{status_claims} skill status claim(s) in Current state read "
                        f"against {len(statuses)} SKILL.md file(s), "
-                       f"{len(failing_status)} wrong, "
-                       f"{len(status_findings) - len(failing_status)} excepted")
+                       f"{len(failing_status) - len(stale)} wrong, "
+                       f"{len(status_findings) - (len(failing_status) - len(stale))} "
+                       f"excepted, {len(stale)} stale exception(s)")
 
     lines.append(
         f"Checked {ROADMAP}: {len(named)} task ids named, {len(closed)} in .tasks/done/, "

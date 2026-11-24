@@ -935,11 +935,11 @@ def install(tools, mode, home: Path, dry: bool, profile: str = DEFAULT_PROFILE,
     # the first number away and the old headline overstated a session's cost.
     if only is None and not placed_drafts:
         print(f"{tag}Description budget: {budgets[profile]} characters for this profile, "
-              f"model-invoked only (" + ", ".join(f"{n}={budgets[n]}" for n in PROFILE_SEEDS)
+              f"what Claude Code loads: model-invoked only (" + ", ".join(f"{n}={budgets[n]}" for n in PROFILE_SEEDS)
               + ").")
     else:
         print(f"{tag}Description budget: {model_invoked_budget(skills)} characters for this "
-              f"selection, model-invoked only (profiles: "
+              f"selection, what Claude Code loads: model-invoked only (profiles: "
               + ", ".join(f"{n}={budgets[n]}" for n in PROFILE_SEEDS) + ").")
     user_invoked = [d for d in skills if is_user_invoked(d)]
     if user_invoked:
@@ -953,7 +953,8 @@ def install(tools, mode, home: Path, dry: bool, profile: str = DEFAULT_PROFILE,
     # Named only when this run places it: pointing an adopter at a skill they do not have
     # was the independent verifier's finding on the first version.
     if any(d.name == "init-worktracking" for d in skills):
-        print(f"{tag}In each repository, run `init-worktracking` once to configure the skills.")
+        print(f"{tag}In each repository, run `init-worktracking` once to configure the skills "
+              f"(docs/agents/zen.md).")
     else:
         print(f"{tag}Each repository is configured once by `init-worktracking`, and "
               f"`init-worktracking` is not in this selection: add it with "

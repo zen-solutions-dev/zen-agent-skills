@@ -147,7 +147,7 @@ python scripts/install.py --tools claude
 python scripts/install.py --tools opencode
 ```
 
-That default installs the skills that make up the delivery workflow, not every skill. There is a reason it is not all of them: your assistant reads a one-line summary of every installed skill in order to pick the right one, and that reading budget is shared with any other skills you have installed, so more is not automatically better. If you want the smallest useful set, or all of it:
+That default installs the skills that make up the delivery workflow, not every skill. There is a reason it is not all of them: your assistant reads a one-line summary of every installed skill it may pick on its own (in Claude Code, a skill you start by name costs nothing here), and that reading budget is shared with any other skills you have installed, so more is not automatically better. If you want the smallest useful set, or all of it:
 
 ```bash
 python scripts/install.py --profile core

@@ -33,14 +33,16 @@ Walkers included:
                                so no network is touched
   scripts/scan-secrets.py      both candidate sources: the `os.walk` fallback and `git ls-files`
   .tasks/validate.py           not under scripts/, but it globs and rglobs `.tasks/`
+  scripts/run-checks.py        the roadmap gate's walk over `.agents/skills/*/SKILL.md`
+                               (added by feat-0094, after the landing review found it)
   .agents/hooks/install-currency-reminder.py      rglob digest and skills iterdir
   .agents/hooks/instruction-provenance-reminder.py  os.listdir and git's index, which it parses
   .agents/hooks/skill-reachability-reminder.py    iterdir over the skill directories
   .agents/hooks/spec-conformance-gate.py          os.listdir for a sibling matrix
 
 Excluded, and why:
-  scripts/run-checks.py, scripts/_change_scope.py   walk no directory; they run other gates
-                                                    or read git's diff for a list of paths
+  scripts/_change_scope.py                          walks no directory; it reads git's diff
+                                                    for a list of paths
   scripts/_textio.py, scripts/_skillmeta.py         helpers that read files they are handed
   scripts/observatory/                              maintainer tooling over a session corpus,
                                                     out of scope by the task that asked for this
@@ -88,6 +90,7 @@ cc = _load("undecodable_check_citations", REPO_ROOT / "scripts" / "check-citatio
 cp = _load("undecodable_check_provenance", REPO_ROOT / "scripts" / "check-provenance.py")
 ss = _load("undecodable_scan_secrets", REPO_ROOT / "scripts" / "scan-secrets.py")
 tv = _load("undecodable_tasks_validate", REPO_ROOT / ".tasks" / "validate.py")
+rc = _load("undecodable_run_checks", REPO_ROOT / "scripts" / "run-checks.py")
 
 NAME_SUPPORTED = False
 
@@ -568,3 +571,29 @@ class SpecConformanceGateTests(_HookCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class RunChecksRoadmapTests(_Case):
+    """`check_roadmap()` walks the skills to read each one's status (feat-0094, P3).
+
+    The fixture's draft list names a shipped skill, which is the finding, and leaves out a
+    draft whose directory name carries the byte, which is a second finding that has to name
+    it. Run through `run_all` on a strict stream, as the acceptance command prints it.
+    """
+
+    def test_a_wrong_draft_list_is_still_reported(self):
+        skills = self.root / ".agents" / "skills"
+        write_skill(skills, "alpha")
+        bad = os.path.join(os.fsencode(str(skills)), BAD)
+        os.makedirs(bad)
+        with open(os.path.join(bad, b"SKILL.md"), "wb") as handle:
+            handle.write(b"---\nname: x\ndescription: x\nmetadata:\n  status: draft\n---\n")
+        (self.root / ".tasks" / "done").mkdir(parents=True)
+        (self.root / "ROADMAP.md").write_text(
+            "# Roadmap\n\n## Current state\n\n- **Drafts**: `alpha`.\n", encoding="utf-8")
+        gate = rc.Gate("roadmap bookkeeping", [],
+                       check=lambda: rc.check_roadmap(self.root, status_exceptions=()))
+        code, out, _ = call(lambda: rc.run_all([gate], out=sys.stdout))
+        self.assertEqual(code, 1, out)
+        self.assertIn("`alpha` is named as a draft", out)
+        self.assertIn("bad-\\xffname", out)

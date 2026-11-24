@@ -1,11 +1,11 @@
 ---
 name: quest-tracker
 description: >-
-  Plans and logs a season of project work on a shared quest tracker page: phases of steps saying
-  what to do, why, and what closes each. Starts a tracker from
-  the bundled template, works a session against one, and has agents report finished work as
-  claims a person verifies, never as ticks. Use for "start a quest tracker", "log this session in
-  the tracker", "report into the tracker".
+  Plans and logs a season of project work on a shared quest tracker page of steps that say what to
+  do, why, and what closes each. Starts a tracker, works sessions against one, and has agents
+  report work as claims a person verifies. Use for "start a quest tracker", "set up a run sheet",
+  "log this session in the tracker", "what is left on the tracker". sitrep reads task files; this
+  runs a shared page.
 license: MIT
 compatibility: >-
   Needs a host that publishes an HTML page with a shared per-page database, viewer identity, and

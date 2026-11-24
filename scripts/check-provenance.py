@@ -72,7 +72,8 @@ A placement that is *empty* is named rather than counted, because it records not
 re-fetch and is most often a fold-in in progress; see unsourced_placements for that call.
 
 The convention itself, including the field list and where a block lives in each file type,
-is in the conventions section of AGENTS.md. Standard library only, per that same section.
+is in CONTRIBUTING.md, "Provenance for material folded in from elsewhere". Standard
+library only, per the conventions section of AGENTS.md.
 """
 import hashlib
 import re
@@ -106,7 +107,7 @@ _KEY_RE = re.compile(r"^[ \t]*([a-z0-9_]+):[ \t]*(.*?)[ \t]*$")
 _SHA256_RE = re.compile(r"\A[0-9a-f]{64}\Z")
 _DATE_RE = re.compile(r"\A\d{4}-\d{2}-\d{2}\Z")
 
-# The two placements the convention in AGENTS.md names, recognised positively rather than
+# The two placements the convention in CONTRIBUTING.md names, recognised positively rather than
 # guessed at: a fenced block whose info string is `provenance` (markdown), and an underlined
 # `Provenance` section of a module docstring (Python).
 #
@@ -219,7 +220,7 @@ class Fetched(NamedTuple):
 def declared_lines(lines):
     """One bool per line: is this line inside a placement the convention declares?
 
-    The convention in AGENTS.md says where a provenance block lives, and this reads that
+    The convention in CONTRIBUTING.md says where a provenance block lives, and this reads that
     statement rather than inferring intent from the block's contents. A markdown fence
     tagged `provenance` opens a region and the matching close ends it; an underlined
     `Provenance` heading opens one and the first line that is neither blank nor a
@@ -351,7 +352,7 @@ def parse_records(text):
     A run qualifies as a record in either of two ways.
 
     **Placement.** A run whose `source:` line sits inside a placement the convention in
-    AGENTS.md declares, a markdown fence tagged `provenance` or an underlined `Provenance`
+    CONTRIBUTING.md declares, a markdown fence tagged `provenance` or an underlined `Provenance`
     docstring section, always qualifies, whatever it managed to collect. Somebody wrote the
     block down there on purpose, so the run is a fold-in record and any shortfall in it is
     the record's problem, reported by validate(), rather than a reason to disbelieve the
@@ -632,7 +633,7 @@ def empty_placement_note(count):
         f"{count} declared provenance {noun} above {verb} empty, named rather than\n"
         "counted: an empty block records nothing to re-fetch, so it is most often a\n"
         "fold-in in progress rather than a defect. Fill it in per the convention in\n"
-        "AGENTS.md, or remove the placement.\n"
+        "CONTRIBUTING.md, or remove the placement.\n"
     )
 
 
@@ -645,7 +646,7 @@ def main(argv=None, root=None, fetcher=None, out=None):
     records, unreadable = collect(root)
     if not records and not unreadable:
         out.write("No provenance records found. Nothing folded in is recorded, which is\n"
-                  "either correct or a sign a fold-in skipped the convention in AGENTS.md.\n")
+                  "either correct or a sign a fold-in skipped the convention in CONTRIBUTING.md.\n")
         return 0
 
     if "--list" in argv:

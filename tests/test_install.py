@@ -3128,7 +3128,8 @@ class SetupPointerTests(_FixtureKit):
     adopter the second half existed.
     """
 
-    POINTER = "In each repository, run `init-worktracking` once to configure the skills"
+    POINTER = ("In each repository, run `init-worktracking` once to configure the skills "
+               "(docs/agents/zen.md).")
 
     def setUp(self):
         super().setUp()

@@ -26,7 +26,7 @@
 
   "as_of_note": "`as_of` is the source table's own cached date, not the day it was copied here, so the figure a reader sees is never fresher than the rates behind it. `transcribed` is the day it was copied. The older of the two is what the report shows.",
 
-  "provenance_note": "No formal provenance block, and that is deliberate rather than an omission. The convention in AGENTS.md requires a re-fetchable raw URL and a sha256 of the retrieved bytes, and `scripts/check-provenance.py` scans only `.md` and `.py`. This source is a skill bundled with the harness on this machine, at a path that is version-stamped and local; it has no URL that checker could fetch, so a block here would either dangle or carry a digest nobody could reproduce. The fields above record the same facts in a form that does not pretend to be checkable.",
+  "provenance_note": "No formal provenance block, and that is deliberate rather than an omission. The convention in CONTRIBUTING.md requires a re-fetchable raw URL and a sha256 of the retrieved bytes, and `scripts/check-provenance.py` scans only `.md` and `.py`. This source is a skill bundled with the harness on this machine, at a path that is version-stamped and local; it has no URL that checker could fetch, so a block here would either dangle or carry a digest nobody could reproduce. The fields above record the same facts in a form that does not pretend to be checkable.",
 
   "cache_multipliers": {
     "cache_read": 0.1,

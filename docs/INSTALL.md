@@ -152,7 +152,7 @@ One case cannot be answered: an install predating the digest baseline recorded n
 
 ### Choose how many skills to install
 
-Every installed skill's `description` is loaded so your agent can route to it, and that budget is shared with every other skill you have installed. So `--profile` selects how many skills to place, and the run reports what each profile costs in description characters:
+An installed skill's `description` is loaded so your agent can route to it, and that budget is shared with every other skill you have installed. So `--profile` selects how many skills to place, and the run reports what each profile costs in description characters. The figure counts model-invoked skills, which is what Claude Code loads; the user-invoked share is reported beside it, because Claude Code does not load those descriptions (OpenCode does):
 
 ```bash
 python scripts/install.py --profile core
@@ -166,6 +166,8 @@ python scripts/install.py --profile all
 | `all` | 25 | Every shipped skill, adding the two handoff skills and the three a person starts by name (`zen`, `retro`, `improve-architecture`) |
 
 A profile is expanded over sibling references before anything is placed, so it can never install a skill whose composed sibling is missing, and the run says when it expanded what you asked for. Since the 2026-11 overhaul a skill links a sibling only where it genuinely composes it, so the expansion is small, and `--skills <name>` places any single skill with just what it composes. Drafts are in no profile; add `--include-drafts` to place them.
+
+Every install ends by pointing at the second half of adoption: in each repository, run `init-worktracking` once to configure the skills, which writes `docs/agents/zen.md`. When the run did not place `init-worktracking`, the line says how to add it.
 
 Defaulting to `spine` means `agent-handoff` and `human-handoff` are not placed. Nothing is removed if you already installed them: this command only places and updates, and reversal is `--uninstall`. Pass `--profile all` to keep them refreshed.
 

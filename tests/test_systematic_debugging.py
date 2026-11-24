@@ -818,7 +818,7 @@ class TestTheSkillIsADraftAndNoProfilePlacesIt(SkillTestCase):
 
 
 class TestTheFoldInIsAttributed(SkillTestCase):
-    """The skill is adapted from an external source, so `AGENTS.md` requires a provenance
+    """The skill is adapted from an external source, so `CONTRIBUTING.md` requires a provenance
     block. Parsed with the checker's own parser rather than by matching text, so a block that
     this suite accepts and `check-provenance.py` cannot read is not possible."""
 

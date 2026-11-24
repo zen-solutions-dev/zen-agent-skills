@@ -62,8 +62,8 @@ Pending the maintainer's approval of this amendment itself: the plan approved th
 wording below is not this task's to approve.** `S-014`'s budget is what an agent carries: the
 headline and every per-profile figure count model-invoked descriptions only, and the user-invoked
 share is reported beside them rather than inside them. Since `S-023` a user-invoked skill reaches
-Claude Code rendered so that its description is never loaded, so the old headline overstated a
-session's cost by every user-invoked description in the profile (747 characters on `spine` and 1,586
+Claude Code rendered so that Claude Code never loads its description (OpenCode still does), so the
+old headline overstated a Claude Code session's cost by every user-invoked description in the profile (747 characters on `spine` and 1,586
 on `all`, measured 2026-11-24). The same amendment adds one closing line to an install run: a pointer
 to the per-repository setup step, because placing the skills is half of adopting them.
 
@@ -257,12 +257,14 @@ overwritten exists only as a branch.
   same total for each available profile so the figure is comparable rather than absolute. It is reported
   as a character count and not as a proportion of any harness's budget, which depends on the context
   window and on skills this tool cannot see.
-- **And** every one of those totals counts model-invoked skills only, because a user-invoked skill's
-  description is not loaded (`S-023`). When the placed set holds a user-invoked skill, a separate line
-  states their combined characters and names them, as an aside to the total rather than part of it.
+- **And** every one of those totals is what Claude Code loads: model-invoked skills only, because
+  Claude Code does not load a user-invoked skill's description (`S-023`), and the headline says so.
+  OpenCode does load it, so when the placed set holds a user-invoked skill, a separate line states
+  their combined characters, names them, and says which tool loads them, as an aside to the total
+  rather than part of it.
 - **And** an install run, real or dry, prints in its summary one line pointing at the
   per-repository setup step: in each repository, run `init-worktracking` once to configure the
-  skills. When the run does not place `init-worktracking`, the line says so and how to add it, rather
+  skills, naming the file that step writes (`docs/agents/zen.md`). When the run does not place `init-worktracking`, the line says so and how to add it, rather
   than naming a skill the adopter does not have. `--check` and `--uninstall` do not print it.
   (Added 2026-11-24, `feat-0094`.)
 

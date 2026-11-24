@@ -1013,12 +1013,31 @@ class RoadmapDraftStatusTests(unittest.TestCase):
         self.assertFalse(ok, report)
         self.assertIn("says 5 drafts", report)
 
-    def test_an_exception_that_no_longer_fires_is_reported_for_pruning(self):
+    def test_an_exception_that_no_longer_fires_fails_the_gate(self):
+        # Plan principle 9's prune half, and the landing review's finding: a stale key was
+        # reported only in output nobody sees on a pass, and while it stood it could mask
+        # a regression it happened to name. A stale key now fails, and says why.
         root = self._repo("- **Drafts**: `draft-one`.", drafts=["draft-one"])
         ok, report = self._check(root, exceptions={"draft:shipped-one"})
-        self.assertTrue(ok, report)
+        self.assertFalse(ok, report)
         self.assertIn("no longer needed", report)
         self.assertIn("draft:shipped-one", report)
+
+    def test_the_summary_line_carries_the_stale_key_count(self):
+        root = self._repo("- **Drafts**: `draft-one`.", drafts=["draft-one"])
+        report = self._check(root, exceptions={"draft:shipped-one"})[1]
+        self.assertIn("1 stale exception", rc.coverage_line(report))
+
+    def test_a_finding_is_cited_at_its_own_line(self):
+        root = self._repo("Intro.\n\n- **Drafts**: `draft-one` and, wrapped onto a\n"
+                          "  second line, `shipped-one`.",
+                          drafts=["draft-one"], shipped=["shipped-one"])
+        report = self._check(root)[1]
+        # Line 1 is the title, 3 the heading, 5 "Intro.", 7 the bullet, 8 its wrapped line.
+        self.assertIn("ROADMAP.md:8: `shipped-one`", report)
+        root = self._repo("- **3 are drafts**: `draft-one`.\n- **Shipped**: `shipped-one`.",
+                          drafts=["draft-one"], shipped=["shipped-one"])
+        self.assertIn("ROADMAP.md:5: says 3 drafts", self._check(root)[1])
 
     def test_no_current_state_section_is_reported_as_not_judged(self):
         root = Path(tempfile.mkdtemp())

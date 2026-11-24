@@ -59,7 +59,7 @@ It touches more than one module, and the installer's profile resolution is the e
 - [x] Acceptance command passes locally.
 - [x] Conventions in AGENTS.md's conventions section followed.
 - [x] `doc-sync` run over the reader-facing documents and its findings applied or dismissed with a reason.
-- [x] File moved to `.tasks/done/`, `status: done`; one dated line added to `CHANGELOG.md` referencing this task id.
+- [ ] File moved to `.tasks/done/`, `status: done` (done); one dated line added to `CHANGELOG.md` referencing this task id: **not added here, reported for integration** (plan rule 3: only WS-A edits `CHANGELOG.md`).
 
 ## Decisions
 

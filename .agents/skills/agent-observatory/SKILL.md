@@ -1,11 +1,11 @@
 ---
 name: agent-observatory
 description: >-
-  Answers questions that span agent sessions, such as what is running, what a session or wave
-  cost, which skills were used, and what failed, from the local observatory store. Where the
-  harness allows, it renames a session or messages another one, and never starts, resumes,
-  interrupts or ends one. Use for "what sessions are running", "find the session that did X",
-  "rename that session".
+  Answers questions spanning agent sessions (what is running, what it cost, which skills ran, what
+  failed) from the local observatory store. Where the harness allows, it renames a session or
+  messages another; it never starts, resumes, interrupts or ends one. Use for "what sessions are
+  running", "find the session that did X", "tell the other session about this". The observatory
+  page only reports.
 license: MIT
 metadata:
   status: draft
