@@ -282,6 +282,8 @@ Once you are ready, ask it to use `init-worktracking`:
 
 The skill is designed to detect existing trackers and offer a dry-run migration. You can choose to migrate, keep the existing tracker as canonical, or intentionally coexist with both. Coexisting trackers can drift, so choose that option only when there is a clear reason.
 
+Its last step **configures the skills for this repository**. It looks around first, then asks you one short section at a time (which tracker you use, where the glossary and specs live, the command that decides whether a change is acceptable, which branch work lands on, and whether agents should run unattended by default), recommending an answer for each so a "yes" is enough. It writes your answers to `docs/agents/zen.md`, which every skill reads from then on, and changes a value later only when you name it.
+
 ### 5. Start with the project you actually have
 
 After the structure is agreed, use the assistant to answer practical questions:
@@ -334,6 +336,8 @@ Even with the full system in place, most changes do not need all of it. The READ
 ## 👥 The collaboration journey
 
 The kit becomes especially useful when more than one person or agent is involved.
+
+When a day's work splits into several pieces, the `orchestrate` draft runs it from one session: that session talks with you and makes no changes itself, while separate agents research and build on their own branches. Each piece is checked by an agent that did not write it, then lands on one shared branch, and you get **one** pull request to review at the end. Anything hard to undo waits for your decision. It is a draft, so install it with `--include-drafts`.
 
 ```mermaid
 flowchart LR
