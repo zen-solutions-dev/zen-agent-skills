@@ -113,14 +113,14 @@ cd zen-agent-skills
 
 The kit is not copied into every project. Its skills are installed into your AI tool or translated into project-level files, depending on the tool you use.
 
-If you use Claude Code and do not need the newest draft skills, the plugin is the shortest route and needs no Python at all:
+If you use Claude Code and do not need the draft skills, the plugin is the shortest route and needs no Python at all:
 
 ```bash
 claude plugin marketplace add zen-solutions-dev/zen-agent-skills
 claude plugin install zen-agent-skills@zen-agent-skills
 ```
 
-The plugin does not carry drafts, so it does not include `grill`. Choose the plugin or the installer below for Claude Code, not both: having both loads every skill twice. The [installation reference](INSTALL.md) covers updating and switching.
+The plugin carries every shipped skill, `grill` included, and no draft. Choose the plugin or the installer below for Claude Code, not both: having both loads every skill twice. The [installation reference](INSTALL.md) covers updating and switching.
 
 ### 3. Preview the installation
 
@@ -156,7 +156,7 @@ python scripts/install.py --profile all
 
 `core` is the smallest set: set up a project, track the work, describe the change at the end. Each command prints what it costs, so you can compare before deciding. You can change your mind later by running it again with a different profile.
 
-The newest skills, including `grill`, the interview this guide starts every change with, are still **drafts**: written, but not yet used on enough real work to be called finished. No install places them unless you ask:
+A few skills are still **drafts**: written, but not yet used on enough real work to be called finished. `grill`, the interview this guide starts every change with, is not one of them; it ships in the default install. No install places a draft unless you ask:
 
 ```bash
 python scripts/install.py --include-drafts
@@ -213,7 +213,7 @@ Try:
 
 The `grill` skill asks a few questions at a time, each with a recommended answer you can accept with a "yes". It looks facts up in the project rather than asking you, so the questions that reach you are real decisions. It ends with a short record of what you decided.
 
-Then turn the decisions into work. For a small change, `new-task` writes one task with a clear acceptance check. For behaviour someone has to agree before it is built, `spec-author` writes a short specification first and waits for your approval. If you are unsure which, ask `zen` (a draft, placed with `--include-drafts`).
+Then turn the decisions into work. For a small change, `new-task` writes one task with a clear acceptance check. For behaviour someone has to agree before it is built, `spec-author` writes a short specification first and waits for your approval. If you are unsure which, ask `zen`, the router (in the plugin, or `--profile all` with the installer).
 
 ### 7. Work in small loops
 
@@ -312,9 +312,9 @@ The kit is most useful when it reduces repeated confusion.
 
 You can use the kit without adopting its full work-tracking system.
 
-Install the skills for your tool, then use one skill when the need appears. If you cannot remember which, ask `zen`, itself a draft:
+Install the skills for your tool, then use one skill when the need appears. If you cannot remember which, ask `zen`, the router:
 
-- 🔥 `grill` for being interviewed about a plan or idea until nothing is silently assumed. A draft.
+- 🔥 `grill` for being interviewed about a plan or idea until nothing is silently assumed.
 - 📝 `doc-author` for a new, code-grounded guide.
 - 🔧 `doc-revise` for bringing an existing document back into alignment.
 - 🔎 `doc-sync` for finding out which documents a change made wrong, before you fix any of them.
@@ -324,8 +324,8 @@ Install the skills for your tool, then use one skill when the need appears. If y
 - 📬 `pr-describe` for a draft pull request description and changelog entry, including a reference that closes the linked GitHub issue when the pull request merges.
 - 📜 `spec-author` for writing down what a feature should do before anyone builds it.
 - 🧪 `test-author` for turning an agreed specification into real tests.
-- 🔴 `tdd` for building something new test-first. A draft.
-- 🔁 `retro` for turning a correction you keep making into a check. A draft.
+- 🔴 `tdd` for building something new test-first.
+- 🔁 `retro` for turning a correction you keep making into a check.
 
 This approach is useful when your existing task or project-management system already works for you.
 

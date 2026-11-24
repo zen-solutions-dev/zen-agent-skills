@@ -7,7 +7,6 @@ description: >-
   or a task.
 license: MIT
 metadata:
-  status: draft
   invocation: user
 ---
 
@@ -50,7 +49,9 @@ That pipeline needs a POSIX shell. Anywhere else, count the same `git log -n 200
 --format=` output with whatever the platform has, for example
 `python -c "import sys, collections; [print(n, p) for p, n in collections.Counter(l.strip() for l in sys.stdin if l.strip()).most_common(30)]"`.
 
-Take the top cluster as the scope. When changes are scattered with no clear cluster, widen the
+Leave out of the ranking what changes by design rather than by friction: ledgers (a changelog, a
+roadmap), generated trees committed for distribution, and id or version manifests. Name what you
+left out in the scope line. Take the top cluster as the scope. When changes are scattered with no clear cluster, widen the
 window once, then take the top directories. Read the repository's glossary and its decision records
 (ADRs) for the scoped area, if they exist: a decision record is a constraint, not a candidate.
 
@@ -72,7 +73,9 @@ yourself. Note friction rather than following a checklist:
 Apply the **deletion test** to every suspected shallow module: imagine deleting it. If its
 complexity vanishes, it was a pass-through; if it reappears across its callers, it earns its keep.
 
-Done when every candidate names its files, the friction, and its deletion-test result.
+Done when every candidate names its files, the friction, and its deletion-test result, and every
+load-bearing claim a subagent's walk returned (a defect, a quoted comment, a duplicated symbol) has
+been checked in this session against the file itself, with the report saying which were.
 
 ### 3. Write the report
 
@@ -82,14 +85,18 @@ repository. It must work offline: no CDN, no external script, font or stylesheet
 the diagram patterns are in [`references/report.md`](references/report.md).
 
 One card per candidate: files, problem (one sentence), proposed deepening (one sentence), wins in
-vocabulary terms, a before-and-after diagram, its dependency category, and a strength of `Strong`,
+vocabulary terms, a before-and-after diagram, its dependency category (one of the four in
+`vocabulary.md`: in-process, local stand-in, owned remote, third-party), and a strength of `Strong`,
 `Worth exploring` or `Speculative`. A candidate that contradicts a decision record appears only
 when the friction justifies reopening it, and says so. End with a top recommendation and why.
 
 Give the person the file's absolute path, offer to open it, and ask which candidate to explore. Do
-not propose interfaces yet.
+not propose interfaces yet. A report in the temporary directory does not outlive the machine's next
+clean-up, so also offer a durable record: the same candidates as Markdown wherever the repository
+keeps its reviews. Write it only if the person says yes, and say where. When the person is not there
+to pick a candidate now, the durable record is how they act on it later.
 
-Done when the file exists and its path is reported.
+Done when the file exists, its path is reported, and the durable record is written or declined.
 
 ### 4. Explore the chosen candidate
 

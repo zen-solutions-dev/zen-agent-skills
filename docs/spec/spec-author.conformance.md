@@ -2,7 +2,7 @@
 title: spec-author conformance
 spec: docs/spec/spec-author.md
 audited: 2026-11-23
-revised: 2026-11-23 (feat-0076, re-audited in full against the rewritten skill body after the interview amendment; S-005 retired, S-008 and S-009 added); 2026-11-23 (feat-0083, the approval digest: S-010, S-011, a Constraint and two Proposed Surface rows added)
+revised: 2026-11-23 (feat-0076, re-audited in full against the rewritten skill body after the interview amendment; S-005 retired, S-008 and S-009 added); 2026-11-23 (feat-0083, the approval digest: S-010, S-011, a Constraint and two Proposed Surface rows added); 2026-11-24 (feat-0084, grill promoted and linked: S-008 and S-009 re-derived against the composed skill)
 ---
 
 # spec-author conformance matrix
@@ -38,8 +38,8 @@ produced this matrix, so per `A7` this verdict is that agent's, not an independe
 | Scenarios | S-005 retired | Retired | none: the scenario was retired by the `feat-0076` amendment | its behavior (exactly one clarifying question) is superseded by S-008. The skill no longer instructs it, which is the intended direction |
 | Scenarios | S-006 the spec goes where the repository already keeps specs | Conformed | "Where the spec goes" / "Find the repository's spec location before writing" ... "Match it." | |
 | Scenarios | S-007 a repository with no spec directory gets the documented fallback | Conformed | "Where the spec goes" / "Only when the repository has none does `docs/spec/<slug>.md` apply, as this kit's default" | |
-| Scenarios | S-008 the interview settles decisions before any file is written | Conformed | Procedure step 1 / "interview the person over the decision tree until its frontier is empty and they confirm the shared understanding", the fallback "ask in rounds over the frontier, numbered, with a recommended answer per question worded so "yes" accepts it", and "Write no file until the interview has closed" | the numbered, recommended, yes-accepts form is instructed twice: inline here, and in [`grill`](../../.agents/skills/grill/SKILL.md) step 3, which this step composes. `grill` is a draft, named rather than linked (see the task's Decisions), so the inline sentence is what carries the behavior in an install that lacks it |
-| Scenarios | S-009 facts are looked up, not asked | Conformed | Procedure step 1 fallback / "look facts up yourself and record where each was found; put only decisions to the person" | `grill` states the same rule as "Never ask the person a fact. Find it." and records each fact with its source in the decisions record |
+| Scenarios | S-008 the interview settles decisions before any file is written | Conformed | Procedure step 1 / "interview the person over the decision tree until its frontier is empty and they confirm the shared understanding" and "Write no file until the interview has closed", composing [`grill`](../../.agents/skills/grill/SKILL.md) step 3 / "Number every question, continuing the numbering across rounds" and "your recommended answer worded so that "yes" accepts it" | re-derived by `feat-0084`, which promoted `grill` and deleted `spec-author`'s inline fallback: the numbered, recommended, yes-accepts form now lives only in `grill`, which `spec-author` links, so an install that places `spec-author` places `grill` with it |
+| Scenarios | S-009 facts are looked up, not asked | Conformed | [`grill`](../../.agents/skills/grill/SKILL.md) step 2 / "Never ask the person a fact. Find it.", and its decisions record's "Facts found" section, "<fact> (source: <file, command, or lookup>)", composed by Procedure step 1 / "Then compose `grill`" | re-derived by `feat-0084`: the fallback that carried this rule inline is deleted, and the behavior is now carried by the composed skill alone |
 | Scenarios | S-010 approved text edited after its approval is not decomposed | Conformed | `new-task` "Decomposing an approved spec" / "`not-approved`, `changed`, `malformed`, or `unreadable`: stop and say which" | added by `feat-0083`, pending the maintainer's re-approval. Like S-003, the behaviour lives in `new-task`, and this contract records it because `spec-author` owns the approval record |
 | Scenarios | S-011 an amendment leaves the approval record alone | Conformed | "Amending an approved spec" / "leave `status: approved` and `approved_digest` exactly as they are", with step 5's "when the spec carried a digest, that it now reads `changed` until the person re-approves" | added by `feat-0083` |
 | Proposed Surface | Output file: existing spec location, `docs/spec/<slug>.md` as fallback | Conformed | "Where the spec goes" | same clauses as S-006 and S-007 |
@@ -78,8 +78,8 @@ rows; Goals 1 to 4; six Constraints; two Non-Goals; the Open Questions section.
 
 - `S-003` still lives in another skill's body, so `new-task` could lose its refusal clause with no
   test failing. Unchanged since `chore-0025`.
-- `S-008` and `S-009` are now carried by two bodies, `spec-author`'s inline fallback and `grill`.
-  When `grill` is promoted and `spec-author` links it, the inline sentence can shrink to a pointer,
-  and this matrix's evidence for both rows has to be re-derived then.
+- `S-008` and `S-009` are carried by `grill` alone since `feat-0084` deleted the inline fallback,
+  so a change to `grill`'s step 2 or step 3 can break `spec-author`'s contract with no edit to
+  `spec-author`. The link is what keeps both in every install; nothing tests the composition.
 - The amendment is pending the maintainer's re-approval; until then this matrix audits a contract
   nobody has re-approved.

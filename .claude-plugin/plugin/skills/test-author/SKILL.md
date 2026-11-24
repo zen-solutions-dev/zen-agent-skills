@@ -14,7 +14,7 @@ Turn an approved spec into runnable, traceable tests, so that a failing test poi
 exact scenario it protects. `test-quality` judges test design, `spec-conformance` audits code against
 a spec, and `verifier-agent` runs the suite; this skill produces the tests from the contract.
 
-**How it differs from `tdd`.** `tdd` drives new code from a failing test, one behaviour at a time,
+**How it differs from [`tdd`](../tdd/SKILL.md).** `tdd` drives new code from a failing test, one behaviour at a time,
 before the code exists. This skill works after the fact: it derives tests from a spec's scenarios,
 or pins what existing code does today. Building something new test-first is `tdd`; covering a
 contract or legacy code that already has a shape is this skill.

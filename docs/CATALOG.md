@@ -27,6 +27,9 @@ every skill below to the moment you reach for it.
 | `human-handoff` | shipped | model | Packages project state for a partner, client, or teammate, with client-facing redaction. |
 | `doc-author` | shipped | model | Writes new, code-grounded Markdown documents: READMEs, architecture with Mermaid, guides, decision records. |
 | `doc-revise` | shipped | model | Revises an existing document in place, in its own voice, touching only what was asked. |
+| `zen` | shipped | user | The router: says which skill or flow fits where you are, and which light path a small change can take instead. Hints only. |
+| `retro` | shipped | user | Looks back over a session or pull requests and proposes environment changes so a correction is never needed twice: a check where the mistake has a fixed shape, a written standard only for a judgement call. Applies only what you approve. |
+| `improve-architecture` | shipped | user | Finds the hot spots that make a codebase hard for an agent and proposes deepening refactors as an offline HTML report. Candidates feed `grill`, `spec-author` or `new-task`. |
 | `ci-scaffold` | planned (hold) | | Generate CI matched to the detected stack. Hold until used twice. |
 | `release-cut` | planned (hold) | | Version bump, changelog roll-up, tag, notes. Hold until used twice. |
 
@@ -36,10 +39,13 @@ These skills turn an agreed contract into verified work. Each was dogfooded on r
 
 | Skill | Status | Invocation | What it does |
 |---|---|---|---|
+| `grill` | shipped | model | "Grill me": an interview in rounds over the decision tree, one recommended answer per question, facts looked up rather than asked, closing with a decisions record. The first step of any real change. |
+| `domain-language` | shipped | model | Keeps the project's glossary, and writes an ADR only when a decision is hard to reverse, surprising, and a real trade-off. Reports glossary-versus-code mismatches; never renames code. |
 | `spec-author` | shipped | model | Interviews the person in rounds until no decision is open, then drafts a behavioural spec with Given/When/Then scenarios, self-checks it with `spec-quality`, saves it as `draft`, and stops for human approval. |
 | `spec-quality` | shipped | model | Lens: is a spec contract-level, observable, non-redundant, and free of open questions. Returns `ready` or `needs_revision`. |
 | `spec-plan-readiness` | shipped | model | Go/no-go gate over an approved spec plus its tasks. A blocked verdict authorizes no tests, code, or delegation. |
 | `test-quality` | shipped | model | Lens for test design: the lowest faithful layer, an independent oracle, mocks only at system boundaries. Rejects tautological and implementation-coupled tests. Used by `tdd`, `test-author` and `fix-batch`. |
+| `tdd` | shipped | model | Red-green development: agrees the seam first, then one behaviour at a time, watching each test fail for the right reason. |
 | `test-author` | shipped | model | Tests after the fact: one per scenario of an approved spec, tagged `S-NNN`, plus characterization and regression tests. Never production code. |
 | `spec-conformance` | shipped | model | Audits an implementation against its spec into a conformed, diverged, or not-built matrix. |
 | `verifier-agent` | shipped | model | Runs the declared commands, composes `spec-conformance`, and returns `pass`, `fail`, or `blocked` with evidence before anything lands. Never edits what it verifies. |
@@ -51,13 +57,7 @@ A **draft** is written and lives under [`.agents/skills/`](../.agents/skills/), 
 
 | Skill | Status | Invocation | What it does |
 |---|---|---|---|
-| `zen` | draft | user | The router: says which skill or flow fits where you are, and which light path a small change can take instead. Hints only. |
-| `grill` | draft | model | "Grill me": an interview in rounds over the decision tree, one recommended answer per question, facts looked up rather than asked, closing with a decisions record. The first step of any real change. |
-| `domain-language` | draft | model | Keeps the project's glossary, and writes an ADR only when a decision is hard to reverse, surprising, and a real trade-off. Reports glossary-versus-code mismatches; never renames code. |
-| `tdd` | draft | model | Red-green development: agrees the seam first, then one behaviour at a time, watching each test fail for the right reason. |
 | `systematic-debugging` | draft | model | Diagnoses a defect to its cause: a red command first, then one hypothesis at a time, ending in one of three verdicts. Never fixes. Kept a draft at its first dogfood (`feat-0062`), where an independent check refuted the cause the run reached. |
-| `retro` | draft | user | Looks back over a session or pull requests and proposes environment changes so a correction is never needed twice: a check where the mistake has a fixed shape, a written standard only for a judgement call. Applies only what you approve. |
-| `improve-architecture` | draft | user | Finds the hot spots that make a codebase hard for an agent and proposes deepening refactors as an offline HTML report. Candidates feed `grill`, `spec-author` or `new-task`. |
 | `sitrep` | draft | model | "Where are we" for one repository, from its tracked task files and git, with an evidence tier on every figure. Changes nothing. |
 | `agent-observatory` | draft | model | Questions across many agent sessions: what is running, what a wave cost, which skills were used, what failed. Never starts, resumes, interrupts, or ends a session. |
 | `quest-tracker` | draft | model | Runs a season of project work from one shared tracker page, with agent sessions reporting finished work as claims a person verifies. Needs a host that publishes a page with a shared database, which today is Claude artifacts. |
