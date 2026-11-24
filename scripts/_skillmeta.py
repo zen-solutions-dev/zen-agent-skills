@@ -31,6 +31,17 @@ the agent's context. Every other path leaves the text byte-for-byte as it was: t
 legal for Claude Code and illegal for claude.ai, so it may appear only in a copy placed
 for Claude Code.
 
+Links
+-----
+`link_targets()` and `sibling_edges()` are the one answer to "what is a link in this
+body", shared since `feat-0090` by the validator, the installer and the adapter builder.
+A link inside an inline code span or a fenced code block renders as literal text, so it is
+a body *showing* an example, not making one: it is neither a link to check nor an install
+edge. Before `feat-0090` the installer and the adapter builder scanned the raw text, so an
+example in a fence became an install edge the validator never saw. The span helpers are
+reproduced from `.tasks/validate.py`, which ships to adopters and so may import nothing
+from here; `tests/test_install.py` holds the two copies identical.
+
 Standard library only. Like `_textio.py`, it reaches no adopter: `install.py` never places
 it and nothing under `.agents/` imports it.
 """
@@ -46,6 +57,116 @@ INVOCATION_VALUES = ("user", "model")
 USER_INVOKED = "user"
 RENDERED_KEY = "disable-model-invocation"
 RENDERED_LINE = f"{RENDERED_KEY}: true"
+
+
+# A run of one or more backticks, and a fenced code block delimiter: a whole line whose
+# content is a run of three or more backticks, optionally followed by an info string.
+# Up to three spaces of indentation, per CommonMark. Kept character-identical to
+# `.tasks/validate.py`, the original, where bug-0015 and bug-0017 taught the backlog
+# validator that a link rendered as literal text is not a link; a test compares the two.
+BACKTICK_RUN_RE = re.compile(r"`+")
+FENCE_RE = re.compile(r"^ {0,3}(`{3,})([^`]*)$")
+
+# An inline link, read from its opening bracket, and a sibling skill link, read from the
+# bracket that closes the link text. Both are checked against the span ranges below.
+LINK_RE = re.compile(r"\[[^\]]*\]\(([^)]+)\)")
+SIBLING_LINK_RE = re.compile(r"\]\(\.\./([^/)]+)/SKILL\.md")
+
+
+def code_span_ranges(text):
+    """Character ranges `(start, end)` of the inline code spans in `text`.
+
+    A span opens with a run of backticks and closes with a run of the same length, so
+    both the single and the double form are spans, and a check that knows only the first
+    fixes half the occurrences it meets.
+
+    Scanned one line at a time, deliberately, and an unmatched run opens nothing:
+    pairing runs across the whole file means one stray backtick swallows everything up
+    to the next stray one, and a caller that skips those ranges then reports success
+    while checking nothing. See `code_span_ranges()` in .tasks/validate.py, the original.
+    """
+    ranges = []
+    offset = 0
+    for line in text.splitlines(keepends=True):
+        runs = [(m.start(), m.end()) for m in BACKTICK_RUN_RE.finditer(line)]
+        i = 0
+        while i < len(runs):
+            opener = runs[i]
+            width = opener[1] - opener[0]
+            closer = next((j for j in range(i + 1, len(runs))
+                           if runs[j][1] - runs[j][0] == width), None)
+            if closer is None:
+                i += 1
+                continue
+            ranges.append((offset + opener[0], offset + runs[closer][1]))
+            i = closer + 1
+        offset += len(line)
+    return ranges
+
+
+
+def fenced_block_ranges(text):
+    """Character ranges `(start, end)` of the fenced code blocks in `text`.
+
+    A fence is a line-level construct where an inline code span is a character-level
+    one. Its delimiters sit alone on lines of their own, so code_span_ranges() pairs
+    them with nothing: the two rules compose by union rather than by replacement.
+
+    An unterminated opening fence yields no range at all, the same trade
+    code_span_ranges() makes for an unmatched run and for the same reason: a detector
+    that ran an unclosed fence to end of file would switch the caller's link check off
+    for everything below it and report success while doing so. See
+    `fenced_block_ranges()` in .tasks/validate.py, the original.
+    """
+    ranges = []
+    offset = 0
+    start = None
+    width = 0
+    for line in text.splitlines(keepends=True):
+        match = FENCE_RE.match(line.rstrip("\r\n"))
+        if match:
+            if start is None:
+                start, width = offset, len(match.group(1))
+            elif len(match.group(1)) >= width and not match.group(2).strip():
+                ranges.append((start, offset + len(line)))
+                start = None
+        offset += len(line)
+    return ranges
+
+
+
+def literal_ranges(text):
+    """Every range in `text` that renders as literal text: code spans and fenced blocks."""
+    return code_span_ranges(text) + fenced_block_ranges(text)
+
+
+def _outside(position, ranges):
+    return not any(start <= position < end for start, end in ranges)
+
+
+def link_targets(text):
+    """Yield the raw target of every inline markdown link that renders as a link.
+
+    A link whose opening bracket falls inside a code span or a fenced block is skipped
+    (bug-0027). An optional `"title"` after the target is dropped.
+    """
+    ranges = literal_ranges(text)
+    for m in LINK_RE.finditer(text):
+        if not _outside(m.start(), ranges):
+            continue
+        target = m.group(1).strip().split(" ", 1)[0]
+        if target:
+            yield target
+
+
+def sibling_edges(text):
+    """The sibling skills a body links as `../<name>/SKILL.md`, outside every literal range.
+
+    This is the install edge AGENTS.md calls load-bearing: `install.py` expands a profile
+    over it and `build-adapters.py` refuses an emitted skill whose edge reaches a draft.
+    """
+    ranges = literal_ranges(text)
+    return {m.group(1) for m in SIBLING_LINK_RE.finditer(text) if _outside(m.start(), ranges)}
 
 
 def _frontmatter_lines(text: str):

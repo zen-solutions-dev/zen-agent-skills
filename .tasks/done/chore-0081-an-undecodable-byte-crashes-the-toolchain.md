@@ -80,7 +80,7 @@ A small shared helper is the obvious shape and it is not available: the hooks co
 importing from this repository, and `.tasks/validate.py` is a template that ships into adopter
 repositories via `init-worktracking`, so it cannot import from `scripts/` either. So this is a
 repeated four-line pattern rather than one function, and the tests are what keep the copies honest.
-That is the same trade [`chore-0059`](../chore-0059-the-third-and-fourth-copies-of-the-link-helpers-are-unguarded.md)
+That is the same trade [`chore-0059`](chore-0059-the-third-and-fourth-copies-of-the-link-helpers-are-unguarded.md)
 is open on for the link helpers, and this should follow whatever that task settles rather than
 inventing a second answer. If `chore-0059` lands first, reuse its mechanism.
 
@@ -118,7 +118,7 @@ one-line fix. Mirror `_validate_manifest()`'s docstring principle: "The message 
   `install`, and one local copy in `.tasks/validate.py` and its template, with
   `HelperCopiesAgreeTests` holding all three to one message.
 - **A seam left open deliberately.** The three copies are held together by a test, not by the
-  language. That is the same trade [`chore-0059`](../chore-0059-the-third-and-fourth-copies-of-the-link-helpers-are-unguarded.md)
+  language. That is the same trade [`chore-0059`](chore-0059-the-third-and-fourth-copies-of-the-link-helpers-are-unguarded.md)
   is open on for the link helpers, and this deliberately did not invent a second answer ahead of it.
 - **Work beyond `touched_files`, disclosed.** `scripts/_textio.py` is new. The
   `init-worktracking` template copy of `validate.py` was edited, which the acceptance criteria

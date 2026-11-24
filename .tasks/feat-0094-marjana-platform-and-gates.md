@@ -17,8 +17,8 @@ touched_files:
   - .agents/skills/quest-tracker/
   - .agents/skills/agent-observatory/
   - docs/spec/
-  - .tasks/feat-0090-one-span-aware-reader-for-links-and-profile-edges.md
-  - .tasks/chore-0059-the-third-and-fourth-copies-of-the-link-helpers-are-unguarded.md
+  - .tasks/done/feat-0090-one-span-aware-reader-for-links-and-profile-edges.md
+  - .tasks/done/chore-0059-the-third-and-fourth-copies-of-the-link-helpers-are-unguarded.md
 created: 2026-11-24
 ---
 

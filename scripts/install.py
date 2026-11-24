@@ -118,7 +118,7 @@ if str(_TEXTIO_ROOT) not in sys.path:
     sys.path.insert(0, str(_TEXTIO_ROOT))
 from scripts._textio import NotUTF8, read_text_utf8   # noqa: E402
 from scripts._skillmeta import (   # noqa: E402
-    is_user_invoked_text, metadata_fields, render_for_claude)
+    is_user_invoked_text, metadata_fields, render_for_claude, sibling_edges)
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 SKILLS_DIR = REPO_ROOT / ".agents" / "skills"
@@ -157,8 +157,9 @@ DEFAULT_PROFILE = "spine"
 # which is the form for stating chain position. Authors trip this by writing the readable
 # link form for a neighbour they only meant to name (chore-0040), so the rule is stated
 # for skill authors in AGENTS.md's portability contract, not only here where they will
-# never read it.
-SIBLING_REF_RE = re.compile(r"\]\(\.\./([^/)]+)/SKILL\.md")
+# never read it. The syntax itself is read by `sibling_edges()` in `_skillmeta.py`, the
+# reader the validator and the adapter builder share, so a link shown as an example in a
+# code span or a fence is not an edge here either (feat-0090).
 # Narrow readers for one frontmatter field, deliberately not a YAML parser. The block
 # scalar case matters here for the same reason it does in validate-skills.py: without
 # it the reported description budget is inflated by three characters per skill that
@@ -312,7 +313,7 @@ def draft_conflicts(selected, seed, draft_names) -> list:
 def sibling_refs(skill_dir: Path) -> set:
     """Skill names this skill links to as ../<name>/SKILL.md."""
     text = read_text_utf8(skill_dir / "SKILL.md")
-    return set(SIBLING_REF_RE.findall(text)) - {skill_dir.name}
+    return sibling_edges(text) - {skill_dir.name}
 
 
 def resolve_profile(profile: str, skills):
@@ -326,13 +327,7 @@ def resolve_profile(profile: str, skills):
     seed = PROFILE_SEEDS[profile]
     if seed is None:
         return list(skills), []
-    wanted = {n for n in seed if n in by_name}
-    stack = list(wanted)
-    while stack:
-        for ref in sibling_refs(by_name[stack.pop()]):
-            if ref in by_name and ref not in wanted:
-                wanted.add(ref)
-                stack.append(ref)
+    wanted = closure(seed, by_name)
     added = sorted(wanted - {n for n in seed if n in by_name})
     return [d for d in skills if d.name in wanted], added
 

@@ -101,6 +101,7 @@ import argparse
 import filecmp
 import hashlib
 import json
+import os
 import re
 import shutil
 import tempfile
@@ -116,7 +117,8 @@ _TEXTIO_ROOT = Path(__file__).resolve().parent.parent
 if str(_TEXTIO_ROOT) not in sys.path:
     sys.path.insert(0, str(_TEXTIO_ROOT))
 from scripts._textio import NotUTF8, read_text_utf8   # noqa: E402
-from scripts._skillmeta import is_draft_text, render_for_claude   # noqa: E402
+from scripts._skillmeta import (   # noqa: E402
+    code_span_ranges, fenced_block_ranges, is_draft_text, render_for_claude, sibling_edges)
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 SKILLS_DIR = REPO_ROOT / ".agents" / "skills"
@@ -177,29 +179,14 @@ MARKETPLACE_PLUGIN_SOURCE = "./.claude-plugin/plugin"
 
 LINK_RE = re.compile(r"\]\(([^)\s]+)((?:\s+\"[^\"]*\")?)\)")
 SIBLING_RE = re.compile(r"^\.\./([^/]+)/SKILL\.md(#.*)?$")
-# A sibling link anywhere in a body, for the draft refusal. The same edge install.py reads.
-SIBLING_LINK_RE = re.compile(r"\]\(\.\./([^/)]+)/SKILL\.md")
 RULES_RE = re.compile(r"^\.\./\.\./rules/(.+)$")
 EXTERNAL_PREFIXES = ("http://", "https://", "mailto:")
 # Kept identical to validate-skills.py's copy. Two parsers that agree are bad; two
 # that have drifted apart are worse, and this defect had to be found twice already.
 BLOCK_SCALAR_RE = re.compile(r"^[|>][+-]?\s*")
 
-# A run of one or more backticks, and a fenced code block delimiter: a whole line whose
-# content is a run of three or more backticks, optionally followed by an info string.
-# Up to three spaces of indentation, per CommonMark. The info string may not contain a
-# backtick, because a run followed by a backtick is simply a longer run.
-#
-# These two patterns and the two helpers below are REPRODUCED from validate-skills.py,
-# which took them from `.tasks/validate.py`, where bug-0015 and bug-0017 taught the
-# backlog validator that a link rendered as literal text is not a link. This is the
-# third copy, and copying rather than importing is the decision bug-0027 recorded: the
-# three tools have separate lifecycles and `validate.py` also ships as a template into
-# other repositories, so none of them may depend on another. The regexes are kept
-# character-identical to the originals so a later reader can diff the copies when the
-# rule next changes.
-BACKTICK_RUN_RE = re.compile(r"`+")
-FENCE_RE = re.compile(r"^ {0,3}(`{3,})([^`]*)$")
+# What renders as literal text, and which sibling links are install edges, is decided
+# once in `_skillmeta.py` for this script, install.py and validate-skills.py (feat-0090).
 
 
 class OutsideOutputRoot(Exception):
@@ -214,66 +201,6 @@ class OutsideOutputRoot(Exception):
         self.dest = dest
         self.root = root
         super().__init__(f"{dest} is not under {root}")
-
-
-def code_span_ranges(text):
-    """Character ranges `(start, end)` of the inline code spans in `text`.
-
-    A span opens with a run of backticks and closes with a run of the same length, so
-    both the single and the double form are spans, and a check that knows only the first
-    fixes half the occurrences it meets.
-
-    Scanned one line at a time, deliberately, and an unmatched run opens nothing:
-    pairing runs across the whole file means one stray backtick swallows everything up
-    to the next stray one, and a caller that skips those ranges then reports success
-    while checking nothing. See `code_span_ranges()` in .tasks/validate.py, the original.
-    """
-    ranges = []
-    offset = 0
-    for line in text.splitlines(keepends=True):
-        runs = [(m.start(), m.end()) for m in BACKTICK_RUN_RE.finditer(line)]
-        i = 0
-        while i < len(runs):
-            opener = runs[i]
-            width = opener[1] - opener[0]
-            closer = next((j for j in range(i + 1, len(runs))
-                           if runs[j][1] - runs[j][0] == width), None)
-            if closer is None:
-                i += 1
-                continue
-            ranges.append((offset + opener[0], offset + runs[closer][1]))
-            i = closer + 1
-        offset += len(line)
-    return ranges
-
-
-def fenced_block_ranges(text):
-    """Character ranges `(start, end)` of the fenced code blocks in `text`.
-
-    A fence is a line-level construct where an inline code span is a character-level
-    one. Its delimiters sit alone on lines of their own, so code_span_ranges() pairs
-    them with nothing: the two rules compose by union rather than by replacement.
-
-    An unterminated opening fence yields no range at all, the same trade
-    code_span_ranges() makes for an unmatched run and for the same reason: a detector
-    that ran an unclosed fence to end of file would switch the caller off for
-    everything below it and report success while doing so. See `fenced_block_ranges()`
-    in .tasks/validate.py, the original.
-    """
-    ranges = []
-    offset = 0
-    start = None
-    width = 0
-    for line in text.splitlines(keepends=True):
-        match = FENCE_RE.match(line.rstrip("\r\n"))
-        if match:
-            if start is None:
-                start, width = offset, len(match.group(1))
-            elif len(match.group(1)) >= width and not match.group(2).strip():
-                ranges.append((start, offset + len(line)))
-                start = None
-        offset += len(line)
-    return ranges
 
 
 def rewrite_links(body: str, skill_name: str, ext: str) -> str:
@@ -570,7 +497,12 @@ def plugin_version(out: Path) -> str:
             rel = path.relative_to(out)
             if not path.is_file() or "__pycache__" in rel.parts or path.suffix == ".pyc":
                 continue
-            digest.update(rel.as_posix().encode("utf-8") + b"\0")
+            # The name's bytes on disk, not a strict UTF-8 encoding of it: a name holding a
+            # byte that is not UTF-8 reaches here as a surrogate escape, which `.encode`
+            # refuses, and the whole run ended in a traceback (feat-0094, found by R-007's
+            # test). For every valid UTF-8 name the two give the same bytes, so no
+            # existing version changes.
+            digest.update(os.fsencode(rel.as_posix()) + b"\0")
             digest.update(path.read_bytes() + b"\0")
     return f"{PLUGIN_BASE_VERSION}+{digest.hexdigest()[:12]}"
 
@@ -585,7 +517,7 @@ def draft_refusals(parsed: dict, emitted: list) -> list[str]:
     held = {d.name for d in parsed if d.name not in emitted_names}
     messages = []
     for d in emitted:
-        refs = {m.group(1) for m in SIBLING_LINK_RE.finditer(parsed[d][1])}
+        refs = sibling_edges(parsed[d][1])
         for ref in sorted(refs & held):
             messages.append(f"{d.name} links {ref!r} as a sibling, and {ref!r} is marked a "
                             f"draft, so the emitted link would dangle")
@@ -645,7 +577,7 @@ def build_marketplace(skills, parsed: dict, check: bool, repo_root: Path = REPO_
             if problems:
                 print(f"The committed marketplace under {market_dir} is out of date "
                       f"({len(problems)} file(s)):")
-                for p in problems:
+                for p in map(_printable, problems):
                     print(f"  .claude-plugin/plugin/{p}" if not p.startswith("../")
                           else f"  .claude-plugin/{p[3:]}")
                 print("Regenerate it with `python scripts/build-adapters.py --marketplace` "
@@ -662,6 +594,16 @@ def build_marketplace(skills, parsed: dict, check: bool, repo_root: Path = REPO_
     print(f"Regenerated the committed marketplace: {len(skills)} skill(s) in "
           f".claude-plugin/plugin/, and .claude-plugin/marketplace.json. Commit both.")
     return 0
+
+
+def _printable(name: str) -> str:
+    """A path for a report line, with any byte that is not UTF-8 shown as an escape.
+
+    A name holding such a byte arrives as a surrogate escape, and printing it to a strict
+    UTF-8 stream raises, which ended `--marketplace --check` in a traceback instead of the
+    report it exists to give (feat-0094, found by `tests/test_undecodable_names.py`).
+    """
+    return name.encode("utf-8", "backslashreplace").decode("utf-8")
 
 
 def _write(dest: Path, content: str, dry: bool, root: Path):

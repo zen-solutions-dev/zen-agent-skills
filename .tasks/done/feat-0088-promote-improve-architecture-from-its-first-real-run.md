@@ -47,7 +47,7 @@ None. No shipped skill links `improve-architecture`, and it links no draft.
 
 ## Promotion (2026-11-24, approved by the maintainer in writing)
 
-The maintainer acted on the report: they picked candidate 2, the top recommendation, and it became [`feat-0090`](../feat-0090-one-span-aware-reader-for-links-and-profile-edges.md). All four refinements applied; `metadata.status: draft` removed.
+The maintainer acted on the report: they picked candidate 2, the top recommendation, and it became [`feat-0090`](feat-0090-one-span-aware-reader-for-links-and-profile-edges.md). All four refinements applied; `metadata.status: draft` removed.
 
 ## Acceptance criteria (mechanically verifiable)
 

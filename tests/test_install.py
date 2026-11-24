@@ -3150,3 +3150,113 @@ class SetupPointerTests(_FixtureKit):
         self.assertNotIn(self.POINTER, out)
         _, out = self._main("--uninstall")
         self.assertNotIn(self.POINTER, out)
+
+
+_ba_spec = importlib.util.spec_from_file_location(
+    "build_adapters_for_feat_0090", REPO_ROOT / "scripts" / "build-adapters.py")
+_ba = importlib.util.module_from_spec(_ba_spec)
+_ba_spec.loader.exec_module(_ba)
+_vs_spec = importlib.util.spec_from_file_location(
+    "validate_skills_for_feat_0090", REPO_ROOT / "scripts" / "validate-skills.py")
+_vs = importlib.util.module_from_spec(_vs_spec)
+_vs_spec.loader.exec_module(_vs)
+
+
+class SharedLinkReaderTests(unittest.TestCase):
+    """feat-0090: one span-aware reader decides what a link is, for all three scripts.
+
+    Reproduced 2026-11-23: a skill whose only link to `grill` sat inside a fenced block
+    gave `install.sibling_refs == {'grill'}` while the validator found no link at all, so
+    an example shown in a fence became an install edge, and a draft refusal, that the
+    validator never checked. AGENTS.md calls that edge load-bearing.
+    """
+
+    FENCED = ("# alpha\n\nAn example of the link form:\n\n```markdown\n"
+              "[grill](../grill/SKILL.md)\n```\n")
+    SPANNED = "# alpha\n\nWrite `[grill](../grill/SKILL.md)` to compose it.\n"
+    REAL = "# alpha\n\nComposes [grill](../grill/SKILL.md).\n"
+
+    def _skill(self, body):
+        root = Path(tempfile.mkdtemp())
+        self.addCleanup(shutil.rmtree, root, ignore_errors=True)
+        d = root / "alpha"
+        d.mkdir()
+        (d / "SKILL.md").write_text("---\nname: alpha\ndescription: x\n---\n" + body,
+                                    encoding="utf-8")
+        return d
+
+    def test_a_fenced_example_link_is_not_an_install_edge(self):
+        self.assertEqual(inst.sibling_refs(self._skill(self.FENCED)), set())
+
+    def test_a_code_span_example_link_is_not_an_install_edge(self):
+        self.assertEqual(inst.sibling_refs(self._skill(self.SPANNED)), set())
+
+    def test_a_real_link_is_still_an_edge(self):
+        self.assertEqual(inst.sibling_refs(self._skill(self.REAL)), {"grill"})
+
+    def test_a_fenced_example_link_to_a_draft_is_not_a_draft_refusal(self):
+        alpha, grill = Path("alpha"), Path("grill")
+        parsed = {alpha: ({}, self.FENCED), grill: ({}, "# grill\n")}
+        self.assertEqual(_ba.draft_refusals(parsed, [alpha]), [])
+        parsed[alpha] = ({}, self.REAL)
+        self.assertEqual(len(_ba.draft_refusals(parsed, [alpha])), 1)
+
+    def test_the_validator_and_the_installer_agree_on_every_shape(self):
+        for label, body in (("fenced", self.FENCED), ("span", self.SPANNED),
+                            ("real", self.REAL)):
+            with self.subTest(shape=label):
+                from_validator = {t.split("/")[1] for t in _vs._link_targets(body)
+                                  if t.endswith("/SKILL.md")}
+                self.assertEqual(from_validator, inst.sibling_refs(self._skill(body)))
+
+    def test_each_reader_is_defined_once_across_the_scripts(self):
+        # feat-0090's mechanical criterion, run as a test so it cannot drift silently.
+        pattern = re.compile(r"^(?:SIBLING_REF_RE|SIBLING_LINK_RE)\s*=|"
+                             r"^def (?:code_span_ranges|fenced_block_ranges)\(", re.M)
+        found = {}
+        for script in sorted((REPO_ROOT / "scripts").glob("*.py")):
+            for m in pattern.finditer(script.read_text(encoding="utf-8")):
+                found.setdefault(m.group(0).split("(")[0].split("=")[0].strip(),
+                                 []).append(script.name)
+        for name, where in sorted(found.items()):
+            with self.subTest(name=name):
+                self.assertEqual(where, ["_skillmeta.py"])
+        self.assertIn("def code_span_ranges", found)
+        self.assertIn("def fenced_block_ranges", found)
+
+
+class SpanHelpersAgreeWithTheBacklogValidatorTests(unittest.TestCase):
+    """chore-0059, closed inside feat-0090: the shared copy agrees with the original.
+
+    After feat-0090 the span helpers live in three places, not four: `.tasks/validate.py`,
+    its `init-worktracking` template copy (held together by `ValidatorCopiesAgreeTests`),
+    and `scripts/_skillmeta.py`. This compares the third with the original, as dumped ASTs
+    with docstrings stripped, which is the comparison chore-0059 measured by hand.
+    """
+
+    NAMES = ("code_span_ranges", "fenced_block_ranges", "BACKTICK_RUN_RE", "FENCE_RE")
+
+    @staticmethod
+    def _definitions(path):
+        import ast
+        tree = ast.parse(path.read_text(encoding="utf-8"))
+        found = {}
+        for node in tree.body:
+            if isinstance(node, ast.FunctionDef):
+                body = node.body
+                if (body and isinstance(body[0], ast.Expr)
+                        and isinstance(getattr(body[0], "value", None), ast.Constant)):
+                    body = body[1:]
+                found[node.name] = ast.dump(ast.Module(body=body, type_ignores=[]))
+            elif isinstance(node, ast.Assign) and len(node.targets) == 1 \
+                    and isinstance(node.targets[0], ast.Name):
+                found[node.targets[0].id] = ast.dump(node.value)
+        return found
+
+    def test_the_shared_copy_is_identical_to_the_original(self):
+        original = self._definitions(REPO_ROOT / ".tasks" / "validate.py")
+        shared = self._definitions(REPO_ROOT / "scripts" / "_skillmeta.py")
+        for name in self.NAMES:
+            with self.subTest(name=name):
+                self.assertIn(name, shared)
+                self.assertEqual(shared[name], original[name])
