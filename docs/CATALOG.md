@@ -16,19 +16,19 @@ every skill below to the moment you reach for it.
 
 | Skill | Status | Invocation | What it does |
 |---|---|---|---|
-| `project-bootstrap` | shipped | model | The front door: a stack-matched baseline (gitignore, editorconfig, linter and formatter, license, README stub) for a new or bare repository, then `init-worktracking`. |
-| `init-worktracking` | shipped | model | Scaffolds `AGENTS.md`, `.tasks/`, and by tier a roadmap and changelog into any repository, seeded by inspecting it. |
-| `new-task` | shipped | model | Turns an idea, bug, or approved spec into task files, each sized to one fresh context window, sliced vertically, with an acceptance command. Wide refactors are sequenced as expand, migrate, contract. |
-| `fix-batch` | shipped | user | Dispatches independent task files to parallel agents, each in its own worktree with a fresh context and told it is a leaf, then verifies every result. A missing field in a delegate's report blocks acceptance. |
-| `reconcile-worktrees` | shipped | user | Lands verified worktrees in the main checkout one at a time: real base, untracked files, phantom binary diffs, overlaps. Leaves a reviewable diff uncommitted. |
-| `house-review` | shipped | model | Reviews a change on two independent axes, spec (did it do what was asked, no more, no less) and standards (the repository's `CODING_STANDARDS.md` or `CONTRIBUTING.md` plus the swappable `review-quality` lens), at a depth chosen from the change's size and risk. Every finding's quote must resolve against the file. Report only. |
+| `project-bootstrap` | shipped | user | The front door: a stack-matched baseline (gitignore, editorconfig, linter and formatter, license, README stub) for a new or bare repository, plus a printed, never installed, pre-commit config, then `init-worktracking`. |
+| `init-worktracking` | shipped | user | Scaffolds a lean `AGENTS.md`, `.tasks/`, and by tier a roadmap and changelog into any repository, seeded by inspecting it. Then **configures the skills** for that repository: it explores, recommends, confirms one section at a time, and writes `docs/agents/zen.md`, which every skill reads for the tracker, glossary, specs, acceptance command, branches and default mode. Run it once per repository after installing. |
+| `new-task` | shipped | model | Turns an idea, bug, or approved spec into task files, each sized to one fresh context window, sliced vertically, riskiest first, with an acceptance command and a `mode`: `afk` for work an agent can finish unattended, `hitl` for work that needs a person in the loop. Wide refactors are sequenced as expand, migrate, contract. |
+| `fix-batch` | shipped | user | Dispatches independent task files to parallel agents, each in its own worktree with a fresh context and told it is a leaf, then verifies every result. A missing field in a delegate's report blocks acceptance. Work whose items depend on each other goes to the `orchestrate` draft instead. |
+| `reconcile-worktrees` | shipped | user | Lands verified work one item at a time, either into the main checkout (real base, untracked files, phantom binary diffs, overlaps, leaving a reviewable diff uncommitted) or onto an integration branch as a fast-forward to the exact commit that was verified. |
+| `house-review` | shipped | model | Reviews a change on two independent axes, spec (did it do what was asked, no more, no less) and standards (the repository's `CODING_STANDARDS.md` or `CONTRIBUTING.md` plus the swappable `review-quality` lens), at a depth chosen from the change's size and risk. Every finding's quote must resolve against the file. After one fix round it re-checks only the fixed findings, then stops. Report only. |
 | `pr-describe` | shipped | model | Drafts a pull request body and changelog entry in the target repository's own format, ending with the merge danger: one-way or two-way door and blast radius. Closes a linked GitHub issue correctly. Never touches GitHub itself. |
 | `agent-handoff` | shipped | model | At a phase boundary, decides whether to continue, clear, hand off, dispatch a subagent, or compact, and writes the brief when it is a handoff. |
-| `human-handoff` | shipped | model | Packages project state for a partner, client, or teammate, with client-facing redaction. |
+| `human-handoff` | shipped | model | Packages project state for a partner, client, or teammate, with client-facing redaction. A questionnaire mode asks someone else the questions the person cannot answer. |
 | `doc-author` | shipped | model | Writes new, code-grounded Markdown documents: READMEs, architecture with Mermaid, guides, decision records. |
 | `doc-revise` | shipped | model | Revises an existing document in place, in its own voice, touching only what was asked. |
 | `zen` | shipped | user | The router: says which skill or flow fits where you are, and which light path a small change can take instead. Hints only. |
-| `retro` | shipped | user | Looks back over a session or pull requests and proposes environment changes so a correction is never needed twice: a check where the mistake has a fixed shape, a written standard only for a judgement call. Applies only what you approve. |
+| `retro` | shipped | user | Looks back over a session or pull requests and proposes environment changes so a correction is never needed twice: a check where the mistake has a fixed shape, a written standard only for a judgement call. Reads one session, a pull request, or a sample of about one session in five; ratchets a stricter check in with an exception list, and prunes a check that fires on good code. Applies only what you approve. |
 | `improve-architecture` | shipped | user | Finds the hot spots that make a codebase hard for an agent and proposes deepening refactors as an offline HTML report. Candidates feed `grill`, `spec-author` or `new-task`. |
 | `ci-scaffold` | planned (hold) | | Generate CI matched to the detected stack. Hold until used twice. |
 | `release-cut` | planned (hold) | | Version bump, changelog roll-up, tag, notes. Hold until used twice. |
@@ -48,7 +48,7 @@ These skills turn an agreed contract into verified work. Each was dogfooded on r
 | `tdd` | shipped | model | Red-green development: agrees the seam first, then one behaviour at a time, watching each test fail for the right reason. |
 | `test-author` | shipped | model | Tests after the fact: one per scenario of an approved spec, tagged `S-NNN`, plus characterization and regression tests. Never production code. |
 | `spec-conformance` | shipped | model | Audits an implementation against its spec into a conformed, diverged, or not-built matrix. |
-| `verifier-agent` | shipped | model | Runs the declared commands, composes `spec-conformance`, and returns `pass`, `fail`, or `blocked` with evidence before anything lands. Never edits what it verifies. |
+| `verifier-agent` | shipped | model | Runs the declared commands, composes `spec-conformance`, and returns `pass`, `fail`, or `blocked` with evidence, naming the exact commit it verified, before anything lands. Never edits what it verifies. |
 | `doc-sync` | shipped | model | Detects documentation drift by checking prose against repository facts. Classifies each document as current-state, contract (report-only), or ledger (skipped). Dry run by default. |
 
 ## Drafts: built but not yet used on real work
@@ -60,6 +60,8 @@ A **draft** is written and lives under [`.agents/skills/`](../.agents/skills/), 
 | `systematic-debugging` | draft | model | Diagnoses a defect to its cause: a red command first, then one hypothesis at a time, ending in one of three verdicts. Never fixes. Kept a draft at its first dogfood (`feat-0062`), where an independent check refuted the cause the run reached. |
 | `sitrep` | draft | model | "Where are we" for one repository, from its tracked task files and git, with an evidence tier on every figure. Changes nothing. |
 | `agent-observatory` | draft | model | Questions across many agent sessions: what is running, what a wave cost, which skills were used, what failed. Never starts, resumes, interrupts, or ends a session. |
+| `orchestrate` | draft | user | Runs a day of work from one orchestrating session: plans with the person, dispatches research and build children on their own branches in frontier waves, lands each verified commit on one integration branch, then one review and one draft pull request for the person. Holds the conversation; children do the work. First run: the 2026-11-24 Marjana overhaul. |
+| `research` | draft | model | One question against primary sources, by a fresh agent, written up as one cited markdown file that names every source it could not reach. First runs: the two 2026-11-24 research reports under `docs/reviews/`. |
 | `quest-tracker` | draft | model | Runs a season of project work from one shared tracker page, with agent sessions reporting finished work as claims a person verifies. Needs a host that publishes a page with a shared database, which today is Claude artifacts. |
 
 ## Lenses: the swappable rules skills compose
@@ -69,9 +71,9 @@ Four rules modules under [`.agents/rules/`](../.agents/rules/) install alongside
 | Lens | What it governs |
 |---|---|
 | [`house-style.md`](../.agents/rules/house-style.md) | How prose reads to a person: no em-dashes, sentence-case headings, named sources, Mermaid for diagrams. Universal. |
-| [`autonomy.md`](../.agents/rules/autonomy.md) | What an agent may do when nobody is watching, what it may do with material it did not write (`A10`), and that it may not edit the check that judges its work (`A11`). Universal; [`core.md`](../.agents/rules/core.md) is its one-line-per-rule summary every session loads. |
+| [`autonomy.md`](../.agents/rules/autonomy.md) | What an agent may do when nobody is watching, including the one merge an orchestrator may make (a fast-forward of an integration branch to verified work it did not author, `A8`), what it may do with material it did not write (`A10`), and that it may not edit the check that judges its work (`A11`). Universal; [`core.md`](../.agents/rules/core.md) is its one-line-per-rule summary every session loads. |
 | [`review-quality.md`](../.agents/rules/review-quality.md) | The review rubric and severities, including the spec and standards axes `house-review` runs. |
-| [`writing-for-agents.md`](../.agents/rules/writing-for-agents.md) | How a document behaves when an agent reads it: descriptions as pointers, completion criteria, the no-op test, model- versus user-invoked. New in the 2026-11 overhaul. |
+| [`writing-for-agents.md`](../.agents/rules/writing-for-agents.md) | How a document behaves when an agent reads it: descriptions as pointers, completion criteria, the no-op test, model- versus user-invoked, write history rather than the present, and composition that loads the sibling rather than naming it. |
 
 ## Tier B: semi-scalable (great for teams and clients)
 
