@@ -139,10 +139,7 @@ memory, and green with it in place. Run it both ways and report both.
 - Worked good-versus-bad examples (behaviour against implementation coupling, a tautology against a
   literal, a boundary mock against an internal mock, injecting a boundary) are in
   [references/examples.md](references/examples.md).
-- One test, one behaviour, one minimal implementation per cycle. A slice that needs several new
-  tests at once is too wide; split the behaviour.
-- When the interface itself is in question (how deep the module is, where the seam belongs), settle
-  it in step 1 with the person rather than letting the tests decide it by accident.
+- A slice that needs several new tests at once is too wide; split the behaviour (step 2).
 
 ## Conventions
 

@@ -42,7 +42,9 @@ Work down the list; the first yes wins.
    tell it it is a **leaf** that dispatches nothing, and leave this session untouched. Medium effort
    by default; high for verification and debugging.
 5. **Compact** otherwise: the context is relevant, nothing travels, and a person needs to stay in the
-   loop. Tell the compaction what the next phase needs, so the summary keeps it.
+   loop. Tell the compaction what the next phase needs, so the summary keeps it. Right after a long
+   document (a plan, a spec, a report) has been written to a file, compacting is cheap: the file is
+   now the primary source, and the summary only has to point at it.
 
 These are judgement calls, and the same boundary can go either way on two days. Asking them in order,
 at the boundary, is the discipline. Steps 2 to 4 below apply when the move is a handoff or a subagent.
@@ -95,7 +97,9 @@ conversation.
 
 Return the brief inline for the person to paste. When it must travel as a file, write it outside the
 working tree (the operating system's temporary directory) unless the person names a place, so a
-handoff never lands in a repository by accident.
+handoff never lands in a repository by accident. A temporary directory does not survive a reboot or a
+container reclaim, so when the brief must outlive this session, say so and offer a durable place the
+person names (a branch, the repository's notes location).
 
 Done when the person has the brief as one copyable block, or the absolute path of the file it was
 written to, and `git status` shows nothing new in the working tree unless the person named that place.
