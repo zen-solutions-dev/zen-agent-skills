@@ -1,10 +1,8 @@
 ---
 name: improve-architecture
 description: >-
-  Finds where a codebase has become hard for an agent to work in, scoped to the hot spots in recent
-  history, and proposes deepening refactors in the deep-module vocabulary as a self-contained HTML
-  report that works offline. Can design a chosen interface twice in parallel. Candidates feed a spec
-  or a task.
+  Architecture review of a codebase's recent hot spots: proposes deepening refactors as an offline
+  HTML report, and can design a chosen interface twice. Candidates feed a spec or a task.
 license: MIT
 metadata:
   invocation: user
@@ -80,10 +78,10 @@ been checked in this session against the file itself, with the report saying whi
 
 ### 3. Write the report
 
-Write one self-contained HTML file to the operating system's temporary directory (`$TMPDIR`, else
+Read [`references/report.md`](references/report.md) now for the layout and diagram patterns, then
+write one self-contained HTML file to the operating system's temporary directory (`$TMPDIR`, else
 `/tmp`, or `%TEMP%` on Windows) as `architecture-review-<timestamp>.html`, so nothing lands in the
-repository. It must work offline: no CDN, no external script, font or stylesheet. The layout and
-the diagram patterns are in [`references/report.md`](references/report.md).
+repository. It must work offline: no CDN, no external script, font or stylesheet.
 
 One card per candidate: files, problem (one sentence), proposed deepening (one sentence), wins in
 vocabulary terms, a before-and-after diagram, its dependency category (one of the four in
@@ -94,15 +92,17 @@ when the friction justifies reopening it, and says so. End with a top recommenda
 Give the person the file's absolute path, offer to open it, and ask which candidate to explore. Do
 not propose interfaces yet. A report in the temporary directory does not outlive the machine's next
 clean-up, so also offer a durable record: the same candidates as Markdown wherever the repository
-keeps its reviews. Write it only if the person says yes, and say where. When the person is not there
+keeps its reviews, dated and naming the commit it was read at. Write it only if the person says
+yes, and say where. When the person is not there
 to pick a candidate now, the durable record is how they act on it later.
 
 Done when the file exists, its path is reported, and the durable record is written or declined.
 
 ### 4. Explore the chosen candidate
 
-Walk its decision tree with the person (the `grill` skill, where installed): the constraints, the
-dependencies and their category, what sits behind the new seam, and which tests survive. A term
+Read [`grill`](../grill/SKILL.md) now and follow it to walk the candidate's decision tree with the
+person: the constraints, the dependencies and their category, what sits behind the new seam, and
+which tests survive. A term
 that gets sharpened goes into the glossary; a rejection with a lasting reason is offered as a
 decision record, so a later review does not suggest it again.
 

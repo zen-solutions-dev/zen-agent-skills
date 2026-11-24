@@ -38,7 +38,7 @@ Done when the type and the reader are named.
 
 ## A runbook may be a script
 
-When a runbook's steps are a fixed sequence a person performs by hand, and the same sequence will be walked again, it may ship as a small interactive script instead of prose, so the next person runs it instead of asking an agent to re-explain it. Draft it, never run it: it waits on a person and may open a browser.
+When a runbook's steps are a fixed sequence a person performs by hand, and the same sequence will be walked again, it may ship as a small interactive script instead of prose, so the next person runs it instead of asking an agent to re-explain it. Draft it; never run it against the real service, because it acts on a person's behalf.
 
 - **Python, standard library only, never a shell script.** It runs on Windows, macOS and Linux alike, with no install step. In a repository that keeps the runbook kind (in this kit, `<spec>.runbook.md`), the script sits beside it and the Markdown file points at it.
 - **One stage per step, numbered with how many are left.** Each stage opens the URL it needs (`webbrowser`), says exactly what to click and what to copy, and waits for the person.
@@ -46,7 +46,7 @@ When a runbook's steps are a fixed sequence a person performs by hand, and the s
 - **Confirm before anything irreversible.** A stage that deletes, migrates, publishes or sends asks for an explicit yes first, and a no stops the run with what has and has not happened.
 - **Idempotent where it can be.** Re-running after a stop should skip or overwrite what already landed, not duplicate it.
 
-Check it statically before handing it over: it compiles (`python -m py_compile <script>`), every value a stage captures is written where the runbook says, and every secret goes through `getpass`.
+Check it before handing it over: it compiles (`python -m py_compile <script>`); a dry walk with answers piped to standard input and the `BROWSER` environment variable set to a command that does nothing shows every stage in order and the declined path of each confirmation; every value a stage captures is written where the runbook says; and every secret goes through `getpass`.
 
 Done when the script compiles, each stage traces to a step a stranger could follow, and the person has been told how to run it.
 

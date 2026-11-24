@@ -126,6 +126,29 @@ grounded in the diff rather than in how the change feels:
 
 Done when all three fields are filled and each names the part of the diff that set it.
 
+#### Offer a stack when a large branch holds a one-way door
+
+One irreversible part makes the whole pull request one-way, so a large branch with one migration in
+it asks the reviewer to scrutinise everything to protect one file. When the Door is one-way **and**
+the change is large (more than about 600 changed lines outside generated files and ledgers, or more
+than five directories), offer a split, and draft it rather than performing it:
+
+- **The order**: a run of two-way pull requests first, each reverting cleanly on its own, ending in
+  the one carrying the one-way door. Where the irreversible part can sit behind a flag that ships
+  off, say so: the flag turns its pull request two-way until the flag is switched on.
+- **The look per part**: human review is mandatory on the one-way part only. The two-way parts may
+  merge on the evidence in their bodies, under whatever approval rule the repository already sets.
+- **What it costs**: name the files each part takes and any part that cannot build or pass its
+  checks without a later one; a part that cannot stand alone is merged into its neighbour, not
+  shipped broken.
+
+Present the stack as an offer with each part's title, files and Door, after the single body. The
+person decides; splitting a branch rewrites history, so it is theirs to run, and this skill drafts
+one body per part only when asked.
+
+Done when the offer is made with every part's files and Door and the one-way part named, or the
+branch is under the size bar, or its Door is two-way and no offer is due.
+
 #### Close the linked issue, when a task names one
 
 A task file may carry an `external` field naming the upstream issue it serves (`#123` for
@@ -197,9 +220,6 @@ Done when both artifacts are printed, every command is shown and none was run, a
 
 ## Notes
 
-- Drafts only: it never creates or edits a PR, and never rewrites changelog history; it appends one
-  changelog entry locally only when asked.
-- Portable by inspection: the changelog format and PR template come from the target repository.
 - It names only its own end of the spine (`doc-sync` before it); each earlier skill names its own
   neighbours, so no body carries a copy of the whole chain to drift.
 
@@ -214,6 +234,8 @@ kit's formatting on another repo's changelog.
 
 The merge-danger section (one-way or two-way door, blast radius, evidence shown before and after) is
 adapted in this kit's own words from Matt Pocock's `pr` skill, which credits Dex Horthy's `show-me`.
+The stack offer is adapted from his aihero.dev post "Watch me ship a 21,000-line feature", section
+"Stacked diffs", a web page that carries no block below (`feat-0093`, 2026-11-24).
 
 ```provenance
 source: https://raw.githubusercontent.com/mattpocock/skills/main/skills/engineering/pr/SKILL.md
