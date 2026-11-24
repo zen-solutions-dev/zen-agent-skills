@@ -3078,3 +3078,75 @@ class InvocationRenderingTests(_FixtureKit):
     def test_the_budget_line_names_what_claude_keeps_out_of_context(self):
         _, out = self._install(include_drafts=True)
         self.assertIn("3 user-invoked skill(s)", out)
+
+
+class BudgetHeadlineTests(_FixtureKit):
+    """feat-0094 (inventory P11, S-014 as amended): the headline is what Claude Code loads.
+
+    Until this change the headline summed every description, user-invoked included, and
+    the next line said how much of that Claude Code keeps out of context, so the number a
+    reader takes away overstated the session's cost by 747 characters on `spine` and 1,586
+    on `all` (measured 2026-11-24). The oracle is hand-counted lengths, not a call back into
+    `description_of`: alpha's description is 100 characters, beta's 40, and beta is
+    user-invoked, so every model-invoked figure is 100 and the aside is 40.
+    """
+
+    def setUp(self):
+        super().setUp()
+        _meta_skill(self.skills, "alpha", "a" * 100)
+        _meta_skill(self.skills, "beta", "b" * 40, invocation="user")
+
+    def test_the_headline_counts_only_model_invoked_descriptions(self):
+        code, out = self._install(profile="all")
+        self.assertEqual(code, 0, out)
+        self.assertIn("Description budget: 100 characters", out)
+        self.assertIn("core=100, spine=100, all=100", out)
+        self.assertNotIn("140", out)
+
+    def test_the_user_invoked_share_is_the_aside(self):
+        _, out = self._install(profile="all")
+        self.assertRegex(out, r"40 character\(s\) more belong to 1 user-invoked skill\(s\) "
+                              r"\(beta\)")
+
+    def test_a_selection_reports_the_same_way(self):
+        code, out = self._main("--skills", "alpha,beta", "--dry-run")
+        self.assertEqual(code, 0, out)
+        self.assertIn("Description budget: 100 characters for this selection", out)
+
+    def test_an_opencode_only_run_still_names_the_share_it_loads(self):
+        _, out = self._install(tools=("opencode",), profile="all")
+        self.assertIn("Description budget: 100 characters", out)
+        self.assertIn("40 character(s) more belong to 1 user-invoked skill(s)", out)
+        self.assertIn("OpenCode loads them", out)
+
+
+class SetupPointerTests(_FixtureKit):
+    """feat-0094: an install ends by pointing at the per-repository setup step.
+
+    The skills are installed once per machine and configured once per repository
+    (`init-worktracking`'s "configure the skills" step, built by WS-B), and nothing told an
+    adopter the second half existed.
+    """
+
+    POINTER = "In each repository, run `init-worktracking` once to configure the skills"
+
+    def setUp(self):
+        super().setUp()
+        _meta_skill(self.skills, "alpha", "does alpha things when asked")
+
+    def test_an_install_prints_the_pointer_once(self):
+        code, out = self._install()
+        self.assertEqual(code, 0, out)
+        self.assertEqual(out.count(self.POINTER), 1)
+
+    def test_a_dry_run_prints_it_too(self):
+        code, out = self._main("--dry-run")
+        self.assertEqual(code, 0, out)
+        self.assertIn(self.POINTER, out)
+
+    def test_check_and_uninstall_do_not(self):
+        self._install()
+        _, out = self._call(inst.check, self.home)
+        self.assertNotIn(self.POINTER, out)
+        _, out = self._main("--uninstall")
+        self.assertNotIn(self.POINTER, out)

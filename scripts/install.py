@@ -337,9 +337,19 @@ def resolve_profile(profile: str, skills):
     return [d for d in skills if d.name in wanted], added
 
 
+def model_invoked_budget(skills):
+    """Description characters an agent carries for these skills: the model-invoked ones.
+
+    A user-invoked skill reaches Claude Code with `disable-model-invocation: true`, which
+    keeps its description out of context, so counting it reports a cost no session pays
+    (feat-0094, inventory P11). It is reported beside this figure, never inside it.
+    """
+    return sum(len(description_of(d)) for d in skills if not is_user_invoked(d))
+
+
 def profile_budgets(skills):
-    """Description-character total per profile, so the figure is comparable."""
-    return {name: sum(len(description_of(d)) for d in resolve_profile(name, skills)[0])
+    """Model-invoked description total per profile, so the figure is comparable."""
+    return {name: model_invoked_budget(resolve_profile(name, skills)[0])
             for name in PROFILE_SEEDS}
 
 
@@ -925,21 +935,27 @@ def install(tools, mode, home: Path, dry: bool, profile: str = DEFAULT_PROFILE,
                   f"activate them. Check that tool's own hook wiring.")
     # A count, not a percentage: the harness budget scales with the context window and
     # is shared with skills this tool cannot see, so a proportion here would be invented.
+    # The headline is what Claude Code loads, model-invoked descriptions only (feat-0094,
+    # S-014 as amended); the user-invoked share is the aside below, because a reader takes
+    # the first number away and the old headline overstated a session's cost.
     if only is None and not placed_drafts:
-        print(f"{tag}Description budget: {budgets[profile]} characters for this profile "
-              f"(" + ", ".join(f"{n}={budgets[n]}" for n in PROFILE_SEEDS) + ").")
+        print(f"{tag}Description budget: {budgets[profile]} characters for this profile, "
+              f"model-invoked only (" + ", ".join(f"{n}={budgets[n]}" for n in PROFILE_SEEDS)
+              + ").")
     else:
-        print(f"{tag}Description budget: {sum(len(description_of(d)) for d in skills)} "
-              f"characters for this selection (profiles: "
+        print(f"{tag}Description budget: {model_invoked_budget(skills)} characters for this "
+              f"selection, model-invoked only (profiles: "
               + ", ".join(f"{n}={budgets[n]}" for n in PROFILE_SEEDS) + ").")
-    # User-invoked skills are counted above, because the other tools load their
-    # descriptions; Claude Code, given the rendered key, does not.
     user_invoked = [d for d in skills if is_user_invoked(d)]
-    if user_invoked and "claude" in tools:
-        print(f"{tag}Of that, {sum(len(description_of(d)) for d in user_invoked)} "
-              f"character(s) belong to {len(user_invoked)} user-invoked skill(s) "
-              f"({', '.join(d.name for d in user_invoked)}), which Claude Code keeps out "
-              f"of context: start one by name, as /<name>.")
+    if user_invoked:
+        print(f"{tag}{sum(len(description_of(d)) for d in user_invoked)} character(s) more "
+              f"belong to {len(user_invoked)} user-invoked skill(s) "
+              f"({', '.join(d.name for d in user_invoked)}): Claude Code keeps them out of "
+              f"context, so start one by name, as /<name>; OpenCode loads them.")
+    # The second half of adopting the kit, which nothing used to mention: skills are
+    # installed once per machine and configured once per repository (feat-0094; the
+    # step itself is init-worktracking's, built by feat-0091).
+    print(f"{tag}In each repository, run `init-worktracking` once to configure the skills.")
     # Printed on every run, because the whole point of the check is that nothing else
     # tells you the copy has gone stale: a reader who never learns the flag exists is in
     # the state chore-0031 was filed on.
