@@ -217,10 +217,10 @@ asked for, from its findings (their signatures) and the range the fix added. Rea
 [`review-quality.md`](../../rules/review-quality.md) now, if this run has not, for its gate.
 
 1. For each finding, read the code it cited at the fix's revision and rerun its evidence: the quote
-   for a defect, the search for an absence, the command for a tool's output. Mark it **fixed** (the quote no longer resolves, or the
-   search now finds coverage, and the change that did it is in the fix range), **open** (it still
-   reproduces) or **disputed** (the author answered it instead of changing code; quote the answer).
-2. Read the fix range (`quick`, gates allowed) only for a `blocker` the fix introduced; smaller is a note.
+   for a defect, the search for an absence, the command for a tool's output. Mark it **fixed** (the
+   evidence is gone, by a change in the fix range), **open** (it still reproduces) or **disputed**
+   (the author answered it instead of changing code; quote the answer).
+2. Read the fix range (`quick`, gates allowed) only for a blocker the fix introduced; else a note.
 3. Report one line per signature with its mark, the count of each mark, and any new blocker. Then
    stop. A finding still open after this goes to the person to decide, not into another round.
 
