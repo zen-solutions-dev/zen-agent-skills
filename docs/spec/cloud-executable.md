@@ -47,6 +47,15 @@ contract. `status` is left reading `approved` per the convention in [`README.md`
 reason that file gives. No scenario changes, and `S-001` needed none: it already said "every gate in
 the gate set" rather than naming a number.
 
+**Amended 2026-11-24 (`chore-0098`, from `retro` proposal `R-008`, which the maintainer approved)
+to let a documentation-only change run only the documentation gates.** This amendment is **pending
+the author's re-approval**. `S-001`'s **Given** is narrowed to a change that is not documentation
+only, and two scenarios are added: `S-021` (a documentation-only change runs the documentation gates
+and the secret scan, and names every other gate as skipped) and `S-022` (a change whose paths cannot
+be worked out, or that moves a file out of a code tree, runs every gate). The Proposed Surface gains a
+`Scope` row, and the `Output` row names the skipped line. The acceptance command still takes no
+flags. `status` is left reading `approved` per the convention in [`README.md`](README.md).
+
 A **forward** spec, and the first here: every other spec in this directory was written against code
 that already existed, so it described a contract that already held. This one does not, which moves
 where the risk sits. A retrospective spec can be wrong about what the code does, and an audit finds
@@ -145,7 +154,7 @@ have caught, and then has no command to catch it with either.
 
 ### Scenario S-001: one command runs every gate and answers with one exit code
 
-- **Given** a working tree in any state
+- **Given** a working tree in any state, whose change is not documentation only (`S-021`)
 - **When** the acceptance command runs
 - **Then** every gate in the gate set runs, each is named in the output with its own outcome, and
   the run exits zero only when all of them passed.
@@ -319,15 +328,35 @@ have caught, and then has no command to catch it with either.
 - **And** the account is bounded to a line rather than the gate's whole output, because a report long
   enough to stop being read takes the summary at its foot down with it.
 
+### Scenario S-021: a documentation-only change runs the documentation gates
+
+- **Given** a change in which every changed path is a Markdown document outside the skills, the
+  plugin tree, the specs, the task files, the tests, the scripts and the evals, and is not a
+  document the test suite reads from the repository
+- **When** the acceptance command runs, on a person's machine or in any CI cell
+- **Then** only the documentation gates and the secret scan run; every other gate is named in the
+  output as skipped, with the reason, on its own line; a scope line says which scope the run took
+  and why; and the exit code is decided by the gates that ran.
+
+### Scenario S-022: an unknown or mixed change runs every gate
+
+- **Given** a change that cannot be worked out (no git, no base branch, a failed diff, a CI run with
+  no pull request base, or no changed path at all), or one that moves a file out of a code tree into
+  a documentation path
+- **When** the acceptance command runs
+- **Then** every gate runs, as in `S-001`, because a moved file counts at both its old and its new
+  path and a missing answer is answered with the full gate set.
+
 ## Proposed Surface
 
 | Element | Detail |
 |---|---|
 | Acceptance command | `python scripts/run-checks.py`, no flags |
+| Scope | `full` or `docs`, decided from the changed paths by one module, [`_change_scope.py`](../../scripts/_change_scope.py), which the command reads in every caller. `ZEN_CHECKS_SCOPE=full` in the environment forces `full` |
 | Gate set | Every gate that decides whether a change here is acceptable, as enumerated by `gates()` in [`run-checks.py`](../../scripts/run-checks.py). Membership is the term of this contract and the size of the set is not, so a gate added or retired needs no amendment here |
 | Throwaway home | `./.tmp/zen-home`, the location the existing CI steps already use |
 | Exit code | 0 every gate passed, 1 at least one gate failed, 2 at least one gate could not run; 2 outranks 1, as in `install.py --check` and `check-provenance.py` |
-| Output | One line per gate naming it and its outcome; beneath each gate, one further line accounting for what that gate examined, in the gate's own words or naming its silence; the failing gate's own output where one failed; then a summary carrying the counts and the operating system and Python version the run used |
+| Output | A scope line naming the scope and the reason; one line per gate naming it and its outcome, `skipped` for a gate the scope does not run; beneath each gate, one further line accounting for what that gate examined, in the gate's own words or naming its silence; the failing gate's own output where one failed; then a summary carrying the counts and the operating system and Python version the run used |
 | CI wiring | One workflow step invoking the command, replacing the seven that restate it |
 | `AGENTS.md` | Names the command and states that passing it is necessary but not sufficient |
 | Bootstrap hook | A member of the [`.agents/hooks/`](../../.agents/hooks/README.md) module in the **reminder** shape, on the `SessionStart` event with a `startup` matcher |

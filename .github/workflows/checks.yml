@@ -36,7 +36,13 @@ jobs:
       # upkeep (chore-0038). The majors were checked against the actions' own latest
       # releases on 2026-08-31 rather than assumed; both were then at v7. Re-check when
       # bumping, since a major here also moves the runner's Node version underneath.
+      # Full history, so run-checks.py can diff the pull request against its base branch
+      # and run only the documentation gates on a documentation-only change (chore-0098).
+      # A shallow clone has no base to diff against, which the scope rule answers with the
+      # full gate set: safe, but it would never skip anything.
       - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
 
       - uses: actions/setup-python@v7
         with:

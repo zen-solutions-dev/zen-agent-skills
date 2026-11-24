@@ -126,6 +126,10 @@ class GateSetTests(unittest.TestCase):
         ("roadmap bookkeeping",
          [],
          None),
+        # Added by chore-0098 (retro R-008): runs on every change, docs-only ones included.
+        ("secret scan",
+         [["scripts/scan-secrets.py"]],
+         None),
     ]
 
     @staticmethod
@@ -581,6 +585,62 @@ class WorkflowWiringTests(unittest.TestCase):
                 self.assertTrue(rc._script_of(command) or "-m" in command,
                                 f"{gate_.name} contributes no marker, so restating it in "
                                 f"checks.yml would not be caught")
+
+
+class DocsScopeTests(unittest.TestCase):
+    """S-021: a documentation-only change runs the documentation gates and names the rest.
+
+    Stubbed gates and runner, as in AggregationTests: what is under test is which gates
+    the aggregator runs for a scope, not the gates themselves. Which paths make a change
+    documentation only is tested in tests/test_change_scope.py.
+    """
+
+    def _gates(self):
+        return [rc.Gate("test suite", [["x"]]), rc.Gate("doc links", [["x"]]),
+                rc.Gate("secret scan", [["x"]])]
+
+    def _run(self, scope, returncode=0):
+        ran = []
+
+        def runner(command, **_):
+            ran.append(command)
+            return _Done(returncode, "1 thing checked\n")
+        buf = io.StringIO()
+        code = rc.run_all(self._gates(), runner, buf, scope)
+        return code, buf.getvalue(), len(ran)
+
+    def test_a_docs_scope_runs_only_the_documentation_gates(self):
+        code, report, ran = self._run(("docs", "2 changed path(s), all documentation"))
+        self.assertEqual(0, code)
+        self.assertEqual(2, ran)
+        self.assertIn("skipped     test suite", report)
+        self.assertIn("not run: the change is documentation only", report)
+        self.assertIn("2 passed, 0 failed, 0 could not run, 1 skipped", report)
+        self.assertIn("Scope: docs. 2 changed path(s), all documentation.", report)
+
+    def test_a_full_scope_runs_every_gate(self):
+        code, report, ran = self._run(("full", "1 changed path(s), 1 not documentation"))
+        self.assertEqual(3, ran)
+        self.assertNotIn("skipped", report)
+
+    def test_a_skipped_gate_never_turns_a_failure_into_a_pass(self):
+        code, _, _ = self._run(("docs", "all documentation"), returncode=1)
+        self.assertEqual(1, code)
+
+    def test_every_documentation_gate_names_a_real_gate(self):
+        # A typo here would make the docs scope skip a gate it meant to keep, silently.
+        self.assertLessEqual(rc.DOCS_GATES, {g.name for g in rc.gates()})
+
+    def test_the_secret_scan_runs_in_both_scopes(self):
+        self.assertIn("secret scan", rc.DOCS_GATES)
+
+    def test_an_injected_gate_set_is_never_scoped(self):
+        # main() decides a scope only for the real gate set, so a test of the aggregator
+        # does not change behaviour with the state of the checkout running it.
+        buf = io.StringIO()
+        rc.main([], the_gates=self._gates(), runner=lambda c, **_: _Done(0, "1\n"), out=buf)
+        self.assertNotIn("Scope:", buf.getvalue())
+        self.assertNotIn("skipped", buf.getvalue())
 
 
 class ArgumentTests(unittest.TestCase):
