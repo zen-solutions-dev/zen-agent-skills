@@ -23,6 +23,6 @@ default_mode: hitl
 
 - **Tracker.** Work is tracked in [`.tasks/`](../../.tasks/); a task links its GitHub issue with `external`. No role labels are mapped, because the `tasks` tracker has none.
 - **Decision records.** `none`: this repository records a decision in the Decisions section of the task that carries the work, and the reasons behind its rules in [`docs/rationale/`](../rationale/).
-- **Base branch.** Work lands on `developer`; a person promotes `developer` to `main`. The 2026-11-24 Marjana round targets `main` directly by the maintainer's decision `D4`, and `developer` is fast-forwarded afterwards.
+- **Base branch.** Work lands on `developer`; a person promotes `developer` to `main`. The 2026-11-24 Marjana round's pull request into `main` (decision `D4`) is a one-off, and `developer` is fast-forwarded afterwards.
 - **Memory** is left out until `orchestrate` (a draft in this round) settles where its dated log lives.
-- **Pending confirmation.** The tracker, standards, base branch and default mode were each a choice between candidates. No person was in the session that wrote this file, so the recommended answers were written and routed to the maintainer, who confirms or corrects them in the Marjana pull request.
+- **Confirmed.** The tracker, base branch, standards, default mode and decision-record directory were each a choice between candidates. No person was in the session that wrote this file, so the recommended answers were written first and routed to the maintainer, who confirmed all five in person on 2026-11-24.
