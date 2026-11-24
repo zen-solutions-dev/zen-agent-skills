@@ -30,6 +30,15 @@ Passing here is NECESSARY BUT NOT SUFFICIENT. CI runs three operating systems by
 Python versions; any single run of this covers one of those six cells. The summary says
 so on every run rather than leaving the reader to remember it.
 
+A documentation-only change runs the documentation gates
+--------------------------------------------------------
+`scripts/_change_scope.py` decides, from the paths the change touches, whether it is
+documentation only (`chore-0098`, cloud-executable.md S-021 and S-022). When it is, the
+gates in `DOCS_GATES` run and every other gate is reported as `skipped`, with the reason,
+on its own line; when it is not, or when the change cannot be worked out, every gate runs.
+The rule lives in that one module so this command and every CI cell answer alike. Set
+`ZEN_CHECKS_SCOPE=full` to run every gate regardless.
+
 Every gate runs, even after one fails
 -------------------------------------
 Deliberately not fail-fast. An unattended agent gets one round trip, and a report naming
@@ -60,6 +69,12 @@ from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 
+# `_change_scope` is a sibling module, imported through the repository root as
+# install.py and build-adapters.py import theirs.
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
+from scripts import _change_scope  # noqa: E402
+
 # The throwaway home the install gates use. Chosen to match what checks.yml already
 # used, and gitignored via `.tmp/`. Nothing outside it is ever touched: `--uninstall` is
 # scoped to the home it is given (bug-0003), which is what makes running this on a
@@ -67,6 +82,17 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 THROWAWAY_HOME = "./.tmp/zen-home"
 
 PY = sys.executable
+
+# The gates a documentation-only change still runs: the ones whose subject is prose,
+# task files and links, plus the secret scan, since a pasted credential in a README is
+# the commonest way one reaches a public repository. Everything else exercises code.
+DOCS_GATES = frozenset({
+    "backlog",
+    "doc links",
+    "matrix citations",
+    "roadmap bookkeeping",
+    "secret scan",
+})
 
 
 class Gate:
@@ -347,6 +373,9 @@ def gates():
         # done, beside that task's own file sitting in `.tasks/done/`, passed every gate,
         # which is what chore-0066 measured when it corrected nine of them at once.
         Gate("roadmap bookkeeping", [], check=check_roadmap),
+        # Added by chore-0098 (retro R-008). Runs on every change, documentation-only ones
+        # included, which is why it is in DOCS_GATES.
+        Gate("secret scan", [[PY, "scripts/scan-secrets.py"]]),
     ]
 
 
@@ -479,19 +508,28 @@ def coverage_line(output):
     return lines[-1]
 
 
-def run_all(the_gates=None, runner=None, out=None):
-    """Run every gate and report. Returns the exit code.
+def run_all(the_gates=None, runner=None, out=None, scope=None):
+    """Run every gate in scope and report. Returns the exit code.
 
     `the_gates` and `runner` are injectable so the aggregation logic is reachable from a
     test without executing every real gate, which would make the failure and
-    could-not-run branches untestable.
+    could-not-run branches untestable. `scope` is `(name, reason)` from
+    `_change_scope.decide()`; None means the full set, with no scope line.
     """
     the_gates = gates() if the_gates is None else the_gates
     out = sys.stdout if out is None else out
+    docs_only = scope is not None and scope[0] == _change_scope.DOCS
+    if scope is not None:
+        out.write(f"Scope: {scope[0]}. {scope[1]}.\n")
 
-    counts = {"ok": 0, "failed": 0, "unrunnable": 0}
+    counts = {"ok": 0, "failed": 0, "unrunnable": 0, "skipped": 0}
     notes = []
     for gate in the_gates:
+        if docs_only and gate.name not in DOCS_GATES:
+            counts["skipped"] += 1
+            out.write(f"{'skipped':11} {gate.name}\n")
+            out.write(f"{'':11} not run: the change is documentation only\n")
+            continue
         status, output, cleanup_ok = run_gate(gate, runner)
         counts[status] += 1
         suffix = "" if cleanup_ok else "  (cleanup did not complete)"
@@ -509,8 +547,10 @@ def run_all(the_gates=None, runner=None, out=None):
     for name, status, output in notes:
         out.write(f"\n----- {name}: {status} -----\n{output.rstrip()}\n")
 
+    skipped = (f", {counts['skipped']} skipped because the change is documentation only"
+               if counts["skipped"] else "")
     out.write(f"\n{counts['ok']} passed, {counts['failed']} failed, "
-              f"{counts['unrunnable']} could not run.\n")
+              f"{counts['unrunnable']} could not run{skipped}.\n")
     out.write(f"Ran on {platform.system()}, Python {platform.python_version()}. "
               f"CI runs 3 operating systems x 2 Python versions, so this is one of six "
               f"cells: passing here is necessary but not sufficient.\n")
@@ -527,7 +567,10 @@ def main(argv=None, the_gates=None, runner=None, out=None) -> int:
         out = sys.stdout if out is None else out
         out.write("run-checks.py takes no arguments; it runs every gate, always.\n")
         return 2
-    return run_all(the_gates, runner, out)
+    # The scope is decided only for the real gate set. An injected set is a test of the
+    # aggregation logic, which must not depend on the state of the checkout running it.
+    scope = _change_scope.decide() if the_gates is None else None
+    return run_all(the_gates, runner, out, scope)
 
 
 if __name__ == "__main__":
