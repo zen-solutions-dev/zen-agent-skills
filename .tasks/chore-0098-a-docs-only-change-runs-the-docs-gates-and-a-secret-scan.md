@@ -25,7 +25,7 @@ created: 2026-11-24
 
 ## Problem
 
-The maintainer's standing rule: "A docs-only pull request runs a docs check and a secret scan, nothing else (CI minutes cost money). Decide from the changed paths in one script that the local pre-PR check reads too, count a moved file at both its old and new path, and run the tests when the answer is missing." This repository did not work that way. [`checks.yml`](../.github/workflows/checks.yml) ran all ten gates on six cells for every pull request, including a one-line README fix, and nothing scanned for credentials at all. The first real run of `retro` found it (`docs/reviews/2026-11-retro-pr-108.md`, `R-008`, which lands with pull request 113), and the maintainer approved the proposal on 2026-11-24.
+The maintainer's standing rule: "A docs-only pull request runs a docs check and a secret scan, nothing else (CI minutes cost money). Decide from the changed paths in one script that the local pre-PR check reads too, count a moved file at both its old and new path, and run the tests when the answer is missing." This repository did not work that way. [`checks.yml`](../.github/workflows/checks.yml) ran all ten gates on six cells for every pull request, including a one-line README fix, and nothing scanned for credentials at all. The first real run of `retro` found it ([`2026-11-retro-pr-108.md`](../docs/reviews/2026-11-retro-pr-108.md), `R-008`), and the maintainer approved the proposal on 2026-11-24.
 
 ## Scope
 

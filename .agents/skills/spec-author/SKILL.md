@@ -16,10 +16,9 @@ and **why** it matters; it is not a plan, an architecture brief, a task list, or
 chain is: `spec-author` drafts, a human approves, `new-task` decomposes, `spec-plan-readiness` gates
 the decomposition, and `spec-conformance` later audits the build against the same scenarios.
 
-This skill composes two others rather than restating them: `grill` for the interview before the
-draft, and [`spec-quality`](../spec-quality/SKILL.md) for the self-check after it. `grill` is named
-rather than linked while it is a draft, because an installer places no draft and refuses a shipped
-skill that links one.
+This skill composes two others rather than restating them: [`grill`](../grill/SKILL.md) for the
+interview before the draft, and [`spec-quality`](../spec-quality/SKILL.md) for the self-check after
+it.
 
 ## When to use
 
@@ -111,14 +110,9 @@ Then compose `grill`: interview the person over the decision tree until its fron
 they confirm the shared understanding. Scale it to the change: a narrow bug may settle in one round,
 a new capability may take several. Write no file until the interview has closed.
 
-Fallback while `grill` is a draft (delete this paragraph when it is promoted and linked): if `grill`
-is not installed, ask in rounds over the frontier, numbered, with a recommended answer per question
-worded so "yes" accepts it; look facts up yourself and record where each was found; put only
-decisions to the person; stop when the frontier is empty and the person confirms; then write the
-decisions record (decisions, terms, facts found, still open) that `grill` would have written.
-
 Keep the terms the interview settled, and any decision that is hard to reverse, surprising, and a
-real trade-off: they go to `domain-language` after the spec is written (step 5).
+real trade-off: they go to [`domain-language`](../domain-language/SKILL.md) after the spec is
+written (step 5).
 
 Done when grill's decisions record exists and the person has confirmed it.
 
