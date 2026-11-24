@@ -8,7 +8,7 @@ Completed work for Zen Agent Skills, newest first. This is the append-only ledge
 
 ### Unreleased: the 2026-11-24 Marjana overhaul
 
-In flight on `zen/marjana-2026-11-24`, planned in [the Marjana plan](docs/reviews/2026-11-24-marjana-plan.md) (`chore-0099` to `feat-0095`), and reaching `main` as one pull request. The task log below records each workstream as it lands.
+Planned in [the Marjana plan](docs/reviews/2026-11-24-marjana-plan.md) (`chore-0099` to `feat-0095`) and reaching `main` as one pull request. New drafts: `orchestrate` and `research`. New per-repository setup: `init-worktracking`'s configure step and `docs/agents/zen.md`. Always-loaded `AGENTS.md` cut from about 28 KB to about 9 KB. New gates: the "Done when" warning and the roadmap status check. The task log below has one line per task; [the dogfood records](docs/reviews/2026-11-24-dogfood/README.md) show each skill run on the round's own work.
 
 ### The 2026-11 release (pull request 109, merged 2026-11-23)
 
@@ -63,6 +63,18 @@ Contents, derived from the task log (2026-07-23 to 2026-07-29, now in [`docs/his
 `0.1.0` rather than `1.0.0`, deliberately: this is one maintainer's working library, two catalog skills are held unbuilt until they have been used twice, and the install story has an open portability question, since `npx skills` copies only each skill's `SKILL.md` and leaves its lens reference resolving to nothing (`chore-0020`, `feat-0034`).
 
 ## Task log
+
+- [x] (2026-11-24) Closed [`feat-0094`](.tasks/done/feat-0094-marjana-platform-and-gates.md): a "Done when" warning (`R-005`), a roadmap status check that fails on a stale exception (`P3`), a budget headline of what Claude Code loads (`P11`), a hermetic test home (`R-001`), undecodable-name tests (`R-007`).
+
+- [x] (2026-11-24) Closed [`feat-0090`](.tasks/done/feat-0090-one-span-aware-reader-for-links-and-profile-edges.md): one span-aware link reader in `scripts/_skillmeta.py`, shared by the validator, installer and adapters, so a link inside a code span or fence is not an install edge. Placements unchanged; closes `chore-0059`.
+
+- [x] (2026-11-24) Closed [`feat-0093`](.tasks/done/feat-0093-marjana-ship-learn-and-lenses.md): `house-review` re-checks once then stops (`S-025`, pending approval), `retro` samples, ratchets and prunes, `pr-describe` offers a stacked split, and `writing-for-agents.md` adds "write history" and "composition must load".
+
+- [x] (2026-11-24) Closed [`feat-0092`](.tasks/done/feat-0092-marjana-orchestrate-and-build.md): rule `D1` (an orchestrator fast-forwards verified work it did not author onto an integration branch), the drafts `orchestrate` and `research`, verified-sha landing, and the build and verify skills brought current.
+
+- [x] (2026-11-24) Closed [`feat-0091`](.tasks/done/feat-0091-marjana-setup-and-align.md): per-repository setup in `docs/agents/zen.md` (draft contract `zen-config`), a configure step in `init-worktracking`, both scaffolds user-invoked, the task `mode` field, and sharper `grill`, `domain-language` and `new-task`.
+
+- [x] (2026-11-24) Closed [`chore-0074`](.tasks/done/chore-0074-new-task-does-not-put-the-documents-a-change-falsifies-in-scope.md), delivered inside `feat-0091`: `new-task` puts every document a change falsifies in `touched_files`, found by grepping the specs and matrices first.
 
 - [x] (2026-11-24) Closed [`chore-0100`](.tasks/done/chore-0100-marjana-context-and-ledgers.md): `AGENTS.md` cut to rules (27,822 to under 10,240 bytes), ledgers archived by month under `docs/history/`, `ROADMAP.md` current state made true, stale reader claims fixed.
 

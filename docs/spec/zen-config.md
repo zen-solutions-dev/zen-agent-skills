@@ -442,7 +442,7 @@ leading `./`. Each segment must match the name on disk in letter case.
 | `acceptance` | The one command that decides whether a change is acceptable |
 | `base_branch`, `integration_prefix` | Where work lands, and the prefix integration branches carry |
 | `merge_policy` | One line of prose: who merges what into where |
-| `session_logs` | The directory where the harness keeps session transcripts for this repository: absolute or `~` (not checked), a repository path (checked), or `none` |
+| `session_logs` | The directory where the harness keeps session transcripts for this repository: one of the outside spellings defined under Paths (not checked), a repository path (checked), or `none` |
 | `default_mode` | `afk` (runs with nobody watching) or `hitl` (a person stays in the loop), for a task whose `mode` is empty; `hitl` when this key is absent |
 
 **Validator**: `.tasks/validate.py` checks the file whenever it exists, in its default run and with

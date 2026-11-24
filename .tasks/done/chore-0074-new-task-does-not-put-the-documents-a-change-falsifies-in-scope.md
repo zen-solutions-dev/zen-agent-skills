@@ -2,7 +2,7 @@
 id: chore-0074
 title: Four tasks in one session scoped an edit without the conformance matrix or contract that quotes it, and the authoring bar says nothing about it
 type: chore
-status: open
+status: done
 priority: P2
 parent: "ROADMAP Epic B: contract-driven delivery (the agent-workflow spine)"
 depends_on: []
@@ -43,7 +43,7 @@ not know a pointer exists.
 
 ## Scope
 
-**In scope:** state the rule in [`new-task`](../.agents/skills/new-task/SKILL.md).
+**In scope:** state the rule in [`new-task`](../../.agents/skills/new-task/SKILL.md).
 
 - **The rule, in the authoring bar beside honest `touched_files`**: when a task edits code, prose, or a
   docstring that a conformance matrix quotes or an approved contract pins, those documents are part of
@@ -63,7 +63,7 @@ not know a pointer exists.
 
 - **Building a check for it.** Whether a task's `touched_files` covers what its edits falsify is not
   decidable before the edit exists, and the nearest decidable thing, the citation checker, is
-  [`chore-0049`](done/chore-0049-a-checker-for-conformance-matrix-citations.md). This task writes a rule
+  [`chore-0049`](chore-0049-a-checker-for-conformance-matrix-citations.md). This task writes a rule
   into an authoring skill; it does not add a gate.
 - `AGENTS.md`'s task lifecycle, which was considered and declined: the rule is about authoring a task
   rather than closing one, and two open tasks already contend for that file. If it belongs there as
@@ -101,17 +101,22 @@ Reversible by reverting one commit.
 
     python scripts/run-checks.py
 
-- [ ] `new-task`'s authoring bar states the rule, names the grep that finds the affected documents,
+- [x] `new-task`'s authoring bar states the rule, names the grep that finds the affected documents,
       and names the re-derive disposition and the dated-measurement counter-rule.
-- [ ] The rule sits where `touched_files` is authored rather than in an appended section.
-- [ ] `new-task/SKILL.md` is still under the enforced body-length ceiling, and the closeout states the
+- [x] The rule sits where `touched_files` is authored rather than in an appended section.
+- [x] `new-task/SKILL.md` is still under the enforced body-length ceiling, and the closeout states the
       line count before and after.
 - [ ] No file under `scripts/`, `tests/`, or `docs/spec/` is modified.
-- [ ] Existing tests still pass, unchanged in intent.
+- [x] Existing tests still pass, unchanged in intent.
 
 ## Definition of done
 
-- [ ] Acceptance command(s) pass locally.
+- [x] Acceptance command(s) pass locally.
 - [ ] Conventions in AGENTS.md's conventions section followed.
 - [ ] `doc-sync` run over the reader-facing documents and its findings applied or dismissed with a reason.
-- [ ] File moved to `.tasks/done/`, `status: done`; one dated line added to `CHANGELOG.md` referencing this task id.
+- [x] File moved to `.tasks/done/`, `status: done`; one dated line added to `CHANGELOG.md` referencing this task id.
+
+## Resolution
+
+Closed 2026-11-24 by the Marjana orchestrator (`feat-0095`). The rule was written by `feat-0091` (WS-B), which scoped it, into `new-task`'s **Honest `touched_files`** bullet, where `touched_files` is authored: a document the change falsifies is in scope by construction; grep the specs and matrices first; re-derive a row's verdict before moving its citation; a dated measurement stays as it was. `new-task/SKILL.md` went from 187 to 205 lines across the whole of `feat-0091`, of which this rule is five, under the plan's 250-line bound. The criterion "no file under `scripts/`, `tests/`, or `docs/spec/` is modified" is left unticked: it held for this rule's lines, but `feat-0091` as a whole changed all three for other reasons, so it cannot be claimed for the change that delivered it. `doc-sync` ran at the round's integration, not for this task alone.
+

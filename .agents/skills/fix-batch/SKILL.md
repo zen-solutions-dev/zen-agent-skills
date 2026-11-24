@@ -114,10 +114,10 @@ Every prompt includes, in substance:
    unless the person said otherwise: staged changes are invisible to a bare `git diff`.
 6. **How to produce the test the acceptance command runs**, when it does not exist yet: read
    [`test-author`](../test-author/SKILL.md) now and follow it, read the
-   [`test-quality`](../test-quality/SKILL.md) lens and follow it for the layer and oracle, and
+   [`test-quality`](../test-quality/SKILL.md) lens now and follow it for the layer and oracle, and
    **name the mode**. A bug or chore with no approved
    spec is **characterization** mode; only a task carrying an approved spec and `S-NNN` ids is
-   acceptance mode. For new behaviour built test-first, read [`tdd`](../tdd/SKILL.md) and follow it
+   acceptance mode. For new behaviour built test-first, read [`tdd`](../tdd/SKILL.md) now and follow it
    where the target has it.
 7. **An honest blocker over an improvisation**: "If the task's premise is wrong, or you hit a
    blocker you cannot resolve inside your worktree, stop and report it rather than guessing." An

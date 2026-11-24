@@ -105,12 +105,12 @@ of briefs has disjoint owned paths, and every research source has been probed.
 ### Step 3: dispatch the frontier
 
 Compute the frontier after `git fetch`: a child has landed when its verified commit is in the
-remote integration branch (`git merge-base --is-ancestor <verified-sha> origin/<integration>`), never
-because a commit message mentions it. Start every frontier child at once, each with a **fresh context**, as a **leaf**. Medium effort for
-building; high for verifying and debugging. Where children run as worktree agents, follow
-`fix-batch` Steps 2 and 3 for the dispatch sha and the cut, with one change to its prompt: the child
-**commits and pushes its own branch**, because what lands is the child's verified commit. Committing
-a child's uncommitted work yourself makes it your own work (`A8`'s exception, guard 1).
+remote integration branch (`git merge-base --is-ancestor <verified-sha> origin/<integration>`),
+never because a commit message mentions it. Start every frontier child at once, each with a
+**fresh context**, as a **leaf**. Medium effort for building; high for verifying and debugging.
+Where children run as worktree agents, follow `fix-batch` Steps 2 and 3 for the dispatch sha and
+the cut, with one change to its prompt: the child **commits and pushes its own branch**, because
+what lands is the child's verified commit. Committing a child's uncommitted work yourself makes it your own work (`A8`'s exception, guard 1).
 
 A dependency outside this run counts as landed when it is already in the base the integration branch
 was cut from; say which ones you counted that way. **An empty frontier while unlanded children
@@ -142,11 +142,11 @@ an answer or a named owner.
 4. **Verify**: read and follow [`verifier-agent`](../verifier-agent/SKILL.md) through a verifier
    you dispatch with a fresh context, as a leaf, at high effort: neither the child nor you, and not
    briefed by the child (`A7`), on the exact head commit reported. Carry the verified sha from the
-   verdict's `verified_by` field into Step 5.
+   verdict's `verified_by` field into item 5.
 5. **Land** a `pass` on the integration branch by reading and following
    [`reconcile-worktrees`](../reconcile-worktrees/SKILL.md): **fast-forward only, to the verified
-   sha**. A child whose branch has moved past that sha, or has not merged the tip, or whose landing would need a conflict resolution, goes back to merge the tip
-   and be verified again. This is the one merge an orchestrator may make, under every guard of
+   sha**. A child whose branch has moved past that sha, or has not merged the tip, or whose
+   landing would need a conflict resolution, goes back to merge the tip and be verified again. This is the one merge an orchestrator may make, under every guard of
    `A8`'s exception: work you did not author, verified by someone else, the integration branch only.
 6. **Push after every landing.** After any restart of this session, check the remote state
    (`git status -sb`, `git log origin/<integration>..<integration>`) before anything else.
@@ -163,8 +163,10 @@ empty.
    that wrote none of it, reads and follows [`house-review`](../house-review/SKILL.md) on both axes
    (the plan, then the written standards).
 2. Dispatch **one** fix child, fresh and a leaf, for the findings you accept. Its branch is verified
-   and landed like any child's (Step 5), and the re-check covers **only the fixed findings**. A
-   second broad review does not converge; do not run one.
+   and landed like any child's (Step 5), and the re-check covers **only the fixed findings**, as
+   [`house-review`](../house-review/SKILL.md) Step 8 and rule 8 of the
+   [`review-quality`](../../rules/review-quality.md) protocol define it. A second broad review does
+   not converge; do not run one.
 3. Read and follow [`doc-sync`](../doc-sync/SKILL.md) over the reader-facing documents, then run the
    acceptance command on the tip.
 4. Write the body with [`pr-describe`](../pr-describe/SKILL.md), offering a stacked split when the
@@ -197,6 +199,9 @@ Detail: <only what changes their next move>
 ```
 
 ## Memory: write history, not the present
+
+The rule is in [`writing-for-agents.md`](../../rules/writing-for-agents.md), "Write history, not
+the present"; read it before the first entry. For this memory it means:
 
 - **Date every claim**, and cite the commit a claim about code was true at. Never write a bare
   "currently".
