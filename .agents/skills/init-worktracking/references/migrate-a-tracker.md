@@ -9,6 +9,6 @@ Used when the survey found a tracker already in the repository. Never create a p
    - **Adopt**: keep the existing file as canonical and point `AGENTS.md` at it by its real name instead of forcing `ROADMAP.md` or `CHANGELOG.md`.
    - **Coexist**: scaffold anyway and keep the old one, only when the person explicitly wants both. Warn that two trackers drift.
 
-An **out-of-repository tracker** (GitHub Issues, GitLab, Linear, Jira, Notion) cannot be migrated. Ask whether the file-based system replaces or complements it; the configure step then records it as `tracker` in `docs/agents/zen.md`, which is where the skills read which tracker is authoritative.
+An **out-of-repository tracker** (GitHub Issues, GitLab, Linear, Jira, Notion) cannot be migrated. Ask whether the file-based system replaces or complements it; the configure step then records it as `tracker` in `docs/agents/zen.md`, which is where the skills read which tracker is authoritative. When the person declines the configure step, write that boundary as one line in `AGENTS.md` instead ("Work is tracked in <tracker>; `.tasks/` <replaces or complements> it"), so an agent still learns which tracker is authoritative.
 
 Done when the person has chosen an outcome for every tracker found, and nothing was deleted without their say-so.

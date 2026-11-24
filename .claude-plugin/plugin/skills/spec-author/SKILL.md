@@ -32,10 +32,14 @@ To review a spec without authoring one, run `spec-quality` alone.
 ## Where the spec goes
 
 When the repository has `docs/agents/zen.md` and it sets `spec_dir`, that is the spec location; say
-so, and say when you discovered the location instead. A key the file does not set, or sets to a value outside its allowed set or a path that does not exist, is discovered instead, asking the person when discovery finds several candidates. When the block does not parse or names a newer `config_version`, use none of it and say that `python .tasks/validate.py` shows why. Otherwise find the repository's spec location before writing: an existing directory such as `docs/spec/`,
-`specs/`, `docs/rfcs/`, or `design/`, and how the specs there are named. Match it. Only when the
-repository has none does `docs/spec/<slug>.md` apply, as this kit's default. When the convention is
-ambiguous, ask.
+so, and say when you discovered the location instead. A key the file does not set, or sets to a
+value outside its allowed set, is discovered instead, and so is a path it names that does not exist,
+saying that the configured path was missing. Ask the person when discovery finds several candidates.
+When the block does not parse or names a newer `config_version`, use none of it and say that
+`python .tasks/validate.py` shows why. Otherwise find the repository's spec location before writing: an
+existing directory such as `docs/spec/`, `specs/`, `docs/rfcs/`, or `design/`, and how the specs
+there are named. Match it. Only when the repository has none does `docs/spec/<slug>.md` apply, as
+this kit's default. When the convention is ambiguous, ask.
 
 ## The spec format
 

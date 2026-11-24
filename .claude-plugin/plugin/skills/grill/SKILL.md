@@ -43,10 +43,15 @@ Done when you can state the problem and its why in one sentence each, in the per
 
 ### 2. Read before you ask
 
-Read what the work touches: the request, the code or documents in the area, the project glossary
-and decision records. Their paths are the `glossary` and `adr_dir` keys of `docs/agents/zen.md` when
-the repository has that file and sets them; for a path no key gives, look for `GLOSSARY.md`, `docs/adr/`, or wherever the
-repository keeps them, and say which source you used. A key the file does not set, or sets to a value outside its allowed set or a path that does not exist, is discovered instead, asking the person when discovery finds several candidates. When the block does not parse or names a newer `config_version`, use none of it and say that `python .tasks/validate.py` shows why. Use the glossary's terms in every question.
+Read what the work touches: the request, the code or documents in the area, the project glossary and
+decision records. Their paths are the `glossary` and `adr_dir` keys of `docs/agents/zen.md` when the
+repository has that file and sets them; for a path no key gives, look for `GLOSSARY.md`,
+`docs/adr/`, or wherever the repository keeps them, and say which source you used. A key the file
+does not set, or sets to a value outside its allowed set, is discovered instead, and so is a path it
+names that does not exist, saying that the configured path was missing. Ask the person when
+discovery finds several candidates. When the block does not parse or names a newer `config_version`,
+use none of it and say that `python .tasks/validate.py` shows why. Use the glossary's terms in every
+question.
 
 Done when you can name the first frontier, and every glossary term the request touches is one you will
 use as the glossary defines it.

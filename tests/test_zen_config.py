@@ -274,6 +274,22 @@ class ZenConfigTests(Fixture):
         self.assert_one_finding(GOOD.replace("glossary: GLOSSARY.md", "glossary: GLOSSARY.md\u00a0"),
                                 "glossary", "does not exist")
 
+    def test_s041_an_unclosed_block_is_reported_as_unclosed(self):
+        self.assert_one_finding(GOOD.rsplit("```", 1)[0] + "\n## Tracker\n\n- Tracker notes\n",
+                                "never closed")
+
+    def test_s042_dot_segments_are_refused_with_a_normalise_message(self):
+        self.assert_one_finding(GOOD.replace("glossary: GLOSSARY.md", "glossary: docs/../GLOSSARY.md"),
+                                "glossary", "normalised")
+        self.assert_one_finding(GOOD.replace("spec_dir: docs/spec", "spec_dir: docs//spec"),
+                                "spec_dir", "normalised")
+
+    def test_s042_a_leading_dot_slash_is_allowed(self):
+        (self.root / "none").write_text("a file named none\n", encoding="utf-8")
+        self.write_config(GOOD.replace("glossary: GLOSSARY.md", "glossary: ./none"))
+        for module in self.each():
+            self.assertEqual(self.findings(module), [])
+
     def test_s008_a_tracker_outside_the_set_fails(self):
         self.assert_one_finding(GOOD.replace("tracker: github", "tracker: jira"),
                                 "tracker", "jira", "gitlab")

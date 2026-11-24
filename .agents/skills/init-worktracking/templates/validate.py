@@ -667,7 +667,10 @@ def parse_zen_config(text):
         if current is not False:
             current.append(line)
     if current not in (None, False):
-        blocks.append(current)
+        # A block still open at the end of the file is reported as that, and nothing in
+        # it is read: the prose after a forgotten closing fence would otherwise be parsed
+        # as configuration and reported as keys nobody wrote.
+        return {}, ["the zen-config block is never closed: add its closing fence"]
 
     if len(blocks) != 1:
         return {}, [f"found {len(blocks)} zen-config blocks; exactly one is required"]
@@ -721,7 +724,7 @@ def zen_config_findings(repo_root):
     if not path.is_file():
         return []
     values, found = parse_zen_config(read_text_utf8(path))
-    if found and found[0].startswith("found ") and not values:
+    if found and found[0].startswith(("found ", "the zen-config block")) and not values:
         # No block, or more than one: nothing below has anything to check.
         return found
 
@@ -775,6 +778,14 @@ def zen_config_findings(repo_root):
                         or resolved_root in target.resolve().parents)):
             found.append(f"{key} {value!r} must be a forward-slash path inside the "
                          f"repository")
+            continue
+        # One spelling per path: `.` and `..` segments (bar one leading `./`, which is how
+        # a file named `none` is written) and empty segments are refused rather than
+        # resolved, so the check never depends on how a system folds them.
+        segments = value[2:].split("/") if value.startswith("./") else value.split("/")
+        if any(part in ("", ".", "..") for part in segments):
+            found.append(f"{key} {value!r} is not a normalised path: write it without "
+                         f"'.', '..' or empty segments")
             continue
         exact = _exact_path(root, value)
         if exact is None:

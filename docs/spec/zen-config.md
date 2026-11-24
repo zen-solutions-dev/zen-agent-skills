@@ -23,7 +23,7 @@ and the maintainer accepted each recommended answer in person on 2026-11-24: one
 label; `config_version` required whenever the file exists; `session_logs` may name an unchecked
 place outside the repository while every other path key stays inside it; the quality bar is a line
 of `AGENTS.md`, not a key; `standards` is one comma-separated list; a re-run changes a key only when
-the person asks for it during the run. They are written into the contract above as decided.
+the person asks for it during the run. They are written into the contract below as decided.
 
 The path and the block format become a one-way door once an adopter
 configures a repository against them, which is why this contract exists before anyone outside this
@@ -172,14 +172,14 @@ fact is in a given repository.
 
 ### Scenario S-012: session logs outside the repository are not checked
 
-- **Given** a `session_logs` value that is an absolute path or starts with `~`
+- **Given** a `session_logs` value with an outside spelling (see Paths in the Proposed Surface)
 - **When** the shipped `validate.py` runs
 - **Then** it reports no error for that key, whether or not the path exists on this machine.
 
 ### Scenario S-013: a path that leaves the repository, or uses backslashes, fails
 
-- **Given** a path key other than an absolute or `~` `session_logs`, whose value is absolute,
-  resolves outside the repository root, or contains a backslash
+- **Given** a path key, other than a `session_logs` with an outside spelling, whose value has an
+  outside spelling, contains a backslash anywhere, or resolves outside the repository root
 - **When** the shipped `validate.py` runs
 - **Then** it reports an error naming the key and saying the path must be a forward-slash path
   inside the repository, and exits non-zero.
@@ -379,6 +379,21 @@ fact is in a given repository.
 - **Then** the draft carries a section below the block, in the person's words, saying how to
   create, read, label and close an item, and the step asks for it as part of the tracker section.
 
+### Scenario S-041: an unclosed block is reported as unclosed
+
+- **Given** a `zen-config` fence that no closing fence follows
+- **When** the shipped `validate.py` runs
+- **Then** it reports one error saying the block is never closed, reports nothing about the lines
+  after the fence, and exits non-zero.
+
+### Scenario S-042: a path is written normalised
+
+- **Given** a path value holding a `.` or `..` segment or an empty segment, other than one leading
+  `./`, such as `docs/../GLOSSARY.md`
+- **When** the shipped `validate.py` runs
+- **Then** it reports an error naming the key and asking for a normalised path, and exits non-zero,
+  whether or not the path would resolve to a file that exists.
+
 ## Proposed Surface
 
 **File**: `docs/agents/zen.md`, from the repository root. Prose for people, then one block:
@@ -393,21 +408,27 @@ glossary: GLOSSARY.md
 
 **Block recognition**: a fence of three or more backticks or three or more tildes, indented at most
 three spaces, whose info string is exactly `zen-config`, closed by a fence of the same character at
-least as long with no info string. Any other fence, including one whose info string has more words,
+least as long with no info string; a `zen-config` block still open at the end of the file is an
+error (S-041), and none of its lines is read. Any other fence, including one whose info string has more words,
 is skipped whole, so a block inside it is not counted.
 
 **Line grammar inside the block**: line endings are normalised, so `\r\n` and `\n` read alike.
 Blank lines and lines whose first character other than a space or tab is `#` are ignored. Every
 other line is `key: value`, split at the first colon. Key and value are trimmed of spaces and tabs;
 nothing else is stripped, quotes included. Keys are matched exactly, in lower case. A key may
-appear once. For every key, `none` means "this repository has no such thing" (no label for that
-role, no acceptance command), in lower case only; a real path named `none` is written `./none`.
+appear once. For a path key, a free-text key (`acceptance`, `base_branch`, `integration_prefix`,
+`merge_policy`) or a `role.` key, `none` means "this repository has no such thing" (no label for
+that role, no acceptance command), in lower case only; a real path named `none` is written
+`./none`. For `config_version`, `tracker` and `default_mode`, `none` is an invalid value like any
+other (S-008, S-020).
 
-**Paths**: every path key except an outside `session_logs` is a forward-slash path from the
-repository root. A value is outside the repository, on every operating system alike, when it
-starts with `/` or `~`, holds a backslash, has a colon in its first segment (`C:/x`), or, once
-resolved with symbolic links followed, is not under the repository root. Each segment must match
-the name on disk in letter case.
+**Paths**: the **outside spellings** are a value starting with `~`, `/` or `\`, or with a colon in
+its first `/`-separated segment (`C:/x`); they are decided by spelling alone, the same on every
+operating system. A `session_logs` with an outside spelling is not checked. Every other path value
+is a forward-slash path from the repository root and fails when it has an outside spelling,
+contains a backslash anywhere, or, once resolved with symbolic links followed, is not under the
+repository root. It is written normalised: no `.` or `..` segment and no empty segment, except one
+leading `./`. Each segment must match the name on disk in letter case.
 
 | Key | Value |
 |---|---|

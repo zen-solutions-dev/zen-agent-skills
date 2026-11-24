@@ -46,7 +46,9 @@ lite, strike every reference to the absent files as you write them:
 
 1. Confirm a git repository (`git rev-parse --is-inside-work-tree`). If not, ask whether to
    `git init`; the parallel workflow this feeds needs `.tasks/` tracked.
-2. Look for `.tasks/.scaffold.json`. If it exists this is a re-run: go to step 5.
+2. When the person asked only to configure the skills and `.tasks/validate.py` exists, go straight
+   to step 6, whether or not a manifest exists. Otherwise, when `.tasks/.scaffold.json` exists,
+   this is a re-run: go to step 5.
 3. Note which of `AGENTS.md`, `.tasks/`, `ROADMAP.md`, `CHANGELOG.md`, `CLAUDE.md` exist.
 4. Look for a tracker under another name or shape: `TODO.md`, `BACKLOG.md`, `TASKS.md`, `PLAN.md`,
    changelog equivalents (`HISTORY.md`, `NEWS.md`), a `tasks/` or `issues/` directory, a "TODO",
@@ -81,6 +83,9 @@ Fill the placeholders from the repository, never from assumption:
 - **`{{CONVENTIONS}}`**: only conventions you can observe (a linter config, `.editorconfig`, a
   formatter), and only those an agent would not infer from the files themselves. Seed it thin.
 - **`{{CURRENT_STATE}}`** (standard and team): what exists today, by theme, for the roadmap.
+- **`{{PROJECT_NAME}}`**: the manifest's name (`package.json`, `pyproject.toml`, `Cargo.toml`,
+  `go.mod`), else the README's title, else the repository directory's name. **`{{DATE}}`**: today,
+  as `YYYY-MM-DD`.
 
 Done when every placeholder the tier uses has a value taken from the repository or a marked TODO.
 
@@ -148,9 +153,10 @@ fresh scaffold; the person may decline it.
    have is `none`, and a fact nobody knows yet is left out. For `tracker: other`, ask for a paragraph
    saying how to create, read, label and close an item, and put it below the block.
 3. **On a re-run**, first run `python .tasks/validate.py`; when the block does not parse, write
-   nothing, show the person what the validator reported, and ask them to repair the file by hand. Otherwise keep every line of the existing file
-   byte-identical, prose and comments included; propose values only for keys it lacks, appended at
-   the end of the block, and change a key only when the person asks for it during the run.
+   nothing, show the person what the validator reported, and ask them to repair the file by hand.
+   Otherwise keep every line of the existing file byte-identical, prose and comments included;
+   propose values only for keys it lacks, appended at the end of the block, and change a key only
+   when the person asks for it by name during the run.
 4. **Show the whole draft**: the file from `templates/zen.md.tmpl`, and the pointer block for
    `AGENTS.md` from [`templates/agent-skills.md.tmpl`](templates/agent-skills.md.tmpl).
 
@@ -196,7 +202,10 @@ reported with a fix offered.
 
 Summarise what was written and what was skipped and why. Then offer, without starting either, the
 two next steps and let the person choose: the contract-driven path, `spec-author`, for behaviour a
-person must agree before it is built; or the direct path, `new-task`, for a first task file.
+person must agree before it is built; or the direct path, `new-task`, for a first task file. This
+skill invents no work items unless asked. When neither skill is installed, copy `_TEMPLATE.md` and
+fill it for a known bug or feature, so the person sees the format on their own work, and run
+`python .tasks/validate.py` over it.
 
 Done when the report lists every file written or skipped, and both next steps are offered and
 neither is started.
