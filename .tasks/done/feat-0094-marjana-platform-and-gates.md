@@ -127,3 +127,24 @@ placements identical at base and head. Findings, and what was done with each:
    sentence answers it.
 7. All eight roadmap exceptions still fire on this branch, because WS-A is not merged here. **For
    integration.**
+
+## Landing review fix round (2026-11-24)
+
+The orchestrator's fresh-context landing review found:
+
+- **Major: a stale exception was reported but never failed the gate.** While a stale key stood, it
+  could excuse a regression that happened to produce the same key. A stale key now fails the gate,
+  and the summary line counts them. Shown red first. With WS-A's true "Current state" merged, the
+  list is empty.
+- **Minor and nits, all addressed:**
+  - The new skills walk crashed on a directory name holding a byte that is not UTF-8. The name is
+    now escaped, and `run-checks.py` is under the undecodable-name tests, red first.
+  - `feat-0090`'s changelog box was ticked for a line that does not exist. It is unticked.
+  - The `S-014` amendment now says "not loaded by Claude Code".
+  - The setup pointer now names `docs/agents/zen.md`.
+  - Provenance citations now point at `CONTRIBUTING.md`.
+  - Findings are cited at their own line.
+  - PEP 8 E303 in `_skillmeta.py` is fixed.
+  - The routing cues are back in two draft descriptions, at 400 and 396 characters.
+
+The Decisions above describe the first version where they differ from this round.
