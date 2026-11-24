@@ -42,7 +42,7 @@ claude plugin marketplace update zen-agent-skills
 claude plugin update zen-agent-skills@zen-agent-skills
 ```
 
-To pin a branch or tag instead of the default branch, add `#ref`: `claude plugin marketplace add zen-solutions-dev/zen-agent-skills#v1.0.0`.
+To pin a branch or tag instead of the default branch, add `#ref`: `claude plugin marketplace add zen-solutions-dev/zen-agent-skills#v0.1.0`. The only tag today is `v0.1.0`; check `git tag` or the repository's releases for newer ones.
 
 **Your edits to a lens do not survive an update.** The plugin is a cache the update replaces whole, so it cannot keep a rules file you rewrote. If you want to own a lens, use the installer below, which preserves your edits and reports them.
 
@@ -264,6 +264,19 @@ The committed marketplace this repository publishes is regenerated with `python 
 
 The kit does not maintain separate hand-edited versions of a skill for each harness. The canonical source remains the `SKILL.md` file.
 
+## Optional, Claude Code only: measure the hidden payload, then trim it
+
+**This section applies to Claude Code alone.** Other harnesses carry their own payload and their own controls.
+
+Every request a Claude Code session sends carries more than your instruction files: the system prompt, every tool definition, every MCP server's tools, and the skill listing. This kit keeps its own share small (the description budget `install.py --dry-run` prints, and `core.md`), but it cannot see the rest. Measure before you cut anything:
+
+1. **Look.** Run `/context` in a session. It breaks the window down by source: system prompt, tools, MCP tools, memory files, skills.
+2. **Find the large, unused share.** Usually an MCP server you connected once, or a family of tools a project never calls.
+3. **Remove that share from every request.** A bare tool name under `permissions.deny` in a project's `.claude/settings.json` takes that tool out of the session; disconnecting an MCP server takes all of its tools out. Check the current Claude Code settings documentation for the exact keys and any environment flags, because they change between releases.
+4. **Measure again** with `/context`, and keep the change only if the number moved.
+
+**No preset ships with the kit, on purpose.** What is safe to deny depends on the work: `fix-batch`, `reconcile-worktrees` and any orchestration need the task, subagent and worktree tools, and a preset that removed them would break exactly the skills that save the most time. The source of this practice is Matt Pocock's aihero.dev article "How to kill the bloat in Claude Code's system prompt", recorded in [the 2026-11-24 sources delta](reviews/2026-11-24-sources-delta.md) under "Context hygiene".
+
 ## Use a skill
 
 Ask the installed harness to use a skill by name, or select the generated rule or prompt in the target project. Begin with a workflow skill such as `project-bootstrap`, `init-worktracking`, or `new-task`. Read the skill's `SKILL.md` when you need the complete procedure and acceptance criteria.
@@ -276,7 +289,7 @@ One command decides whether a change to the kit is acceptable, and it takes no f
 python scripts/run-checks.py
 ```
 
-[`run-checks.py`](../scripts/run-checks.py) runs every gate in a single pass, including the ones that cover the installer this page documents. [`AGENTS.md`](../AGENTS.md) names what those gates are, and this page deliberately does not restate the list: a second copy of it is a second thing to go stale. CI calls the same script, so the gate set cannot drift between your machine and the pipeline either.
+[`run-checks.py`](../scripts/run-checks.py) runs every gate in a single pass, including the ones that cover the installer this page documents. Its own summary names each gate it ran, and this page deliberately does not restate the list: a second copy of it is a second thing to go stale. CI calls the same script, so the gate set cannot drift between your machine and the pipeline either.
 
 It exits `0` when every gate passed, `1` when a gate ran and failed, and `2` when a gate could not run at all. A `2` outranks a `1`, for the same reason `--check` above uses that precedence: an incomplete report is a different claim from a bad change. Every gate runs even after one fails, so a single run tells you everything that is wrong rather than only the first thing. CI runs Linux, macOS, and Windows across the supported Python range, so passing locally is necessary but not sufficient.
 
