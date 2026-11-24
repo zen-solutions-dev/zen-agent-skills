@@ -45,6 +45,8 @@ has a lens but no author.
   file, never implementation source.
 - Frontmatter carries a `status` field whose value is one of `draft` or `approved`. `approved` is
   set only by a human; `spec-author` never sets `approved` itself.
+- An approval is tied to the text approved: the human approving records `approved_digest`, the
+  digest the skill's `scripts/spec_digest.py` prints, and `spec-author` never writes or changes it.
 
 ## Scenarios
 
@@ -111,12 +113,28 @@ question, only for an idea too vague to yield a contract. The id is kept so it i
 - **Then** no question put to the person asks for that fact, and the fact is recorded with where it
   was found.
 
+### Scenario S-010: approved text edited after its approval is not decomposed
+
+- **Given** a spec with `status: approved` whose `approved_digest` no longer matches its text
+- **When** `new-task` is asked to decompose it
+- **Then** `new-task` refuses and reports that the approved text changed and waits on re-approval.
+
+### Scenario S-011: an amendment leaves the approval record alone
+
+- **Given** an approved spec carrying an `approved_digest`
+- **When** spec-author amends it
+- **Then** it leaves `status` and `approved_digest` exactly as they were, adds a dated note naming
+  the amendment as pending re-approval, and reports that the spec now reads `changed` until the
+  person re-approves it.
+
 ## Proposed Surface
 
 | Element | Detail |
 |---|---|
 | Output file | `<slug>.md`, Markdown with YAML frontmatter, written to the repository's existing spec location; `docs/spec/<slug>.md` when the repository has none |
 | Frontmatter `status` | `draft` (author-set) or `approved` (human-set only) |
+| Frontmatter `approved_digest` | `sha256:` plus 64 hex digits, the digest of the approved text as `scripts/spec_digest.py` prints it; human-set only, never written or changed by the skill |
+| `scripts/spec_digest.py` | read-only: prints a spec's verdict (`bound`, `unbound`, `changed`, `malformed`, `not-approved`, `unreadable`) and digest; `--queue <directory>` lists approved specs waiting on re-approval |
 | Body sections | Problem, Goals, Non-Goals, Constraints, Scenarios, Proposed Surface, Open Questions |
 | Scenario ids | stable `S-NNN`, never renumbered; a retired id stays in place, marked retired |
 | Interview round | numbered questions, each with a recommended answer worded so "yes" accepts it; ends when no open decision remains and the person confirms |
@@ -143,3 +161,11 @@ questions with recommendations until no decision is open and the person confirms
 (facts are looked up, never asked); the Proposed Surface gains an interview-round row and states
 how a retired id is kept. No id was renumbered or reused. `status` is deliberately left `approved`:
 **this amendment changes behavior and is pending the maintainer's re-approval.**
+
+Amended on 2026-11-23 by `feat-0083`: an approval is now tied to the text a person approved. A
+Constraint, two Proposed Surface rows (`approved_digest` and the read-only `scripts/spec_digest.py`),
+and two scenarios are added: `S-010` (approved text edited since approval is not decomposed) and
+`S-011` (an amendment leaves the approval record alone). No id was renumbered or reused. `status` is
+deliberately left `approved`: **this amendment changes behavior and is pending the maintainer's
+re-approval.** Nothing here binds this spec's own text; by the maintainer's decision, every spec
+approved before this amendment stays unbound until the maintainer re-reads it.

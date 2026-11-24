@@ -553,6 +553,10 @@ HOOK_REGISTRATIONS = [
     # checkout, and what it does not watch is a shell command's write targets (2026-10
     # kit refresh, audit finding 4.2). The hook re-checks the tool name itself.
     ("worktree-boundary-reminder.py", "PostToolUse", "^Bash$|^PowerShell$"),
+    # `startup` only, like the other two SessionStart reminders, and a hook of its own
+    # rather than a branch in either: it asks whether the files a harness loaded at launch
+    # are committed, which is neither reachability nor currency (feat-0081).
+    ("instruction-provenance-reminder.py", "SessionStart", "startup"),
 ]
 
 

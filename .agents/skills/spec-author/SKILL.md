@@ -81,11 +81,23 @@ Unresolved decisions, numbered, each with a recommendation; `None.` when there a
 **This skill only ever writes `status: draft`.** `approved` is set by a human after reading the spec,
 never by this skill and never assumed.
 
-**Amending an approved spec**: leave `status: approved` as it is, and add a dated note in the spec
-naming the date, the amending task's id, what changed, and that the amendment is pending the human's
-re-approval. Flipping it back to `draft` would make `verifier-agent` return `blocked` and `new-task`
-refuse to decompose, stalling every task waiting on the contract. Where the repository keeps a spec
-index, the convention is recorded there.
+**Approval is bound to the text a person read.** When the person approves, they set `status: approved`
+and `approved_digest: sha256:...` in the frontmatter, the digest being the line
+[`scripts/spec_digest.py`](scripts/spec_digest.py) prints for that spec. The script only reads and
+prints; writing either key is the person's act, never this skill's or any agent's, and changing the
+digest to make a check pass is editing the judge (`A11`). Later readers run the same script: `bound`
+and `unbound` may be relied on, `changed` and `malformed` may not, and `--queue <spec directory>`
+lists every approved spec waiting on the person. A spec approved before this existed is `unbound`
+until the person re-reads it and records its digest. Where the script is not installed, the digest
+is the SHA-256 of the spec's body after its frontmatter, with a leading byte-order mark dropped, line
+endings normalised to `\n`, and trailing newlines removed; the script is the reference.
+
+**Amending an approved spec**: leave `status: approved` and `approved_digest` exactly as they are, and
+add a dated note in the spec naming the date, the amending task's id, what changed, and that the
+amendment is pending the human's re-approval. A bound spec then reads `changed`, and nothing is
+verified or decomposed against it until the person re-reads it and records the new digest; that
+wait is the point. Flipping it back to `draft` gains nothing and loses the record of what was last
+approved. Where the repository keeps a spec index, the convention is recorded there.
 
 ## Procedure
 
@@ -148,10 +160,11 @@ changed in this run.
 Summarize: scenario count, surface elements, and any Open Questions needing the person's decision.
 List the terms the interview settled and any decision-record candidates, and offer to run
 `domain-language` on them as its own step.
-State that the spec is `status: draft` and that a human must set `status: approved` before
-`new-task` decomposes it. Do not decompose it, and do not treat your draft as approved. For an
-amendment, say instead that `status` was left `approved` and the dated note records the amendment as
-pending re-approval.
+State that the spec is `status: draft` and that a human must set `status: approved`, with the
+`approved_digest` that `scripts/spec_digest.py` prints for it, before `new-task` decomposes it. Do
+not decompose it, and do not treat your draft as approved. For an amendment, say instead that
+`status` was left `approved`, that the dated note records the amendment as pending re-approval, and,
+when the spec carried a digest, that it now reads `changed` until the person re-approves.
 
 Done when the person has the counts, every Open Question, the settled terms and record candidates,
 and a plain statement of what approval the spec now waits on, and nothing has been decomposed.

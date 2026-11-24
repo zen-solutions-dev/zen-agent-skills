@@ -59,9 +59,17 @@ Optional:
 Check **both** preconditions that produce `blocked`, so an unrunnable verification is never dressed
 up as a result.
 
-- **Is the contract approved?** If a spec is supplied and its `status` is not `approved`, the run is
-  blocked: verifying against a draft launders an unapproved contract into evidence. If no spec is
-  supplied at all, that is not a blocker; continue, and record that conformance was not assessed.
+- **Is the contract approved, and is it the text that was approved?** If a spec is supplied, run
+  `python <spec-author's directory>/scripts/spec_digest.py <spec>`: the script ships with
+  [`spec-author`](../spec-author/SKILL.md), installed beside this skill, which also defines the
+  digest for a tree that carries no script.
+  `not-approved`, `changed`, `malformed`, or `unreadable` blocks the run: verifying against a draft,
+  or against text edited after its approval, launders an unapproved contract into evidence, and a
+  spec that cannot be read is an unanswered question. Name which, and for `changed` say that the
+  approved text was edited and waits on the person's re-approval. `unbound`
+  is not a blocker: continue, and record in `findings` that the approval is not tied to any text. If
+  no spec is supplied at all, that is not a blocker either; continue, and record that conformance
+  was not assessed.
 - **Is there a command to run?** If no verification command is declared, or a declared command's
   runner is absent, the run is blocked, naming what is missing. Do not substitute a command you
   think is equivalent, relax one that fails to launch, or read the code and call that verification.
@@ -173,7 +181,9 @@ Rules:
   unreconciled conformance item is `accepted-with-reason`.
 - `verdict: fail` when any command failed, any criterion is `unmet`, or any unreconciled item is
   dispositioned `fix`.
-- `verdict: blocked` when a supplied spec is not `approved`, or no command is declared or runnable.
+- `verdict: blocked` when a supplied spec is not approved, or its approved text has changed or
+  cannot be confirmed (`not-approved`, `changed`, `malformed`, or `unreadable` from the digest
+  script), or no command is declared or runnable.
   A blocked run reports no pass or fail for the work itself.
 - `blocking_reasons` is non-empty exactly when the verdict is not `pass`.
 - `conformance` reads `not assessed: no spec supplied` when no spec was given, and is never inferred

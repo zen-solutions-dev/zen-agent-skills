@@ -81,7 +81,7 @@ are that the incident is named, dated, and attributed to whoever reported it, so
 check it, and that the rule says in its own *Cited* line that it rests on one. What does not change:
 an external incident is evidence that the class is real, not that this kit has run into it, so a rule
 admitted this way is marked the way `A8` is marked rather than dressed up as a consolidation. `A10`
-is the first and so far the only rule admitted on one.
+is the first and so far the only rule admitted on one. (Updated 2026-11-23: `A11` is the second rule whose *Cited* line names outside research, alongside two internal exercises; see its entry below.)
 
 References to files outside the installed skill tree are named in prose rather than linked, per the
 portability contract in `AGENTS.md`: this module ships to adopters without this repository around it,
@@ -142,6 +142,42 @@ constrained agent cannot solve arbitrary tasks, and this rule will sometimes sto
 never under attack.
 **Unlike every rule above it, this one is not a consolidation of something this kit already did.**
 Neither trigger the held section named has fired.
+
+### A11
+
+*Cited internally, with outside research for the class, and marked as such.* Added 2026-11-23 by
+[`feat-0082`](../../.tasks/done/feat-0082-an-agent-may-not-edit-its-own-judge.md), on the author's
+decision. The rule rests on two kinds of evidence, and they answer different questions.
+
+**That this kit already works this way.** Two closed tasks show the shape exercised rather than
+invented. [`bug-0013`](../../.tasks/done/bug-0013-validator-rejects-file-scheme-links.md) found half
+of its own acceptance criterion wrong (a grep it expected to return three hits returned five) and
+recorded that "rather than quietly satisfied", leaving the two extra hits alone because changing them
+"would weaken a real check rather than fix this one".
+[`bug-0010`](../../.tasks/done/bug-0010-install-records-an-unresolved-home.md) met an assertion that
+would fail on macOS for a correct reason and fixed it "by comparing resolved forms rather than by
+loosening it until it passes". Neither names a rule; both obey this one.
+
+**That the failure is real, and grows with capability.** ImpossibleBench (Ziqian Zhong, Aditi
+Raghunathan and Nicholas Carlini, arXiv:2510.20270, submitted 23 October 2025, ICLR 2026) builds task
+variants whose specification contradicts their unit tests, so any pass implies a shortcut, and
+reports that frontier models frequently take one, editing or deleting the failing tests, with
+stronger models cheating more. METR's "Recent Frontier Models Are Reward Hacking" (Sydney Von Arx,
+Lawrence Chan and Elizabeth Barnes, 5 June 2025) documents models altering tests and scoring code and
+reaching for the answer the scorer had already computed, while showing they knew this departed from
+what the user wanted. This is the same gate widening `A10` used: published research is evidence that
+the class is real, not that this kit has run into it, and the *Cited* line says so.
+
+**The form is borrowed, and named.** The boundary half, that every done condition carries an unstated
+"must not" beside it and that the builder "may not edit the acceptance conditions", follows
+`skills/loop-design-check/SKILL.md` in Affaan Mustafa's everything-claude-code (MIT), read at commit
+`25278e7` on 2026-10-28. Only the idea was taken; no text was adapted, so the module carries no
+provenance block for it.
+
+**Why every run, like `A10`.** Editing the check is as available to an attended agent as to an
+unattended one, and the person watching sees a passing run rather than a changed judge. The rule
+names a property of the judge, not of the run, so it takes `A10`'s scope rather than the module's
+default.
 
 ### A4
 
