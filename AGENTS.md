@@ -4,6 +4,8 @@ Canonical rules for every AI agent working here, whatever the harness. `CLAUDE.m
 
 This repo is **Zen Agent Skills**: a portable, cross-harness library of agent skills, plus the tooling that installs them. It tracks itself with its own `init-worktracking` system: strategy in [`ROADMAP.md`](ROADMAP.md), atomic work in [`.tasks/`](.tasks/), finished work in [`CHANGELOG.md`](CHANGELOG.md), older ledger entries in [`docs/history/`](docs/history/README.md).
 
+**Quality bar: library.** The kit ships to adopters: every change is tested and reviewed, and a skill's interface, a template or a file format is a contract that changes only deliberately.
+
 ## 0. Reading protocol
 
 An agent assigned a task reads exactly: this file in full; its one task file in `.tasks/<id>.md`; and only the files that task names in `touched_files`, plus any file its body points to. Do not scan `.tasks/`, read other agents' task files, or read `ROADMAP.md` or `CHANGELOG.md` unless your task cites them. If a `depends_on` task is not yet in `.tasks/done/`, stop and report the blocker.
@@ -88,3 +90,7 @@ Material adapted from elsewhere carries a provenance block. The convention (fiel
 ## 7. Contribution bar
 
 A skill earns a place only if its author actually uses it and has iterated on it. No speculative skills. A drafted skill stays a draft until used and refined; hyper-specific personal skills stay out of the shared kit.
+
+## Agent skills
+
+The kit's skills read this repository's setup from [`docs/agents/zen.md`](docs/agents/zen.md).
