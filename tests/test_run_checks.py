@@ -967,6 +967,35 @@ class RoadmapDraftStatusTests(unittest.TestCase):
             with self.subTest(skill=name):
                 self.assertIn(f"`{name}`", report)
 
+    # WS-A's rewrite of the section (branch `zen/marjana-ws-a`, 2026-11-24), verbatim: a true
+    # section that the first version of this check failed twice, once for naming the skills
+    # PR #113 promoted in the same bullet as the draft list, once for reading "places 20
+    # skills" as the total. A check that fires on a true roadmap gets switched off.
+    TRUE_REWRITE = "Measured 2026-11-24 at `zen/marjana-2026-11-24` `9598355`, which carries `main` at `220282a` (pull requests #109 to #116 merged). Counts are derived, not kept: `python3 scripts/install.py --dry-run` prints the draft list and every profile, and `ls .agents/skills` the total.\n\n- **29 skills, 25 shipped and 4 drafts** (`metadata.status: draft`, placed only with `--include-drafts`): `agent-observatory`, `quest-tracker`, `sitrep` and `systematic-debugging`. Pull request #113 promoted `domain-language`, `grill`, `improve-architecture`, `retro`, `tdd` and `zen` (`feat-0084` to `feat-0089`).\n- **The shipped skills**: `project-bootstrap` and `init-worktracking` set a repository up; `zen` routes; `grill` and `domain-language` align before planning; `new-task` and the spec chain (`spec-author`, `spec-quality`, `spec-plan-readiness`, `spec-conformance`) turn decisions into contracts and tasks; `fix-batch` and `reconcile-worktrees` dispatch and land parallel work; `tdd`, `test-author`, `test-quality`, `verifier-agent` and `house-review` build and check it; `doc-author`, `doc-revise` and `doc-sync` keep the documents true; `pr-describe`, `agent-handoff` and `human-handoff` close and hand over; `retro` and `improve-architecture` learn from it.\n- **Four swappable lenses** under `.agents/rules/` (`house-style`, `autonomy` with `A1` to `A11`, `review-quality`, `writing-for-agents`), plus the always-loaded `core.md`, and **seven opt-in hooks** under `.agents/hooks/`.\n- **Distribution**: `install.py` (profiles `core`, `spine`, `all`; the default `spine` places 20 skills), `build-adapters.py` for Cursor and VS Code or Copilot, and the committed Claude Code marketplace under `.claude-plugin/`. `run-checks.py` is the acceptance command, and CI calls it.\n- **13 approved behavioural contracts** under `docs/spec/`, several with amendments pending the author's re-approval.\n\nThis section says only what was true on its date; the next change to the kit makes it a record of that date."
+
+    DRAFTS_AT_9598355 = ["agent-observatory", "quest-tracker", "sitrep", "systematic-debugging"]
+    SHIPPED_AT_9598355 = [
+        "agent-handoff", "doc-author", "doc-revise", "doc-sync", "domain-language", "fix-batch",
+        "grill", "house-review", "human-handoff", "improve-architecture", "init-worktracking",
+        "new-task", "pr-describe", "project-bootstrap", "reconcile-worktrees", "retro",
+        "spec-author", "spec-conformance", "spec-plan-readiness", "spec-quality", "tdd",
+        "test-author", "test-quality", "verifier-agent", "zen"]
+
+    def test_a_true_rewrite_naming_promotions_and_a_profile_size_passes(self):
+        root = self._repo(self.TRUE_REWRITE, drafts=self.DRAFTS_AT_9598355,
+                          shipped=self.SHIPPED_AT_9598355)
+        ok, report = self._check(root)
+        self.assertTrue(ok, report)
+
+    def test_the_same_rewrite_still_fails_when_a_draft_is_promoted_under_it(self):
+        drafts = [d for d in self.DRAFTS_AT_9598355 if d != "sitrep"]
+        root = self._repo(self.TRUE_REWRITE, drafts=drafts,
+                          shipped=self.SHIPPED_AT_9598355 + ["sitrep"])
+        ok, report = self._check(root)
+        self.assertFalse(ok)
+        self.assertIn("`sitrep` is named as a draft", report)
+        self.assertIn("says 4 drafts", report)
+
     def test_an_exception_excuses_its_finding_and_says_so(self):
         root = self._repo("- **Drafts**: `draft-one`, `shipped-one`.",
                           drafts=["draft-one"], shipped=["shipped-one"])

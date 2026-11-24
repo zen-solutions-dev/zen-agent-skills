@@ -256,8 +256,14 @@ NEXT_SECTION_RE = re.compile(r"^##[ \t]+\S", re.MULTILINE)
 BACKTICKED_RE = re.compile(r"`([^`\s]+)`")
 DRAFT_WORD_RE = re.compile(r"\bdrafts?\b", re.IGNORECASE)
 SHIP_WORD_RE = re.compile(r"\bship(?:s|ped|ping)?\b", re.IGNORECASE)
-# A digit count beside the noun it counts. Digits only: a number written as a word is
-# not read, and the report's arithmetic says how many counts were.
+# A sentence ends at terminal punctuation followed by space, read with code spans masked so
+# `core.md` or `install.py --dry-run` cannot end one. The unit is the sentence, not the
+# block, because a true bullet names what PR #113 promoted right after the draft list
+# (WS-A's rewrite, 2026-11-24), and a block-wide reading took those names for drafts.
+SENTENCE_END_RE = re.compile(r"(?<=[.!?])\s+(?=\S)")
+# A digit count beside the noun it counts, read only in a sentence that makes a draft or
+# ship claim: "the default `spine` places 20 skills" is a profile's size, not the total.
+# Digits only: a number written as a word is not read.
 COUNT_RES = (
     ("skills", re.compile(r"\b(\d+)\s+skills\b", re.IGNORECASE)),
     ("ship", re.compile(r"\b(\d+)\s+(?:ship|ships|shipped)\b", re.IGNORECASE)),
@@ -303,16 +309,30 @@ def current_state_section(text):
     return text[:match.start()].count("\n") + 1, text[match.start():end]
 
 
+def _sentences(block):
+    """The sentences of a markdown block, split outside code spans."""
+    masked = list(block)
+    for start, end in _skillmeta.code_span_ranges(block):
+        masked[start:end] = "x" * (end - start)
+    masked = "".join(masked)
+    pieces, last = [], 0
+    for match in SENTENCE_END_RE.finditer(masked):
+        pieces.append(block[last:match.start()])
+        last = match.end()
+    pieces.append(block[last:])
+    return [p for p in pieces if p.strip()]
+
+
 def roadmap_status_findings(text, statuses):
     """Claims in "Current state" that disagree with each skill's `metadata.status`.
 
     Returns `(findings, claims_read)`, where each finding is `(key, line, message)` and a
-    key is what an exception names. Per markdown block: a block using the word "draft"
-    claims every skill it names in backticks is a draft; otherwise a block using "ship"
-    claims every skill it names ships. When any block lists drafts, the lists together
-    must name every draft, which is the reverse direction: a list missing a draft is the
-    same rot as a list naming a promoted skill. A digit beside "skills", "ship" or
-    "drafts" is compared with the tree.
+    key is what an exception names. Per sentence: a sentence using the word "draft"
+    claims every skill it names in backticks is a draft; otherwise a sentence using
+    "ship" claims every skill it names ships. When any sentence lists drafts, the lists
+    together must name every draft, which is the reverse direction: a list missing a
+    draft is the same rot as a list naming a promoted skill. A digit beside "skills",
+    "ship" or "drafts" in one of those sentences is compared with the tree.
     """
     section = current_state_section(text)
     if section is None:
@@ -321,27 +341,32 @@ def roadmap_status_findings(text, statuses):
     findings, claims = [], 0
     listed_drafts = set()
     any_draft_list = False
+    counted = []
     for number, block in markdown_blocks(body):
         line = first + number - 1
-        names = [n for n in BACKTICKED_RE.findall(block) if n in statuses]
-        if not names:
-            continue
-        # The words are read with every code span removed, because a span is a name and
-        # not prose: `draft-two` would otherwise make its own block a draft list.
-        prose = BACKTICKED_RE.sub(" ", block)
-        if DRAFT_WORD_RE.search(prose):
-            any_draft_list = True
+        for sentence in _sentences(block):
+            names = [n for n in BACKTICKED_RE.findall(sentence) if n in statuses]
+            # The words are read with every code span removed, because a span is a name
+            # and not prose: `draft-two` would otherwise make its own sentence a claim.
+            prose = BACKTICKED_RE.sub(" ", sentence)
+            if DRAFT_WORD_RE.search(prose):
+                kind = "draft"
+            elif SHIP_WORD_RE.search(prose):
+                kind = "shipped"
+            else:
+                continue
+            counted.append(prose)
+            if kind == "draft" and names:
+                any_draft_list = True
             for name in names:
                 claims += 1
-                listed_drafts.add(name)
-                if not statuses[name]:
-                    findings.append((f"draft:{name}", line,
-                                     f"`{name}` is named as a draft, and its SKILL.md "
-                                     f"carries no `status: draft`"))
-        elif SHIP_WORD_RE.search(prose):
-            for name in names:
-                claims += 1
-                if statuses[name]:
+                if kind == "draft":
+                    listed_drafts.add(name)
+                    if not statuses[name]:
+                        findings.append((f"draft:{name}", line,
+                                         f"`{name}` is named as a draft, and its SKILL.md "
+                                         f"carries no `status: draft`"))
+                elif statuses[name]:
                     findings.append((f"shipped:{name}", line,
                                      f"`{name}` is named as shipped, and its SKILL.md "
                                      f"carries `status: draft`"))
@@ -354,7 +379,7 @@ def roadmap_status_findings(text, statuses):
     actual = {"skills": len(statuses),
               "drafts": sum(1 for d in statuses.values() if d),
               "ship": sum(1 for d in statuses.values() if not d)}
-    flat = " ".join(body.replace("*", "").split())
+    flat = " ".join(" ".join(counted).replace("*", "").split())
     for noun, pattern in COUNT_RES:
         for match in pattern.finditer(flat):
             claims += 1
