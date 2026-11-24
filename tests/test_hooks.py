@@ -407,6 +407,35 @@ class TheCommittedRegistrationActuallyRuns(unittest.TestCase):
                 for matcher in event
                 for entry in matcher.get("hooks", [])]
 
+    def usable_posix_shell(self):
+        """The first `bash` or `sh` on PATH that can run `true`, or skip the calling test.
+
+        Found is not the same as usable. On Windows `bash` can resolve to the WSL launcher
+        in `System32`, which with no working distribution fails before it reads a command
+        (`execvpe /bin/bash failed`). A Codex command failing under that shell says nothing
+        about the command, so the check is skipped with the reason rather than failed. A
+        shell that runs `true` gets the full assertion below, unchanged.
+        """
+        unusable = []
+        for name in ("bash", "sh"):
+            shell = shutil.which(name)
+            if not shell:
+                continue
+            try:
+                probe = subprocess.run([shell, "-c", "true"], capture_output=True,
+                                       text=True, timeout=30)
+            except (OSError, subprocess.TimeoutExpired) as error:
+                unusable.append(f"{shell} ({error})")
+                continue
+            if probe.returncode == 0:
+                return shell
+            unusable.append(f"{shell} (`-c true` exits {probe.returncode}: "
+                            f"{probe.stderr.strip()[:120]!r})")
+        if not unusable:
+            self.skipTest("no POSIX shell available to evaluate the command's own syntax")
+        self.skipTest("no usable POSIX shell to evaluate the command's own syntax: "
+                      + "; ".join(unusable))
+
     def test_every_codex_command_launches_and_exits_zero(self):
         """The same executable check over the Codex wiring (`bug-0058`).
 
@@ -424,9 +453,7 @@ class TheCommittedRegistrationActuallyRuns(unittest.TestCase):
         tail arrives as argv and no hook reads it, so the fallback is never worse than the
         bare `python3` it replaces.
         """
-        posix_shell = shutil.which("bash") or shutil.which("sh")
-        if not posix_shell:
-            self.skipTest("no POSIX shell available to evaluate the command's own syntax")
+        posix_shell = self.usable_posix_shell()
         payload = json.dumps({"hook_event_name": "SessionStart", "source": "startup",
                               "cwd": str(REPO_ROOT)})
         for command in self.codex_commands():
