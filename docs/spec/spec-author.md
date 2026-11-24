@@ -131,7 +131,7 @@ question, only for an idea too vague to yield a contract. The id is kept so it i
 
 | Element | Detail |
 |---|---|
-| Output file | `<slug>.md`, Markdown with YAML frontmatter, written to the repository's existing spec location; `docs/spec/<slug>.md` when the repository has none |
+| Output file | `<slug>.md`, Markdown with YAML frontmatter, written to the repository's existing spec location, which is the `spec_dir` of `docs/agents/zen.md` when that file sets it; `docs/spec/<slug>.md` when the repository has none |
 | Frontmatter `status` | `draft` (author-set) or `approved` (human-set only) |
 | Frontmatter `approved_digest` | `sha256:` plus 64 hex digits, the digest of the approved text as `scripts/spec_digest.py` prints it; human-set only, never written or changed by the skill |
 | `scripts/spec_digest.py` | read-only: prints a spec's verdict (`bound`, `unbound`, `changed`, `malformed`, `not-approved`, `unreadable`) and digest; `--queue <directory>` lists approved specs waiting on re-approval |
@@ -169,3 +169,11 @@ and two scenarios are added: `S-010` (approved text edited since approval is not
 deliberately left `approved`: **this amendment changes behavior and is pending the maintainer's
 re-approval.** Nothing here binds this spec's own text; by the maintainer's decision, every spec
 approved before this amendment stays unbound until the maintainer re-reads it.
+
+Amended on 2026-11-24 by `feat-0091`: the repository's spec location is read from the `spec_dir`
+key of `docs/agents/zen.md` when that file sets it, before any discovery, and the run says which
+source it used (the per-repository setup file is specified in [`zen-config.md`](zen-config.md)).
+Only the Proposed Surface output-file row changes; `S-006` is unchanged in wording and now covers a
+configured location as well as a discovered one. No id was renumbered or reused. `status` is
+deliberately left `approved`: **this amendment changes behavior and is pending the maintainer's
+re-approval.**

@@ -63,3 +63,19 @@ In this kit `python .tasks/validate.py --links <path>` resolves every relative l
 directory the file actually lives in, the same rule the CI docs link step applies to the root,
 `.github/` and `docs/` trees. The checker's other modes walk the tracker directory only, so they
 would report clean without having read the edited document at all (`bug-0014`).
+
+## Why the habits in Step 2
+
+Moved here from the procedure on 2026-11-24 (`feat-0093`), which kept the habits and shed the
+argument. **Formatting does not define a claim**: prose wraps, so a qualifier and the subject it
+qualifies routinely land on different lines, and a scan that compares text within one line, or that
+looks only at marked-up tokens, misses the references that matter. **Counts drift silently** because
+nobody recounts them, and "all six" or "three lenses" is the cheapest claim in a document to check.
+**A quoted or capitalized word is no evidence** it names a skill, a file or a command; looking for
+the wrong kind of thing fills the report with dismissals.
+
+The fourth habit, the undated present tense, is the detecting half of the "write history, not the
+present" rule in `writing-for-agents.md`: a bare "currently" is a claim with no date to check it
+against, so in a current-state document it is grounded like any other claim. It reaches no further:
+a ledger is still skipped entirely, so the habit narrows nothing in this skill's contract.
+

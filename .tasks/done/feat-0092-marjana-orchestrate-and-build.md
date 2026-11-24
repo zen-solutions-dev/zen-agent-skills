@@ -2,7 +2,7 @@
 id: feat-0092
 title: Add an orchestrator and a research skill, and bring the build and verify skills current
 type: feat
-status: open
+status: done
 priority: P1
 parent: "ROADMAP 2026-11-24 Marjana overhaul"
 depends_on: [chore-0099]
@@ -28,11 +28,11 @@ created: 2026-11-24
 
 ## Problem
 
-The maintainer works through one orchestrating session per project or day: child sessions research and build on their own branches, everything lands on one integration branch, and one pull request reaches the person. The kit has the parts (`fix-batch`, `verifier-agent`, `reconcile-worktrees`, `agent-handoff`, `pr-describe`) but no skill that runs the day, and `A8` has no rule for an orchestrator merging other agents' verified work ([sources delta](../docs/reviews/2026-11-24-sources-delta.md), "Orchestrator pattern").
+The maintainer works through one orchestrating session per project or day: child sessions research and build on their own branches, everything lands on one integration branch, and one pull request reaches the person. The kit has the parts (`fix-batch`, `verifier-agent`, `reconcile-worktrees`, `agent-handoff`, `pr-describe`) but no skill that runs the day, and `A8` has no rule for an orchestrator merging other agents' verified work ([sources delta](../../docs/reviews/2026-11-24-sources-delta.md), "Orchestrator pattern").
 
 ## Scope
 
-**In scope** ([plan, WS-C](../docs/reviews/2026-11-24-marjana-plan.md)):
+**In scope** ([plan, WS-C](../../docs/reviews/2026-11-24-marjana-plan.md)):
 
 - **`D1`** in `autonomy.md` and mirrored in `core.md` (inside its line budget): an orchestrator may merge into an integration branch only work it did not author and that someone else verified (`A7`); only a person merges into `developer` or `main`.
 - **`orchestrate`**, a new draft, `invocation: user`: the sources delta's seven steps, each with a "Done when"; frontier waves computed from merges into the integration branch; children merge the integration tip before reporting; relay as outcome first, then decisions; `afk` or `hitl` per child, with `hitl` work kept in the orchestrator's own conversation; a rework cap; one review, one fix, then stop; dated, commit-cited memory ("write history, not the present"); offer environment changes after friction and route them to `retro`; sample about one child in five for `retro`. Child stays transport-neutral; a labelled optional section covers Claude Code cloud sessions (`create_session`, `send_message`, `list_events`). It composes `agent-handoff`, `verifier-agent`, `reconcile-worktrees` and `pr-describe` by link. **This session is its first real run**: the orchestrator's account of it is in the plan and in its reports to you.
@@ -50,12 +50,20 @@ The maintainer works through one orchestrating session per project or day: child
 
     ZEN_CHECKS_SCOPE=full python3 scripts/run-checks.py
 
-- [ ] `.agents/skills/orchestrate/SKILL.md` and `.agents/skills/research/SKILL.md` exist with `status: draft`.
-- [ ] `grep -n "integration branch" .agents/rules/autonomy.md .agents/rules/core.md` finds the `D1` text in both.
-- [ ] `docs/reviews/2026-11-24-dogfood/ws-c.md` has a row for every skill this task owns.
+- [x] `.agents/skills/orchestrate/SKILL.md` and `.agents/skills/research/SKILL.md` exist with `status: draft`.
+- [x] `grep -n "integration branch" .agents/rules/autonomy.md .agents/rules/core.md` finds the `D1` text in both.
+- [x] `docs/reviews/2026-11-24-dogfood/ws-c.md` has a row for every skill this task owns.
 
 ## Definition of done
 
-- [ ] Acceptance command passes locally.
-- [ ] Notes for integration and the `CHANGELOG.md` line reported to the orchestrator.
-- [ ] File moved to `.tasks/done/`, `status: done`.
+- [x] Acceptance command passes locally.
+- [x] Notes for integration and the `CHANGELOG.md` line reported to the orchestrator.
+- [x] File moved to `.tasks/done/`, `status: done`.
+
+## Decisions
+
+- **`D1` is worded tighter than the plan's one-line decision**, after an independent verifier found five gaps (2026-11-24, `897e6e0`): the verifier may not be dispatched or briefed by the author; the passing verdict is the latest on the exact commit; landing is fast-forward only, so the verified commit is the one that lands; the orchestrator's own commits on the integration branch are verified or named in the pull request as unverified. Every change narrows what the orchestrator may do.
+- **`verifier-agent`'s spec was amended** (dated note, a new `verified_by` output field, optional cross-family line); the amendment awaits the maintainer's approval. Its frontmatter still reads `approved`.
+- **`systematic-debugging` keeps its over-250 body with a one-line reason** rather than moving test-pinned steps behind a link.
+- **Children commit and push their own branch under `orchestrate`**, overriding `fix-batch`'s "do not commit" for that use: committing a child's work makes it the orchestrator's own under `D1` guard 1. Found by running the pattern here.
+- **`doc-sync` was not run by this task**: the reader-facing documents belong to WS-A and integration; what they should say is in the report's Notes for integration.

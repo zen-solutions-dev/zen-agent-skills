@@ -26,6 +26,9 @@ Conventions: your answer follows [`house-style.md`](../../rules/house-style.md).
    project yet, an idea, a plan, a build, a change to verify, a change to ship, or a look back.
    Look beyond the current checkout too: another worktree or an unmerged branch may already hold
    work on the same thing (`git worktree list`, `git branch -a`), and that changes the route.
+   When the repository has `.tasks/` but no `docs/agents/zen.md`, add one line to the reply: the
+   configure step of `init-worktracking` records what the skills read here, so they stop
+   rediscovering it.
    Done when you can name one stage, or you have asked the one question that decides it.
 2. **Pick the lightest path that fits**, using [the light paths](#the-light-paths) first and the
    flows only when the change has earned them. Done when you have one path and its reason.
@@ -34,9 +37,11 @@ Conventions: your answer follows [`house-style.md`](../../rules/house-style.md).
    any draft you recommend as a draft, and say it needs `install.py --include-drafts`.
    Done when every skill the reply will name has had its `SKILL.md` read or is said to be not
    installed, and every draft among them is marked as one.
-4. **Reply with the hint.** The skill to start now, one line on why, and the skill that usually
-   follows it. Done when the reply names exactly one next skill, or says plainly that no skill fits
-   and the person should just do the work.
+4. **Reply with the hint.** The skill to start now, one line on why, the skill that usually
+   follows it, and whether the work suits **AFK** (nobody watching: well specified, low risk, easy
+   to verify) or **human in the loop** (a one-way door, a wide blast radius, or hard to review).
+   Done when the reply names exactly one next skill and one mode, or says plainly that no skill
+   fits and the person should just do the work.
 
 ## The light paths
 
@@ -61,7 +66,8 @@ step is also useful on its own. *(draft)* marks a skill not yet promoted.
 - `project-bootstrap`: a new or bare repository gets a stack-matched baseline, then hands to
   `init-worktracking`.
 - `init-worktracking`: an existing repository gets `AGENTS.md`, `.tasks/`, and by tier a roadmap and
-  changelog. Every task-based skill below needs it.
+  changelog. Every task-based skill below needs it. Its configure step writes `docs/agents/zen.md`,
+  the facts the skills read; run it alone on a repository already tracked.
 
 **Align**, before anything is written down:
 
@@ -72,6 +78,8 @@ step is also useful on its own. *(draft)* marks a skill not yet promoted.
 
 **Plan**:
 
+- `research` *(draft)*: a question the repository cannot answer. A fresh agent reads primary
+  sources and writes one cited file.
 - `spec-author`: behaviour a person must agree. Writes Given/When/Then scenarios and stops for
   approval. It composes `spec-quality`, the lens that judges a spec's well-formedness.
 - `new-task`: an approved spec, or a change that needs a task file, becomes tasks each sized to one
@@ -81,6 +89,9 @@ step is also useful on its own. *(draft)* marks a skill not yet promoted.
 **Build**:
 
 - `tdd`: new code, test-first, one red-green slice at a time.
+- `orchestrate` *(draft)*: a piece of work too big for one context. One session holds the
+  conversation; child sessions research and build on their own branches, landing on one
+  integration branch and reaching the person as one pull request.
 - `fix-batch`: two or more independent task files to parallel agents, each in its own worktree,
   each starting fresh. A person starts it.
 - `systematic-debugging` *(draft)*: something is broken and the cause is unknown. Builds a red

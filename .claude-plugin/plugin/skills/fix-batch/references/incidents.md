@@ -110,3 +110,33 @@ dispatched agent that may dispatch its own can fan a batch out past what anyone 
 fanned out to more than fifty agents, as reported on the `code-review` docs page of his `mattpocock/skills` repository (`docs/engineering/code-review.md`). This is credit for an observation and a working default, not adapted text, so it carries no provenance block. His working default is medium effort for
 nearly everything, raised for verification, because high effort spends the context window on early
 exploration.
+
+## The reasons moved out of the procedure on 2026-11-24
+
+`feat-0092` slimmed the body under the kit's 250-line guide. These reasons sat beside the steps
+they justify and moved here unchanged in substance.
+
+- **Step 2, unresolved build environment.** Left unresolved, every item stalls at `blocked` at once
+  and none looks broken.
+- **Step 3, fresh context.** A fork carries the dispatcher's exploration, dead ends and assumptions
+  into a context that should hold one task.
+- **Step 3, effort.** High effort spends the context window on early exploration, and a task sized
+  for one fresh context does not need it; verification and debugging are where depth is the job.
+- **Step 3, the post-dispatch check.** A clean `git worktree list` proves nothing because an agent
+  told to verify its base repairs itself within seconds.
+- **Step 3, item 10 (the judge rule).** The agent holds both the work and the check, and stronger
+  models edit the check more often, not less.
+- **Step 3, shared bookkeeping.** The `done/` move, the changelog and the roadmap are the same files
+  for every item, so N agents collide by construction.
+- **Step 6, the report before the verifier.** A report that omits what the agent did not do still
+  passes a verifier that runs against the work.
+- **The report contract, two validation fields.** The validation command and its verbatim result
+  are kept as two fields because that pair cannot be answered without running the command or lying.
+- **The report contract and the decision log.** The contract asks what is checkably true; the
+  decision log asks what the agent learned that the change does not show.
+
+## Where the report contract comes from
+
+The field set is the subset of Balarama Bosch's
+[repoprompt-workflows](https://github.com/moonray/repoprompt-workflows) (MIT) evidence contract that
+one batch can check.

@@ -41,6 +41,14 @@ A pipe is where encoding corruption happens: Windows PowerShell 5.1 pipes UTF-16
 mangles a patch. A file also lets you read what you are about to apply and re-apply it after a
 failure.
 
+## Why remote state is checked after a restart (integration branch)
+
+Added 2026-11-24 by `feat-0092`, from what the orchestrating session observed that day: a restart of
+the session can drop a branch's upstream tracking and leave a landing unpushed, with nothing in the
+session saying so. `git status -sb` shows the lost tracking and `git log origin/<integration>..` shows
+the unpushed commits, which is why the skill asks for both after a restart and pushes after every
+landing rather than once at the end.
+
 ## Where harnesses put worktrees
 
 Under Claude Code, `fix-batch` worktrees are the ones `git worktree list` reports for the background

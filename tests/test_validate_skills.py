@@ -1403,8 +1403,12 @@ class TestSupportingFileLinkChecks(unittest.TestCase):
         # chore-0096 added `house-review/references/claude-code.md`, moving the harness
         # section out of the body the way `fix-batch` already does.
         # feat-0083 added one that is not markdown: `spec-author/scripts/spec_digest.py`.
+        # feat-0092 added `orchestrate/references/first-run.md` and `claude-code.md`.
+        # feat-0091 added two read-in-place references, `init-worktracking/references/
+        # tier-stripping.md` and `migrate-a-tracker.md`, and two templates, `zen.md.tmpl`
+        # and `agent-skills.md.tmpl`.
         # feat-0094 added `quest-tracker/references/why-claims.md`, the body's notes moved out.
-        self.assertEqual(counts, {"markdown": 16, "template": 8, "other": 9})
+        self.assertEqual(counts, {"markdown": 20, "template": 10, "other": 9})
 
     def test_a_byte_cache_is_not_counted_as_a_supporting_file(self):
         # The count has to be a fact about the kit and not about whether the tests have

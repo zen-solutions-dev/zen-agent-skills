@@ -45,6 +45,20 @@ Output row is amended. No existing scenario's obligation changes. The frontmatte
 `approved` per the `feat-0040` precedent; the new scenarios are not approved until the maintainer
 says so.
 
+**Amended 2026-11-24 (`feat-0093`), pending the maintainer's approval.** S-025 adds the re-check: a
+review runs once, the author fixes once, and a second run reads only the first review's findings
+(by signature) plus any blocker the fix introduced, then stops and hands what is still open to a
+person. It answers the non-converging review loop the [sources delta](../reviews/2026-11-24-sources-delta.md)
+records. The Modes row gains the re-check and a Re-check output row is added. Two clauses are amended with
+it, because the re-check would otherwise break them: the Constraint that the skill "reads nothing"
+from signatures now names the re-check as the one place it reads them (counting repeats across runs
+stays out of scope), and the Non-Goal on running commands now allows a re-check to rerun a read-only
+command a first-review finding cited, and nothing else. No existing scenario's obligation changes; the skill's
+wording behind several of them was compressed, and its conformance matrix was re-audited the same
+day. The fig-leaf smell and the optional second reviewer from another model family are lens and
+procedure guidance, not contract, and add no scenario. The frontmatter stays at `approved` per the
+`feat-0040` precedent; S-025 is not approved until the maintainer says so.
+
 Adding S-013 forced one further edit, recorded here rather than left to be noticed: S-002, S-003, and
 S-004 each opened on "a request naming no scope", which a bare range satisfies, so on its own S-013
 would have fired at the same time as S-002 with a different outcome. Their preconditions now read
@@ -91,7 +105,9 @@ only the diff it was given, or hardcode a severity scheme, and nothing would obj
   is `test-quality`. The spec axis judges one change against its own contract and reports findings,
   not a matrix.
 - Creating or editing a pull request, which is `pr-describe`.
-- Running the test suite or any build command as part of forming the review.
+- Running the test suite or any build command as part of forming the review. A re-check (S-025)
+  may rerun a read-only command that a first-review finding cited as its evidence, and nothing
+  else.
 
 ## Constraints
 
@@ -102,7 +118,8 @@ only the diff it was given, or hardcode a severity scheme, and nothing would obj
   rubric, citing the standard) live in the same lens. The depth signals and selection rule live in
   the skill.
 - Counting how often a signature repeats across runs, and judging a repeated finding futile, are out
-  of this contract. The skill emits signatures and reads nothing from them.
+  of this contract. The skill emits signatures; the only place it reads them is a re-check (S-025),
+  which looks up the first review's findings by signature.
 - Changeset resolution is shared with `pr-describe`, so "review this" and "describe this" resolve to
   the same range in the same repository state.
 - The default output is Markdown, so the skill works in any harness. A harness may carry the same
@@ -301,12 +318,21 @@ only the diff it was given, or hardcode a severity scheme, and nothing would obj
 - **Then** it selects `standard`, names the signal that failed, and does not fall through to
   `quick`.
 
+### Scenario S-025: a re-check reads only the first review's findings, then stops
+
+- **Given** a change that was reviewed, and one fix round the author made in answer to that review
+- **When** the skill is asked whether the findings were fixed
+- **Then** it re-reads only the first review's findings, by signature, against the fix's revision,
+  marks each one fixed, open or disputed, reads the fix range only for a blocker the fix itself
+  introduced, and stops: it does not run a new full review, and it hands every finding still open to
+  a person rather than starting another round.
+
 ## Proposed Surface
 
 | Element | Detail |
 |---|---|
 | Invocation | A request to review, optionally naming a path scope, a base, or a commit range |
-| Modes | Explicit path scope (full-file review); explicit range with no path scope (change review over the range as given); a path scope plus a range (change review narrowed to those paths); or change review of the resolved default (when neither is named) |
+| Modes | A re-check of an earlier review's findings after one fix round (S-025); explicit path scope (full-file review); explicit range with no path scope (change review over the range as given); a path scope plus a range (change review narrowed to those paths); or change review of the resolved default (when neither is named) |
 | Range resolution | An explicit range if the request named one, else merge-base with the default branch, then working tree, then nothing to review. Which of the two produced the changeset is reported, as supplied or resolved |
 | Severities | `blocker`, `major`, `minor`, `nit`, defined by the `review-quality` lens |
 | Evidence | Per finding: path, line range, symbol where the file has one, and an exact quote, resolved against the revision under review. A finding about something absent carries an anchor quote, what is absent, and the search that established it |
@@ -314,12 +340,13 @@ only the diff it was given, or hardcode a severity scheme, and nothing would obj
 | Axes | Spec (against the contract: `spec-missing`, `spec-extra`, `spec-wrong`) and standards (against the repository's written standards plus the lens rubric), run as independent passes, never reranked against each other |
 | Depth | `quick`, `standard` or `deep`, from an explicit request or rules R1 to R7 over five signals; risk-flagged files are anchors at `deep` with a re-measured remainder capped at `standard`; unmeasurable selects `standard` |
 | Output | A header block (depth and rule, changeset and whether supplied or resolved, coverage, exclusions, sources per axis, gate drop count when anything was dropped), then a Spec section and a Standards section, each with its own verdict and inspected files and findings ordered by severity, each finding with `file:line`, its evidence, its signature, the issue, why, and fix |
+| Re-check output | One line per first-review signature marked `fixed`, `open` or `disputed`, the count of each mark, any blocker the fix introduced, and whether the review is closed or what a person must decide (S-025) |
 | Side effects | None. No file is written, no commit is made |
 
 ## Open Questions
 
 One, opened by the `feat-0040` amendment and stated at the end of this section. The `feat-0078`
-amendment opens none.
+and `feat-0093` amendments open none.
 
 Both questions this spec originally opened were resolved by `chore-0012` on 2026-07-27: a range supplied
 alongside a path scope narrows a change review to those paths (now `S-012`), and the name collision

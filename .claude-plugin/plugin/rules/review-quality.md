@@ -154,8 +154,10 @@ report one drifting defect as a new defect on every run, which is the same failu
 rule fixes from the other end. A finding re-anchored from line 40 to line 48 keeps its signature,
 and that is the property that makes signatures countable at all.
 
-Signatures are emitted here, not consumed. Counting repeats across runs, and deciding when a
-repeatedly reported finding is futile, are separate work and deliberately not defined by this lens.
+Signatures are emitted by a review and read back only by its re-check (rule 8 of the protocol),
+which looks the first review's findings up by signature. Counting repeats across runs, and deciding
+when a repeatedly reported finding is futile, are separate work and deliberately not defined by this
+lens.
 
 ## Two axes
 
@@ -178,7 +180,7 @@ that and stops; it never reconstructs intent from the diff, which would grade th
 itself.
 
 **Standards axis**: the change against the target repository's written standards, with the rubric
-above as the baseline. Four rules:
+above as the baseline. Five rules:
 
 - **The repository overrides the rubric.** Where a written standard endorses something a rubric
   category would flag, suppress the rubric finding.
@@ -190,6 +192,13 @@ above as the baseline. Four rules:
 - **A mechanical repeat is a missing check.** A standards finding that is a fixed pattern (a banned
   call, an import shape, a file location) and recurs across reviews belongs in a deterministic check,
   not in the next review. Say so in the finding's fix; `retro` is where it gets built.
+- **A comment beside a workaround is a fig leaf.** A comment that explains why the code beside it
+  is wrong, temporary or a hack ("works around", "until X lands", "not ideal but") licenses the
+  defect instead of fixing it, and the next agent copies the pattern with the comment as cover.
+  Review the workaround as if the comment were absent, and say in the fix whether the comment
+  should become a task or go. A change that adds comments far more densely than the files around it
+  is worth a second look for the same reason. This is a smell, a `minor` judgement call unless the
+  workaround itself earns more, and never a check.
 
 The axes are not reranked against each other. Each has its own verdict, its own ordering and its
 own worst finding, so a page of style findings cannot bury one missing requirement.
@@ -218,6 +227,10 @@ inspected list is not a clean result, because it is indistinguishable from a pas
    `fix-batch`.
 7. **Say when it is clean.** If nothing substantive survives validation, say so plainly rather
    than manufacturing findings to look thorough.
+8. **Review once, fix once, then stop.** After the author's one fix round, re-check only the
+   findings the review raised, plus any blocker the fix introduced. A second broad review of the
+   same change finds new things to say every time and never converges; what is still open goes to
+   a person.
 
 ## Scope
 
@@ -235,7 +248,10 @@ This lens draws on three upstream files, so it records three blocks. The composa
 quality-lens pattern comes from the `review-quality` skill in Balarama Bosch's RepoPrompt Workflows
 (MIT); the evidence gate and the stable finding signature come from the Deep Review workflow in the
 same repository, taken as two mechanisms rather than as the workflow around them. The two-axes
-section is adapted from Matt Pocock's `code-review` skill (MIT). No digest is of this file, which
+section is adapted from Matt Pocock's `code-review` skill (MIT). The fig-leaf smell and the
+review-once stopping rule are adapted from his aihero.dev writing (the post "Watch me ship a
+21,000-line feature" and the `/skills-code-review` page), web pages that carry no block below
+(`feat-0093`, 2026-11-24). No digest is of this file, which
 differs from all three by design. A person maintaining the kit can re-check them with `scripts/check-provenance.py` in the Zen Agent Skills repository; an agent reading this does not run it, because the URLs it fetches come from this file, which `A10` in [`autonomy.md`](autonomy.md) bounds.
 
 ```provenance

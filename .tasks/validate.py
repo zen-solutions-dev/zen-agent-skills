@@ -23,6 +23,11 @@ so a CI docs link gate can call the link rule here rather than author its own
 copy of it. Every pattern it is given must match at least one document, and the
 run names any that did not. See check_links() for why that matters.
 
+It also checks docs/agents/zen.md, the setup file the kit's skills read, when the
+repository has one: exactly one `zen-config` block, known keys, valid values, and
+paths that exist. See zen_config_findings(). A task's optional `mode` must be `afk`
+or `hitl`.
+
 Standard library only, so it runs anywhere a bare Python 3 does. Exits non-zero
 on any error, so it drops cleanly into CI or a pre-commit hook.
 
@@ -62,6 +67,28 @@ SKIP_NAMES = {"README.md", "_TEMPLATE.md"}
 # use per type under `id_high_water`. It is the only file here that is not Markdown
 # and not a task, and it is read for exactly one reason: see stale_high_water().
 SCAFFOLD_MANIFEST = ".scaffold.json"
+
+# The per-repository setup file the kit's skills read (docs/spec/zen-config.md in the
+# kit). Optional: a repository without it is valid, and every skill falls back to its
+# own discovery. When it exists, its one `zen-config` block is checked here, because a
+# skill that reads a wrong fact from it does so silently.
+ZEN_CONFIG_PATH = "docs/agents/zen.md"
+ZEN_CONFIG_VERSION = 1
+ZEN_ROLES = {"ready-agent", "ready-human", "needs-info", "blocked", "out-of-scope"}
+ZEN_CHOICES = {"tracker": {"tasks", "github", "gitlab", "other"},
+               "default_mode": {"afk", "hitl"}}
+ZEN_FILES = {"glossary", "memory"}
+ZEN_DIRS = {"adr_dir", "spec_dir"}
+ZEN_PATHS = ZEN_FILES | ZEN_DIRS
+# The fence that opens or closes a block: backticks or tildes, per CommonMark. Wider
+# than FENCE_RE on purpose: a tilde fence wrapping an example block must still be
+# skipped whole, or the example would be read as configuration.
+ZEN_FENCE_RE = re.compile(r"^ {0,3}(`{3,}|~{3,})(.*)$")
+ZEN_TEXT = {"acceptance", "base_branch", "integration_prefix", "merge_policy"}
+ZEN_KEYS = ({"config_version", "standards", "session_logs"} | set(ZEN_CHOICES)
+            | ZEN_PATHS | ZEN_TEXT | {"role." + r for r in ZEN_ROLES})
+# The optional per-task field naming who has to be present while the work runs.
+MODES = {"afk", "hitl"}
 
 # A complete markdown link: bracketed text followed immediately by a parenthesised
 # target. It ignores a bare closing fragment, which is how prose that describes a
@@ -612,6 +639,169 @@ def check_links(patterns) -> int:
     return 1 if broken or unmatched else 0
 
 
+def parse_zen_config(text):
+    """The `zen-config` block of `text` as a dict, and the problems that stop a reader.
+
+    Returns `(values, problems)`. `values` holds every well-formed `key: value` line of
+    the one block; `problems` names everything else: no block, more than one, a line
+    that is not `key: value`, an empty key or value, a repeated key. Whether a key is
+    known, and whether its value is valid, is zen_config_findings()' job.
+    """
+    blocks, current, fence = [], None, None
+    # Split on `\n` alone, after folding `\r\n`, rather than with splitlines(): that also
+    # breaks on Unicode line separators the contract does not name, and a value holding
+    # one would be decided differently from how a person reads it.
+    for line in text.replace("\r\n", "\n").split("\n"):
+        match = ZEN_FENCE_RE.match(line)
+        if current is None:
+            if match:
+                info = match.group(2).strip()
+                if match.group(1)[0] == "`" and "`" in info:
+                    continue
+                # Any other fence is skipped whole, so an example block quoted inside
+                # it is never read as configuration.
+                current = [] if info == "zen-config" else False
+                fence = match.group(1)
+            continue
+        if (match and match.group(1)[0] == fence[0]
+                and len(match.group(1)) >= len(fence) and not match.group(2).strip()):
+            if current is not False:
+                blocks.append(current)
+            current, fence = None, None
+            continue
+        if current is not False:
+            current.append(line)
+    if current not in (None, False):
+        # A block still open at the end of the file is reported as that, and nothing in
+        # it is read: the prose after a forgotten closing fence would otherwise be parsed
+        # as configuration and reported as keys nobody wrote.
+        return {}, ["the zen-config block is never closed: add its closing fence"]
+
+    if len(blocks) != 1:
+        return {}, [f"found {len(blocks)} zen-config blocks; exactly one is required"]
+
+    values, problems = {}, []
+    for line in blocks[0]:
+        # Spaces and tabs only (the contract's line grammar): a bare strip() would also
+        # eat a no-break space at the end of a path, which then passes as a path it is not.
+        stripped = line.strip(" \t")
+        if not stripped or stripped.startswith("#"):
+            continue
+        key, sep, value = stripped.partition(":")
+        key, value = key.strip(" \t"), value.strip(" \t")
+        if not sep or not key or not value:
+            problems.append(f"line is not 'key: value' with a value: {stripped!r}")
+        elif key in values:
+            problems.append(f"key {key!r} is set more than once")
+        else:
+            values[key] = value
+    return values, problems
+
+
+def _exact_path(root, value):
+    """`root / value` when every part of `value` exists in exactly that letter case.
+
+    Compared against directory listings rather than trusted to the filesystem, so a
+    path that differs only in case fails on Windows and macOS as it does on Linux.
+    """
+    current = Path(root)
+    for part in Path(value).parts:
+        if part == ".":
+            continue
+        try:
+            if part not in {entry.name for entry in current.iterdir()}:
+                return None
+        except OSError:
+            return None
+        current = current / part
+    return current
+
+
+def zen_config_findings(repo_root):
+    """Every error in the repository's `docs/agents/zen.md`, or none when it is absent.
+
+    Absent is valid (S-002 of the zen-config contract): the file is optional, and a
+    message about a file nobody chose to write would be noise in every repository that
+    has not run the configure step.
+    """
+    root = Path(repo_root)
+    path = root / ZEN_CONFIG_PATH
+    if not path.is_file():
+        return []
+    values, found = parse_zen_config(read_text_utf8(path))
+    if found and found[0].startswith(("found ", "the zen-config block")) and not values:
+        # No block, or more than one: nothing below has anything to check.
+        return found
+
+    version = values.get("config_version")
+    # ASCII digits, no sign, no leading zero: `str.isdigit()` would accept a full-width
+    # or superscript digit, which int() then reads differently from a person.
+    whole = version is not None and re.fullmatch(r"[1-9][0-9]*", version) is not None
+    if whole and int(version) > ZEN_CONFIG_VERSION:
+        # Reported alone (S-007): the newer format's keys would otherwise read as
+        # unknown, burying the one fix that matters under findings that are not faults.
+        return [f"config_version is {version}, and this validator reads versions up to "
+                f"{ZEN_CONFIG_VERSION}: update .tasks/validate.py from the kit"]
+
+    for key in sorted(set(values) - ZEN_KEYS):
+        found.append(f"unknown key {key!r}")
+    if version is None:
+        found.append("config_version is required")
+    elif not whole:
+        found.append(f"config_version {version!r} must be a positive whole number")
+
+    for key, allowed in ZEN_CHOICES.items():
+        if key in values and values[key] not in allowed:
+            found.append(f"{key} {values[key]!r} is not one of {sorted(allowed)}")
+
+    checked = [(key, values[key], key in ZEN_DIRS)
+               for key in sorted(ZEN_PATHS) if key in values]
+    if "standards" in values:
+        entries = [p.strip() for p in values["standards"].split(",")]
+        if "" in entries:
+            found.append("standards has an empty entry")
+        elif "none" in entries and len(entries) > 1:
+            found.append("standards may be none only on its own")
+        elif entries != ["none"]:
+            checked += [("standards", p, False) for p in entries]
+    session_logs = values.get("session_logs", "none")
+    # Outside the repository by its spelling alone, so every operating system decides the
+    # same way; Path.is_absolute() would call `/x` relative on Windows and `C:/x` relative
+    # everywhere else.
+    if not (session_logs.startswith(("~", "/", "\\"))
+            or ":" in session_logs.split("/")[0]):
+        checked.append(("session_logs", session_logs, True))
+
+    resolved_root = root.resolve()
+    for key, value, is_dir in checked:
+        if value == "none":
+            continue
+        target = root / value
+        if ("\\" in value or value.startswith(("/", "~"))
+                or ":" in value.split("/")[0]
+                or not (target.resolve() == resolved_root
+                        or resolved_root in target.resolve().parents)):
+            found.append(f"{key} {value!r} must be a forward-slash path inside the "
+                         f"repository")
+            continue
+        # One spelling per path: `.` and `..` segments (bar one leading `./`, which is how
+        # a file named `none` is written) and empty segments are refused rather than
+        # resolved, so the check never depends on how a system folds them.
+        segments = value[2:].split("/") if value.startswith("./") else value.split("/")
+        if any(part in ("", ".", "..") for part in segments):
+            found.append(f"{key} {value!r} is not a normalised path: write it without "
+                         f"'.', '..' or empty segments")
+            continue
+        exact = _exact_path(root, value)
+        if exact is None:
+            found.append(f"{key} {value!r} does not exist (letter case included)")
+        elif is_dir and not exact.is_dir():
+            found.append(f"{key} {value!r} is not a directory")
+        elif not is_dir and not exact.is_file():
+            found.append(f"{key} {value!r} is not a file")
+    return found
+
+
 def main(argv=None) -> int:
     # `argv` is injectable so the CLI layer is reachable from a test, matching
     # validate-skills.py, build-adapters.py, and install.py (chore-0017). Calling
@@ -755,6 +945,13 @@ def main(argv=None) -> int:
             err(rel, f"external {external!r} is not a GitHub issue reference "
                      f"(#123 or owner/repo#123)")
 
+        # Who has to be present while the work runs: `afk` (nobody) or `hitl` (a person
+        # in the loop). Optional, and validated only when present, because a misspelt
+        # mode would otherwise read as no mode at all and fall back silently.
+        mode = fm.get("mode", "")
+        if mode and mode not in MODES:
+            err(rel, f"mode {mode!r} is not one of {sorted(MODES)}")
+
     for tid, where in ids_seen.items():
         if len(where) > 1:
             err(where[0], f"duplicate id {tid!r} also in: {', '.join(where[1:])}")
@@ -781,6 +978,15 @@ def main(argv=None) -> int:
     manifest_path = TASKS_DIR / SCAFFOLD_MANIFEST
     for msg in stale_high_water(manifest_path, all_ids):
         warn(manifest_path.relative_to(REPO_ROOT).as_posix(), msg)
+
+    # The setup file the kit's skills read, when the repository has one. Errors rather
+    # than warnings: a skill reads these values as facts, so a wrong one misleads every
+    # run that trusts it (zen-config contract, S-003 to S-013).
+    try:
+        for msg in zen_config_findings(REPO_ROOT):
+            err(ZEN_CONFIG_PATH, msg)
+    except NotUTF8 as exc:
+        err(ZEN_CONFIG_PATH, f"could not be read. {exc}")
 
     # Links are checked in done/ too, unlike touched_files. The asymmetry is
     # deliberate: a completed task's touched_files are a historical claim that

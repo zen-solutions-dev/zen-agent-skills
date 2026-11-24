@@ -15,6 +15,11 @@ scenarios: []
 # closing reference for it, so merging the pull request closes the issue. A bare
 # number is rejected; see docs/spec/tracker-links.md.
 external: ""
+# Optional. Who has to be present while the work runs: "afk" (nobody; the work
+# is well specified, low risk and easy to verify) or "hitl" (a person in the
+# loop; a one-way door, a wide blast radius, or a change hard to review). Empty
+# takes default_mode from docs/agents/zen.md, else hitl.
+mode: ""
 touched_files:
   - path/to/file/the/task/will/change
   - path/to/its/test
