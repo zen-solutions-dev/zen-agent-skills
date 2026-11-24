@@ -74,6 +74,7 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 from scripts import _change_scope  # noqa: E402
+from scripts import _skillmeta  # noqa: E402
 
 # The throwaway home the install gates use. Chosen to match what checks.yml already
 # used, and gitignored via `.tmp/`. Nothing outside it is ever touched: `--uninstall` is
@@ -238,7 +239,125 @@ def roadmap_findings(text, locations):
     return findings
 
 
-def check_roadmap(repo_root=None):
+# The draft-status half of the same gate (feat-0094, inventory P3). The section it reads,
+# and nothing else: "Current state" is the one part of ROADMAP.md that claims to say what
+# is true now, while every section below it is a dated record, where "draft `grill`" in a
+# shipped overhaul bullet is history rather than a claim about `grill` today.
+CURRENT_STATE_RE = re.compile(r"^##[ \t]+Current state[ \t]*$", re.MULTILINE)
+NEXT_SECTION_RE = re.compile(r"^##[ \t]+\S", re.MULTILINE)
+BACKTICKED_RE = re.compile(r"`([^`\s]+)`")
+DRAFT_WORD_RE = re.compile(r"\bdrafts?\b", re.IGNORECASE)
+SHIP_WORD_RE = re.compile(r"\bship(?:s|ped|ping)?\b", re.IGNORECASE)
+# A digit count beside the noun it counts. Digits only: a number written as a word is
+# not read, and the report's arithmetic says how many counts were.
+COUNT_RES = (
+    ("skills", re.compile(r"\b(\d+)\s+skills\b", re.IGNORECASE)),
+    ("ship", re.compile(r"\b(\d+)\s+(?:ship|ships|shipped)\b", re.IGNORECASE)),
+    ("drafts", re.compile(r"\b(\d+)\s+(?:(?:are|is)\s+)?(?:a\s+)?drafts?\b",
+                          re.IGNORECASE)),
+)
+
+# Findings known on the day the check landed, each excused by key and printed as
+# excepted, never silenced (plan principle 9: a stricter check lands with an exception
+# list). Every one is the 2026-11-23 "Current state" bullet the inventory's P3 found
+# stale and `chore-0100` (WS-A) is rewriting in parallel; once that lands, each key here
+# fires "no longer needed" and is deleted. An exception is a debt with a name, not a
+# setting: adding one is a decision for whoever reviews the change.
+ROADMAP_STATUS_EXCEPTIONS = frozenset({
+    "draft:domain-language", "draft:grill", "draft:improve-architecture",
+    "draft:retro", "draft:tdd", "draft:zen",
+    "count:ship", "count:drafts",
+})
+
+
+def skill_statuses(repo_root):
+    """`{skill: is_draft}` for every skill under `.agents/skills/`, read as install.py does."""
+    skills_dir = Path(repo_root) / ".agents" / "skills"
+    found = {}
+    if not skills_dir.is_dir():
+        return found
+    for skill_md in sorted(skills_dir.glob("*/SKILL.md")):
+        try:
+            text = skill_md.read_text(encoding="utf-8")
+        except (OSError, UnicodeDecodeError):
+            continue  # validate-skills.py reports an unreadable body; not this gate's subject
+        found[skill_md.parent.name] = _skillmeta.is_draft_text(text)
+    return found
+
+
+def current_state_section(text):
+    """(first line number, section text) of `## Current state`, or None when absent."""
+    match = CURRENT_STATE_RE.search(text)
+    if match is None:
+        return None
+    following = NEXT_SECTION_RE.search(text, match.end())
+    end = following.start() if following else len(text)
+    return text[:match.start()].count("\n") + 1, text[match.start():end]
+
+
+def roadmap_status_findings(text, statuses):
+    """Claims in "Current state" that disagree with each skill's `metadata.status`.
+
+    Returns `(findings, claims_read)`, where each finding is `(key, line, message)` and a
+    key is what an exception names. Per markdown block: a block using the word "draft"
+    claims every skill it names in backticks is a draft; otherwise a block using "ship"
+    claims every skill it names ships. When any block lists drafts, the lists together
+    must name every draft, which is the reverse direction: a list missing a draft is the
+    same rot as a list naming a promoted skill. A digit beside "skills", "ship" or
+    "drafts" is compared with the tree.
+    """
+    section = current_state_section(text)
+    if section is None:
+        return None, 0
+    first, body = section
+    findings, claims = [], 0
+    listed_drafts = set()
+    any_draft_list = False
+    for number, block in markdown_blocks(body):
+        line = first + number - 1
+        names = [n for n in BACKTICKED_RE.findall(block) if n in statuses]
+        if not names:
+            continue
+        # The words are read with every code span removed, because a span is a name and
+        # not prose: `draft-two` would otherwise make its own block a draft list.
+        prose = BACKTICKED_RE.sub(" ", block)
+        if DRAFT_WORD_RE.search(prose):
+            any_draft_list = True
+            for name in names:
+                claims += 1
+                listed_drafts.add(name)
+                if not statuses[name]:
+                    findings.append((f"draft:{name}", line,
+                                     f"`{name}` is named as a draft, and its SKILL.md "
+                                     f"carries no `status: draft`"))
+        elif SHIP_WORD_RE.search(prose):
+            for name in names:
+                claims += 1
+                if statuses[name]:
+                    findings.append((f"shipped:{name}", line,
+                                     f"`{name}` is named as shipped, and its SKILL.md "
+                                     f"carries `status: draft`"))
+    if any_draft_list:
+        for name in sorted(n for n, draft in statuses.items()
+                           if draft and n not in listed_drafts):
+            findings.append((f"missing:{name}", first,
+                             f"`{name}` carries `status: draft` and is missing from "
+                             f"every draft list in this section"))
+    actual = {"skills": len(statuses),
+              "drafts": sum(1 for d in statuses.values() if d),
+              "ship": sum(1 for d in statuses.values() if not d)}
+    flat = " ".join(body.replace("*", "").split())
+    for noun, pattern in COUNT_RES:
+        for match in pattern.finditer(flat):
+            claims += 1
+            said = int(match.group(1))
+            if said != actual[noun]:
+                findings.append((f"count:{noun}", first,
+                                 f"says {said} {noun}, and the tree holds {actual[noun]}"))
+    return findings, claims
+
+
+def check_roadmap(repo_root=None, status_exceptions=None):
     """The `roadmap bookkeeping` gate: does ROADMAP.md still agree with .tasks/?
 
     Returns (ok, report). Two of the three shapes chore-0066 mapped, and a bound naming
@@ -287,17 +406,44 @@ def check_roadmap(repo_root=None):
                      f"single task file and were not judged: "
                      f"{', '.join(unresolved)}")
 
+    statuses = skill_statuses(repo_root)
+    exceptions = (ROADMAP_STATUS_EXCEPTIONS if status_exceptions is None
+                  else frozenset(status_exceptions))
+    status_findings, status_claims = roadmap_status_findings(text, statuses)
+    failing_status = []
+    if status_findings is None:
+        status_note = (f"no `## Current state` section, so no skill status claim was "
+                       f"judged")
+        lines.append(f"{ROADMAP}: {status_note}.")
+    else:
+        fired = {key for key, _, _ in status_findings}
+        for key, number, message in status_findings:
+            if key in exceptions:
+                lines.append(f"{ROADMAP}:{number}: excepted ({key}): {message}")
+            else:
+                failing_status.append(key)
+                lines.append(f"{ROADMAP}:{number}: {message}")
+        for key in sorted(exceptions - fired):
+            lines.append(f"{ROADMAP}: exception {key!r} no longer needed; delete it from "
+                         f"ROADMAP_STATUS_EXCEPTIONS in scripts/run-checks.py.")
+        status_note = (f"{status_claims} skill status claim(s) in Current state read "
+                       f"against {len(statuses)} SKILL.md file(s), "
+                       f"{len(failing_status)} wrong, "
+                       f"{len(status_findings) - len(failing_status)} excepted")
+
     lines.append(
         f"Checked {ROADMAP}: {len(named)} task ids named, {len(closed)} in .tasks/done/, "
         f"{len(outstanding)} in .tasks/, {len(unresolved)} unresolved; {len(blocks)} "
         f"blocks read, {len(findings)} carrying an open-state claim over a closed id; "
-        f"1 header rule, {0 if header is None else 1} tripped. Not judged: the "
+        f"1 header rule, {0 if header is None else 1} tripped; {status_note}. "
+        f"Not judged: the "
         f"restated-contract class (a roadmap claim restating a spec's own bar, which "
         f"needs reading that contract), quoted commands and their written-down output, "
         f"and a hedged phrase in a block that also carries a completion marker. "
         f"2 of the 3 shapes chore-0066 mapped are covered, so a pass here is evidence "
         f"about bookkeeping and about nothing else.")
-    return not findings and header is None, "\n".join(lines)
+    return (not findings and header is None and not failing_status,
+            "\n".join(lines))
 
 
 def gates():

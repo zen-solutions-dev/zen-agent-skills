@@ -794,6 +794,142 @@ class RoadmapBookkeepingTests(unittest.TestCase):
         self.assertRegex(report, r"\d+ task ids named")
 
 
+class RoadmapDraftStatusTests(unittest.TestCase):
+    """The draft-status half of `roadmap bookkeeping` (feat-0094, inventory P3).
+
+    `ROADMAP.md`'s "Current state" said on 2026-11-23 that ten skills were drafts, six of
+    them already promoted by PR #113, and the gate passed, because it read task ids and a
+    count or a draft list names none. The status it restates is one `install.py` reads
+    mechanically from `metadata.status`, so this reads the same field and compares.
+
+    Scoped to the `## Current state` section on purpose: it is the one section that
+    claims to say what is true now, and the history below it ("draft `grill`" in a shipped
+    overhaul bullet) is a record, which a whole-file check would misread as a claim.
+    """
+
+    # The bullet verbatim from ROADMAP.md at 9598355, the state the inventory found.
+    STALE = ("- **29 skills**, of which **19 ship** and **10 are drafts** "
+             "(`metadata.status: draft`, placed only on request): `agent-observatory`, "
+             "`domain-language`, `grill`, `improve-architecture`, `quest-tracker`, `retro`, "
+             "`sitrep`, `systematic-debugging`, `tdd`, and `zen`.")
+
+    def _repo(self, current_state, drafts=(), shipped=(), exceptions=None):
+        root = Path(tempfile.mkdtemp())
+        self.addCleanup(shutil.rmtree, root, ignore_errors=True)
+        (root / ".tasks" / "done").mkdir(parents=True)
+        for name in drafts:
+            self._skill(root, name, "  status: draft\n")
+        for name in shipped:
+            self._skill(root, name, "")
+        (root / "ROADMAP.md").write_text(
+            "# Roadmap\n\n## Current state\n\n" + current_state
+            + "\n\n## Forward plan\n\n- draft `shipped-one` was written in 2026-08.\n",
+            encoding="utf-8")
+        return root
+
+    @staticmethod
+    def _skill(root, name, metadata):
+        d = root / ".agents" / "skills" / name
+        d.mkdir(parents=True)
+        meta = f"metadata:\n{metadata}" if metadata else ""
+        (d / "SKILL.md").write_text(
+            f"---\nname: {name}\ndescription: x\n{meta}---\nbody\n", encoding="utf-8")
+
+    def _check(self, root, exceptions=frozenset()):
+        return rc.check_roadmap(root, status_exceptions=exceptions)
+
+    def test_a_promoted_skill_named_as_a_draft_fails(self):
+        root = self._repo("- **2 are drafts**: `draft-one` and `shipped-one`.",
+                          drafts=["draft-one"], shipped=["shipped-one"])
+        ok, report = self._check(root)
+        self.assertFalse(ok, "a promoted skill listed as a draft passed")
+        self.assertIn("shipped-one", report)
+        self.assertIn("named as a draft", report)
+
+    def test_a_draft_named_as_shipped_fails(self):
+        root = self._repo("- **1 is a draft**: `draft-one`.\n"
+                          "- **The shipped spine**: `shipped-one` and `draft-two`.",
+                          drafts=["draft-one", "draft-two"], shipped=["shipped-one"])
+        ok, report = self._check(root)
+        self.assertFalse(ok)
+        self.assertIn("draft-two", report)
+        self.assertIn("named as shipped", report)
+
+    def test_a_draft_missing_from_the_draft_list_fails(self):
+        root = self._repo("- **Drafts**: `draft-one`.",
+                          drafts=["draft-one", "draft-two"], shipped=["shipped-one"])
+        ok, report = self._check(root)
+        self.assertFalse(ok, "an incomplete draft list passed")
+        self.assertIn("draft-two", report)
+        self.assertIn("missing from", report)
+
+    def test_a_stale_count_fails(self):
+        root = self._repo("- **3 skills**, of which **1 ships** and **2 are drafts**: "
+                          "`draft-one`.",
+                          drafts=["draft-one"], shipped=["shipped-one", "shipped-two"])
+        ok, report = self._check(root)
+        self.assertFalse(ok)
+        self.assertIn("says 1 ship", report)
+        self.assertIn("says 2 drafts", report)
+        self.assertNotIn("says 3 skills", report, "the true total is not a finding")
+
+    def test_a_true_section_passes(self):
+        root = self._repo("- **3 skills**, of which **2 ship** and **1 is a draft**: "
+                          "`draft-one`.\n- **The shipped spine**: `shipped-one`, "
+                          "`shipped-two`.",
+                          drafts=["draft-one"], shipped=["shipped-one", "shipped-two"])
+        ok, report = self._check(root)
+        self.assertTrue(ok, report)
+
+    def test_history_outside_the_section_is_not_read(self):
+        # The fixture's Forward plan names `shipped-one` beside the word "draft".
+        root = self._repo("Run `install.py --dry-run` for the current draft list.",
+                          shipped=["shipped-one"])
+        ok, report = self._check(root)
+        self.assertTrue(ok, report)
+
+    def test_the_verbatim_stale_bullet_fails_against_the_tree_it_was_wrong_about(self):
+        drafts = ["agent-observatory", "quest-tracker", "sitrep", "systematic-debugging"]
+        promoted = ["domain-language", "grill", "improve-architecture", "retro", "tdd", "zen"]
+        others = [f"shipped-{i}" for i in range(19)]
+        root = self._repo(self.STALE, drafts=drafts, shipped=promoted + others)
+        ok, report = self._check(root)
+        self.assertFalse(ok)
+        for name in promoted:
+            with self.subTest(skill=name):
+                self.assertIn(f"`{name}`", report)
+
+    def test_an_exception_excuses_its_finding_and_says_so(self):
+        root = self._repo("- **Drafts**: `draft-one`, `shipped-one`.",
+                          drafts=["draft-one"], shipped=["shipped-one"])
+        ok, report = self._check(root, exceptions={"draft:shipped-one"})
+        self.assertTrue(ok, report)
+        self.assertIn("excepted", report)
+
+    def test_an_exception_that_no_longer_fires_is_reported_for_pruning(self):
+        root = self._repo("- **Drafts**: `draft-one`.", drafts=["draft-one"])
+        ok, report = self._check(root, exceptions={"draft:shipped-one"})
+        self.assertTrue(ok, report)
+        self.assertIn("no longer needed", report)
+        self.assertIn("draft:shipped-one", report)
+
+    def test_no_current_state_section_is_reported_as_not_judged(self):
+        root = Path(tempfile.mkdtemp())
+        self.addCleanup(shutil.rmtree, root, ignore_errors=True)
+        (root / ".tasks").mkdir()
+        (root / "ROADMAP.md").write_text("Nothing here.\n", encoding="utf-8")
+        ok, report = self._check(root)
+        self.assertTrue(ok, report)
+        self.assertIn("no `## Current state` section", report)
+
+    def test_this_repositorys_roadmap_has_the_section_this_reads(self):
+        # Without the heading the check judges nothing; a rename must be seen, not absorbed.
+        ok, report = rc.check_roadmap(REPO_ROOT)
+        self.assertTrue(ok, report)
+        self.assertNotIn("no `## Current state` section", report)
+        self.assertRegex(report, r"\d+ skill status claim")
+
+
 class CheckGateWiringTests(unittest.TestCase):
     """`run_gate`'s second branch: a gate whose work is a callable (chore-0072)."""
 

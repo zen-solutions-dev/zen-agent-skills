@@ -2249,3 +2249,106 @@ class TestInvocationMetadata(unittest.TestCase):
         code, out = _run(self.root)
         self.assertEqual(code, 1)
         self.assertIn("declare `invocation: user` under `metadata`", out)
+
+
+class TestStepsEndOnDoneWhen(unittest.TestCase):
+    """R-005 (feat-0094): a workflow step with no "Done when" line warns; a lens is exempt.
+
+    The convention is `writing-for-agents.md`'s checklist line, and `chore-0096` measured it
+    with a script it never wired into a gate, so the next step written without a criterion was
+    found only by the next review (`docs/reviews/2026-11-retro-pr-108.md`, R-005). The step set
+    and the criterion are `chore-0096`'s own definitions: a `###` heading inside the
+    `## Procedure` section, or a `## Step N` heading anywhere, whose span runs to the next
+    heading of the same or a higher level; a criterion is a line that starts "Done when",
+    outside a code fence.
+
+    A warning, never an error: other workstreams were rewriting skill bodies when this landed,
+    and a step without a criterion is a defect in the skill rather than a reason to refuse the
+    whole tree. The pair that proves the check reads the criterion rather than the heading is
+    `test_a_step_without_a_criterion_warns` beside `test_a_step_with_a_criterion_is_quiet`:
+    identical headings, one added line, opposite verdicts.
+    """
+
+    FINDING = "with no \"Done when\" line"
+
+    STEP_NO_CRITERION = ("## Procedure\n\n### 1. Survey the tree\n\nRead the files.\n\n"
+                         "### 2. Report\n\nSay what you found.\n\nDone when the report is sent.\n")
+    STEP_WITH_CRITERION = ("## Procedure\n\n### 1. Survey the tree\n\nRead the files.\n\n"
+                           "Done when every file is read.\n\n"
+                           "### 2. Report\n\nSay what you found.\n\nDone when the report is sent.\n")
+
+    def setUp(self):
+        self._tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(self._tmp.cleanup)
+        self.root = Path(self._tmp.name)
+        self._trees = 0
+
+    def _run_body(self, body):
+        self._trees += 1
+        root = self.root / f"tree{self._trees}" / "skills"
+        root.mkdir(parents=True)
+        _write_skill(root, "alpha", GOOD_FM.format(name="alpha", desc=LONG_DESC), body=body)
+        return _run(root)
+
+    def test_a_step_without_a_criterion_warns(self):
+        code, out = self._run_body(self.STEP_NO_CRITERION)
+        self.assertEqual(code, 0, "a missing criterion warns, it never fails the tree")
+        self.assertIn(self.FINDING, out)
+        self.assertIn("1. Survey the tree", out)
+        self.assertNotIn("2. Report", out, "the step that has a criterion is not named")
+        self.assertIn("1 warning(s)", out)
+
+    def test_a_step_with_a_criterion_is_quiet(self):
+        _, out = self._run_body(self.STEP_WITH_CRITERION)
+        self.assertNotIn(self.FINDING, out)
+
+    def test_a_declared_lens_is_exempt(self):
+        body = "This skill is a lens.\n\n## Intent\n\nx\n\n## Workflow\n\n" \
+               "### 1. Survey the tree\n\nRead.\n\n## Output\n\ny\n"
+        _, out = self._run_body(body)
+        self.assertNotIn(self.FINDING, out)
+
+    def test_the_step_heading_shape_is_read_as_a_step(self):
+        # agent-handoff's shape: `## Step N` headings with no `## Procedure` section.
+        body = "## Step 1: decide\n\nDecide.\n\n## Step 2: write\n\nWrite.\n\nDone when written.\n"
+        _, out = self._run_body(body)
+        self.assertIn(self.FINDING, out)
+        self.assertIn("Step 1: decide", out)
+        self.assertNotIn("Step 2: write", out)
+
+    def test_a_subheading_outside_the_procedure_is_not_a_step(self):
+        body = "## Footprint tiers\n\n### Tier stripping at lite\n\nProse.\n\n" \
+               + self.STEP_WITH_CRITERION
+        _, out = self._run_body(body)
+        self.assertNotIn(self.FINDING, out)
+
+    def test_a_criterion_in_a_subsection_counts_for_its_step(self):
+        # pr-describe step 2: a `####` subsection belongs to the step above it.
+        body = "## Procedure\n\n### 1. Draft\n\n#### State the danger\n\nSay it.\n\n" \
+               "Done when the body is drafted.\n"
+        _, out = self._run_body(body)
+        self.assertNotIn(self.FINDING, out)
+
+    def test_fences_neither_make_steps_nor_criteria(self):
+        fenced_heading = ("## Procedure\n\n### 1. Write\n\nWrite.\n\nDone when written.\n\n"
+                          "```markdown\n### Decisions\n\nNot a step.\n```\n")
+        _, out = self._run_body(fenced_heading)
+        self.assertNotIn(self.FINDING, out, "a heading shown inside a fence is not a step")
+        fenced_criterion = ("## Procedure\n\n### 1. Write\n\nWrite.\n\n"
+                            "```text\nDone when written.\n```\n")
+        _, out = self._run_body(fenced_criterion)
+        self.assertIn(self.FINDING, out, "a criterion shown inside a fence is not one")
+
+    def test_a_criterion_mid_paragraph_does_not_count(self):
+        body = "## Procedure\n\n### 1. Write\n\nWrite it, and you are done when written.\n"
+        _, out = self._run_body(body)
+        self.assertIn(self.FINDING, out)
+
+    def test_the_status_drafts_this_task_owns_carry_a_criterion_on_every_step(self):
+        # feat-0094 owns these three bodies; the rest of the tree is other workstreams' and is
+        # reported, not asserted, so a parallel rewrite elsewhere cannot fail this test.
+        for name in ("sitrep", "quest-tracker", "agent-observatory"):
+            with self.subTest(skill=name):
+                text = (REPO_ROOT / ".agents" / "skills" / name / "SKILL.md").read_text(
+                    encoding="utf-8")
+                self.assertEqual(vs.steps_missing_done_when(text), [])

@@ -960,6 +960,65 @@ def check_declared_shape(text: str, rel: str, warnings: list) -> None:
     )
 
 
+ANY_HEADING_RE = re.compile(r"^(#{1,6})[ \t]+(.+?)[ \t]*#*[ \t]*$", re.MULTILINE)
+STEP_HEADING_RE = re.compile(r"^step\s+\d+\b", re.IGNORECASE)
+DONE_WHEN_RE = re.compile(r"^[ \t]*(?:[*_]{1,2})?Done when\b", re.MULTILINE)
+
+
+def steps_missing_done_when(text: str) -> list:
+    """The step headings of a workflow body that carry no "Done when" line (R-005).
+
+    The definitions are `chore-0096`'s, the check it ran by hand and never wired in: a step
+    is a `###` heading inside the `## Procedure` section, or a `## Step N` heading anywhere
+    (the shape `agent-handoff` uses), and its span runs to the next heading of the same or a
+    higher level, so a `####` subsection belongs to its step. A criterion is a line that
+    *starts* "Done when", outside a code fence. Fences are skipped both ways: a heading or a
+    criterion shown inside one is an example, not the skill's own.
+    """
+    fences = fenced_block_ranges(text)
+
+    def outside(pos):
+        return not any(lo <= pos < hi for lo, hi in fences)
+
+    headings = [(m.start(), len(m.group(1)), m.group(2))
+                for m in ANY_HEADING_RE.finditer(text) if outside(m.start())]
+    missing = []
+    section = None
+    for i, (start, level, title) in enumerate(headings):
+        if level <= 2:
+            section = title
+        is_step = ((level == 3 and section is not None and _fills_role(section,
+                                                                       WORKFLOW_SHAPE_ROLE))
+                   or (level in (2, 3) and STEP_HEADING_RE.match(title)))
+        if not is_step:
+            continue
+        end = next((s for s, lv, _ in headings[i + 1:] if lv <= level), len(text))
+        if not any(outside(start + m.start())
+                   for m in DONE_WHEN_RE.finditer(text[start:end])):
+            missing.append(title)
+    return missing
+
+
+def check_steps_end_on_done_when(text: str, rel: str, warnings: list) -> None:
+    """Warn when a workflow-shaped skill has a step with no "Done when" line (R-005).
+
+    A declared lens is exempt: its headings are a rubric composed into another skill, not
+    steps an agent executes. A warning rather than an error, like the shape check above:
+    the criterion is a writing standard (`writing-for-agents.md`'s checklist), and a missing
+    one is a defect in that skill rather than a reason to refuse every other skill in the
+    tree. One line per skill, naming every step, so a long procedure is one finding.
+    """
+    if declares_lens_shape(text):
+        return
+    missing = steps_missing_done_when(text)
+    if missing:
+        named = "; ".join(f"`{t}`" for t in missing)
+        warnings.append(
+            f"{rel}/SKILL.md: {len(missing)} step(s) with no \"Done when\" line: {named}. "
+            f"End each step on a line of its own beginning \"Done when\", per the checklist "
+            f"in writing-for-agents.md")
+
+
 def check_invocation(text: str, fm: dict, rel: str, errors: list) -> None:
     """`metadata.invocation` must be `user` or `model` (feat-0079).
 
@@ -1072,6 +1131,7 @@ def main(skills_dir: Path = SKILLS_DIR) -> int:
         check_frontmatter_is_parseable(text, rel, errors)
         check_folded_hyphen_break(text, rel, errors)
         check_declared_shape(text, rel, warnings)
+        check_steps_end_on_done_when(text, rel, warnings)
         check_status_contradiction(text, rel, warnings)
         check_invocation(text, fm, rel, errors)
 
