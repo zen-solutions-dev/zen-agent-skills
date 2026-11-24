@@ -181,7 +181,7 @@ link is, per the portability contract), so this changes no install profile.
   amending the contract would have been the divergence `AGENTS.md` names, so the spec was amended
   with `S-026` under the convention in `docs/spec/README.md`: `status` left at `approved`, a dated
   note added, and the matrix extended. The authoring defect is recorded rather than papered over,
-  and it is the same class [`chore-0074`](../chore-0074-new-task-does-not-put-the-documents-a-change-falsifies-in-scope.md)
+  and it is the same class [`chore-0074`](chore-0074-new-task-does-not-put-the-documents-a-change-falsifies-in-scope.md)
   is open about.
 - **Two defects found on the way, disclosed rather than folded in silently.** First,
   `test_the_body_links_to_nothing_outside_the_skill_tree` in `tests/test_systematic_debugging.py`

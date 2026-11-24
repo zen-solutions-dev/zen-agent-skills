@@ -40,8 +40,9 @@ briefed by reading and following [`agent-handoff`](../agent-handoff/SKILL.md) St
 question, the sources, the baseline, the reach list, and where the file goes. Where no child can be
 started, run Steps 2 and 3 here and say so in the file.
 
-Done when every source is marked reached or unreachable with the reason, and the researcher is
-running with a brief that names the output path.
+Done when every source is marked reached or unreachable with the reason, and either the researcher
+is running with a brief that names the output path, or, where no child can be started, you are
+running Steps 2 and 3 yourself and the file will say so.
 
 ### Step 2: read primary sources (the researcher)
 
