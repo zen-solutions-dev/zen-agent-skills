@@ -2,7 +2,7 @@
 id: feat-0084
 title: Promote grill from its first real interview, ahead of the next piece of kit work
 type: feat
-status: open
+status: in_progress
 priority: P1
 parent: "ROADMAP 2026-11 overhaul: drafts the overhaul added"
 depends_on: []
@@ -22,15 +22,23 @@ created: 2026-11-23
 
 ## The real use
 
-**Pending.** Phase 2 of the `kit-refresh-audit` session: after `zen` routes the maintainer's next real piece of kit work, `grill` interviews them about it, one round at a time, each question with a recommended answer. The decisions record is saved beside the work it feeds. This section is filled in from that session, with what the interview exposed, and is not written ahead of it.
+2026-11-23, the `kit-refresh-audit` session. `zen` routed the maintainer's next piece of kit work, [`feat-0051`](feat-0051-a-paired-evaluation-harness-seeded-from-the-closed-task-corpus.md) (the paired evaluation harness), to `grill` and then `new-task`. `grill` interviewed the maintainer in three rounds and a close (Q1 to Q18), with two facts sent to fresh-context leaf subagents (the `claude plugin eval` CLI and sign-in state; the October eval-slice branch). The frontier emptied, the maintainer confirmed a one-sentence restatement, and the record is [`2026-11-feat-0051-decisions.md`](../docs/reviews/2026-11-feat-0051-decisions.md): 15 decisions, 5 terms, 5 facts, 2 items still open with owners.
+
+**Met:** it interviewed a person ahead of a real task.
 
 ## What the use exposed
 
-To be recorded from the interview.
+1. **Facts were the decisive half.** The lookups found that no CLI here is signed in, that `claude plugin eval` reads evals from below the plugin, and that the October harness measures retired code. None of these was in the task file; each reshaped a recommendation. "Never ask the person a fact" earned its place.
+2. **A fact returned after a decision had settled, and constrained it.** Q3 (evals at the repository root) was settled before the lookup showed that the runner expects them below the plugin. The skill has no instruction for this; the session reconciled it inside Q4's recommendation and said so, but it could as easily have been absorbed silently.
+3. **Every round was accepted wholesale.** 17 of 17 recommendations went through as "yes to all". The yes-accepts form makes that cheap, which is its point, but it also means the one question in a round that is hard to reverse (Q7, the baseline) gets the same single click as a flag choice. The closing restatement was the only check that the whole was understood.
+4. **Running beside `domain-language` duplicated the Terms section.** Terms were settled as questions in the rounds (Q10, Q17) and written to the glossary as they landed, so the record's Terms section could only point at the glossary.
+5. **The rule "nothing more is asked until they come back" held, and cost nothing:** the lookups returned during round 1, and round 2 waited for the answers as written.
 
 ## Refinements (apply on promotion)
 
-To be recorded from the interview.
+- Step 4: when a returned lookup bears on a decision already settled, put that to the person in the next round as its own question, rather than reconciling it inside another recommendation.
+- Step 3: mark, in the round, the question that is hardest to reverse, so a wholesale "yes" is a choice made knowingly.
+- Output: when `domain-language` keeps the glossary in the same session, the record's **Terms** section names the glossary entries instead of restating them.
 
 ## Link conversion (on promotion)
 

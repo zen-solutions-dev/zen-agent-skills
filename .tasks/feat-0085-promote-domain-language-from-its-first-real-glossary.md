@@ -2,7 +2,7 @@
 id: feat-0085
 title: Promote domain-language from the first glossary it kept through a real grilling
 type: feat
-status: open
+status: in_progress
 priority: P1
 parent: "ROADMAP 2026-11 overhaul: drafts the overhaul added"
 depends_on: []
@@ -22,15 +22,23 @@ created: 2026-11-23
 
 ## The real use
 
-**Pending.** Phase 2 of the `kit-refresh-audit` session: `domain-language` runs alongside the `grill` interview (`feat-0084`), settling each term as it lands and writing it to the glossary. This kit has no glossary yet, so the run also decides where one lives. Filled in from that session, not ahead of it.
+2026-11-23, the `kit-refresh-audit` session, alongside the `grill` interview on `feat-0051` (`feat-0084`). Step 1 found no glossary and no ADR directory. The first terms settled in the interview (Q10: **Grader**, **Discriminating**) created [`GLOSSARY.md`](../GLOSSARY.md) at the repository root; Q17 added **Case**, **Arm** and **Baseline**. Each term was put to the maintainer with its _Avoid_ list and written as it landed. Step 4 judged the baseline decision (Q7) to pass all three tests and offered it as a record (Q18); the maintainer placed it in the rewritten `feat-0051`'s Decisions. One glossary-versus-text mismatch was reported, not edited: `feat-0051` says "non-discriminating assertions", which the glossary lists under _Avoid_. The code has no evaluation code yet, so the grep of `scripts/` and `tests/` for "grader" and "assertion" in this sense found none.
+
+**Met:** it kept a real glossary through a grilling session.
 
 ## What the use exposed
 
-To be recorded from the session.
+1. **Step 1 does not recognise this repository's decision-record convention.** It lists `docs/adr/`, `docs/decisions/` and `adr/`, but this kit, like any repository scaffolded by `init-worktracking`, records decisions in each task's Decisions section and in `docs/rationale/`. Step 4 then nearly created a `docs/adr/` the repository does not use; Q18 had to ask.
+2. **The mismatch was in a planning document, not the code.** Step 2's "check the code" found nothing, because the conflicting word lived in a task file. Task files and specs are where a term is used before any code exists.
+3. **The glossary's location was consented to by silence.** It was offered in passing in round 1 ("unless you'd rather it lived somewhere else") and never asked as a question. Creating a new root file deserves a question.
+4. **Nothing points at the new glossary.** The reading protocol in `AGENTS.md` does not name it, so the next session will not read it unless it happens to look. A glossary nobody loads does not do its job.
 
 ## Refinements (apply on promotion)
 
-To be recorded from the session.
+- Step 1: recognise a task-file Decisions section and a rationale directory as a decision-record convention, and use it in step 4 when that is what the repository does.
+- Step 2: grep task files and specs as well as code, and report a mismatch there the same way.
+- Step 3: when no glossary exists, ask where it should live before creating it.
+- Step 5: when a glossary is created, offer a one-line pointer to it from the agent-instructions file (an offer, since that file is the person's), and report it. For this kit: a proposed line in `AGENTS.md`'s reading protocol, which is not this task's file to edit.
 
 ## Link conversion (on promotion)
 
