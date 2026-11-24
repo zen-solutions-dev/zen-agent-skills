@@ -2,7 +2,7 @@
 id: feat-0093
 title: Teach review when to stop, the learning loop to ratchet and prune, and the lenses to keep documents honest
 type: feat
-status: open
+status: done
 priority: P1
 parent: "ROADMAP 2026-11-24 Marjana overhaul"
 depends_on: [chore-0099]
@@ -27,11 +27,11 @@ created: 2026-11-24
 
 ## Problem
 
-Nothing in the review chain says when to stop reviewing, and repeated broad reviews never converge. `retro` waits for a bad session, has no path for a check that cannot pass on day one, and never prunes a check that fires on good code. The lenses warn that a document is a stale cache, but give no rule for keeping one honest, and a skill named in prose is not reliably loaded ([sources delta](../docs/reviews/2026-11-24-sources-delta.md)).
+Nothing in the review chain says when to stop reviewing, and repeated broad reviews never converge. `retro` waits for a bad session, has no path for a check that cannot pass on day one, and never prunes a check that fires on good code. The lenses warn that a document is a stale cache, but give no rule for keeping one honest, and a skill named in prose is not reliably loaded ([sources delta](../../docs/reviews/2026-11-24-sources-delta.md)).
 
 ## Scope
 
-**In scope** ([plan, WS-D](../docs/reviews/2026-11-24-marjana-plan.md)):
+**In scope** ([plan, WS-D](../../docs/reviews/2026-11-24-marjana-plan.md)):
 
 - `house-review`: review once, fix once, re-check only the fixed findings, then stop; the comment beside a workaround as a standards-axis smell; an optional cross-family reviewer line. Under about 250 lines, history to `references/`.
 - `pr-describe`: offer a stacked split when a large branch holds a one-way door, with human review mandatory only on that one.
@@ -48,12 +48,18 @@ Nothing in the review chain says when to stop reviewing, and repeated broad revi
 
     ZEN_CHECKS_SCOPE=full python3 scripts/run-checks.py
 
-- [ ] `wc -l .agents/skills/house-review/SKILL.md .agents/skills/doc-sync/SKILL.md` prints at most 250 for each, or the file states its one-line reason.
-- [ ] `grep -n -i "ratchet" .agents/skills/retro/SKILL.md` finds the new input.
-- [ ] `docs/reviews/2026-11-24-dogfood/ws-d.md` has a row for every skill this task owns.
+- [x] `wc -l .agents/skills/house-review/SKILL.md .agents/skills/doc-sync/SKILL.md` prints at most 250 for each, or the file states its one-line reason.
+- [x] `grep -n -i "ratchet" .agents/skills/retro/SKILL.md` finds the new input.
+- [x] `docs/reviews/2026-11-24-dogfood/ws-d.md` has a row for every skill this task owns.
 
 ## Definition of done
 
-- [ ] Acceptance command passes locally.
-- [ ] Notes for integration and the `CHANGELOG.md` line reported to the orchestrator.
-- [ ] File moved to `.tasks/done/`, `status: done`.
+- [x] Acceptance command passes locally.
+- [x] Notes for integration and the `CHANGELOG.md` line reported to the orchestrator.
+- [x] File moved to `.tasks/done/`, `status: done`.
+
+## Decisions
+
+- **The house-review contract was amended, not left alone.** Step 8 (the re-check) is a behaviour, so `docs/spec/house-review.md` gained `S-025`, pending the maintainer's approval, and the conformance matrix was re-audited the same day. The fig-leaf smell and the cross-family reviewer are lens and procedure guidance and add no scenario. `doc-sync`'s new habit (an undated "currently" is a claim to ground) narrows nothing in its contract, so its spec is unamended and its matrix records the re-check of every quoted clause.
+- **No new sibling links into `core` or `spine`.** Every composing step now says read and follow, but the only link added is `improve-architecture` to `grill`, and `improve-architecture` sits in no profile seed, so `EXPECTED_PROFILE_MEMBERSHIP` is unchanged.
+- **`retro`'s `R-101` from the dogfood rests on a false premise** (it read an unpushed local commit as landed); recorded in the dogfood file rather than filed.
