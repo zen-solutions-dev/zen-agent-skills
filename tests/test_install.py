@@ -3133,6 +3133,7 @@ class SetupPointerTests(_FixtureKit):
     def setUp(self):
         super().setUp()
         _meta_skill(self.skills, "alpha", "does alpha things when asked")
+        _meta_skill(self.skills, "init-worktracking", "scaffolds work tracking when asked")
 
     def test_an_install_prints_the_pointer_once(self):
         code, out = self._install()
@@ -3140,7 +3141,7 @@ class SetupPointerTests(_FixtureKit):
         self.assertEqual(out.count(self.POINTER), 1)
 
     def test_a_dry_run_prints_it_too(self):
-        code, out = self._main("--dry-run")
+        code, out = self._main("--dry-run", "--profile", "all")
         self.assertEqual(code, 0, out)
         self.assertIn(self.POINTER, out)
 
@@ -3260,3 +3261,23 @@ class SpanHelpersAgreeWithTheBacklogValidatorTests(unittest.TestCase):
             with self.subTest(name=name):
                 self.assertIn(name, shared)
                 self.assertEqual(shared[name], original[name])
+
+
+class SetupPointerSelectionTests(_FixtureKit):
+    """The pointer must not send an adopter to a skill this run did not place (verifier, feat-0094)."""
+
+    def setUp(self):
+        super().setUp()
+        _meta_skill(self.skills, "alpha", "does alpha things when asked")
+        _meta_skill(self.skills, "init-worktracking", "scaffolds work tracking when asked")
+
+    def test_a_selection_without_the_setup_skill_says_how_to_get_it(self):
+        code, out = self._main("--skills", "alpha", "--dry-run")
+        self.assertEqual(code, 0, out)
+        self.assertNotIn(SetupPointerTests.POINTER, out)
+        self.assertIn("`init-worktracking` is not in this selection", out)
+        self.assertIn("--skills init-worktracking", out)
+
+    def test_a_selection_with_it_gets_the_plain_pointer(self):
+        _, out = self._main("--skills", "alpha,init-worktracking", "--dry-run")
+        self.assertIn(SetupPointerTests.POINTER, out)

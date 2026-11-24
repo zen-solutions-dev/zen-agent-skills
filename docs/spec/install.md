@@ -260,9 +260,11 @@ overwritten exists only as a branch.
 - **And** every one of those totals counts model-invoked skills only, because a user-invoked skill's
   description is not loaded (`S-023`). When the placed set holds a user-invoked skill, a separate line
   states their combined characters and names them, as an aside to the total rather than part of it.
-- **And** an install run, real or dry, ends with one line pointing at the per-repository setup step:
-  in each repository, run `init-worktracking` once to configure the skills. `--check` and
-  `--uninstall` do not print it. (Added 2026-11-24, `feat-0094`.)
+- **And** an install run, real or dry, prints in its summary one line pointing at the
+  per-repository setup step: in each repository, run `init-worktracking` once to configure the
+  skills. When the run does not place `init-worktracking`, the line says so and how to add it, rather
+  than naming a skill the adopter does not have. `--check` and `--uninstall` do not print it.
+  (Added 2026-11-24, `feat-0094`.)
 
 ### Scenario S-015: a skill marked a draft is placed by no profile
 

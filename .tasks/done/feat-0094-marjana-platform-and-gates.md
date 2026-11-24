@@ -101,3 +101,29 @@ Touches several modules; a new gate can block unrelated work if it misfires, so 
 
 See [`ws-e.md`](../../docs/reviews/2026-11-24-dogfood/ws-e.md) for each change's red and green runs
 and each skill's dogfood row.
+
+## Independent verification
+
+Run 2026-11-24 by a fresh-context leaf agent that wrote none of this work, following
+`verifier-agent` (`A7`). **Verdict: pass, with findings, none blocking.** It ran the acceptance
+command (exit 0, `11 passed, 0 failed, 0 could not run.`). It built its own bad input for every
+new check and saw each fail, and saw each pass on the tree. It swapped the base `build-adapters.py`
+back in to confirm `tests/test_undecodable_names.py` catches the defect it claims, and found
+placements identical at base and head. Findings, and what was done with each:
+
+1. The S-014 test-coverage row in `install.conformance.md` did not cite the new tests. **Fixed.**
+2. The setup pointer named `init-worktracking` on a run that did not place it. **Fixed test-first**
+   (`SetupPointerSelectionTests`): the line now says the skill is not in the selection and how to
+   add it.
+3. The S-014 wording said the pointer "ends" the run, while the `--check` reminder follows it.
+   **Fixed** in the spec.
+4. Count exceptions were keyed by kind, so a future wrong count would be excused. **Fixed
+   test-first**: keys name the stale value (`count:drafts=10`). The new test was shown red with the
+   old key and green with the new one.
+5. `steps_missing_done_when` sees only `## Procedure` and `Step N` headings. **Recorded, not
+   changed:** it is `chore-0096`'s definition, stated in `S-028`.
+6. A sentence such as "`beta` ships; it is no longer a draft" reads as a draft claim. **Recorded,
+   not changed:** the reader fails loudly, never silently, and the exception list or a reworded
+   sentence answers it.
+7. All eight roadmap exceptions still fire on this branch, because WS-A is not merged here. **For
+   integration.**

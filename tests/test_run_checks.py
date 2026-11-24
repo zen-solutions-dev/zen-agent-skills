@@ -1003,6 +1003,16 @@ class RoadmapDraftStatusTests(unittest.TestCase):
         self.assertTrue(ok, report)
         self.assertIn("excepted", report)
 
+    def test_a_count_exception_excuses_only_the_value_it_names(self):
+        # The verifier's finding on the first version: a kind-level key would excuse any
+        # future wrong count of that kind for as long as it stood.
+        root = self._repo("- **3 are drafts**: `draft-one`.", drafts=["draft-one"])
+        self.assertTrue(self._check(root, exceptions={"count:drafts=3"})[0])
+        root = self._repo("- **5 are drafts**: `draft-one`.", drafts=["draft-one"])
+        ok, report = self._check(root, exceptions={"count:drafts=3"})
+        self.assertFalse(ok, report)
+        self.assertIn("says 5 drafts", report)
+
     def test_an_exception_that_no_longer_fires_is_reported_for_pruning(self):
         root = self._repo("- **Drafts**: `draft-one`.", drafts=["draft-one"])
         ok, report = self._check(root, exceptions={"draft:shipped-one"})

@@ -280,7 +280,8 @@ COUNT_RES = (
 ROADMAP_STATUS_EXCEPTIONS = frozenset({
     "draft:domain-language", "draft:grill", "draft:improve-architecture",
     "draft:retro", "draft:tdd", "draft:zen",
-    "count:ship", "count:drafts",
+    # Keyed by the stale value, so a different wrong count is a new finding, not this one.
+    "count:ship=19", "count:drafts=10",
 })
 
 
@@ -385,7 +386,7 @@ def roadmap_status_findings(text, statuses):
             claims += 1
             said = int(match.group(1))
             if said != actual[noun]:
-                findings.append((f"count:{noun}", first,
+                findings.append((f"count:{noun}={said}", first,
                                  f"says {said} {noun}, and the tree holds {actual[noun]}"))
     return findings, claims
 

@@ -95,9 +95,24 @@ Verdict: works. Step 1's red command is what turned up the second site.
 
 ## `verifier-agent`
 
-Run by a fresh-context agent that wrote none of this work (`A7`), over this task's acceptance
-criteria. Its verdict is recorded in the "Independent verification" section of
+A fresh-context agent that wrote none of this work (`A7`) ran this skill's procedure over this
+task's acceptance criteria. **Verdict: pass, with seven findings, none blocking.** It constructed
+its own bad input for every new check, rather than reusing the ones above.
+
+What changed because of it:
+
+- Findings 2 and 4 were real behaviour defects in this work, and both were fixed test-first: the
+  setup pointer named a skill the run had not placed, and count exceptions were keyed by kind, not
+  by value.
+- Findings 1 and 3 were contract wording, and both were fixed.
+- Findings 5 and 6 are recorded limits.
+
+The full list is in the "Independent verification" section of
 [`feat-0094`](../../../.tasks/done/feat-0094-marjana-platform-and-gates.md).
+
+Verdict on the skill: works. Its "pass" and "fail" have no middle value, so the agent reported a
+pass and listed its findings beside it, which is the honest reading. A "pass with findings" value
+may be worth considering; that is WS-C's call, since WS-C owns `verifier-agent`.
 
 ## `sitrep` (draft, owned): works, with one observation
 

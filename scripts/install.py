@@ -950,7 +950,14 @@ def install(tools, mode, home: Path, dry: bool, profile: str = DEFAULT_PROFILE,
     # The second half of adopting the kit, which nothing used to mention: skills are
     # installed once per machine and configured once per repository (feat-0094; the
     # step itself is init-worktracking's, built by feat-0091).
-    print(f"{tag}In each repository, run `init-worktracking` once to configure the skills.")
+    # Named only when this run places it: pointing an adopter at a skill they do not have
+    # was the independent verifier's finding on the first version.
+    if any(d.name == "init-worktracking" for d in skills):
+        print(f"{tag}In each repository, run `init-worktracking` once to configure the skills.")
+    else:
+        print(f"{tag}Each repository is configured once by `init-worktracking`, and "
+              f"`init-worktracking` is not in this selection: add it with "
+              f"`--skills init-worktracking`.")
     # Printed on every run, because the whole point of the check is that nothing else
     # tells you the copy has gone stale: a reader who never learns the flag exists is in
     # the state chore-0031 was filed on.
