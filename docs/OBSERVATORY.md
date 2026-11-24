@@ -350,9 +350,15 @@ Two consequences worth stating plainly, because "never used" means nothing witho
   out. As of 2026-08-29 that is ten of twenty-two, measured against the store rather than
   incremented: `agent-observatory`, `doc-author`, `doc-revise`, `house-review`,
   `project-bootstrap`, `review-depth`, `systematic-debugging`, `test-author`, `test-quality`, and
-Two of those are drafts that have no recorded uses in the corpus yet, this component's own
-companion skill and `systematic-debugging`, so the report counting them at zero is the
-contribution bar working rather than a gap.
+  `verifier-agent`. Two of those are drafts that have no recorded uses in the corpus yet, this
+  component's own companion skill and `systematic-debugging`, so the report counting them at zero
+  is the contribution bar working rather than a gap.
+  `review-depth` was folded into `house-review` in the 2026-11 overhaul and is no longer a skill,
+  so a later roster will not carry it; its past uses stay in the corpus and are reported as not in
+  the roster, like any other name the roster does not hold. A skill marked `invocation: user` under
+  `metadata` (`fix-batch`, `reconcile-worktrees`, `retro`, `improve-architecture`, `zen`) is one a
+  person starts by name, so a count of zero for it says nobody asked, not that an agent passed it
+  over.
 - **A skill in the corpus and absent from the roster is still reported**, marked as not in the
   roster. The harness also attributes messages to skills this kit does not ship, such as
   `code-review`, `claude-api`, and `anthropic-skills:brain-dump`. Dropping them would understate

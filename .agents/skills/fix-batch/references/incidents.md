@@ -45,3 +45,68 @@ Three occurrences, so this carries its evidence rather than reading as caution:
   disclosed in their own blockers that they had been cut at the wrong base and had fast-forwarded,
   including two the check had called correct. This is the occurrence that makes the check a lower
   bound.
+
+## The evidence moved out of the procedure on 2026-11-23
+
+`feat-0077` slimmed the skill body to its procedure. The examples that had sat between its steps
+moved here unchanged in substance, so the reason for each step survives the cut.
+
+### Why the acceptance command is run, not read (Step 2)
+
+On a real batch, running the command in a throwaway worktree caught one that was wrong in a way no
+reading would have shown: `uv run pytest` versus `uv run python -m pytest`, where the console script
+does not put the repository root on `sys.path` and every import fails. Dispatched unchecked, that is
+three agents hitting the same wall and reporting three confusing blockers.
+
+The cost of installing per worktree varies by orders of magnitude across toolchains, which is why
+the step says to measure it. A measured `uv sync` on a real Python project took 2 seconds and 52MB
+per worktree, which makes installing per worktree free; a cold `npm ci` is a different conversation.
+
+On a documentation-only repository like this kit the build-environment trap is absent, which is
+exactly why it is easy to ship a batch workflow that has never met it. When it is unresolved, an
+agent told not to leave its worktree either reports a blocker (the good case, one round trip) or
+improvises something creative (the bad case).
+
+### Why the honest-blocker instruction is in every prompt (Step 3, item 7)
+
+On a real batch, two of three agents reported that the task file's premise was factually wrong about
+the code: a function that did not contain the logic the task attributed to it, and a regex that did
+not handle a case the task asserted it handled. Both reported it and tested what was actually there
+instead of forcing a test onto a premise that did not hold.
+
+### Why the test-author mode is named in the prompt (Step 3, item 6)
+
+Most dispatched agents hold a single bug or chore task and no approved spec, and `test-author`'s
+acceptance mode requires one. Without the mode named, the agent writes whatever test makes its own
+change pass, which is the failure the verification stage exists to catch, arriving one step earlier
+than the stage that would catch it.
+
+### Why the decisions entry is allowed when other bookkeeping is not (Step 3, item 9)
+
+The shared-bookkeeping rule holds because the `done/` move, `CHANGELOG.md` and `ROADMAP.md` are the
+same files for every item, so N agents editing them in N worktrees collide by construction. An
+agent's own task file is the one file exactly one agent owns. Bookkeeping is also where the
+2026-07-07 agents were caught misreporting, so doing the shared part centrally removes the need to
+audit N copies of it.
+
+### Why an extra file is investigated rather than deleted (Step 6, check 1)
+
+In the 2026-07-07 incident an "extra" test initially looked like fabrication and was nearly deleted
+for that reason. It turned out to be a real, previously undiscovered bug fix the agent had found
+opportunistically and never disclosed. Hence: investigate anything unexpected against git history,
+the filesystem and a real run before concluding either way.
+
+### The `blocked` verdict on batch work (Step 6)
+
+As of the 2026-10-20 refresh, neither this skill nor `verifier-agent` had exercised the `blocked`
+branch on real batch work, which is why the step asks for extra scrutiny the first few times it
+comes up.
+
+### The fresh-context, leaf and effort rules (Step 3)
+
+Added by `feat-0077` from the 2026-11 overhaul, which studied Matt Pocock's workflow. A forked agent
+inherits the parent's exploration and assumptions into a context that should hold one task, and a
+dispatched agent that may dispatch its own can fan a batch out past what anyone verifies: a review
+fanned out to more than fifty agents, as reported on the `code-review` docs page of his `mattpocock/skills` repository (`docs/engineering/code-review.md`). This is credit for an observation and a working default, not adapted text, so it carries no provenance block. His working default is medium effort for
+nearly everything, raised for verification, because high effort spends the context window on early
+exploration.

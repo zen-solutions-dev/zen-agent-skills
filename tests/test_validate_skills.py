@@ -1189,14 +1189,14 @@ class TestDeclaredBodyShape(unittest.TestCase):
                          "the set of self-declared lenses changed; state it in the task "
                          "that changes it rather than letting the taxonomy drift")
 
-    def test_the_shipped_tree_reports_exactly_the_one_known_disagreement(self):
-        # The number the closeout states, asserted rather than described. One of the three
-        # declared lenses disagrees with the shape, and it stays a warning, so a green
-        # acceptance run is still a green run.
+    def test_the_shipped_tree_reports_no_shape_disagreement(self):
+        # The number the closeout states, asserted rather than described. Until feat-0077 one
+        # declared lens, `test-quality`, disagreed with the shape and stood as a warning;
+        # feat-0077 decided it is a lens and gave it `Intent`, `Workflow` and `Output`. Zero is
+        # now the pin, so a lens that drifts back into a workflow's shape fails here.
         code, out = _run(REPO_ROOT / ".agents" / "skills")
         self.assertEqual(code, 0, out)
-        self.assertEqual(out.count(self.FINDING), 1, out)
-        self.assertIn(f".agents/skills/test-quality/SKILL.md: {self.FINDING}", out)
+        self.assertEqual(out.count(self.FINDING), 0, out)
 
 
 class TestSupportingFileLinkChecks(unittest.TestCase):
@@ -1392,7 +1392,18 @@ class TestSupportingFileLinkChecks(unittest.TestCase):
         # feat-0072 added `quest-tracker/references/authoring-guide.md`, read in place and so
         # link-checked, and two files that are not markdown: the template page
         # `quest-tracker/templates/quest-tracker.html` and `quest-tracker/scripts/tracker.py`.
-        self.assertEqual(counts, {"markdown": 3, "template": 8, "other": 8})
+        # feat-0076 added three read-in-place references: `new-task/references/why-these-rules.md`
+        # and the glossary and decision-record formats under `domain-language/references/`.
+        # feat-0077 added four: `tdd/references/examples.md`, `fix-batch/references/
+        # claude-code.md`, `reconcile-worktrees/references/lessons.md` and
+        # `systematic-debugging/references/red-flags.md`.
+        # feat-0078 added four: `house-review/references/rationale.md`,
+        # `doc-sync/references/notes.md`, and `improve-architecture/references/vocabulary.md`
+        # and `report.md`.
+        # chore-0096 added `house-review/references/claude-code.md`, moving the harness
+        # section out of the body the way `fix-batch` already does.
+        # feat-0083 added one that is not markdown: `spec-author/scripts/spec_digest.py`.
+        self.assertEqual(counts, {"markdown": 15, "template": 8, "other": 9})
 
     def test_a_byte_cache_is_not_counted_as_a_supporting_file(self):
         # The count has to be a fact about the kit and not about whether the tests have
@@ -2177,3 +2188,64 @@ class TestDescriptionAdvisory(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class TestInvocationMetadata(unittest.TestCase):
+    """feat-0079: `metadata.invocation` is `user` or `model`, beside `metadata.status`.
+
+    Every reader treats an unrecognised value as model-invoked, so a typo would ship as
+    the opposite of what was meant with nothing anywhere to say so; this is the one place
+    it can fail. The combinations are written out rather than sampled, because the other
+    workstreams add drafts that may carry either field, both, or neither.
+    """
+
+    def setUp(self):
+        self._tmp = tempfile.TemporaryDirectory()
+        self.root = Path(self._tmp.name)
+
+    def tearDown(self):
+        self._tmp.cleanup()
+
+    def _fm(self, lines):
+        meta = ("metadata:\n" + "".join(f"  {line}\n" for line in lines)) if lines else ""
+        return f"---\nname: alpha\ndescription: {LONG_DESC}\nlicense: MIT\n{meta}---\n"
+
+    def test_every_legal_combination_of_status_and_invocation_passes(self):
+        for status in (None, "status: draft", "status: shipped"):
+            for invocation in (None, "invocation: user", "invocation: model"):
+                lines = [x for x in (status, invocation) if x]
+                with self.subTest(lines=lines):
+                    _write_skill(self.root, "alpha", self._fm(lines))
+                    code, out = _run(self.root)
+                    self.assertEqual(code, 0, out)
+                    self.assertIn("0 error(s)", out)
+
+    def test_an_unrecognised_invocation_value_errors(self):
+        for bad in ("users", "manual", "User-only"):
+            with self.subTest(bad=bad):
+                _write_skill(self.root, "alpha", self._fm(["status: draft",
+                                                           f"invocation: {bad}"]))
+                code, out = _run(self.root)
+                self.assertEqual(code, 1)
+                self.assertIn("metadata.invocation", out)
+                self.assertIn("user, model", out)
+
+    def test_the_value_is_read_case_insensitively(self):
+        # The case an author typed is not a fact about the skill, matching status.
+        _write_skill(self.root, "alpha", self._fm(["invocation: User"]))
+        code, out = _run(self.root)
+        self.assertEqual(code, 0, out)
+
+    def test_an_invocation_line_in_the_body_is_prose(self):
+        _write_skill(self.root, "alpha", self._fm([]),
+                     body="Set `invocation: sometimes` and see what happens.\n")
+        code, out = _run(self.root)
+        self.assertEqual(code, 0, out)
+
+    def test_the_rendered_key_in_a_source_skill_errors_and_says_where_it_belongs(self):
+        fm = (f"---\nname: alpha\ndescription: {LONG_DESC}\n"
+              "disable-model-invocation: true\n---\n")
+        _write_skill(self.root, "alpha", fm)
+        code, out = _run(self.root)
+        self.assertEqual(code, 1)
+        self.assertIn("declare `invocation: user` under `metadata`", out)

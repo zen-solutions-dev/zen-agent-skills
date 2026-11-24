@@ -1,7 +1,7 @@
 ---
 title: verifier-agent conformance
 spec: docs/spec/verifier-agent.md
-audited: 2026-07-27
+audited: 2026-11-23
 ---
 
 # verifier-agent conformance matrix
@@ -36,8 +36,10 @@ item 8 evaluation records are for.
 | Scenarios | S-005 the spec was never approved | Conformed | Step 1 / first precondition bullet, with the `verdict: blocked` rule | amended 2026-07-27 to say "with a blocking reason" rather than implying a single-reason return |
 | Scenarios | S-006 no command is declared, or one cannot run | Conformed | Step 1 / second precondition bullet, with the `verdict: blocked` rule | the "do not substitute a command you think is equivalent" clause covers the scenario's second half |
 | Scenarios | S-011 both blocking preconditions hold | Conformed | Step 1 / "Check both before returning, and report every reason that holds ... List the reasons in the order above" | added by this task. The fixed order is what makes the record deterministic, which S-011 requires and the goal-1 determinism rule depends on |
+| Scenarios | S-012 the approved text changed after its approval | Conformed | Step 1 / first precondition bullet, "`not-approved`, `changed`, `malformed`, or `unreadable` blocks the run ... for `changed` say that the approved text was edited and waits on the person's re-approval", with the `verdict: blocked` rule | added by `feat-0083`, pending the maintainer's re-approval of the amended contract. The digest itself is computed by `spec-author`'s `scripts/spec_digest.py`, covered by `tests/test_spec_digest.py` |
+| Scenarios | S-013 the approval is tied to no text | Conformed | Step 1 / first precondition bullet, "`unbound` is not a blocker: continue, and record in `findings` that the approval is not tied to any text" | added by `feat-0083`. Every spec approved before 2026-11-23 is in this state until the maintainer re-reads it, by the maintainer's choice |
 | Scenarios | S-007 an acceptance criterion has no evidence | Conformed | Step 4 / "When nothing demonstrates a criterion, mark it `unmet` and state that no evidence was found", with the `verdict: fail` rule | the explicit prohibitions (do not infer from a green suite, an adjacent criterion, or the implementer's report) are stronger than the scenario requires |
-| Scenarios | S-008 acceptance criteria only, with no spec | Conformed | Step 1 / "If no spec is supplied at all, that is not a blocker; continue, and record that conformance was not assessed", with the `conformance` output rule | the output rule pins the exact wording `not assessed: no spec supplied` |
+| Scenarios | S-008 acceptance criteria only, with no spec | Conformed | Step 1 / "If no spec is supplied at all, that is not a blocker either; continue, and record that conformance was not assessed", with the `conformance` output rule | the output rule pins the exact wording `not assessed: no spec supplied` |
 | Scenarios | S-009 a repairable defect is found | Conformed | Step 5 / "Verification is read-only ... byte-for-byte unchanged. This holds even when the fix is one line and obvious", with the `findings` output rule | the "one line and obvious" clause names the exact temptation the scenario guards |
 | Scenarios | S-010 no report destination is supplied | Conformed | Step 5 / "By default the report is returned inline and no file is created", and Inputs / the optional report destination | stated twice, consistently |
 | Proposed Surface | Inputs, required and optional | Conformed | Inputs section / the required and optional lists | matches the surface exactly, including "You never invent one" for the command |
@@ -46,7 +48,7 @@ item 8 evaluation records are for.
 
 ## Coverage proof
 
-- **audited**: S-001 through S-011, and all four Proposed Surface groupings (inputs, the six output
+- **audited**: S-001 through S-013, and all four Proposed Surface groupings (inputs, the six output
   fields, the verdict values, report delivery). Every spec item was checked.
 - **unreconciled**: none. No item diverged and none is unbuilt.
 
@@ -70,3 +72,10 @@ Epic A item 8 branches, one is now exercised on real work
 ([`house-review.verification.md`](house-review.verification.md)) and two remain. Until those run, the
 strongest claim available for this skill is that its instructions match its contract and one of its
 three hardest paths has been observed behaving correctly once.
+
+**Re-audited on 2026-11-23 after `feat-0077` slimmed the skill.** Every quoted clause in the matrix
+above was re-checked against the rewritten body and still appears in it, in the step the row names;
+`scripts/check-citations.py` reports none unresolved. The rewrite added the fresh-context, leaf and
+high-effort dispatch guidance, which no scenario covers, so it adds no row; see the amendment note in
+[`verifier-agent.md`](verifier-agent.md).
+

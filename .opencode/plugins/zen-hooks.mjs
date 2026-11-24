@@ -15,6 +15,7 @@
 //   spec-conformance-gate      -> tool.execute.after (write/edit): throw.    [enforced]
 //   skill-reachability-reminder -> event (session start):          warn log. [best-effort]
 //   install-currency-reminder  -> event (session start):           warn log. [best-effort]
+//   instruction-provenance-reminder -> event (session start):      warn log. [best-effort]
 //   worktree-boundary-reminder -> tool.execute.after (bash):       warn log. [best-effort]
 //
 // The reachability reminder inherits the same weakness as the delegation one: it surfaces
@@ -95,13 +96,14 @@ export const ZenHooks = async ({ worktree, directory, client }) => {
         source: "startup",
         cwd: rootDir,
       };
-      // Two independent reminders on the same event, run in order rather than merged:
-      // each answers its own question and each stays silent on its own, so a session may
-      // hear neither, either, or both. See .agents/hooks/README.md for why currency is a
-      // separate hook from reachability.
+      // Independent reminders on the same event, run in order rather than merged: each
+      // answers its own question and each stays silent on its own, so a session may hear
+      // any subset of them. See .agents/hooks/README.md for why currency is a separate
+      // hook from reachability, and provenance a third.
       for (const script of [
         "skill-reachability-reminder.py",
         "install-currency-reminder.py",
+        "instruction-provenance-reminder.py",
       ]) {
         await note(client, runHook(script, payload, rootDir));
       }

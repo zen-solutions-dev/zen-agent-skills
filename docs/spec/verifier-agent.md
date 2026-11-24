@@ -14,6 +14,22 @@ contract did not cover: both blocking preconditions true at once. S-005 and S-00
 implied accumulation and the skill body read as short-circuit. S-011 settles it, and the decision was to
 accumulate rather than short-circuit. Re-approved by the author on 2026-07-27.
 
+Amendment note, 2026-11-23 (`feat-0077`), **pending the maintainer's approval**: the skill body was
+slimmed and now says how the skill is dispatched when another agent runs it: with a fresh context
+rather than a fork of the implementing session, told it is a leaf that dispatches nothing, at high
+effort. That sharpens the independence this contract already requires and changes no scenario,
+input, output field, or verdict rule. The status stays `approved` on the reading that no contract
+term moved; if the maintainer reads the dispatch guidance as a contract term, it becomes a new
+scenario under Goals and this note records where it came from.
+
+Amendment note, 2026-11-23 (`feat-0083`), **pending the maintainer's re-approval**: on the
+maintainer's decision recorded in that task, an approval is now tied to the text a person approved. A spec
+records `approved_digest` when approved, and `spec-author`'s `scripts/spec_digest.py` reports whether
+the text still matches. The constraint on approval gained a sentence, and S-012 (the approved text
+changed since approval) and S-013 (an approval tied to no text) are new. S-005 and S-011 are
+unchanged: a changed spec is a further reason under the same first precondition, and keeps its
+place in the fixed order.
+
 ## Problem
 
 The spine can now write a contract, gate it, decompose it, implement it, derive tests from it, and
@@ -73,7 +89,8 @@ one that ran and passed.
 - The verdict follows a deterministic rule: the same evidence always yields the same verdict, and no
   verdict is reached by overall impression.
 - A spec is only a valid contract to verify against when a human has marked it approved. A draft
-  spec is not a contract.
+  spec is not a contract, and neither is approved text edited after its approval: where a spec
+  records the digest of the text that was approved, the text verified against must still match it.
 - Verification may proceed against task acceptance criteria alone when no spec exists, provided the
   report states that contract conformance was not assessed.
 
@@ -132,6 +149,21 @@ one that ran and passed.
 - **Then** it returns `verdict: blocked` carrying **both** blocking reasons, the unapproved contract
   first and the missing command second, rather than only the first one found. The ordering is fixed,
   so the same state always produces the same record.
+
+### Scenario S-012: the approved text changed after its approval
+
+- **Given** a spec with `status: approved` and an `approved_digest` that no longer matches its text
+- **When** verifier-agent runs
+- **Then** it returns `verdict: blocked` with a blocking reason stating that the approved text was
+  edited and waits on the person's re-approval, in the unapproved contract's place in the fixed
+  order, and does not execute the verification or report a pass or a fail.
+
+### Scenario S-013: the approval is tied to no text
+
+- **Given** a spec with `status: approved` and no `approved_digest`
+- **When** verifier-agent runs
+- **Then** it proceeds as for an approved spec, and its `findings` state that the approval is not
+  tied to any text, so the reader knows the contract could have changed since a person agreed to it.
 
 ### Scenario S-007: an acceptance criterion has no evidence
 

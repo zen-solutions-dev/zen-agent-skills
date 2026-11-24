@@ -1,0 +1,17 @@
+{
+  "name": "zen-agent-skills",
+  "owner": {
+    "name": "Zen Solutions",
+    "url": "https://github.com/zen-solutions-dev"
+  },
+  "description": "Portable, cross-harness agent skills for spec-driven work: authoring specs and tasks, dispatching parallel agents, and reviewing, testing, and documenting what they produce.",
+  "plugins": [
+    {
+      "name": "zen-agent-skills",
+      "source": "./.claude-plugin/plugin",
+      "description": "Portable, cross-harness agent skills for spec-driven work: authoring specs and tasks, dispatching parallel agents, and reviewing, testing, and documenting what they produce.",
+      "category": "development",
+      "homepage": "https://github.com/zen-solutions-dev/zen-agent-skills"
+    }
+  ]
+}

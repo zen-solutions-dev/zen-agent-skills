@@ -66,15 +66,44 @@ with them, under an output root that defaults to the working directory. Goal 6
 of the contract is to fail clearly on an unusable invocation rather than write a
 partial result, and only the first half of that was true.
 
+Drafts and invocation (feat-0079, chore-0077). A skill marked `metadata.status:
+draft` is emitted by no target unless `--include-drafts` is given, matching
+install.py, so an adapter never hands a project a skill the kit has not blessed. A
+shipped skill that links a draft refuses the run, for the reason install.py refuses
+it: the link would dangle, and which side is wrong is a person's call. A skill
+declaring `metadata.invocation: user` gains `disable-model-invocation: true` in the
+plugin tree only, because Claude Code is the one harness that reads the key and
+claude.ai rejects it; the Cursor and VS Code adapters are not changed.
+
+The committed marketplace (feat-0079). `--marketplace` regenerates the Claude Code
+marketplace this repository commits, so `claude plugin marketplace add
+zen-solutions-dev/zen-agent-skills` works from a clean machine:
+
+    .claude-plugin/marketplace.json          the catalog, one plugin entry
+    .claude-plugin/plugin/                   the plugin tree, shipped skills only
+
+The tree is generated, committed, and owned whole by this tool: a run replaces it
+rather than merging into it. `--marketplace --check` writes nothing and exits 1
+naming every file that differs from what a run would generate, which is the
+`plugin tree` gate in run-checks.py. The plugin's version is generated from a digest
+of the tree, so it changes exactly when the content does, and Claude Code sees an
+update on the next `claude plugin update` or, with auto-update on, at startup.
+
+    python scripts/build-adapters.py --marketplace           # regenerate, then commit
+    python scripts/build-adapters.py --marketplace --check   # is the committed tree current?
+
 Standard library only. Generated adapters are overwritten each run (they are
 derived artifacts); do not hand-edit them, edit the SKILL.md instead.
 """
 from __future__ import annotations
 
 import argparse
+import filecmp
+import hashlib
 import json
 import re
 import shutil
+import tempfile
 from collections import namedtuple
 import sys
 from pathlib import Path
@@ -87,6 +116,7 @@ _TEXTIO_ROOT = Path(__file__).resolve().parent.parent
 if str(_TEXTIO_ROOT) not in sys.path:
     sys.path.insert(0, str(_TEXTIO_ROOT))
 from scripts._textio import NotUTF8, read_text_utf8   # noqa: E402
+from scripts._skillmeta import is_draft_text, render_for_claude   # noqa: E402
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 SKILLS_DIR = REPO_ROOT / ".agents" / "skills"
@@ -114,23 +144,41 @@ LAYOUTS = {
 
 # The plugin's published identity, and the one place to edit it. Both manifests
 # are generated from this single mapping, so the marketplace entry cannot drift
-# from the plugin it points at. The repository carries no other version source,
-# so bumping the release means bumping this line.
+# from the plugin it points at.
+#
+# The version is generated, not typed (feat-0079). Claude Code detects an update by
+# comparing the plugin's version string with the one it installed, so a hand-pinned
+# string holds every adopter on the old copy until someone remembers to bump it, and
+# leaving it out (which versions by commit) fails `claude plugin validate --strict`.
+# `plugin_version()` appends a digest of the emitted tree to PLUGIN_BASE_VERSION as
+# semver build metadata, so the string changes exactly when the plugin's content does.
+# Bump the base only to say something to a human reader.
+PLUGIN_BASE_VERSION = "0.1.0"
+REPO_URL = "https://github.com/zen-solutions-dev/zen-agent-skills"
 PLUGIN = {
     "name": "zen-agent-skills",
-    "version": "0.1.0",
     "description": "Portable, cross-harness agent skills for spec-driven work: "
                    "authoring specs and tasks, dispatching parallel agents, and "
                    "reviewing, testing, and documenting what they produce.",
-    "author": {"name": "Zen Solutions", "url": "https://github.com/hams-ollo"},
-    "homepage": "https://github.com/hams-ollo/zen-agent-skills",
-    "repository": "https://github.com/hams-ollo/zen-agent-skills",
+    "author": {"name": "Zen Solutions", "url": "https://github.com/zen-solutions-dev"},
+    "homepage": REPO_URL,
+    "repository": REPO_URL,
     "license": "MIT",
     "keywords": ["skills", "agents", "spec-driven", "code-review", "documentation"],
 }
 
+# The committed marketplace: its catalog sits at the repository root's .claude-plugin/,
+# which is where `claude plugin marketplace add <owner>/<repo>` looks, and the plugin it
+# lists sits beneath it, because a plugin's own .claude-plugin/plugin.json has to be at
+# the plugin's root and the repository root is not the plugin.
+MARKETPLACE_DIR = REPO_ROOT / ".claude-plugin"
+MARKETPLACE_PLUGIN_DIR = MARKETPLACE_DIR / "plugin"
+MARKETPLACE_PLUGIN_SOURCE = "./.claude-plugin/plugin"
+
 LINK_RE = re.compile(r"\]\(([^)\s]+)((?:\s+\"[^\"]*\")?)\)")
 SIBLING_RE = re.compile(r"^\.\./([^/]+)/SKILL\.md(#.*)?$")
+# A sibling link anywhere in a body, for the draft refusal. The same edge install.py reads.
+SIBLING_LINK_RE = re.compile(r"\]\(\.\./([^/)]+)/SKILL\.md")
 RULES_RE = re.compile(r"^\.\./\.\./rules/(.+)$")
 EXTERNAL_PREFIXES = ("http://", "https://", "mailto:")
 # Kept identical to validate-skills.py's copy. Two parsers that agree are bad; two
@@ -445,7 +493,8 @@ def emit_vscode(src: Path, name, desc, body, out: Path, dry: bool) -> Path:
 def emit_plugin(src: Path, name, desc, body, out: Path, dry: bool) -> Path:
     """Place a skill in the plugin tree, verbatim.
 
-    Nothing is rewritten and nothing is re-serialised. The plugin layout keeps
+    Nothing is rewritten and nothing is re-serialised, except that a user-invoked
+    skill gains `disable-model-invocation: true` (feat-0079). The plugin layout keeps
     the geometry every source link is written for, so a rewrite would have to
     reproduce the path it was given; and round-tripping the frontmatter through
     this module's reader would drop any key it does not model and flatten any it
@@ -453,6 +502,12 @@ def emit_plugin(src: Path, name, desc, body, out: Path, dry: bool) -> Path:
     frontmatter `name`, because `../<dir>/SKILL.md` is what a sibling link names.
     """
     dest = out / "skills" / src.name / "SKILL.md"
+    text = read_text_utf8(src / "SKILL.md")
+    rendered = render_for_claude(text)
+    if rendered != text:
+        # A user-invoked skill: the one change a Claude Code copy carries (feat-0079).
+        _write(dest, rendered, dry, out)
+        return dest
     if dry:
         return dest
     dest.parent.mkdir(parents=True, exist_ok=True)
@@ -460,30 +515,153 @@ def emit_plugin(src: Path, name, desc, body, out: Path, dry: bool) -> Path:
     return dest
 
 
-def emit_plugin_manifests(out: Path, dry: bool) -> list[Path]:
-    """Write the two manifests a Claude Code plugin and its marketplace need.
-
-    Both are generated from PLUGIN, so the marketplace entry cannot drift from
-    the plugin it points at. The marketplace lists exactly one plugin, whose
-    source is the emitted root itself.
-    """
-    marketplace = {
+def marketplace_manifest(source: str) -> dict:
+    """The marketplace catalog, listing the one plugin at `source`."""
+    return {
         "name": PLUGIN["name"],
         "owner": PLUGIN["author"],
-        "metadata": {"description": PLUGIN["description"], "version": PLUGIN["version"]},
+        "description": PLUGIN["description"],
         "plugins": [{
             "name": PLUGIN["name"],
-            "source": "./",
+            "source": source,
             "description": PLUGIN["description"],
-            "version": PLUGIN["version"],
+            "category": "development",
+            "homepage": PLUGIN["homepage"],
         }],
     }
+
+
+def emit_plugin_manifests(out: Path, dry: bool, with_marketplace: bool = True) -> list[Path]:
+    """Write the manifests a Claude Code plugin, and optionally its marketplace, need.
+
+    Both are generated from PLUGIN, so the marketplace entry cannot drift from
+    the plugin it points at. The marketplace written here lists exactly one plugin,
+    whose source is the emitted root itself, which is what lets `--target plugin
+    --out <dir>` be added as a local marketplace. The committed marketplace writes
+    its own catalog one level up instead (see `build_marketplace`).
+    """
+    pairs = [("plugin.json", dict(PLUGIN, version=plugin_version(out)))]
+    if with_marketplace:
+        pairs.append(("marketplace.json", marketplace_manifest("./")))
     written = []
-    for fname, obj in (("plugin.json", dict(PLUGIN)), ("marketplace.json", marketplace)):
+    for fname, obj in pairs:
         dest = out / ".claude-plugin" / fname
         _write(dest, json.dumps(obj, indent=2) + "\n", dry, out)
         written.append(dest)
     return written
+
+
+def plugin_version(out: Path) -> str:
+    """PLUGIN_BASE_VERSION plus a 12-character digest of the emitted skills and rules.
+
+    Over relative paths and bytes, sorted by their case-sensitive parts, so it is the
+    same on every platform for the same content. Sorting the paths themselves was not:
+    `WindowsPath` orders case-insensitively, so `SKILL.md` and `references/` swapped
+    places and Windows computed a different version for the same tree (feat-0080). The
+    manifests are excluded, since they carry the version and so cannot be part of what
+    it digests. A preview writes no tree, so a preview's version is the base's.
+    """
+    digest = hashlib.sha256()
+    for top in ("skills", "rules"):
+        root = out / top
+        if not root.is_dir():
+            continue
+        for path in sorted(root.rglob("*"), key=lambda p: p.relative_to(out).parts):
+            rel = path.relative_to(out)
+            if not path.is_file() or "__pycache__" in rel.parts or path.suffix == ".pyc":
+                continue
+            digest.update(rel.as_posix().encode("utf-8") + b"\0")
+            digest.update(path.read_bytes() + b"\0")
+    return f"{PLUGIN_BASE_VERSION}+{digest.hexdigest()[:12]}"
+
+
+def draft_refusals(parsed: dict, emitted: list) -> list[str]:
+    """One message per emitted skill that links a skill this run withholds as a draft.
+
+    The same refusal install.py makes (install.md S-015), for the same reason: the
+    emitted link would dangle, and dropping either side is a person's decision.
+    """
+    emitted_names = {d.name for d in emitted}
+    held = {d.name for d in parsed if d.name not in emitted_names}
+    messages = []
+    for d in emitted:
+        refs = {m.group(1) for m in SIBLING_LINK_RE.finditer(parsed[d][1])}
+        for ref in sorted(refs & held):
+            messages.append(f"{d.name} links {ref!r} as a sibling, and {ref!r} is marked a "
+                            f"draft, so the emitted link would dangle")
+    return messages
+
+
+def build_plugin_tree(out: Path, skills, parsed: dict) -> None:
+    """Emit a complete plugin tree into `out`, which is assumed empty."""
+    emit_rules_module(out, False, LAYOUTS["plugin"])
+    for d in skills:
+        fm, body = parsed[d]
+        emit_plugin(d, fm.get("name", d.name), fm.get("description", ""), body, out, False)
+        emit_skill_assets(d, out, False, LAYOUTS["plugin"])
+    emit_plugin_manifests(out, False, with_marketplace=False)
+
+
+def tree_differences(expected: Path, actual: Path) -> list[str]:
+    """Every file that differs between two trees, as POSIX-relative paths with a reason."""
+    def files(root):
+        if not root.is_dir():
+            return set()
+        return {p.relative_to(root).as_posix() for p in root.rglob("*")
+                if p.is_file() and "__pycache__" not in p.parts and p.suffix != ".pyc"}
+    want, have = files(expected), files(actual)
+    problems = [f"{rel}: missing from the committed tree" for rel in sorted(want - have)]
+    problems += [f"{rel}: in the committed tree, and no longer generated"
+                 for rel in sorted(have - want)]
+    problems += [f"{rel}: differs from what would be generated"
+                 for rel in sorted(want & have)
+                 if not filecmp.cmp(expected / rel, actual / rel, shallow=False)]
+    return problems
+
+
+def build_marketplace(skills, parsed: dict, check: bool, repo_root: Path = REPO_ROOT) -> int:
+    """Regenerate, or with `check` compare, the committed Claude Code marketplace.
+
+    Built into a temporary directory first, then either compared or swapped in whole, so
+    a failure part-way never leaves a half-written committed tree, and a skill removed
+    from the kit leaves the plugin too. Drafts are never included: the marketplace is
+    what an adopter receives by default, and a draft is tried with install.py instead.
+    """
+    market_dir = repo_root / ".claude-plugin"
+    plugin_dir = market_dir / "plugin"
+    catalog = json.dumps(marketplace_manifest(MARKETPLACE_PLUGIN_SOURCE), indent=2) + "\n"
+    with tempfile.TemporaryDirectory() as tmp:
+        staged = Path(tmp) / "plugin"
+        staged.mkdir()
+        build_plugin_tree(staged, skills, parsed)
+        if check:
+            problems = tree_differences(staged, plugin_dir)
+            catalog_path = market_dir / "marketplace.json"
+            have = catalog_path.read_bytes() if catalog_path.is_file() else None
+            if have != catalog.encode("utf-8"):
+                problems.insert(0, "../marketplace.json: differs from what would be "
+                                   "generated" if have is not None
+                                else "../marketplace.json: missing")
+            if problems:
+                print(f"The committed marketplace under {market_dir} is out of date "
+                      f"({len(problems)} file(s)):")
+                for p in problems:
+                    print(f"  .claude-plugin/plugin/{p}" if not p.startswith("../")
+                          else f"  .claude-plugin/{p[3:]}")
+                print("Regenerate it with `python scripts/build-adapters.py --marketplace` "
+                      "and commit the result.")
+                return 1
+            print(f"The committed marketplace is current: {len(skills)} skill(s) in "
+                  f".claude-plugin/plugin/, and .claude-plugin/marketplace.json.")
+            return 0
+        market_dir.mkdir(parents=True, exist_ok=True)
+        if plugin_dir.exists():
+            shutil.rmtree(plugin_dir)
+        shutil.copytree(staged, plugin_dir)
+    (market_dir / "marketplace.json").write_text(catalog, encoding="utf-8", newline="")
+    print(f"Regenerated the committed marketplace: {len(skills)} skill(s) in "
+          f".claude-plugin/plugin/, and .claude-plugin/marketplace.json. Commit both.")
+    return 0
 
 
 def _write(dest: Path, content: str, dry: bool, root: Path):
@@ -625,7 +803,38 @@ def _main(argv=None) -> int:
                            "default run writes into a project root)")
     ap.add_argument("--out", default=".", help="output project root (default: cwd)")
     ap.add_argument("--dry-run", action="store_true")
+    ap.add_argument("--include-drafts", action="store_true",
+                    help="also emit skills marked metadata.status: draft (excluded by "
+                         "default, matching install.py)")
+    ap.add_argument("--marketplace", action="store_true",
+                    help="regenerate the committed Claude Code marketplace under "
+                         ".claude-plugin/ (shipped skills only); ignores --target and --out")
+    ap.add_argument("--check", action="store_true",
+                    help="with --marketplace: write nothing, exit 1 if the committed tree "
+                         "differs from what would be generated")
     args = ap.parse_args(argv)
+
+    if args.check and not args.marketplace:
+        print("--check compares the committed marketplace; pass it with --marketplace.")
+        return 2
+    if args.marketplace:
+        if args.include_drafts or args.dry_run:
+            print("--marketplace ships shipped skills only and has its own --check; "
+                  "--include-drafts and --dry-run do not apply.")
+            return 2
+        every = discover_skills()
+        parsed = {d: split_frontmatter(read_text_utf8(d / "SKILL.md")) for d in every}
+        refusals = name_refusals(((d, fm.get("name", d.name)) for d, (fm, _) in parsed.items()),
+                                 ["plugin"], MARKETPLACE_PLUGIN_DIR)
+        texts = {d: read_text_utf8(d / "SKILL.md") for d in every}
+        shipped = [d for d in every if not is_draft_text(texts[d])]
+        refusals += draft_refusals(parsed, shipped)
+        if refusals:
+            for message in refusals:
+                print(message)
+            print("Refusing to build the marketplace. Nothing was written.")
+            return 2
+        return build_marketplace(shipped, parsed, args.check)
 
     targets = [t.strip() for t in args.target.split(",") if t.strip()]
     bad = [t for t in targets if t not in EMITTERS]
@@ -634,10 +843,14 @@ def _main(argv=None) -> int:
         return 2
 
     out = Path(args.out).expanduser().resolve()
-    skills = discover_skills()
-    if not skills:
+    discovered = discover_skills()
+    if not discovered:
         print(f"No skills found under {SKILLS_DIR}.")
         return 0
+    # Drafts are withheld unless asked for (chore-0077, feat-0079), matching install.py.
+    texts = {d: read_text_utf8(d / "SKILL.md") for d in discovered}
+    drafts = [d for d in discovered if is_draft_text(texts[d])]
+    skills = discovered if args.include_drafts else [d for d in discovered if d not in drafts]
 
     # Targets sharing a layout share one copy of the shared material, so cursor
     # and vscode together still emit it once. A layout is per target, so asking
@@ -656,10 +869,12 @@ def _main(argv=None) -> int:
     # merely hoisted to the top of the loop would still leave the shared module behind.
     # And reading each file once means an undecodable SKILL.md is reported once, by the
     # one read, rather than giving two chances to describe the same failure differently.
-    parsed = {d: split_frontmatter(read_text_utf8(d / "SKILL.md")) for d in skills}
+    parsed = {d: split_frontmatter(texts[d]) for d in discovered}
 
-    refusals = name_refusals(((d, fm.get("name", d.name)) for d, (fm, _) in parsed.items()),
+    refusals = name_refusals(((d, parsed[d][0].get("name", d.name)) for d in skills),
                              targets, out, tag)
+    refusals += [f"{tag}Refusing: {m}. Pass --include-drafts, or bless the draft."
+                 for m in draft_refusals(parsed, skills)]
     if refusals:
         for message in refusals:
             print(message)
@@ -669,6 +884,13 @@ def _main(argv=None) -> int:
         print(f"{tag}Refusing the whole run: {len(refusals)} of {len(skills)} skill(s) "
               f"named above. No file was written under {out}.")
         return 2
+
+    if drafts and not args.include_drafts:
+        print(f"{tag}{len(drafts)} draft skill(s) withheld: "
+              f"{', '.join(d.name for d in drafts)}. Pass --include-drafts to emit them.\n")
+    elif drafts:
+        print(f"{tag}Emitting {len(drafts)} draft skill(s) because --include-drafts was "
+              f"given: {', '.join(d.name for d in drafts)}.\n")
 
     n = 0
     # The rules module is one copy shared by every skill, so it is emitted per

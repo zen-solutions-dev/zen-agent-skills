@@ -27,7 +27,7 @@ A skills library, not an application. The deliverables are the skills under [`.a
 | Path | Holds |
 |---|---|
 | [`.agents/skills/`](.agents/skills/) | The skills. One directory per skill, each with a `SKILL.md` harness-agnostic body. |
-| [`.agents/rules/`](.agents/rules/) | The swappable lenses skills compose: [`house-style.md`](.agents/rules/house-style.md) for writing and formatting, [`review-quality.md`](.agents/rules/review-quality.md) for the review rubric and severities, [`autonomy.md`](.agents/rules/autonomy.md) for what an agent may do when nobody is watching, and, in `A10`, for what it may do with material it did not author on any run at all. Each lens carries `paths` frontmatter so Claude Code loads it only when a skill reads it; [`core.md`](.agents/rules/core.md) is the one always-loaded file, one line per rule, held under a line budget by `validate-skills.py`. Adopters may replace any of them. Shipped alongside the skills by `install.py`, which places them in `~/.claude/rules/`, because a skill that references a lens is not self-contained without it. |
+| [`.agents/rules/`](.agents/rules/) | The swappable lenses skills compose: [`house-style.md`](.agents/rules/house-style.md) for writing and formatting, [`review-quality.md`](.agents/rules/review-quality.md) for the review rubric and severities, [`autonomy.md`](.agents/rules/autonomy.md) for what an agent may do when nobody is watching, and, in `A10` and `A11`, for what it may do with material it did not author and with the check that judges its work, on any run at all, and [`writing-for-agents.md`](.agents/rules/writing-for-agents.md) for how a document behaves when an agent reads it, the yardstick for every `SKILL.md` and for this file. Each lens carries `paths` frontmatter so Claude Code loads it only when a skill reads it; [`core.md`](.agents/rules/core.md) is the one always-loaded file, one line per rule, held under a line budget by `validate-skills.py`. Adopters may replace any of them. Shipped alongside the skills by `install.py`, which places them in `~/.claude/rules/`, because a skill that references a lens is not self-contained without it. |
 | [`.agents/hooks/`](.agents/hooks/) | Optional runtime guardrails (Python on stdin), each a *reminder* (injects context, never blocks) or a *gate* (blocks, only when the condition is decidable from the payload). The only thing the kit ships that runs inside an adopter's session, so installation is opt-in and activation is theirs: `install.py --with-hooks` places the files and prints the registration rather than editing anyone's settings. Contract in [`.agents/hooks/README.md`](.agents/hooks/README.md). |
 | [`scripts/`](scripts/) | Two kinds, and which kind a thing is matters more than the list. **Distribution tooling**, a deliverable, which ships the kit: `install.py`, `build-adapters.py`, `validate-skills.py`, `check-provenance.py`, `run-checks.py`, `check-citations.py`. **Maintainer tooling**, which reaches no adopter tree and which `install.py` never places: `observatory/`, a local reporting surface over this repository's own session corpus, contracted by [`agent-observatory.md`](docs/spec/agent-observatory.md). What decides the kind is whether an adopter receives it, not where it sits, and the stdlib rule in the conventions section governs both. **Membership is the term here, not the enumeration**: a script added or retired needs no amendment to this row, per the precedent [`chore-0049`](.tasks/done/chore-0049-a-checker-for-conformance-matrix-citations.md) set when a gate count went stale the first time anyone added a gate. |
 | [`.tasks/`](.tasks/) | Atomic, agent-assignable work items for building this kit, plus `validate.py`. |
@@ -65,6 +65,12 @@ Each skill is a directory under `.agents/skills/<name>/` containing:
 
 Run `python scripts/validate-skills.py` to lint every skill against these rules.
 
+### Who starts a skill
+
+A skill is **model-invoked** by default: its description sits in the agent's context so the agent can reach it unprompted and other skills can compose it. A skill a person starts by name (an orchestrator such as `fix-batch`, a scaffold, the `zen` router) declares `invocation: user` under `metadata`. The Claude Code install paths render that as `disable-model-invocation: true` in the copy they place, which takes its description out of every session's context. It is never written as a top-level key in the source, because claude.ai and the Skills API reject any frontmatter key outside their six, and `metadata` is one of the six. The reasoning, and when to pick which, is in [`writing-for-agents.md`](.agents/rules/writing-for-agents.md).
+
+A new skill lands as a draft, `status: draft` under `metadata`, and an install places it only when asked with `--include-drafts`. **A shipped skill names a draft sibling in backticks, never as a relative link**: the link is an install edge, and the installer refuses a profile in which a shipped skill depends on a draft. The link is made when the draft is promoted.
+
 ### Two body shapes, both valid
 
 The body takes one of two shapes, decided by how the skill is consumed. Neither is preferred and
@@ -78,7 +84,7 @@ neither should be retrofitted onto the other.
 
 **A skill's shape is declared in the skill and enforced by [`validate-skills.py`](scripts/validate-skills.py), not listed here.** A lens says so in its own body ("This skill is a lens" or "This is a lens"), and the validator warns when the headings under that declaration are a workflow's. Inferring the shape from the headings instead would make every skill conform by construction.
 
-The history of this rule, including the `test-quality` warning it leaves standing on purpose, is in the [rationale](docs/rationale/agents-md.md).
+The history of this rule is in the [rationale](docs/rationale/agents-md.md).
 
 ### Every skill points at every universal lens
 

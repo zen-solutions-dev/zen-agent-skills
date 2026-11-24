@@ -79,7 +79,7 @@ because a contradiction inside one step is worse than a gap between two.
 
 **Out of scope:**
 
-- **[`.agents/skills/review-depth/SKILL.md`](../../.agents/skills/review-depth/SKILL.md).** Was mid-flight
+- **`.agents/skills/review-depth/SKILL.md`.** Was mid-flight
   on another branch while this task was authored, so it did not exist here and was named in prose
   rather than linked; the two branches were merged on 2026-08-03 and it is now present and linked.
   Match its vocabulary; do not edit it. Anything that would need changing there is reported as a

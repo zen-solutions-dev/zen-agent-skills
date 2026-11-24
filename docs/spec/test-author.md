@@ -9,6 +9,13 @@ Behavioral contract for the `test-author` skill (ROADMAP Epic B item 5). Drafted
 by the `spec-author` skill as its first in-kit dogfood, and self-checked to `ready` with the
 `spec-quality` lens.
 
+Amendment note, 2026-11-23 (`feat-0083`), **pending the maintainer's approval**: "approved spec" in
+this contract's Inputs now means approved and unchanged since approval, as `spec-author`'s contract
+defines it with `approved_digest`. The skill refuses a spec the digest script reports `changed`,
+`malformed`, or `unreadable`, as it already refused a draft, and uses an `unbound` one while saying
+so. No scenario, input, or output changes; if the maintainer reads the refusal as a contract term,
+it becomes a scenario and this note records where it came from.
+
 ## Problem
 
 The spine has [`test-quality`](../../.agents/skills/test-quality/SKILL.md), a lens for judging whether
