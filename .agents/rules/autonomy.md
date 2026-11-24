@@ -144,6 +144,37 @@ unattended runs, a `permissions.deny` rule on the merge commands enforces this b
 *Cited, with a qualification:* the shape is exercised by `pr-describe`; the specific ceiling is a
 decision recorded in `ROADMAP.md` Epic E rather than a rule this kit has already run under.
 
+**The one exception: an orchestrator landing other agents' work on an integration branch.** An
+**integration branch** is a branch cut for one run to collect its children's work, which reaches a
+person as one draft pull request. An orchestrator may merge a child's branch into it only when every
+guard below holds; if any one fails, `A8` applies unchanged and the child's branch waits for a person.
+
+1. **Not its own work.** The orchestrator authored none of the change, directly or by dictating it:
+   a brief that carries replacement text, a patch or a diff for the child to apply dictates it, and
+   so does relaying a reviewer's suggested fix verbatim. A brief that names the finding and leaves
+   the fix to the child does not. A commit it wrote, or a fix it made to a child's work, makes that
+   work its own, and its own work is never merged by it.
+2. **Verified by someone else.** An agent that is neither the author nor the orchestrator, and was
+   not dispatched or briefed by the author, returned a passing verdict on the exact commit being
+   merged (`A7`); it is the latest verdict on that commit, no earlier `fail` on it is unanswered, and
+   the orchestrator has read its evidence. Unverified, `fail` or `blocked` work does not land.
+3. **A fast-forward onto the integration branch only.** The child merges the integration tip into
+   its own branch first, so the verified commit is the commit that lands. A landing that needs a
+   merge commit or a conflict resolution goes back to the child. Never the base branch, and never a
+   branch a person or another run owns.
+4. **A person merges into the base branch** (`developer` or `main` here, whatever the repository
+   protects elsewhere). The integration branch goes to that person as a draft pull request, and that
+   merge is theirs alone.
+
+The orchestrator's **own commits** on the integration branch (the plan, generated files, its own
+fixes) are not landed under this exception: they are its own work, so they go through verification
+like any child's, or are listed in the pull request body as unverified.
+
+*Cited, with a qualification:* decision `D1` of the 2026-11-24 "Marjana" overhaul, taken by the
+maintainer. This text was written while that overhaul was still running (2026-11-24, before any
+workstream had landed), so it records the decision and the plan, not a finished run of it. The skill
+that runs the pattern is `orchestrate`.
+
 ## Scope
 
 These are defaults, not laws. A skill may state a local exception, and a downstream adopter may
