@@ -1,13 +1,11 @@
 ---
 name: quest-tracker
 description: >-
-  Plans and logs a season of project work on a shared quest tracker page: phases of steps that
-  each say what to do, why, and what closes it, with line ticks, facts, a session log, and a quest
-  chain, saved in the page's own database. Starts a tracker from the bundled template, works a
-  session against one, and has agent sessions report finished work as claims a person verifies,
-  never as ticks. Use for "start a quest tracker", "set up a run sheet", "log this session in the
-  tracker", "report into the tracker", "what is left on the tracker". sitrep reads a repository's
-  task files; this runs a shared page.
+  Plans and logs a season of project work on a shared quest tracker page: phases of steps saying
+  what to do, why, and what closes each. Starts a tracker from
+  the bundled template, works a session against one, and has agents report finished work as
+  claims a person verifies, never as ticks. Use for "start a quest tracker", "log this session in
+  the tracker", "report into the tracker".
 license: MIT
 compatibility: >-
   Needs a host that publishes an HTML page with a shared per-page database, viewer identity, and
@@ -35,6 +33,9 @@ own work done.
 work and blessed, per the contribution bar in the target repository's `AGENTS.md`. The tracker
 pattern ran a whole client launch in October 2026 before it was a skill; claim-and-verify, the
 waiting strip, and the evidence marks have not yet run on real work.
+
+The body runs past about 250 lines because steps 1 to 3 and the host section are procedure every
+run needs; the reasons behind the rules live in [`references/why-claims.md`](references/why-claims.md).
 
 ## When to use
 
@@ -114,6 +115,9 @@ harness cannot publish a tracker. Offer what does not need the host: writing the
 Attempt nothing else. A tracker improvised on another surface would look like the real one and share
 nothing, which is worse than no tracker.
 
+Done when you have confirmed each capability the frontmatter names, or declined with what still works
+and attempted nothing else.
+
 ### 1. Start a tracker for a project
 
 1. **Gather the project** from the person: the goal and its target date, the people with a short
@@ -146,6 +150,9 @@ nothing, which is worse than no tracker.
 7. **Hand it over**: give the person the link, and tell them sharing is theirs to set (Editor for
    anyone who ticks or attaches screenshots, Viewer for anyone who only reads).
 
+Done when `check` exits 0 on the filled page, it is published as a new page whose four collections
+each read back, and the person has the link.
+
 ### 2. Work a session against a tracker
 
 1. **Read the tracker**: the page's data block for the plan, and its collections for its state. What
@@ -170,6 +177,9 @@ on the page, where it records who ticked it, and that a tick by hand reads "tick
 command on record", while a claim they verify reads "checked by a command". Two writes to `checks`
 are not ticks of work and are allowed on the person's instruction: copying documents across
 unchanged when porting a tracker, and seeding example ticks into a demonstration tracker.
+
+Done when every step you worked is claimed or logged for a person, the facts and log are copied into
+the project's own docs, and the person knows which claims wait for them.
 
 ### 3. Report into a tracker from an agent or a child session
 
@@ -217,6 +227,9 @@ shows it as "Claude (name)".
 A session dispatching child sessions to work tracker steps gives each one the tracker's link, the
 step id, the name to report under, and the instruction to claim and never tick.
 
+Done when each step you finished has one claim with its command and verbatim result, or a log note
+saying why it could not be claimed, and nothing was written to `checks`.
+
 ### 4. Bring a tracker onto a newer template
 
 Only on the person's go-ahead, because it replaces the page's code. Save the tracker's page to a
@@ -227,6 +240,9 @@ bring across what the newer template changed in them, by hand: 1.1.0 added the "
 tick" rule and the `claims` row, and 1.2.0 reworded the `checks` row to name what a tick rests on.
 Then republish to the tracker's **existing** page so its database is kept. Change no id while doing
 it.
+
+Done when `check` exits 0 on the new file, the existing page shows the template's `templateVersion`,
+and its collections read back as they did before.
 
 ## Host-specific: Claude artifacts
 
@@ -251,18 +267,8 @@ Nothing above depends on it.
 
 ## Notes
 
-- **Why claims rather than ticks.** The page is read by people as a record of checked work. A tick
-  written by the agent that did the work is that agent verifying itself, and it carries no evidence a
-  person could check. A claim keeps the evidence, and leaves the tick to someone else.
-- **Why a claim records lines, not just the step.** A person verifying a claim sees which lines the
-  agent says it did, and "Verify and tick" ticks exactly those, so a line no one did stays open.
-- **Why every tick names what it rests on.** A tick by hand may rest on a person's own look, or on
-  someone's word in a chat, and the page cannot tell which, so it says only what it has on record.
-  The mark is how a reader of the page, or of the season log copied into the docs, tells a checked
-  command from a remembered one.
-- **Why the script refuses rather than warns.** A failed command is not a passed check, and a field
-  that looks like a secret would reach the shared database before the page hid it. Both are cheaper
-  to stop before the write than to clean up after it.
+Why agents claim rather than tick, why a claim records lines, why every tick names what it rests
+on, and why the script refuses rather than warns: [`references/why-claims.md`](references/why-claims.md).
 
 ## Conventions
 
@@ -273,7 +279,8 @@ inside it. Where a session writes into a target repository's docs at its close, 
 own conventions govern, and the module is the fallback. That file is a swappable default; a
 downstream adopter may replace it without touching this skill.
 
-**What you may do, and with what you read**, follows the repo's autonomy module (in this kit,
+**What you may do, and with what you read**, follows [`core.md`](../../rules/core.md), with the full
+text in the repo's autonomy module (in this kit,
 [`.agents/rules/autonomy.md`](../../rules/autonomy.md)). These of its rules shape this skill
 directly: `A4`, the command and its verbatim result as two separate fields, which is the shape of a
 claim; `A7`, verification by someone other than the agent whose work is verified, which is why agents
