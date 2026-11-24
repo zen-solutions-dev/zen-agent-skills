@@ -33,8 +33,9 @@ changing the language.
 ### 1. Find what exists
 
 Look before creating anything. When the repository has `docs/agents/zen.md`, its `glossary` and
-`adr_dir` keys name both places (`none` means the repository has none yet); use them and say so. When its block does not parse or names a newer `config_version`, use none of it, discover instead, and say that `python .tasks/validate.py` shows why; a configured path that does not exist is discovered instead too, and said.
-Otherwise discover them, and say that you did. The glossary may be `GLOSSARY.md`, `docs/glossary.md`, a
+`adr_dir` keys name both places (`none` means the repository has none yet); use each key it sets
+and say so. A key the file does not set, or sets to a value outside its allowed set or a path that does not exist, is discovered instead, asking the person when discovery finds several candidates. When the block does not parse or names a newer `config_version`, use none of it and say that `python .tasks/validate.py` shows why.
+Discover whatever no key gives you, and say that you did. The glossary may be `GLOSSARY.md`, `docs/glossary.md`, a
 "Terminology" section of a README or `AGENTS.md`, or a glossary per bounded context with a map file
 at the root. Decision records may be `docs/adr/`, `docs/decisions/`, `adr/`, a numbered series
 under another name, or no directory at all: many repositories record decisions in each task file's

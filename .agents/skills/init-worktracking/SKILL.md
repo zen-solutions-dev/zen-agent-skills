@@ -148,7 +148,7 @@ fresh scaffold; the person may decline it.
    have is `none`, and a fact nobody knows yet is left out. For `tracker: other`, ask for a paragraph
    saying how to create, read, label and close an item, and put it below the block.
 3. **On a re-run**, first run `python .tasks/validate.py`; when the block does not parse, write
-   nothing and ask the person to repair it by hand. Otherwise keep every line of the existing file
+   nothing, show the person what the validator reported, and ask them to repair the file by hand. Otherwise keep every line of the existing file
    byte-identical, prose and comments included; propose values only for keys it lacks, appended at
    the end of the block, and change a key only when the person asks for it during the run.
 4. **Show the whole draft**: the file from `templates/zen.md.tmpl`, and the pointer block for

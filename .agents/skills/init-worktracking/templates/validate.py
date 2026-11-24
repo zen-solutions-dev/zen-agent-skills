@@ -643,7 +643,10 @@ def parse_zen_config(text):
     known, and whether its value is valid, is zen_config_findings()' job.
     """
     blocks, current, fence = [], None, None
-    for line in text.splitlines():
+    # Split on `\n` alone, after folding `\r\n`, rather than with splitlines(): that also
+    # breaks on Unicode line separators the contract does not name, and a value holding
+    # one would be decided differently from how a person reads it.
+    for line in text.replace("\r\n", "\n").split("\n"):
         match = ZEN_FENCE_RE.match(line)
         if current is None:
             if match:
@@ -671,11 +674,13 @@ def parse_zen_config(text):
 
     values, problems = {}, []
     for line in blocks[0]:
-        stripped = line.strip()
+        # Spaces and tabs only (the contract's line grammar): a bare strip() would also
+        # eat a no-break space at the end of a path, which then passes as a path it is not.
+        stripped = line.strip(" \t")
         if not stripped or stripped.startswith("#"):
             continue
         key, sep, value = stripped.partition(":")
-        key, value = key.strip(), value.strip()
+        key, value = key.strip(" \t"), value.strip(" \t")
         if not sep or not key or not value:
             problems.append(f"line is not 'key: value' with a value: {stripped!r}")
         elif key in values:
@@ -716,7 +721,8 @@ def zen_config_findings(repo_root):
     if not path.is_file():
         return []
     values, found = parse_zen_config(read_text_utf8(path))
-    if not values and found:
+    if found and found[0].startswith("found ") and not values:
+        # No block, or more than one: nothing below has anything to check.
         return found
 
     version = values.get("config_version")
@@ -751,7 +757,11 @@ def zen_config_findings(repo_root):
         elif entries != ["none"]:
             checked += [("standards", p, False) for p in entries]
     session_logs = values.get("session_logs", "none")
-    if not (session_logs.startswith("~") or Path(session_logs).is_absolute()):
+    # Outside the repository by its spelling alone, so every operating system decides the
+    # same way; Path.is_absolute() would call `/x` relative on Windows and `C:/x` relative
+    # everywhere else.
+    if not (session_logs.startswith(("~", "/", "\\"))
+            or ":" in session_logs.split("/")[0]):
         checked.append(("session_logs", session_logs, True))
 
     resolved_root = root.resolve()

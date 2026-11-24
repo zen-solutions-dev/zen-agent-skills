@@ -1,8 +1,8 @@
 """Acceptance tests for the zen-config check in .tasks/validate.py (feat-0091).
 
 Derived from docs/spec/zen-config.md; each test names the scenario it covers. The
-scenarios about the configure step itself (S-014 to S-018) describe what a skill does
-in a conversation, and are recorded in that spec's conformance matrix rather than here.
+scenarios about what a skill does in a conversation (the configure step and the
+readers) are audited in that spec's conformance matrix rather than here.
 
 Both copies of the validator are driven, for the reason test_tasks_validate.py gives:
 the copy `init-worktracking` installs is the one adopters run, and a rule that holds in
@@ -242,6 +242,37 @@ class ZenConfigTests(Fixture):
             with contextlib.redirect_stdout(buf):
                 module.main(["--links", "*.md"])
             self.assertNotIn("zen", buf.getvalue())
+
+    def test_s003_a_known_key_in_other_letter_case_is_unknown(self):
+        self.assert_one_finding(GOOD.replace("tracker: github", "Tracker: github"),
+                                "unknown key", "Tracker")
+
+    def test_s006_a_block_of_only_malformed_lines_still_asks_for_a_version(self):
+        self.write_config("```zen-config\nnot a key value line\n```\n")
+        for module in self.each():
+            found = self.findings(module)
+            self.assertEqual(len(found), 2, found)
+            self.assertTrue(any("config_version is required" in f for f in found))
+
+    def test_s012_a_windows_style_outside_path_is_not_checked_anywhere(self):
+        for value in ("C:/Users/me/logs", "\\\\host\\share"):
+            self.write_config(GOOD.replace("session_logs: ~/.claude/projects",
+                                           f"session_logs: {value}"))
+            for module in self.each():
+                self.assertEqual(self.findings(module), [])
+
+    def test_s036_only_a_well_formed_fence_opens_a_block(self):
+        tilde = GOOD.replace("```zen-config", "~~~zen-config").replace("```\n", "~~~~\n")
+        self.write_config(tilde.replace("```text", "~~~text"))
+        for module in self.each():
+            self.assertEqual(self.findings(module), [])
+        self.write_config("    ```zen-config\n    bogus\n    ```\n\n" + GOOD)
+        for module in self.each():
+            self.assertEqual(self.findings(module), [])
+
+    def test_s038_a_no_break_space_is_part_of_the_value(self):
+        self.assert_one_finding(GOOD.replace("glossary: GLOSSARY.md", "glossary: GLOSSARY.md\u00a0"),
+                                "glossary", "does not exist")
 
     def test_s008_a_tracker_outside_the_set_fails(self):
         self.assert_one_finding(GOOD.replace("tracker: github", "tracker: jira"),
