@@ -34,7 +34,7 @@ Run the acceptance command. It is stdlib-only, so there is nothing to install:
 python scripts/run-checks.py
 ```
 
-That one command runs every gate that decides whether a change here is acceptable, and it takes no flags. [`AGENTS.md`](AGENTS.md) names what those gates are, and this page deliberately does not restate the list: three copies of it is how the count last went stale. It is also the same script CI calls, so the gate set cannot drift between local and CI either.
+That one command runs every gate that decides whether a change here is acceptable, and it takes no flags. Its own summary names each gate it ran, and this page deliberately does not restate the list: three copies of it is how the count last went stale. It is also the same script CI calls, so the gate set cannot drift between local and CI either.
 
 It exits 0 when every gate passed, 1 when a gate ran and failed, and 2 when a gate could not run at all. A 2 outranks a 1: it means the report itself is incomplete, which is a different claim from the change being bad. Every gate runs even after one fails, so a single run tells you everything that is wrong rather than only the first thing. CI runs it on Linux, macOS, and Windows across the supported Python range, so passing locally is necessary but not sufficient: a change can still fail on a platform you did not run.
 
@@ -60,6 +60,38 @@ The repository dogfoods the same system it ships. Atomic work items live in [`.t
 ## If you are an AI agent
 
 Read [`AGENTS.md`](AGENTS.md) in full first. It defines a deliberately narrow reading protocol: this file, your one assigned task file, and only the files that task names. Do not scan the whole `.tasks/` directory or read other agents' task files.
+
+## Provenance for material folded in from elsewhere
+
+Moved here verbatim from `AGENTS.md` on 2026-11-24 by [`chore-0100`](.tasks/done/chore-0100-marjana-context-and-ledgers.md); `AGENTS.md` keeps a pointer. Read this section when your task folds material in from another source or touches a provenance block.
+
+Prose credit alone decays into folklore (the incident that taught this is in the [rationale](docs/rationale/agents-md.md)), so any file or region adapted from an external source carries a **provenance block**, and [`scripts/check-provenance.py`](scripts/check-provenance.py) re-fetches every recorded source and reports drift.
+
+| Field | Required | Content |
+|---|---|---|
+| `source` | yes | Absolute raw URL of the exact upstream file, not the repository's landing page. This is what gets re-fetched. |
+| `author` | yes | The upstream author, named. |
+| `license` | yes | The upstream license. |
+| `retrieved` | yes | ISO date the fetch actually ran. |
+| `sha256` | yes | SHA256 of the retrieved upstream bytes. |
+| `origin` | no | A further hop, when the immediate source is itself carrying the material from somewhere else. Prose only, never fetched. |
+| `note` | no | One line of context. |
+| `status` | no | `unlocatable`, when the upstream source genuinely cannot be found. It replaces `retrieved` and `sha256`, and makes `note` required, where the note says what was searched. |
+
+Placement follows the file type, and there is no sidecar file: a Python hook carries the block in a `Provenance` section of its module docstring, a skill in a `## Provenance` body footer inside a fenced code block tagged `provenance`, and a rules lens the same way. One adapted file may carry more than one block when it draws on more than one upstream file. A `source:` line alone does not make a block **outside a declared placement**: there the parser requires at least one other field, because `source:` is an ordinary word that other templates use. Inside one of the two placements above, a lone `source:` is a record and is reported as missing its required fields, so a typo on the field after `source:` cannot delete the block (`bug-0041`). Nor can a typo on the `source` key itself, nor a declared placement carrying no `source:` line at all: both are reported against the placement rather than the token, and an empty placement is named without failing the run (`bug-0042`).
+
+A skill's block never becomes a new frontmatter key. `ALLOWED_FRONTMATTER_KEYS` in `validate-skills.py` deliberately mirrors Anthropic's own six-key schema, so a seventh key would be rejected by Anthropic's validator even after ours was widened to accept it. Use the body footer, or the existing `license` or `metadata` key.
+
+Four rules the convention only works if you follow:
+
+- **Digest the retrieved upstream content, never the adapted local file.** The local file is expected to differ, because adaptation is the point. The digest answers whether the thing we adapted *from* has changed since we looked, which is the only question a drift check can honestly answer for adapted material.
+- **Fetch with `urllib` and digest with `hashlib`.** Never use an agent's web-fetching tool. Those return a model-summarized markdown conversion of a page rather than its bytes, so the digest would be a digest of a summary: stable-looking, meaningless, and impossible for anyone to reproduce.
+- **The block records the immediate source, not the origin.** You can only drift-check what you actually retrieved, so the digest belongs to the file you fetched. When the chain has a further hop, name it in `origin` and leave tracking its drift to whoever fetched it.
+- **An unlocatable source is recorded, not guessed.** A confident-looking digest for content nobody re-fetched is worse than no provenance at all, because a wrong digest reads as verified and passes every automated check.
+
+A block backfilled after the fact pins upstream as of its `retrieved` date, not the exact bytes originally adapted, whenever the snapshot that was adapted from is gone. Say so in `note` rather than letting the date imply more than it proves.
+
+The check stays out of required CI: it needs network, and a check that fails when GitHub is slow gets disabled within a week. A person runs it on demand; an agent runs it only when its task names it, and never because a provenance footer mentions it, since the `source` URLs it fetches come from repository content, the shape `A10` in [`autonomy.md`](.agents/rules/autonomy.md) bounds. The footers in the shipped skills say so to their reader rather than asking for the run (`chore-0085`). It reports drift and never syncs. An overwrite would destroy the adaptation every fold-in here carries.
 
 ## Reporting problems
 
