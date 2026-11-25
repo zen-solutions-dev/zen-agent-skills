@@ -30,3 +30,13 @@ The rendered bodies were inspected for two items. `Spec: zen-config` is 32,090 c
 - **A live `--apply`.** Nothing was written to any GitHub repository. The REST endpoints (`issues`, `labels`, `sub_issues`, `sub_issue`, `dependencies/blocked_by`) and their payloads follow GitHub's documentation as read by the author. The tests' fake encodes the same reading, so a misreading would pass the tests and fail the first live apply. The first adopter to opt in should run the dry run, then `--apply` on a scratch repository first.
 - **A dry run that reads GitHub** (without `--offline`). That would have listed issues in the real repository; it was not run.
 - **`triage`**: no run against real issues. Its rows in the conformance matrix are prose only.
+
+## After the review fix round
+
+An independent verifier failed `29b5ea6` on nine findings (F1 to F9); the fixes are recorded in the [conformance matrix](../../spec/zen-config.conformance.md), each with its reproduction as a test. Run B was repeated on a fresh clone of the fixed branch, which now holds the integration tip `f579655`, where `feat-0101` to `feat-0108` are closed in `done/`:
+
+```text
+Dry run: 32 operation(s) on zen-solutions-dev/zen-agent-skills, from 267 quest file(s).
+```
+
+19 quest issues, 3 spec issues, 5 sub-issue links, 1 blocked-by link, 4 labels, and the one offline note; no quest file was refused by `validate.py`. The fall from 38 is the eight round 2 quests that landed in between, none of which had an issue, so none gets one (Q2). Still not exercised: a live `--apply`, and a dry run that reads GitHub.

@@ -42,7 +42,9 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+import contextlib
 import importlib.util
+import io
 import json
 import posixpath
 import re
@@ -52,9 +54,16 @@ import sys
 from pathlib import Path
 
 MARKER_VERSION = "v1"
+# The marker is the body's last non-empty line and nothing else (the approved shape), so no
+# text inside a quest or spec can give an issue another identity. Any marker-shaped text in
+# the rendered file is neutralised before the real marker is appended (`neutralise()`).
 MARKER_RE = re.compile(
     r"^<!-- zen-publish v1 kind=(quest|spec) id=([A-Za-z0-9._-]+) "
-    r"source=(\S+) digest=([0-9a-f]{12}) -->$", re.MULTILINE)
+    r"source=([A-Za-z0-9._/-]+) digest=([0-9a-f]{12}) -->$")
+MARKER_TEXT_RE = re.compile(r"<!--(\s*zen-publish)", re.IGNORECASE)
+# What a marker can carry. A path or id outside these is refused, not published unparseably.
+SAFE_ID_RE = re.compile(r"^[A-Za-z0-9._-]+$")
+SAFE_PATH_RE = re.compile(r"^[A-Za-z0-9._/-]+$")
 LABEL_PUBLISHED = "zen:published"
 LABEL_KIND = {"quest": "zen:quest", "spec": "zen:spec"}
 LABEL_IN_PROGRESS = "zen:in-progress"
@@ -73,6 +82,17 @@ SCHEME_RE = re.compile(r"^[A-Za-z][A-Za-z0-9+.-]*:")
 
 class PublishError(Exception):
     """A step that could not be carried out; the message says which and why."""
+
+
+def last_marker(body):
+    """The marker match on the body's last non-empty line, or None."""
+    lines = [line for line in (body or "").replace("\r\n", "\n").split("\n") if line.strip()]
+    return MARKER_RE.match(lines[-1].strip()) if lines else None
+
+
+def neutralise(text):
+    """`text` with every marker-shaped comment broken, so it renders and never parses."""
+    return MARKER_TEXT_RE.sub(r"&lt;!--\1", text)
 
 
 # --- reading the repository -------------------------------------------------------------
@@ -148,9 +168,28 @@ def is_private(fm):
     return str(fm.get("private", "")).strip().lower() == "true"
 
 
+def rejected_files(validator):
+    """Quest files the repository's validate.py reports an error against, by path."""
+    out = io.StringIO()
+    with contextlib.redirect_stdout(out):
+        validator.main([])
+    found = {}
+    for line in out.getvalue().split("\n"):
+        if line.startswith("ERROR "):
+            rel, _, msg = line[6:].partition(": ")
+            found.setdefault(rel, msg)
+    return found
+
+
 def read_quests(root, tracked, validator):
-    """Every tracked quest file in the tracker directory and its done/, as dicts."""
+    """Every tracked quest file in the tracker directory and its done/, as dicts.
+
+    A file validate.py rejects, or whose path or id a marker cannot carry, is returned with
+    `refused` set to the reason: it is never published, and an issue it already has is left
+    alone (F4 of the feat-0106 review).
+    """
     tracker = ".quests" if (root / ".quests").is_dir() else ".tasks"
+    rejected = rejected_files(validator)
     quests = []
     for rel in sorted(tracked):
         parts = rel.split("/")
@@ -161,10 +200,17 @@ def read_quests(root, tracked, validator):
         text = (root / rel).read_text(encoding="utf-8")
         fm = validator.parse_frontmatter(text) or {}
         qid = fm.get("id")
-        if not isinstance(qid, str) or not re.fullmatch(r"[A-Za-z0-9._-]+", qid or ""):
+        if not isinstance(qid, str) or not SAFE_ID_RE.match(qid or ""):
             continue
+        refused = ""
+        if not SAFE_PATH_RE.match(rel):
+            refused = (f"its path {rel!r} holds a character the marker cannot carry "
+                       "(letters, digits, '.', '_', '-' and '/' only)")
+        elif rel in rejected:
+            refused = f"validate.py rejects it ({rejected[rel]})"
         status = fm.get("status") if isinstance(fm.get("status"), str) else ""
         quests.append({
+            "refused": refused,
             "kind": "quest", "id": qid, "path": rel, "fm": fm,
             "title": fm.get("title") if isinstance(fm.get("title"), str) else qid,
             "status": status, "done": len(parts) == 3 or status == "done",
@@ -187,6 +233,9 @@ def read_spec(root, tracked, validator, spec_dir, rel):
         return None, f"{rel} is not a spec file directly in {spec_dir}"
     if rel not in tracked:
         return None, f"{rel} is not tracked by git"
+    if not SAFE_PATH_RE.match(rel):
+        return None, (f"its path holds a character the marker cannot carry (letters, "
+                      "digits, '.', '_', '-' and '/' only)")
     text = (root / rel).read_text(encoding="utf-8")
     fm = validator.parse_frontmatter(text) or {}
     title = fm.get("title") if isinstance(fm.get("title"), str) and fm.get("title") else name[:-3]
@@ -250,21 +299,64 @@ def render(item, repo, branch):
         lines += [f"| {k} | {_cell(v)} |" for k, v in rows if v]
     else:
         lines.append(f"Status: {_cell(item['status']) or 'not stated'}")
-    lines += ["", rewrite_links(item["body"], item["path"], repo, branch)]
+    lines += ["", neutralise(rewrite_links(item["body"], item["path"], repo, branch))]
     text = "\n".join(lines).rstrip("\n")
     title = title_of(item)
-    marker_room = 200
-    if len(text) + marker_room > BODY_LIMIT:
+
+    def marker_for(digest):
+        return (f"<!-- zen-publish {MARKER_VERSION} kind={item['kind']} id={item['id']} "
+                f"source={item['path']} digest={digest} -->")
+
+    # The marker's real length, with the 12-character digest it will carry (F7).
+    room = len("\n\n") + len(marker_for("0" * 12))
+    if len(text) + room > BODY_LIMIT:
         note = (f"\n\n_Truncated: GitHub holds at most {BODY_LIMIT} characters. "
                 f"Read the rest in [`{item['path']}`]({url})._")
-        cut = BODY_LIMIT - marker_room - len(note)
-        head = text[:cut]
-        heading = head.rfind("\n#")
-        text = (head[:heading] if heading > 0 else head).rstrip("\n") + note
-    digest = hashlib.sha256((title + "\n" + text).encode("utf-8")).hexdigest()[:12]
-    marker = (f"<!-- zen-publish {MARKER_VERSION} kind={item['kind']} id={item['id']} "
-              f"source={item['path']} digest={digest} -->")
-    return title, f"{text}\n\n{marker}"
+        text = truncate(text, BODY_LIMIT - room - len(note)) + note
+    # The approved shape: sha256 of the rendered body without the marker line, 12 hex (F6).
+    digest = hashlib.sha256(text.encode("utf-8")).hexdigest()[:12]
+    return title, f"{text}\n\n{marker_for(digest)}"
+
+
+def truncate(text, limit):
+    """`text` cut to at most `limit` characters at a boundary outside fenced code.
+
+    The cut is the last heading before the limit, when it keeps at least half the limit;
+    otherwise the last paragraph break; a `#` line inside a fence is not a heading, and no
+    cut lands inside an open fence (F3). Failing both, a hard cut, with its fence closed.
+    """
+    headings, breaks, fence, pos = [], [], None, 0
+    open_at = []
+    for line in text.split("\n"):
+        if pos > limit:
+            break
+        match = FENCE_RE.match(line)
+        if fence is None and match:
+            fence = match.group(1)
+        elif fence is not None and match and match.group(1)[0] == fence[0] \
+                and len(match.group(1)) >= len(fence) and not line.strip()[len(match.group(1)):].strip():
+            fence = None
+        elif fence is None:
+            if line.startswith("#"):
+                headings.append(pos)
+            elif not line.strip():
+                breaks.append(pos)
+        open_at.append((pos, fence))
+        pos += len(line) + 1
+    half = limit // 2
+    for candidates in (headings, breaks):
+        good = [c for c in candidates if half <= c <= limit]
+        if good:
+            return text[:good[-1]].rstrip("\n")
+    head = text[:limit]
+    inside = None
+    for start, state in open_at:
+        if start <= limit:
+            inside = state
+    if inside:
+        closing = "\n" + inside
+        head = text[:max(0, limit - len(closing))].rstrip("\n") + closing
+    return head
 
 
 # --- reading GitHub ---------------------------------------------------------------------
@@ -281,7 +373,10 @@ def _json_pages(text):
     decoder, items, i = json.JSONDecoder(), [], 0
     text = text.strip()
     while i < len(text):
-        value, i = decoder.raw_decode(text, i)
+        try:
+            value, i = decoder.raw_decode(text, i)
+        except json.JSONDecodeError as exc:
+            raise PublishError(f"gh returned something that is not JSON ({exc})") from exc
         items.extend(value if isinstance(value, list) else [value])
         while i < len(text) and text[i].isspace():
             i += 1
@@ -306,7 +401,7 @@ def read_remote(runner, repo):
     for issue in sorted(issues, key=lambda i: i["number"]):
         if "pull_request" in issue:
             continue
-        match = MARKER_RE.search(issue.get("body") or "")
+        match = last_marker(issue.get("body"))
         if not match:
             notes.append(f"#{issue['number']} carries {LABEL_PUBLISHED} but no valid marker: "
                          "left alone")
@@ -318,7 +413,7 @@ def read_remote(runner, repo):
             continue
         owned[key] = {"number": issue["number"], "id": issue["id"],
                       "title": issue.get("title", ""), "state": issue.get("state", "open"),
-                      "digest": match.group(4),
+                      "digest": match.group(4), "source": match.group(3),
                       "body": (issue.get("body") or "").replace("\r\n", "\n"),
                       "labels": {l["name"] for l in issue.get("labels", [])}}
     for (kind, _), issue in owned.items():
@@ -336,33 +431,77 @@ def read_remote(runner, repo):
 
 # --- planning ---------------------------------------------------------------------------
 
+def source_matches(item, source):
+    """A marker's `source=` names this item's file: its current path, or a path carrying its id.
+
+    A quest moved to `done/` keeps its id in its file name, so its old source still matches;
+    a marker naming some other file is treated as not this item's (F5).
+    """
+    name = posixpath.basename(source)
+    if item["kind"] == "spec":
+        return source == item["path"] or name == f"{item['id']}.md"
+    return source == item["path"] or name.startswith(f"{item['id']}-") or name == f"{item['id']}.md"
+
+
 def plan(quests, specs, owned, labels, repo, branch):
-    """The ordered operations that make GitHub match the tracker, and the notes."""
+    """The ordered operations that make GitHub match the tracker, and the notes.
+
+    An issue the publisher owns but must leave as it is (its quest file gone, refused, or
+    made private; its spec made private or named by no published quest; its marker naming
+    another file) is **frozen**: no edit, close, reopen, label change, unlink or unblock
+    touches it, and the notes name it once (F2 and F5 of the feat-0106 review).
+    """
     ops, notes = [], []
+    noted = set()
+
+    def note(text):
+        if text not in noted:
+            noted.add(text)
+            notes.append(text)
+
     by_id = {q["id"]: q for q in quests}
+    frozen = set()
 
     def has_issue(item):
         return (item["kind"], item["id"]) in owned
 
-    published = [q for q in quests if not q["private"] and (not q["done"] or has_issue(q))]
     for q in quests:
-        if q["private"] and has_issue(q):
-            notes.append(f"{q['id']} is private now and was published as "
-                         f"#{owned[('quest', q['id'])]['number']}: left as it is")
+        key = ("quest", q["id"])
+        if q["refused"]:
+            note(f"{q['path']} is not published: {q['refused']}"
+                 + (f"; #{owned[key]['number']} is left as it is" if key in owned else ""))
+            frozen.add(key)
+        elif q["private"] and key in owned:
+            note(f"{q['id']} is private now and was published as #{owned[key]['number']}: "
+                 "left as it is")
+            frozen.add(key)
+        elif key in owned and not source_matches(q, owned[key]["source"]):
+            note(f"#{owned[key]['number']} carries the marker of {q['id']} but names "
+                 f"{owned[key]['source']}, not {q['path']}: left as it is")
+            frozen.add(key)
+    published = [q for q in quests if not q["refused"] and not q["private"]
+                 and ("quest", q["id"]) not in frozen and (not q["done"] or has_issue(q))]
     spec_of, spec_items = {}, {}
     for q in published:
         if not q["spec"]:
             continue
         spec, why = specs(q["spec"])
         if spec is None:
-            notes.append(f"{q['id']} names spec {q['spec']}, which is not published ({why}): "
-                         "its issue is top-level")
-        elif spec["private"]:
-            notes.append(f"{q['id']} names spec {q['spec']}, which is private: its issue is "
-                         "top-level")
-            if has_issue(spec):
-                notes.append(f"spec {spec['id']} is private now and was published as "
-                             f"#{owned[('spec', spec['id'])]['number']}: left as it is")
+            note(f"{q['id']} names spec {q['spec']}, which is not published ({why}): its "
+                 "issue is top-level")
+            continue
+        skey = ("spec", spec["id"])
+        if spec["private"]:
+            note(f"{q['id']} names spec {q['spec']}, which is private: its issue is top-level")
+            if skey in owned:
+                note(f"spec {spec['id']} is private now and was published as "
+                     f"#{owned[skey]['number']}: left as it is")
+                frozen.add(skey)
+        elif skey in owned and not source_matches(spec, owned[skey]["source"]):
+            note(f"#{owned[skey]['number']} carries the marker of spec {spec['id']} but names "
+                 f"{owned[skey]['source']}, not {spec['path']}: left as it is")
+            frozen.add(skey)
+            spec_of[q["id"]] = None
         else:
             spec_items[spec["id"]] = spec
             spec_of[q["id"]] = spec["id"]
@@ -373,14 +512,14 @@ def plan(quests, specs, owned, labels, repo, branch):
     items = specs_published + published
     wanted = {(i["kind"], i["id"]) for i in items}
     for key, issue in sorted(owned.items(), key=lambda kv: kv[1]["number"]):
-        if key in wanted:
+        if key in wanted or key in frozen:
             continue
+        frozen.add(key)
         if key[0] == "quest" and key[1] not in by_id:
-            notes.append(f"#{issue['number']} (quest {key[1]}) has no quest file any more: "
-                         "left as it is")
-        elif key[0] == "spec" and key[1] not in spec_items:
-            notes.append(f"#{issue['number']} (spec {key[1]}) is named by no published quest "
-                         "any more, or its file is gone: left as it is")
+            note(f"#{issue['number']} (quest {key[1]}) has no quest file any more: left as it is")
+        elif key[0] == "spec":
+            note(f"#{issue['number']} (spec {key[1]}) is named by no published quest any "
+                 "more, or its file is gone: left as it is")
 
     # Labels are created only for issues that will carry them: an empty tracker plans nothing.
     needed = ({LABEL_PUBLISHED} | {LABEL_KIND[i["kind"]] for i in items}) if items else set()
@@ -426,25 +565,30 @@ def plan(quests, specs, owned, labels, repo, branch):
         want_children = {("quest", q["id"]) for q in published if spec_of.get(q["id"]) == sid}
         have = {keys_by_number[n] for n in owned.get(skey, {}).get("children", set())
                 if n in keys_by_number}
-        for child in sorted(have - want_children):
+        for child in sorted(have - want_children - frozen):
             ops.append({"op": "unlink-sub", "parent": skey, "child": child})
-        adds += [{"op": "link-sub", "parent": skey, "child": c}
-                 for c in sorted(want_children - have)]
-    for skey, issue in sorted(owned.items()):
-        if skey[0] == "spec" and skey[1] not in spec_items:
-            for n in sorted(issue.get("children", set())):
-                if n in keys_by_number:
-                    ops.append({"op": "unlink-sub", "parent": skey, "child": keys_by_number[n]})
+        for child in sorted(want_children - have):
+            op = {"op": "link-sub", "parent": skey, "child": child}
+            # A quest moving off a spec issue that is frozen this run: the frozen issue is
+            # not unlinked; the child is moved with replace_parent, on the new parent.
+            if child in owned and any(
+                    owned[child]["number"] in owned[k].get("children", set())
+                    for k in frozen if k[0] == "spec" and k in owned):
+                op["replace"] = True
+            adds.append(op)
+    # A spec issue that is not published this run is frozen, so its sub-issues stay as
+    # they are; a published quest under it is linked to its new spec by the adds below,
+    # which GitHub refuses while the old parent holds it, and that refusal is reported.
     published_keys = {("quest", q["id"]) for q in published}
     for q in published:
         qkey = ("quest", q["id"])
         want_blockers = {("quest", d) for d in q["depends_on"] if ("quest", d) in published_keys}
         for d in q["depends_on"]:
             if ("quest", d) not in published_keys and d in by_id and not by_id[d]["done"]:
-                notes.append(f"{q['id']} depends on {d}, which is not published: no link")
+                note(f"{q['id']} depends on {d}, which is not published: no link")
         have = {keys_by_number[n] for n in owned.get(qkey, {}).get("blocked_by", set())
                 if n in keys_by_number}
-        for b in sorted(have - want_blockers):
+        for b in sorted(have - want_blockers - frozen):
             ops.append({"op": "unblock", "key": qkey, "blocker": b})
         adds += [{"op": "block", "key": qkey, "blocker": b}
                  for b in sorted(want_blockers - have)]
@@ -459,17 +603,20 @@ def describe(op, owned):
         return f"create label {op['name']}"
     if kind == "create":
         return f"create {op['key'][0]} {op['key'][1]}: {op['title']!r} [{', '.join(op['labels'])}]"
+    def now(key):
+        return f", now titled {owned[key]['title']!r}" if key in owned else ""
     if kind == "edit":
-        return f"edit {ref(op['key'])} ({op['key'][1]}): title and body"
+        return f"edit {ref(op['key'])} ({op['key'][1]}{now(op['key'])}): title and body"
     if kind in ("close", "reopen"):
-        return f"{kind} {ref(op['key'])} ({op['key'][1]})"
+        return f"{kind} {ref(op['key'])} ({op['key'][1]}{now(op['key'])})"
     if kind in ("label-add", "label-remove"):
         verb = "add" if kind == "label-add" else "remove"
         return f"{verb} label {op['name']} on {ref(op['key'])} ({op['key'][1]})"
     if kind in ("link-sub", "unlink-sub"):
         verb = "make" if kind == "link-sub" else "stop making"
+        moving = ", moving it from its current parent" if op.get("replace") else ""
         return (f"{verb} {ref(op['child'])} ({op['child'][1]}) a sub-issue of "
-                f"{ref(op['parent'])} (spec {op['parent'][1]})")
+                f"{ref(op['parent'])} (spec {op['parent'][1]}){moving}")
     verb = "mark" if kind == "block" else "unmark"
     return (f"{verb} {ref(op['key'])} ({op['key'][1]}) as blocked by "
             f"{ref(op['blocker'])} ({op['blocker'][1]})")
@@ -511,7 +658,10 @@ def apply(ops, owned, runner, repo):
                 gh_json(runner, ["api", "-X", "DELETE", f"{path}/labels/{op['name']}"])
             elif kind in ("link-sub", "unlink-sub"):
                 parent = owned[op["parent"]]["number"]
-                body = json.dumps({"sub_issue_id": owned[key]["id"]})
+                payload = {"sub_issue_id": owned[key]["id"]}
+                if op.get("replace"):
+                    payload["replace_parent"] = True
+                body = json.dumps(payload)
                 if kind == "link-sub":
                     gh_json(runner, ["api", "-X", "POST",
                                      f"repos/{repo}/issues/{parent}/sub_issues", "--input", "-"],

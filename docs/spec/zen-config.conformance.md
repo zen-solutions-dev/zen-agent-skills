@@ -239,7 +239,7 @@ Maintainer decision C1 added the `self-merge-sampled` opt-in to `merge_policy` (
 
 ## Amended by feat-0106, 2026-11-25, by the implementer, not re-audited
 
-Maintainer decision R2-2 added opt-in publishing of the local tracker to GitHub (S-047 to S-059), with the issue shape the maintainer approved at the `feat-0106` check-in gate. **Every row here was written by the agent that wrote the code (`A7`)**; none was derived by an independent auditor. Code rows cite [`publish.py`](../../.agents/skills/new-quest/scripts/publish.py) and the two validator copies; tests are in [`tests/test_publish.py`](../../tests/test_publish.py), 38 passing on Linux with Python 3.13, run against a fake `gh` that answers the documented REST endpoints in memory. **No row rests on a call to the real GitHub API**: a live apply has not been exercised, so the endpoint paths and payloads are as documented, not as observed.
+Maintainer decision R2-2 added opt-in publishing of the local tracker to GitHub (S-047 to S-059), with the issue shape the maintainer approved at the `feat-0106` check-in gate. **Every row here was written by the agent that wrote the code (`A7`)**; none was derived by an independent auditor. Code rows cite [`publish.py`](../../.agents/skills/new-quest/scripts/publish.py) and the two validator copies; tests are in [`tests/test_publish.py`](../../tests/test_publish.py), 51 passing on Linux with Python 3.13, run against a fake `gh` that answers the documented REST endpoints in memory. **No row rests on a call to the real GitHub API**: a live apply has not been exercised, so the endpoint paths and payloads are as documented, not as observed.
 
 | Section | Element | Status | Implementation | Evidence |
 |---|---|---|---|---|
@@ -247,7 +247,7 @@ Maintainer decision R2-2 added opt-in publishing of the local tracker to GitHub 
 | Scenarios | S-048 malformed publishing keys fail | Conformed | `zen_config_findings()` / "must be owner/name" and "needs publish_repo" | `ValidatorKeys.test_bad_keys_fail`, six cases, both copies |
 | Scenarios | S-049 publishing is off unless opted in | Conformed | `publish.py` / `read_config()` returns a reason for each off case; `main()` prints "Publishing is off" before any runner call | `OffByDefault`, seven tests, each asserting no runner call and exit 0 or 1 |
 | Scenarios | S-050 publishing mirrors only the local tracker | Conformed | `ZEN_PUBLISH_TRACKERS`; "mirrors the local tracker" | `ValidatorKeys.test_publish_needs_a_local_tracker`, `OffByDefault.test_other_tracker_is_off` |
-| Scenarios | S-051 a dry run by default, an apply only when asked | Conformed | `publish.py` / `main()` returns before `apply()` without `--apply`; `--offline` skips `read_remote()`; `apply()` raises `PublishError` on the first non-zero `gh` | `DryRun` (two tests, no write call), `Failure.test_apply_stops_at_the_first_failure_and_resumes` |
+| Scenarios | S-051 a dry run by default, an apply only when asked | Conformed | `publish.py` / `main()` returns before `apply()` without `--apply`; `--offline` skips `read_remote()`; `apply()` raises `PublishError` on the first non-zero `gh` | `DryRun` (three tests: no write call, offline calls nothing, an empty tracker plans nothing), `Failure.test_apply_stops_at_the_first_failure_and_resumes` |
 | Scenarios | S-052 the published issue has the approved shape | Conformed | `publish.py` / `render()`, `title_of()`, `rewrite_links()`, `MARKER_RE` | `Shape`, three tests: the exact first line, table row, rewritten link, marker regex, fenced link left alone, truncation under `BODY_LIMIT` in [`publish.py`](../../.agents/skills/new-quest/scripts/publish.py) |
 | Scenarios | S-053 publishing is idempotent by marker | Conformed | `publish.py` / `read_remote()` keys owned issues on the marker; `plan()` compares the whole body and title | `Idempotence`, four tests, including a hand-edited body and a retitled issue |
 | Scenarios | S-054 status maps from the file | Conformed | `publish.py` / `plan()`: `published` excludes done quests without an issue; close, reopen, `zen:in-progress`; `spec_open` | `Status`, four tests |
@@ -260,3 +260,17 @@ Maintainer decision R2-2 added opt-in publishing of the local tracker to GitHub 
 | Non-Goals | The amended label-and-issue non-goal | Conformed | The walkthrough and validator create nothing; only the publisher and `triage` write, as the exception says | |
 
 Dogfood: the dry run over this repository's own tracker, in a scratch clone with the two keys added, is recorded in [`publish.md`](../reviews/2026-11-25-dogfood/publish.md).
+
+**Review fix round, 2026-11-25, by the implementer, not re-audited.** An independent verifier returned `fail` on `29b5ea6` with nine findings, all accepted, and each reproduction is now a test in `ReviewFixes` that fails on `29b5ea6` (13 of 13, run against that commit's script) and passes after the fix. The rows above stand as written, with these changes to what they rest on:
+
+| Finding | Change | Evidence |
+|---|---|---|
+| F1, marker read anywhere in the body | Only the last non-empty line is parsed, by `last_marker()`; marker-shaped text in the file is broken by `neutralise()` | `test_f1_a_body_carrying_another_quests_marker`, `test_f1_a_forger_that_sorts_first`, three applies each |
+| F2, frozen issues lost their links | `plan()` collects a `frozen` set; no edit, close, reopen, label, unlink or unblock touches one; a quest moving off a frozen spec is linked with `replace_parent`; notes deduplicated | `test_f2_orphaned_and_private_quests_keep_their_links`, `test_f2_a_private_spec_keeps_its_children_and_is_noted_once`, `test_quest_moving_between_specs` |
+| F3, truncation in a fence, or losing the body | `truncate()` cuts at a heading outside fences when it keeps half the limit, else a paragraph break, else a hard cut with the fence closed | `test_f3_truncation_never_cuts_inside_a_fence`, `test_f3_an_early_heading_does_not_lose_the_body` |
+| F4, unparseable paths; quests the validator rejects | `SAFE_PATH_RE`, `SAFE_ID_RE`; `rejected_files()` runs the repository's validator and refuses each file it reports an error against | `test_f4_a_path_the_marker_cannot_carry_is_refused`, `test_f4_a_quest_validate_rejects_is_skipped` |
+| F5, the trust boundary | Edit, close and reopen lines name the current title; `source_matches()` freezes a marker naming another file; `publishing.md` states the boundary | `test_f5_dry_run_names_the_current_title`, `test_f5_a_marker_naming_another_file_is_left_alone` |
+| F6, the digest | sha256 of the rendered body without the marker, 12 hex | `test_f6_the_digest_is_of_the_body_without_the_marker` |
+| F7, a fixed marker allowance | The room is the marker's real length | `test_f7_a_long_path_still_fits_the_limit` |
+| F9, non-JSON from `gh` | `_json_pages()` raises `PublishError` | `test_f9_non_json_from_gh_is_a_publish_error` |
+

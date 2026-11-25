@@ -528,16 +528,19 @@ Added 2026-11-25 by `feat-0106`, as are S-048 to S-059.
   with the italic line naming the source file and saying edits made on GitHub are overwritten,
   carries the frontmatter table (a quest) or the status (a spec) and the file's body with every
   relative link outside fenced code made absolute at `base_branch` (or `HEAD`), is at most 65,536
-  characters, cut at a heading with a note when longer, and ends in the marker line
-  `<!-- zen-publish v1 kind=<quest|spec> id=<id> source=<path> digest=<12 hex> -->`.
+  characters, cut with a note when longer at a boundary outside fenced code, and ends in the
+  marker line `<!-- zen-publish v1 kind=<quest|spec> id=<id> source=<path> digest=<12 hex> -->`,
+  whose digest is the sha256 of the body above it; and marker-shaped text in the file itself is
+  rendered broken (`&lt;!--`), so the last line is the only marker the body holds.
 
 ### Scenario S-053: publishing is idempotent by marker
 
 - **Given** a repository published once
 - **When** the publisher runs again with no file changed
 - **Then** its plan holds no operation; a changed file, a title or body edited by hand on GitHub,
-  or a quest moved to `done/` edits the same issue, found by its marker and never by its title,
-  and no second issue is created for any quest or spec.
+  or a quest moved to `done/` edits the same issue, found by the marker on its last non-empty line
+  and never by its title or by marker text elsewhere in it, and no second issue is created for any
+  quest or spec.
 
 ### Scenario S-054: status maps from the file
 
@@ -561,10 +564,11 @@ Added 2026-11-25 by `feat-0106`, as are S-048 to S-059.
 
 ### Scenario S-056: nothing is ever deleted
 
-- **Given** a published quest whose file is deleted, or a spec no published quest names any more
+- **Given** a published quest whose file is deleted, or a spec no published quest names any more,
+  or an issue whose marker's `source` names neither the item's path nor a file carrying its id
 - **When** the publisher runs
-- **Then** the issue is left as it was and named in the notes, and no call deletes or transfers an
-  issue.
+- **Then** the issue is left as it was, its sub-issue and blocking links included, and named once
+  in the notes, and no call deletes or transfers an issue.
 
 ### Scenario S-057: private and unpublishable files stay off GitHub
 
@@ -573,8 +577,11 @@ Added 2026-11-25 by `feat-0106`, as are S-048 to S-059.
 - **When** the publisher runs
 - **Then** the private or untracked file gets no issue; a file made private after it was published
   keeps its issue unedited and unclosed, named in the notes; the quest naming an unpublishable spec
-  is published top-level with a note; and a quest's `private` other than `true` or `false` fails
-  the shipped `validate.py`.
+  is published top-level with a note; a quest file `validate.py` reports an error against, or
+  whose path holds a character other than letters, digits, `.`, `_`, `-` and `/`, is not
+  published, with a note; an issue already published for any of them keeps its links as well as
+  its text and state; and a quest's `private` other than `true` or `false` fails the shipped
+  `validate.py`.
 
 ### Scenario S-058: hierarchy and blocking follow the files
 
@@ -680,7 +687,8 @@ quest names, never one whose frontmatter sets `private: true` (S-057); nothing b
 the table drawn from a quest's frontmatter is sent. Specs are issues, quests their native
 sub-issues or top-level issues, `depends_on` native blocking (S-058). Every published issue
 carries the `zen:published` label and ends in its marker, and the publisher acts only on issues
-carrying both (S-053, S-055). The labels are `zen:published`, `zen:spec`, `zen:quest` and
+carrying both (S-053, S-055); since anyone who can apply that label can therefore have an issue
+edited, `references/publishing.md` names the label as the trust boundary to protect. The labels are `zen:published`, `zen:spec`, `zen:quest` and
 `zen:in-progress`, fixed names; the publisher never applies or removes a `role.*` label. The full
 approved shape, titles, body, labels and status, is in `new-quest`'s `references/publishing.md`;
 S-052 to S-056 are its observable part. The quest frontmatter field `private` is `true` or

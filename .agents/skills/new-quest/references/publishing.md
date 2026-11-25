@@ -67,6 +67,13 @@ quest updates its issue's title.
 - The last line is the hidden marker:
   `<!-- zen-publish v1 kind=quest id=feat-0106 source=.quests/feat-0106-tracker-publishing.md digest=<sha256 of the rendered body, 12 hex> -->`
   (`kind=spec`, and the spec file's stem as `id`, for a spec).
+- How the script holds to that shape, settled at the feat-0106 review: only the body's last
+  non-empty line is read as the marker, and any marker-shaped comment in the file's own text
+  is broken (`<!--` written `&lt;!--`) before publishing, so no quest or spec can carry a
+  second marker. The digest is the sha256 of the rendered body without the marker line, first
+  12 hex; whether to edit is decided by comparing the whole title and body. A file whose path
+  or id holds anything but letters, digits, `.`, `_`, `-` and `/` cannot be carried by the
+  marker, and is refused with a note.
 - Idempotency: the script lists the issues carrying the `zen:published` label, whatever their
   state, parses their markers, and keys on kind and id. Found means edit, only if something
   changed; not found means create. Never matched by title. A quest moving to `.quests/done/`
@@ -101,6 +108,25 @@ quest updates its issue's title.
   not fill `external`, which stays "the upstream issue this quest serves" and is shown in the
   table.
 
+## Issues left as they are
+
+An issue the publisher owns is **left as it is** when its quest file is gone, refused (see
+below) or made private; when its spec is made private or no published quest names it any more;
+or when its marker's `source=` names neither the item's current path nor a file carrying its id.
+Left as it is means no edit, close, reopen, label change, unlink or unblock touches it, and the
+notes name it once. A published quest moving off such a spec issue onto a new spec is moved
+with GitHub's `replace_parent`, on the new parent, rather than by unlinking the old one.
+
+## The trust boundary
+
+Ownership is the `zen:published` label plus a valid marker on the last line. So **anyone who can
+apply `zen:published` to an issue can make the publisher edit it**: write a marker for a quest
+id, and the next apply rewrites that issue's title and body from the quest file. Protect the
+label: only people trusted to change issues should be able to apply it, issue templates and
+automations must never apply it, and the dry run, which names every issue it would edit with
+that issue's current title, is read before any apply. A marker naming another file is refused
+(see above), which narrows the forgery to issues that also copy the right path.
+
 ## What is never published
 
 - Anything while publishing is off: `publish` absent or `none`, `publish_repo` absent or
@@ -108,6 +134,7 @@ quest updates its issue's title.
   parse, or a validator from before publishing.
 - A quest or a spec whose frontmatter sets `private: true`. One made private after it was
   published keeps its issue as it was, reported, never edited or closed.
+- A quest file `.quests/validate.py` reports an error against; fix it and publish again.
 - A file git does not track, a file outside the tracker directory (and its `done/`), and a
   spec outside `spec_dir` or not a spec (`README.md`, a `.conformance.md` or other report): a
   quest naming one is published top-level, with a note.

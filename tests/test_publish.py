@@ -171,7 +171,13 @@ class FakeGitHub:
             if method == "GET":
                 return 0, json.dumps([self._view(self.issues[n])
                                       for n in sorted(issue["children"])]), ""
-            issue["children"].add(self.by_id(data["sub_issue_id"])["number"])
+            child = self.by_id(data["sub_issue_id"])["number"]
+            holders = [i for i in self.issues.values() if child in i["children"]]
+            if holders and not data.get("replace_parent"):
+                return 1, "", "HTTP 422: the issue already has a parent"
+            for holder in holders:
+                holder["children"].discard(child)
+            issue["children"].add(child)
             return 0, "{}", ""
         if parts[2:] == ["sub_issue"] and method == "DELETE":
             issue["children"].discard(self.by_id(data["sub_issue_id"])["number"])
@@ -209,6 +215,8 @@ class Repo:
         subprocess.run(["git", "init", "-q", str(self.root)], check=True)
         self.write("docs/agents/zen.md", CONFIG.format(extra=extra))
         self.write("docs/spec/alpha.md", SPEC)
+        # Every quest fixture names README.md in touched_files, which validate.py checks.
+        self.write("README.md", "# fixture\n")
 
     def write(self, rel, text, track=True):
         path = self.root / rel
@@ -222,6 +230,13 @@ class Repo:
 
     def move(self, src, dst):
         subprocess.run(["git", "-C", str(self.root), "mv", src, dst], check=True)
+
+    def close_quest(self, qid, src, **kwargs):
+        """Move a quest to done/ with status done, as the lifecycle does."""
+        dst = src.replace(".quests/", ".quests/done/")
+        self.move(src, dst)
+        kwargs.setdefault("body", "## Problem\n\nSee [the spec](../../docs/spec/alpha.md#goals).")
+        self.write(dst, quest(qid, status="done", **kwargs))
 
     def run(self, *args, runner=None):
         out = io.StringIO()
@@ -351,6 +366,7 @@ class Shape(PublishTest):
     def test_fenced_links_are_left_alone(self):
         """S-052: a link inside fenced code is text, not rewritten."""
         body = "```\n[x](../a.md)\n```\n[y](../a.md)"
+        self.repo.write("a.md", "a\n")
         self.repo.write(".quests/feat-0001-a.md", quest("feat-0001", body=body))
         self.publish()
         text = self.gh.find("feat-0001")["body"]
@@ -417,7 +433,7 @@ class Status(PublishTest):
         self.assertIn("reopen #", self.plan())
         self.publish()
         self.assertEqual(issue["state"], "open")
-        self.repo.move(".quests/feat-0001-a.md", ".quests/done/feat-0001-a.md")
+        self.repo.close_quest("feat-0001", ".quests/feat-0001-a.md")
         self.publish()
         self.assertEqual(issue["state"], "closed")
         self.assertIn("source=.quests/done/feat-0001-a.md", issue["body"])
@@ -442,7 +458,7 @@ class Status(PublishTest):
         """S-054: a spec issue is open while any of its quests is."""
         self.repo.write(".quests/feat-0001-a.md", quest("feat-0001", spec="docs/spec/alpha.md"))
         self.publish()
-        self.repo.move(".quests/feat-0001-a.md", ".quests/done/feat-0001-a.md")
+        self.repo.close_quest("feat-0001", ".quests/feat-0001-a.md", spec="docs/spec/alpha.md")
         self.publish()
         self.assertEqual(self.gh.find("Spec: alpha")["state"], "closed")
 
@@ -587,6 +603,163 @@ class Failure(PublishTest):
         code, out = self.repo.run("--apply", runner=broken)
         self.assertEqual(code, 2)
         self.assertIn("Cannot apply", out)
+
+
+def marker_of(qid, path, digest="0123456789ab"):
+    return f"<!-- zen-publish v1 kind=quest id={qid} source={path} digest={digest} -->"
+
+
+class ReviewFixes(PublishTest):
+    """The feat-0106 verifier's reproductions (F1 to F7, F9), each re-run after the fix."""
+
+    def apply_three_times(self):
+        for _ in range(3):
+            self.publish()
+
+    def test_f1_a_body_carrying_another_quests_marker(self):
+        """F1: marker text in a quest body, bare or fenced, never changes an identity."""
+        other = marker_of("feat-0002", ".quests/feat-0002-b.md")
+        body = f"## Problem\n\n{other}\n\n```\n{other}\n```\n\nText."
+        self.repo.write(".quests/feat-0001-a.md", quest("feat-0001", body=body))
+        self.repo.write(".quests/feat-0002-b.md", quest("feat-0002", title="Second"))
+        self.apply_three_times()
+        self.assertEqual(sorted(i["title"] for i in self.gh.issues.values()),
+                         ["feat-0001: Do the thing", "feat-0002: Second"])
+        first, second = self.gh.find("feat-0001"), self.gh.find("feat-0002")
+        self.assertNotIn("\n<!-- zen-publish v1 kind=quest id=feat-0002", first["body"])
+        self.assertIn("&lt;!-- zen-publish v1 kind=quest id=feat-0002", first["body"])
+        self.assertEqual(publish.last_marker(first["body"]).group(2), "feat-0001")
+        self.assertEqual(publish.last_marker(second["body"]).group(2), "feat-0002")
+
+    def test_f1_a_forger_that_sorts_first(self):
+        """F1: an earlier issue with another quest's marker mid-body is not that quest's."""
+        forged = self.gh.add_issue("forged", "intro\n" + marker_of(
+            "feat-0001", ".quests/feat-0001-a.md") + "\nnot a marker last", {"zen:published"})
+        self.repo.write(".quests/feat-0001-a.md", quest("feat-0001"))
+        self.apply_three_times()
+        self.assertEqual(forged["title"], "forged")
+        self.assertTrue(forged["body"].endswith("not a marker last"))
+        self.assertEqual(len([i for i in self.gh.issues.values()
+                              if i["title"].startswith("feat-0001")]), 1)
+
+    def test_f2_orphaned_and_private_quests_keep_their_links(self):
+        """F2: a quest gone or made private keeps its sub-issue and blocked-by links."""
+        spec = "docs/spec/alpha.md"
+        self.repo.write(".quests/feat-0001-a.md", quest("feat-0001", spec=spec))
+        self.repo.write(".quests/feat-0002-b.md", quest("feat-0002", spec=spec,
+                                                         depends_on="[feat-0001]"))
+        self.repo.write(".quests/feat-0003-c.md", quest("feat-0003", spec=spec,
+                                                         depends_on="[feat-0002]"))
+        self.publish()
+        one, two, three = (self.gh.find(f"feat-000{n}") for n in (1, 2, 3))
+        alpha = self.gh.find("Spec: alpha")
+        self.repo.remove(".quests/feat-0001-a.md")
+        self.repo.write(".quests/feat-0002-b.md", quest("feat-0002", spec=spec,
+                                                         extra="private: true\n"))
+        before = {n: dict(i, labels=set(i["labels"])) for n, i in self.gh.issues.items()}
+        out = self.publish()
+        self.assertIn("has no quest file any more: left as it is", out)
+        self.assertIn("feat-0002 is private now", out)
+        self.assertEqual(alpha["children"], {one["number"], two["number"], three["number"]})
+        self.assertEqual(two["blocked_by"], {one["number"]})
+        self.assertEqual(three["blocked_by"], {two["number"]})
+        for issue in (one, two):
+            self.assertEqual(issue["body"], before[issue["number"]]["body"])
+            self.assertEqual(issue["state"], before[issue["number"]]["state"])
+
+    def test_f2_a_private_spec_keeps_its_children_and_is_noted_once(self):
+        """F2: a spec made private keeps its sub-issues; the note appears once."""
+        spec = "docs/spec/alpha.md"
+        self.repo.write(".quests/feat-0001-a.md", quest("feat-0001", spec=spec))
+        self.repo.write(".quests/feat-0002-b.md", quest("feat-0002", spec=spec))
+        self.publish()
+        alpha = self.gh.find("Spec: alpha")
+        children = set(alpha["children"])
+        self.repo.write("docs/spec/alpha.md", SPEC.replace("status: approved",
+                                                           "status: approved\nprivate: true"))
+        out = self.publish()
+        self.assertEqual(alpha["children"], children)
+        self.assertEqual(out.count("spec alpha is private now"), 1)
+
+    def test_f3_truncation_never_cuts_inside_a_fence(self):
+        """F3: a `#` line inside a fence is not a heading, and no cut lands in a fence."""
+        fenced = "```bash\n" + "\n".join(f"# comment {n}\necho {'x' * 60}"
+                                          for n in range(1200)) + "\n```"
+        body = "## Intro\n\nShort.\n\n" + fenced + "\n\n## After\n\nEnd."
+        self.repo.write(".quests/feat-0001-a.md", quest("feat-0001", body=body))
+        self.publish()
+        text = self.gh.find("feat-0001")["body"]
+        self.assertLessEqual(len(text), publish.BODY_LIMIT)
+        kept = text.split("_Truncated:")[0]
+        self.assertEqual(kept.count("```") % 2, 0, "the cut left a fence open")
+        self.assertGreater(len(kept), publish.BODY_LIMIT // 2)
+
+    def test_f3_an_early_heading_does_not_lose_the_body(self):
+        """F3: with the last heading early, the cut falls back to a paragraph break."""
+        body = "## Only heading\n\n" + "\n\n".join("word " * 200 for _ in range(100))
+        self.repo.write(".quests/feat-0001-a.md", quest("feat-0001", body=body))
+        self.publish()
+        text = self.gh.find("feat-0001")["body"]
+        self.assertLessEqual(len(text), publish.BODY_LIMIT)
+        self.assertGreater(len(text), publish.BODY_LIMIT // 2)
+
+    def test_f4_a_path_the_marker_cannot_carry_is_refused(self):
+        """F4: whitespace in a path is refused with a message, never published."""
+        self.repo.write(".quests/feat-0001 a.md", quest("feat-0001"))
+        out = self.publish()
+        self.assertEqual(self.gh.issues, {})
+        self.assertIn("holds a character the marker cannot carry", out)
+
+    def test_f4_a_quest_validate_rejects_is_skipped(self):
+        """F4: a quest file validate.py reports an error against is not published."""
+        self.repo.write(".quests/feat-0001-a.md", quest("feat-0001", extra="private: maybe\n"))
+        self.repo.write(".quests/feat-0002-b.md", quest("feat-0002"))
+        out = self.publish()
+        self.assertEqual([i["title"][:9] for i in self.gh.issues.values()], ["feat-0002"])
+        self.assertIn(".quests/feat-0001-a.md is not published: validate.py rejects it", out)
+
+    def test_f5_dry_run_names_the_current_title(self):
+        """F5: an edit, close or reopen line shows the issue's title as it is now."""
+        self.repo.write(".quests/feat-0001-a.md", quest("feat-0001"))
+        self.publish()
+        self.gh.find("feat-0001")["title"] = "renamed by hand"
+        self.assertIn("now titled 'renamed by hand'", self.plan())
+
+    def test_f5_a_marker_naming_another_file_is_left_alone(self):
+        """F5: a marker whose source names another file is reported and not acted on."""
+        forged = self.gh.add_issue("forged", "x\n\n" + marker_of(
+            "feat-0001", ".quests/elsewhere.md"), {"zen:published"})
+        self.repo.write(".quests/feat-0001-a.md", quest("feat-0001"))
+        out = self.publish()
+        self.assertIn(f"#{forged['number']} carries the marker of feat-0001 but names "
+                      ".quests/elsewhere.md", out)
+        self.assertEqual(forged["title"], "forged")
+        self.assertEqual(len(self.gh.issues), 1)
+
+    def test_f6_the_digest_is_of_the_body_without_the_marker(self):
+        """F6: digest is sha256 of the rendered body without its marker line, 12 hex."""
+        self.repo.write(".quests/feat-0001-a.md", quest("feat-0001"))
+        self.publish()
+        body = self.gh.find("feat-0001")["body"]
+        text, _, marker_line = body.rpartition("\n\n")
+        import hashlib
+        self.assertEqual(publish.last_marker(marker_line).group(4),
+                         hashlib.sha256(text.encode("utf-8")).hexdigest()[:12])
+
+    def test_f7_a_long_path_still_fits_the_limit(self):
+        """F7: the marker's real length is reserved, so body plus marker fit."""
+        path = ".quests/feat-0001-" + "a" * 180 + ".md"
+        body = "\n\n".join(f"## Part {n}\n\n" + "x" * 3000 for n in range(40))
+        self.repo.write(path, quest("feat-0001", body=body))
+        self.publish()
+        text = self.gh.find("feat-0001")["body"]
+        self.assertLessEqual(len(text), publish.BODY_LIMIT)
+        self.assertIsNotNone(publish.last_marker(text))
+
+    def test_f9_non_json_from_gh_is_a_publish_error(self):
+        """F9: output that is not JSON is reported, not a traceback."""
+        with self.assertRaises(publish.PublishError):
+            publish._json_pages("HTTP 502 Bad Gateway")
 
 
 class ValidatorKeys(unittest.TestCase):

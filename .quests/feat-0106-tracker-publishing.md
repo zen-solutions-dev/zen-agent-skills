@@ -50,7 +50,7 @@ The shape of a published issue is a one-way door. It was proposed at a check-in 
 - The draft [`triage`](../.agents/skills/triage/SKILL.md), user-invoked, report-first.
 - [`test_publish.py`](../tests/test_publish.py), against a fake `gh`; the dogfood record.
 
-Also, to keep the acceptance command green: the regenerated `.claude-plugin/` tree, and three named keys in `ROADMAP_STATUS_EXCEPTIONS` (`missing:triage`, `count:skills=31`, `count:drafts=6`) because `ROADMAP.md` is the integration's to update; each fires as stale once it is.
+Also, to keep the acceptance command green: the regenerated `.claude-plugin/` tree, and one named key in `ROADMAP_STATUS_EXCEPTIONS`, `missing:triage`, because `ROADMAP.md` is the integration's to update; it fires as stale once it is. The two count keys there (`count:skills=31`, `count:drafts=6`) were added independently by `feat-0108` too and are kept from its side of the merge; they are shared, not this quest's alone.
 
 **Out of scope:** `zen`'s and `docs/CATALOG.md`'s lines for `triage` (the integration's, passed under Notes), the `private` field's line in `.quests/_TEMPLATE.md` and `_TEMPLATE.md.tmpl` (not owned), Campaign and Quest chain issues, GitLab, a live apply against a real repository, and the approved `tracker-links` contract, which stays unchanged.
 
