@@ -5,7 +5,7 @@ status: approved
 
 # doc-sync
 
-Behavioral contract for the `doc-sync` skill (ROADMAP Epic B item 9). Drafted 2026-07-25 by the
+Behavioral contract for the `doc-sync` skill (ROADMAP Campaign B item 9). Drafted 2026-07-25 by the
 `spec-author` skill and self-checked to `ready` with the `spec-quality` lens.
 
 ## Problem

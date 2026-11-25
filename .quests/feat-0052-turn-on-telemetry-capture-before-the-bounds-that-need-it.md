@@ -15,7 +15,7 @@ created: 2026-08-27
 
 ## Problem
 
-[ROADMAP Epic E item 7](../ROADMAP.md) holds run telemetry with a stated reason:
+[ROADMAP Campaign E item 7](../ROADMAP.md) holds run telemetry with a stated reason:
 
 > "Held behind item 5 for the reason it was never built in the first place, telemetry has no consumer
 > while a human is watching every run, and item 5 is what first produces runs nobody is watching."
@@ -58,7 +58,7 @@ measurement instrument that study found wanting.
 - A short document describing how to enable capture, which exporters need no infrastructure, what is
   captured, and where it lands.
 - A `.gitignore` entry for the capture directory, so run data never enters version control.
-- ~~Amend Epic E item 7 to split capture from bounds.~~ **Performed 2026-08-28 by
+- ~~Amend Campaign E item 7 to split capture from bounds.~~ **Performed 2026-08-28 by
   [`chore-0076`](done/chore-0076-scope-the-no-service-rule-to-what-the-kit-ships.md)**, which split the item
   three ways rather than two because an approved spec added a third part. Item 7(a) is capture, is
   stated as unheld, and names this task as its owner. Nothing is left here to do, and this task no
@@ -126,7 +126,7 @@ Reversible by reverting one commit; captured data is gitignored and local.
 - [ ] The document states what is captured by default and what requires an explicit opt-in, with the
       privacy consequence stated before the instruction.
 - [ ] The capture directory is gitignored, proven by `git status` staying clean after a capture run.
-- [x] Epic E item 7 distinguishes capture from bounds, and records that capture is unheld while bounds
+- [x] Campaign E item 7 distinguishes capture from bounds, and records that capture is unheld while bounds
       remain held behind item 5. Met 2026-08-28 by `chore-0076`, not by this task.
 - [ ] **No bound, threshold, budget, or limit is set by this task.**
 - [ ] The closeout records the verbatim first few lines of real captured output, including one line

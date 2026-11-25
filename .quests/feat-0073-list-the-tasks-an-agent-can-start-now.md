@@ -61,7 +61,7 @@ Prior art, read 2026-10-20:
 - A new frontmatter field for who took a task (ruled out in the decision below).
 - Any locking or database.
 - Changing sitrep's board output.
-- The cross-repository view, which ROADMAP Epic E #7d places in `agent-observatory`'s scope
+- The cross-repository view, which ROADMAP Campaign E #7d places in `agent-observatory`'s scope
   selector.
 
 ## Implementation notes

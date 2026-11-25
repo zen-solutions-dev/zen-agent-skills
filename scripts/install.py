@@ -798,6 +798,7 @@ def install(tools, mode, home: Path, dry: bool, profile: str = DEFAULT_PROFILE,
         base = home / TOOL_SUBPATHS[tool]
         if not dry:
             base.mkdir(parents=True, exist_ok=True)
+        placed_here = set()
         for src in skills:
             target = base / src.name
             render = renders_for(tool, src)
@@ -807,6 +808,7 @@ def install(tools, mode, home: Path, dry: bool, profile: str = DEFAULT_PROFILE,
             if status == "CONFLICT":
                 conflicts += 1
             else:
+                placed_here.add(src.name)
                 if render and not dry:
                     (target / "SKILL.md").write_bytes(rendered_skill_md(src))
                 entries[str(target)] = {
@@ -823,6 +825,13 @@ def install(tools, mode, home: Path, dry: bool, profile: str = DEFAULT_PROFILE,
             retired = base / old
             if str(retired) not in entries:
                 continue  # never placed here by this tool: not ours to remove
+            if new not in placed_here:
+                # Retiring it without its successor would leave the person with neither,
+                # and remove a copy they may have edited for nothing in return.
+                print(f"{tag}{'kept':9} {tool:8} {old}  ({retired}: renamed {new}, which "
+                      f"this run does not place; add it, e.g. --skills {new}, to retire "
+                      f"{old})")
+                continue
             if not dry and (retired.is_symlink() or retired.exists()):
                 _rm(retired)
             del entries[str(retired)]
@@ -1495,8 +1504,8 @@ def _check_entry(entry) -> tuple:
         return "diverged", f"the installed target is gone: {target}"
     if not source.is_dir():
         renamed = RENAMED_SKILLS.get(entry.get("name", ""))
-        hint = (f" The skill was renamed {renamed!r}: an install run retires this one and "
-                f"places that." if renamed else "")
+        hint = (f" The skill was renamed {renamed!r}: an install run that places "
+                f"{renamed!r} retires this one." if renamed else "")
         return "error", (f"the kit no longer has a source at {source}, so the installed "
                          f"copy cannot be compared against anything.{hint}")
     tool = entry.get("tool", "")

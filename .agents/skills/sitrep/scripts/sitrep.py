@@ -106,6 +106,8 @@ KIND_EXPLICIT = "explicit"
 NOTICE_NO_TASKS = "no task tracking"
 NOTICE_NO_INTEGRATION = "no integration branch"
 NOTICE_RESET = "watermark reset"
+NOTICE_BOTH_TRACKERS = ("both .quests/ and .tasks/ are tracked: the board reads them together, so "
+                        "finish the move with git mv of what is left in .tasks/ into .quests/")
 REASON_OPEN_QUESTION = "open question"
 REASON_HUMAN_EYE = "needs a human eye"
 LABEL_UNTRACKED = "untracked"
@@ -237,13 +239,16 @@ def parse_task(rel, text):
 def load_tasks(top):
     """Every tracked task file, parsed, plus any notice the reading raised.
 
-    A repository with nothing tracked under `.quests/` (or `.tasks/`) has no quest tracking, which is a notice and
-    not an error: the board still reports what git can tell it (S-010).
+    A repository with nothing tracked under `.quests/` (or `.tasks/`) has no quest tracking,
+    which is a notice and not an error: the board still reports what git can tell it (S-010).
+    Files tracked under both names are a move left half done, which is a notice too (S-041).
     """
     listed = [p for p in git(top, "ls-files", "-z", "--", *TRACKER_DIRS).split("\0") if p]
     if not listed:
         return [], [NOTICE_NO_TASKS]
     tasks, notices = [], []
+    if {rel.split("/", 1)[0] for rel in listed} >= set(TRACKER_DIRS):
+        notices.append(NOTICE_BOTH_TRACKERS)
     for rel in sorted(listed):
         if not TASK_PATH_RE.match(rel):
             continue

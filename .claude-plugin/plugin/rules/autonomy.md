@@ -142,7 +142,7 @@ a person's decision, and an unattended agent never makes it. Where a configurati
 unattended runs, a `permissions.deny` rule on the merge commands enforces this better than prose.
 
 *Cited, with a qualification:* the shape is exercised by `pr-describe`; the specific ceiling is a
-decision recorded in `ROADMAP.md` Epic E rather than a rule this kit has already run under.
+decision recorded in `ROADMAP.md` Campaign E rather than a rule this kit has already run under.
 
 **The one exception: an orchestrator landing other agents' work on an integration branch.** An
 **integration branch** is a branch cut for one run to collect its children's work, which reaches a

@@ -33,3 +33,15 @@ Each alias test was shown to fail with its alias removed, then passed with it re
 - `tests/test_zen_config.py`: `tasks` removed from the validator's tracker set: `FAILED (failures=2)`.
 - `tests/test_sitrep_git.py`: the `moved_done` guard removed: `FAILED (failures=1)`; the `ls-files` pathspec narrowed to `.quests`: `FAILED (failures=1)`.
 - `tests/test_install.py`: the retire loop given an empty table: `FAILED (failures=2)` in `RenamedSkillTests`.
+
+## Review fix round, 2026-11-25
+
+The orchestrator's independent verifier returned `fail` on `5e9e398`; these are the fixes, each with the run that shows it.
+
+| Finding | Change | Evidence |
+|---|---|---|
+| F1, the shipped rename table was untested | `RealRenameTableTests` reads `RENAMED_SKILLS` unpatched: it maps `new-task` to a skill the kit has, and a real-kit `--skills new-task --dry-run` places `new-quest`. | With the table set to `{}`: `FAILED (failures=2)`. |
+| F2, a run without `new-quest` retired `new-task` | `install()` retires an old name only when the same run placed its successor in that tool directory; otherwise it prints `kept`, says the new name was not placed and how to place it, and leaves the target and its record. `--check`'s hint now says "an install run that places 'new-quest' retires this one". | `test_a_run_that_does_not_place_the_successor_keeps_the_old_placement` keeps an edited copy and its record; with the guard removed it errors. |
+| F3, the hook's `.tasks` marker was untested | `TrackerRootMarkerTests`: a tree with no `.git` or `AGENTS.md`, one level below a spare directory. | With `.tasks` dropped from the markers: `FAILED (failures=1)`. |
+| F5, both directories merged silently | The validator (both copies) warns once when `.quests/` and `.tasks/` both exist, naming the `git mv` fix; `sitrep` adds a notice when files are tracked under both. A scratch repository `half` (one quest left in `.tasks/`, one moved) gave `WARN .quests/: both .quests/ and .tasks/ exist, and this run checks only .quests/; finish the move with git mv ...` from the validator and `notice: both .quests/ and .tasks/ are tracked: ...` from `sitrep`. | Removing the warning: `FAILED (failures=2)` per validator copy; removing the notice: `FAILED (failures=1)`. |
+| F4, F7, F8 | Wording only: remaining Feature and Epic pointers in current documents, the rationale's incident prose restored with links repointed, and the `epic` type prefix explained in the glossary. | `ZEN_CHECKS_SCOPE=full python3 scripts/run-checks.py` exits 0 after the round. |

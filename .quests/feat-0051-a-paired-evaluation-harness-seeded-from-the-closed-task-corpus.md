@@ -31,7 +31,7 @@ those tests covers the Python tooling that distributes the kit; the only tests o
 `tests/test_systematic_debugging.py`, and that file states its own bound in its docstring, that a test
 can assert an instruction is present and cannot assert a model obeyed it.
 
-[ROADMAP Epic E item 6](../ROADMAP.md) already scoped this well, including the two things the 2026-08-18
+[ROADMAP Campaign E item 6](../ROADMAP.md) already scoped this well, including the two things the 2026-08-18
 external research added: measure a baseline without the skill, and address trigger disambiguation. **The
 2026-08-27 field review adds three things that item does not have**, and they are why this task is
 fileable now rather than a restatement of it.
@@ -45,7 +45,7 @@ triggering it builds roughly 20 queries, half positive and half near-miss negati
 but need different tools, then splits 60/40 train/test and selects the best description **by test score
 to avoid overfitting**.
 
-**2. The acceptance bar in Epic E item 6 has a published operationalisation.** "The first run must catch
+**2. The acceptance bar in Campaign E item 6 has a published operationalisation.** "The first run must catch
 a real regression" is not a published phrase, but the `without_skill` baseline is exactly that test: an
 assertion that passes with the skill removed has caught nothing and proven nothing.
 
@@ -59,7 +59,7 @@ imagination.
 
 Source: the "Continuous evals in CI" lesson of Anthropic's AI-Native SDLC Playbook
 (`academy.claude.com/courses/ai-native-sdlc-playbook`), read 2026-09-01. It describes this loop as an
-operated practice rather than an authoring step, and it supplies three things neither ROADMAP Epic E
+operated practice rather than an authoring step, and it supplies three things neither ROADMAP Campaign E
 item 6 nor the 2026-08-27 review had. **Two are folded into scope below and the third is named and
 deferred**, which is the treatment this task already gives trigger disambiguation.
 
@@ -71,7 +71,7 @@ one. Upstream runs evals on **two triggers**: a pull request touching the agent 
 schedule. That is a third option between the two this task considered, and it **does not touch
 `run-checks.py` at all**, so the rule above survives intact. It matters here for a reason the playbook
 does not have to argue: `check-provenance.py` is this kit's own precedent for on-demand, and it is run
-only when somebody remembers, which is the gap ROADMAP Epic B item 19 was filed for. Deciding the
+only when somebody remembers, which is the gap ROADMAP Campaign B item 19 was filed for. Deciding the
 cadence is now in scope. Building the schedule is not: that is
 [`feat-0065`](feat-0065-a-scheduled-sensor-for-the-drift-checks-that-only-run-when-somebody-remembers.md).
 
@@ -87,7 +87,7 @@ a regression test." This task already draws its cases from `.quests/done/`, so t
 present; what is new is the ratchet, every future incident adding one, which would sit in the closeout
 lifecycle in the work-altitude section of `AGENTS.md` beside the `doc-sync` and conformance steps. It is
 **not folded in**, because it is a change to that lifecycle rather than to this harness, it is what
-ROADMAP Epic E item 8 is held for want of a concrete artifact for, and a ratchet added before three
+ROADMAP Campaign E item 8 is held for want of a concrete artifact for, and a ratchet added before three
 cases exist is ceremony. The closeout says whether the first pass earned it, and files it or declines it
 with a reason.
 
@@ -108,7 +108,7 @@ with a reason.
 - **Decide whether a pass-rate drop gates a skill change**, per amendment B, and record the answer
   either way. Three skills is a thin basis for a gate, so "not yet, and here is what would earn it" is a
   legitimate outcome and a silent omission is not.
-- **Decide where evals live and record the rejection.** Epic E item 6 says `tests/`. `skill-creator` puts
+- **Decide where evals live and record the rejection.** Campaign E item 6 says `tests/`. `skill-creator` puts
   an `evals/` directory inside each skill. These are not compatible here: `install.py` copies whole skill
   directories, so a per-skill `evals/` ships the kit's own fixtures into every adopter's home. Work that
   out from `install.py`'s placement loop rather than from this sentence.
@@ -121,7 +121,7 @@ with a reason.
   required CI because it needs network. **Unchanged by amendment A above**, which adds a separate
   workflow as a third option and touches this script not at all. What the amendment removes is only the
   inference that "not in `run-checks.py`" meant "on demand and nothing else".
-- Trigger disambiguation across the whole library. It is the sharper half of Epic E item 6 and it needs a
+- Trigger disambiguation across the whole library. It is the sharper half of Campaign E item 6 and it needs a
   working harness first. **File it as a follow-up rather than folding it in.**
 - LLM-as-judge calibration against human labels, and any `pass^k` repetition. Both are correct and both
   are premature before three cases exist.
@@ -155,7 +155,7 @@ one-step query may not trigger even with a perfect description. Write cases that
 New files plus one document, no existing behaviour changed, so nothing can regress.
 
 The real risk is a suite that passes on day one and proves only that it was written against today's
-behaviour, which Epic E item 6 names as its own failure mode. The `without_skill` baseline is the guard:
+behaviour, which Campaign E item 6 names as its own failure mode. The `without_skill` baseline is the guard:
 if every assertion passes with the skill removed, the suite has measured nothing and the closeout must say
 so rather than report a pass rate.
 

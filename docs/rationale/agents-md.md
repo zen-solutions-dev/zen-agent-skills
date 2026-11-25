@@ -15,9 +15,9 @@ Recorded 2026-08-28 by `chore-0076`, which needed a local store and a local serv
 
 ## Why the closeout list has its re-anchor, `doc-sync`, and conformance steps
 
-The re-anchoring clause is in that list because the move silently invalidates every link in the file: a task authored in `.quests/` correctly links to `../scripts/x.py`, and from `.quests/done/` that same text means `.quests/scripts/x.py`. `bug-0011` found 101 links across 36 completed tasks broken exactly this way, with `validate.py --strict` and the CI docs link step both passing, because neither looked here. `validate.py` now checks every link against the directory the file is actually in, so the move fails loudly.
+The re-anchoring clause is in that list because the move silently invalidates every link in the file: a task authored in `.tasks/` correctly links to `../scripts/x.py`, and from `.tasks/done/` that same text means `.tasks/scripts/x.py`. `bug-0011` found 101 links across 36 completed tasks broken exactly this way, with `validate.py --strict` and the CI docs link step both passing, because neither looked here. `validate.py` now checks every link against the directory the file is actually in, so the move fails loudly.
 
-The `doc-sync` step is in that list because its absence has cost real work. `feat-0031` shipped a user-facing feature that was dogfooded, given a conformance matrix and a verification record, and left every reader-facing document with zero mention of it. Updating `CHANGELOG.md` and the quest file is bookkeeping, not documentation: a feature only a maintainer can find out about has not shipped for anyone else.
+The `doc-sync` step is in that list because its absence has cost real work. `feat-0031` shipped a user-facing feature that was dogfooded, given a conformance matrix and a verification record, and left every reader-facing document with zero mention of it. Updating `CHANGELOG.md` and the task file is bookkeeping, not documentation: a feature only a maintainer can find out about has not shipped for anyone else.
 
 The conformance step is in that list because nothing else here asks whether the implementation matches the contract. A task that declares a `spec` closes by producing or updating that spec's `<spec>.conformance.md` with [`spec-conformance`](../../.agents/skills/spec-conformance/SKILL.md), over the scenarios its `scenarios` field claims. **Deferring is legal, and for a forward spec it is the only honest answer**: a contract written before its implementation has nothing to audit yet, so a scenario nothing has built is recorded as not-built with what is owed, and a spec with no implementation at all keeps its matrix owed, said plainly in the task rather than invented. A matrix written to satisfy this step is worse than no matrix. `cloud-executable` is the incident: approved 2026-08-07, with `feat-0045` and `feat-0046` both closed against it, it reached 2026-08-19 as the only approved spec of eleven with no matrix at all, having passed every stated obligation at both closeouts because no stated obligation mentioned the contract.
 
@@ -79,7 +79,7 @@ nothing is topical and is still covered by the at-least-one rule.
 **The other insufficiency is the one more runs do not close.** The paragraph above is about coverage
 across the CI matrix, which a second platform closes. This one does not: every gate here decides a
 mechanical property, and the defects below all sat outside what any of them sees. `bug-0045` emptied
-`.agents/skills/`, `tests/`, and the `.quests/` quest files and reran this command; six of seven gates
+`.agents/skills/`, `tests/`, and the `.tasks/` task files and reran this command; six of seven gates
 reported `ok` over a repository holding nothing. `bug-0044` found seven links that resolve here and
 dangle in every `cursor` and `vscode` tree the adapter builder ships, having "survived every gate".
 `bug-0037` found three of sixty-five citations in a conformance matrix pointing at something other

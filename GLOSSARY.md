@@ -67,8 +67,8 @@ _Avoid_: reversible change, low-risk change
 How work is tracked, from strategy down to one agent's work item (maintainer decisions R2-4 and R2-5, 2026-11-25, `feat-0101`). The old names stay recognised: a repository that still has `.tasks/` or `tracker: tasks` is read as if it said `.quests/` and `quests`.
 
 **Campaign**:
-A durable area of the work, the top altitude in `ROADMAP.md` ("Campaign A"). It holds quest chains and side quests.
-_Avoid_: epic (the old name), theme, initiative
+A durable area of the work, the top altitude in `ROADMAP.md` ("Campaign A"). It holds quest chains and side quests. The quest type `epic` (an `epic-NNNN` id) is a legacy kind prefix kept so no id changes: such a quest is a quest like any other, not a campaign, which has no id or file of its own.
+_Avoid_: epic (the old name of the altitude; as a quest type it means only the kind prefix), theme, initiative
 
 **Quest chain**:
 A scoped piece of a campaign, in `ROADMAP.md`, delivered by one or more quests and struck through when the last of them is done.

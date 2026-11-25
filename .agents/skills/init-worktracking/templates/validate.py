@@ -715,6 +715,16 @@ def _exact_path(root, value):
     return current
 
 
+def both_tracker_dirs(repo_root):
+    """A warning when `.quests/` and `.tasks/`, its old name, both exist; none otherwise."""
+    root = Path(repo_root)
+    if (root / ".quests").is_dir() and (root / ".tasks").is_dir():
+        return ["both .quests/ and .tasks/ exist, and this run checks only "
+                f"{TASKS_DIR.name}/; finish the move with `git mv` of what is left in "
+                ".tasks/ into .quests/, then remove .tasks/"]
+    return []
+
+
 def zen_config_findings(repo_root):
     """Every error in the repository's `docs/agents/zen.md`, or none when it is absent.
 
@@ -974,6 +984,13 @@ def main(argv=None) -> int:
     manifest_path = TASKS_DIR / SCAFFOLD_MANIFEST
     for msg in stale_high_water(manifest_path, all_ids):
         warn(manifest_path.relative_to(REPO_ROOT).as_posix(), msg)
+
+    # A half-finished move from the tracker's old name (feat-0101): this run reads only
+    # the directory it sits in, so the other one's files go unchecked, and a reader that
+    # takes both (sitrep) merges them, duplicate ids and all. A warning, like the
+    # manifest's: it names the fix, and failing an adopter's tree mid-move helps nobody.
+    for msg in both_tracker_dirs(REPO_ROOT):
+        warn(TASKS_DIR.name + "/", msg)
 
     # The setup file the kit's skills read, when the repository has one. Errors rather
     # than warnings: a skill reads these values as facts, so a wrong one misleads every

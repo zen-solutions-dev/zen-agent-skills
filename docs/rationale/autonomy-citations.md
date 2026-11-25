@@ -236,7 +236,7 @@ end to put the check on. Recorded as `bug-0043`.
 *Cited, with one honest qualification.* The shape is exercised: `pr-describe` is "draft text only,
 never touches GitHub", printing both artifacts and surfacing the command rather than running it, so
 the agent prepares and a person dispatches. **The specific ceiling, a `claude/` branch and a draft
-pull request that is never merged, is a decision recorded in `ROADMAP.md` Epic E rather than a rule
+pull request that is never merged, is a decision recorded in `ROADMAP.md` Campaign E rather than a rule
 this kit has already run under.** It is the only rule in v1 in that position, it is named as such
 rather than dressed up as consolidated, and confirming or amending it against a real unattended run
 is the first job of v2.
@@ -259,7 +259,7 @@ and it stays listed with the reason, because a gate that can be emptied quietly 
 
 - **Retry limits and futility classification.** Scoped as task `feat-0042`, which states honestly
   that it is preventive rather than observed, and carries its own kill criterion.
-- **Token, wall-clock, or compute budgets.** Held as Epic E item 7, behind the batch mode, because a
+- **Token, wall-clock, or compute budgets.** Held as Campaign E item 7, behind the batch mode, because a
   bound with no observed run to calibrate against is a guess with a number on it.
 - **Escalation paths, meaning when an unattended agent should stop and wait for a person rather than
   reporting and finishing.** Real, and currently unanswerable: nothing here has run unattended long

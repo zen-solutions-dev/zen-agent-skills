@@ -3061,6 +3061,27 @@ class RenamedSkillTests(_FixtureKit):
         self.assertEqual(code, 2, out)
         self.assertIn("renamed 'new-quest'", out)
 
+    def test_a_run_that_does_not_place_the_successor_keeps_the_old_placement(self):
+        _meta_skill(self.skills, "zeta", "does zeta things when asked")
+        target = self._place_under_the_old_name("copy")
+        (target / "SKILL.md").write_text("edited by the person\n", encoding="utf-8")
+        code, out = self._main("--skills", "zeta", "--tools", "claude", "--mode", "copy")
+        self.assertEqual(code, 0, out)
+        self.assertEqual((target / "SKILL.md").read_text(encoding="utf-8"),
+                         "edited by the person\n")
+        self.assertIn("kept", out)
+        self.assertIn("does not place", out)
+        self.assertNotIn("retired", out)
+        recorded = json.loads(inst.MANIFEST.read_text(encoding="utf-8"))
+        self.assertIn(str(target), {e["target"] for e in recorded["entries"]})
+
+    def test_a_run_that_places_the_successor_retires_the_old_placement(self):
+        target = self._place_under_the_old_name("copy")
+        code, out = self._main("--skills", "new-quest", "--tools", "claude", "--mode", "copy")
+        self.assertEqual(code, 0, out)
+        self.assertFalse(target.exists(), out)
+        self.assertIn("retired", out)
+
     def test_an_unrecorded_directory_under_the_old_name_is_left_alone(self):
         # The person's own skill that happens to be called `new-task` is not ours.
         own = self.home / inst.TOOL_SUBPATHS["claude"] / "new-task"
@@ -3070,6 +3091,33 @@ class RenamedSkillTests(_FixtureKit):
         self.assertEqual(code, 0, out)
         self.assertTrue((own / "SKILL.md").is_file())
         self.assertNotIn("retired", out)
+
+class RealRenameTableTests(unittest.TestCase):
+    """feat-0101: the production rename table, read as shipped, against the real kit.
+
+    `RenamedSkillTests` patches the table to isolate the mechanism; these do not, so
+    emptying or breaking `RENAMED_SKILLS` itself fails here.
+    """
+
+    def test_the_table_maps_new_task_to_a_skill_the_kit_has(self):
+        self.assertEqual(inst.RENAMED_SKILLS.get("new-task"), "new-quest")
+        for old, new in inst.RENAMED_SKILLS.items():
+            with self.subTest(old=old):
+                self.assertTrue((inst.SKILLS_DIR / new / "SKILL.md").is_file())
+                self.assertFalse((inst.SKILLS_DIR / old).exists())
+
+    def test_skills_new_task_dry_run_places_new_quest_from_the_real_kit(self):
+        home = Path(tempfile.mkdtemp())
+        self.addCleanup(shutil.rmtree, home, ignore_errors=True)
+        buf = io.StringIO()
+        with contextlib.redirect_stdout(buf):
+            code = inst.main(["--skills", "new-task", "--tools", "claude", "--dry-run",
+                              "--home", str(home)])
+        out = buf.getvalue()
+        self.assertEqual(code, 0, out)
+        self.assertIn("'new-task' was renamed 'new-quest'", out)
+        self.assertRegex(out, r"new-quest\s+->")
+        self.assertNotIn("no skill is named", out)
 
 class InvocationRenderingTests(_FixtureKit):
     """feat-0079: a user-invoked skill reaches Claude Code with the rendered key.

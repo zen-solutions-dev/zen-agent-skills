@@ -6,7 +6,7 @@ status: approved
 # cloud-executable
 
 Behavioral contract for making this repository workable from a cloud agent session, written
-2026-08-07 for item 2 of Epic E in [`ROADMAP.md`](../../ROADMAP.md). **Approved by the author on
+2026-08-07 for item 2 of Campaign E in [`ROADMAP.md`](../../ROADMAP.md). **Approved by the author on
 2026-08-07.**
 
 **Amended 2026-08-20 (`chore-0051`) to repoint `S-017` and `S-018` at an open task: their **Given**
@@ -109,13 +109,13 @@ have caught, and then has no command to catch it with either.
 - **Answering whether an installed skill is still current.** That is `install.py --check`, which
   already exists.
 - **Committing the repository-scope skill or adapter trees.** Whether `.claude/skills/`,
-  `.cursor/rules/`, or `.github/prompts/` should be tracked here is held in Epic E with its own
+  `.cursor/rules/`, or `.github/prompts/` should be tracked here is held in Campaign E with its own
   trigger. This contract defines how they are counted if they are present, and requires none of
   them to be.
 - **Replacing, reducing, or reproducing the CI matrix.** The command is a single-cell check by
   construction.
-- **Generalizing to any other repository.** That is the `cloud-ready` skill, Epic E item 4.
-- **Scheduled or recurring unattended runs.** Held in Epic E until one manual session has landed.
+- **Generalizing to any other repository.** That is the `cloud-ready` skill, Campaign E item 4.
+- **Scheduled or recurring unattended runs.** Held in Campaign E until one manual session has landed.
 - **Changing the autonomy ceiling.** Draft pull request, never merge, is fixed here.
 
 ## Constraints

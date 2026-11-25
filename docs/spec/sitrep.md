@@ -421,6 +421,8 @@ Added 2026-11-25 by `feat-0101`.
 - **When** the board is generated
 - **Then** the files are read as they would be under `.quests/`, and a file already under a `done/`
   directory that only moved between the two names is not listed as closed
+- **And** when files are tracked under both names at once, the board reads them together and carries
+  a notice naming the fix: finish the move with `git mv` into `.quests/`
 ## Proposed Surface
 
 ### Terms

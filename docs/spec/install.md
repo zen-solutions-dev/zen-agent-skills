@@ -501,12 +501,16 @@ Added 2026-11-25 by `feat-0101`.
 - **Then** the tool says the skill was renamed and places the new one, with its closure, as if the
   new name had been given.
 - **And when** a placing run finds a target this tool recorded under the old name, in a tool
-  directory it is placing into
+  directory where the same run placed the new name
 - **Then** it removes that target and its entry in the record, and reports it as `retired`, naming
   the new name; a target under the old name that the record does not name is left alone.
+- **And when** the run does not place the new name in that tool directory (a profile or `--skills`
+  selection without it, or a conflict at its target)
+- **Then** it leaves the old target and its record untouched and reports it as `kept`, saying the
+  new name was not placed and how to place it.
 - **And when** `--check` meets such a target before that run
 - **Then** it reports the error it reports for any entry whose source is gone, and adds that the
-  skill was renamed and that an install run retires it.
+  skill was renamed and that an install run placing the new name retires it.
 
 ## Proposed Surface
 

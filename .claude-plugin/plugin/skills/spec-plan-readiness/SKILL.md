@@ -20,7 +20,7 @@ before tests, code, or implementation delegation begin. This skill is a gate: it
 blocking gaps, and only when none remain does it map scenarios to test layers and tasks, and name
 the first safe task.
 
-In this kit the "plan" is not a standalone document: it is a roadmap Feature decomposed into ordered
+In this kit the "plan" is not a standalone document: it is a roadmap Quest chain decomposed into ordered
 `.quests/<id>.md` files (`.tasks/<id>.md` under the tracker's old name), read as a set. Wherever this skill says "the plan", it means that set.
 
 **Inputs.** Required: the **spec** (scenarios, constraints, proposed surface, open questions) and the

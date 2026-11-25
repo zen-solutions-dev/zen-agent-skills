@@ -206,6 +206,24 @@ class OldTrackerNameTests(unittest.TestCase):
         self.assertEqual({(t["id"], t["closed"]) for t in tasks},
                          {("feat-0001", False), ("feat-0002", True)})
 
+    def test_both_tracker_names_at_once_raise_a_notice(self):
+        repo = ThrowawayRepo(self)
+        repo.write(".tasks/feat-0001-left.md", task_text("feat-0001"))
+        repo.write(".quests/feat-0002-moved.md", task_text("feat-0002"))
+        repo.commit()
+        tasks, notices = sitrep.load_tasks(repo.dir)
+        self.assertEqual(notices, [sitrep.NOTICE_BOTH_TRACKERS])
+        self.assertIn("git mv", notices[0])
+        self.assertEqual({t["id"] for t in tasks}, {"feat-0001", "feat-0002"})
+
+    def test_one_tracker_name_raises_no_notice(self):
+        for folder in (".tasks", ".quests"):
+            with self.subTest(folder=folder):
+                repo = ThrowawayRepo(self)
+                repo.write(f"{folder}/feat-0001-a.md", task_text("feat-0001"))
+                repo.commit()
+                self.assertEqual(sitrep.load_tasks(repo.dir)[1], [])
+
     def test_moving_the_tracker_to_its_new_name_closes_nothing(self):
         """A done file that only moved from `.tasks/done/` to `.quests/done/` was closed before."""
         repo = ThrowawayRepo(self)

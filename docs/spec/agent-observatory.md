@@ -5,7 +5,7 @@ status: approved
 
 # agent-observatory
 
-Behavioral contract for the agent observatory (ROADMAP Epic E, the reporting half of item 7).
+Behavioral contract for the agent observatory (ROADMAP Campaign E, the reporting half of item 7).
 Drafted 2026-08-28 by the `spec-author` skill and self-checked to `ready` with the `spec-quality`
 lens.
 
@@ -53,7 +53,7 @@ changing anything it reads.
 ## Non-Goals
 
 - **Setting any bound.** No retry limit, token budget, futility threshold, or stop signal. Those are
-  Epic E item 7's second half and stay held. This contract produces the distribution such a bound
+  Campaign E item 7's second half and stay held. This contract produces the distribution such a bound
   would one day be set against, and sets none.
 - **Judging whether a skill's output was good.** That is evaluation, held under `feat-0051`. This
   reports what ran and what it cost, never whether it was right.
@@ -276,5 +276,5 @@ changing anything it reads.
 
 3. **Is one machine the boundary?** Every source named here is local, so a second machine produces a
    second corpus with no shared identity. *Recommendation:* scope this contract to one machine, and
-   leave any cross-machine question to Epic F, which is where multi-participant workspaces already
+   leave any cross-machine question to Campaign F, which is where multi-participant workspaces already
    live.

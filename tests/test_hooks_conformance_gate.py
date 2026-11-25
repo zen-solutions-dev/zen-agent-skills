@@ -23,6 +23,7 @@ import importlib.util
 import io
 import json
 import os
+import shutil
 import tempfile
 import unittest
 from pathlib import Path
@@ -81,6 +82,25 @@ class GateTestCase(unittest.TestCase):
                      encoding="utf-8")
         return p
 
+
+class TrackerRootMarkerTests(unittest.TestCase):
+    """feat-0101: the walk up to the repository root stops at `.tasks`, the tracker's old name.
+
+    Built with no `.git` and no `AGENTS.md`, so the tracker directory is the only marker, and
+    a spare level above the root, so a missed marker walks past it instead of stopping there.
+    """
+
+    def test_the_old_and_new_tracker_names_both_mark_the_root(self):
+        for name in (".tasks", ".quests"):
+            with self.subTest(tracker=name):
+                outer = Path(tempfile.mkdtemp())
+                self.addCleanup(shutil.rmtree, outer, ignore_errors=True)
+                root = outer / "repo"
+                (root / name).mkdir(parents=True)
+                quest = root / name / "feat-0001-x.md"
+                quest.write_text("x\n", encoding="utf-8")
+                found = gate._repo_root(str(quest), None)
+                self.assertEqual(Path(found).resolve(), root.resolve())
 
 class ApprovedIsNotTerminalTests(GateTestCase):
     """The deliberate divergence from upstream, pinned so a future sync cannot revert it.

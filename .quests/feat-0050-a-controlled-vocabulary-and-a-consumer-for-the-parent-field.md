@@ -109,7 +109,7 @@ Reversible by reverting one commit.
 - [ ] `validate.py` rejects a `parent` naming no heading or numbered item in `ROADMAP.md`, proven by a test
       that fails against the current code.
 - [ ] A test pins that `"ROADMAP Epic A: distribution tooling"` is rejected and that
-      `"ROADMAP Epic A: broadly shareable (the public kit)"` is accepted.
+      `"ROADMAP Campaign A: broadly shareable (the public kit)"` is accepted.
 - [ ] The two near-miss spellings differing only by "from the" are resolved, in whichever direction, and the
       direction is stated.
 - [ ] A consumer exists and is named, with the rejected alternative recorded.

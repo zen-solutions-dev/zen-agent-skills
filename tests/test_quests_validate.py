@@ -1262,6 +1262,34 @@ class ScaffoldManifestTemplateTests(ScaffoldManifestTests):
     module = tvt
 
 
+class BothTrackerDirsTests(TasksRootTestCase):
+    """feat-0101: `.quests/` and `.tasks/` side by side is a move left half done."""
+
+    def _lenient(self):
+        buf = io.StringIO()
+        with contextlib.redirect_stdout(buf):
+            code = self.module.main([])
+        return code, buf.getvalue()
+
+    def test_both_directories_warn_and_name_the_fix(self):
+        (self.root / ".tasks").mkdir()
+        code, out = self._lenient()
+        self.assertEqual(code, 0, out)
+        self.assertIn("WARN  .quests/: both .quests/ and .tasks/ exist", out)
+        self.assertIn("git mv", out)
+        self.assertIn("0 error(s), 1 warning(s)", out)
+
+    def test_one_directory_alone_is_silent(self):
+        code, out = self._lenient()
+        self.assertEqual(code, 0, out)
+        self.assertNotIn(".tasks/", out)
+
+
+class BothTrackerDirsTemplateTests(BothTrackerDirsTests):
+    """The same warning in the copy `init-worktracking` ships."""
+
+    module = tvt
+
 class DependencyCycleTests(TasksRootTestCase):
     """`bug-0061`: a ring of depends_on edges that no dispatch can ever satisfy.
 

@@ -719,7 +719,7 @@ def coverage_line(output):
 
     Every gate here already prints what it covered, and each of those counts was added
     by a task that had just been burned by its absence: `validate-skills.py`'s skill and
-    supporting-file counts, `.quests/validate.py`'s `Checked N task files`, `install.py`'s
+    supporting-file counts, `.quests/validate.py`'s `Checked N quest files`, `install.py`'s
     placed count and description budget, and `--links`'s document count. Until bug-0045
     this aggregator captured all of them and printed none, so seven gates passing over a
     full tree and seven gates passing over an empty one were byte-identical reports.

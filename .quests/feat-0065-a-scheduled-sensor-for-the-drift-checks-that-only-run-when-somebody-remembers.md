@@ -15,7 +15,7 @@ created: 2026-09-01
 
 ## Problem
 
-[ROADMAP Epic B item 19](../ROADMAP.md) states the gap and deliberately declines to name the artifact:
+[ROADMAP Campaign B item 19](../ROADMAP.md) states the gap and deliberately declines to name the artifact:
 every sensor this kit owns fires only when something invokes it. `validate.py` and `validate-skills.py`
 run in CI on a change, `doc-sync` runs when a human asks, and
 [`check-provenance.py`](../scripts/check-provenance.py) is kept outside required CI because it needs
@@ -30,7 +30,7 @@ until somebody happens to type the command.
 [`bug-0063`](done/bug-0063-the-security-policy-denies-the-prompt-injection-rule-the-kit-ships.md) found
 `SECURITY.md` telling a security researcher the kit had no answer to prompt injection, five days after
 `A10` landed and after all 22 skills were wired to the module carrying it. It sat wrong across a green
-tree for five days because no gate reads a prose claim and nothing runs between changes. That is Epic B
+tree for five days because no gate reads a prose claim and nothing runs between changes. That is Campaign B
 item 19's own argument, with a date on it.
 
 **A published two-trigger pattern exists**, in the "Continuous evals in CI" lesson of Anthropic's
@@ -124,7 +124,7 @@ Adds one workflow file and edits two documents; no existing behaviour changes an
 `scripts/` is touched, so `run-checks.py` and CI are unaffected. Reversible by deleting the workflow and
 reverting the two document edits in one commit.
 
-The real risk is the one Epic B item 19 names for itself: a sensor that finds nothing is ceremony, and a
+The real risk is the one Campaign B item 19 names for itself: a sensor that finds nothing is ceremony, and a
 sensor that cries wolf gets switched off. The exit-code discipline in property 1 above is what separates
 them, and the acceptance bar below is what decides whether it was worth building.
 
@@ -145,7 +145,7 @@ them, and the acceptance bar below is what decides whether it was worth building
       both corrected in the same change, and neither states anything the workflow falsifies.
 - [ ] `grep -c "runs only when you run it" SECURITY.md` returns 0.
 - [ ] `run-checks.py` still exits 0 with every gate passing, and the required CI matrix is unchanged.
-- [ ] **The bar Epic B item 19 sets for itself: it finds something on a repository nobody has just
+- [ ] **The bar Campaign B item 19 sets for itself: it finds something on a repository nobody has just
       reviewed.** If the first scheduled runs find nothing, record that plainly rather than counting the
       workflow's existence as the result, and say what would make it earn its place.
 

@@ -31,7 +31,7 @@ which project needs me this week, and for what.
     ([Projects](https://code.claude.com/docs/en/claude-projects)).
   - Neither knows about a season, its quests, or its blockers.
 - **The kit's own boards are per repository.** sitrep is "a board for one repository", and ROADMAP
-  Epic E #7d places a view across several repositories in `agent-observatory`'s scope selector,
+  Campaign E #7d places a view across several repositories in `agent-observatory`'s scope selector,
   as a later amendment. A season tracker is neither: one season can span several repositories,
   and its blockers and waiting items live in the page's own database, not in git.
 
@@ -55,7 +55,7 @@ which project needs me this week, and for what.
 
 **Out of scope:**
 - Reading trackers without the host's tools.
-- A cross-repository git view, which belongs to `agent-observatory` per Epic E #7d.
+- A cross-repository git view, which belongs to `agent-observatory` per Campaign E #7d.
 - Changing the tracker template's data block.
 - Any real project's data in the kit.
 
@@ -74,11 +74,11 @@ which project needs me this week, and for what.
 
 ## Open question
 
-1. **Does a portfolio view of trackers belong here, beside Epic E #7d's planned cross-repository
+1. **Does a portfolio view of trackers belong here, beside Campaign E #7d's planned cross-repository
    view in `agent-observatory`?** The recommendation is yes, as a separate thing, because a season
    tracker spans repositories and keeps its state outside git. Each row links to the repository's
    board where one exists, rather than duplicating it. If this is accepted, add one sentence to
-   ROADMAP Epic C #6 saying so.
+   ROADMAP Campaign C #6 saying so.
 2. **Is the index its own page, or a section added to every tracker?** The recommendation is its
    own page. A section on each tracker would repeat every other project's state on every page.
 
@@ -86,9 +86,9 @@ which project needs me this week, and for what.
 
 Answered by Hamsa on 2026-10-22:
 
-1. **Yes: the index belongs in `quest-tracker`, separate from Epic E #7d's planned cross-repository
+1. **Yes: the index belongs in `quest-tracker`, separate from Campaign E #7d's planned cross-repository
    view in `agent-observatory`.** Each row links to the repository's board where one exists. ROADMAP
-   Epic C #6 now carries a sentence saying so.
+   Campaign C #6 now carries a sentence saying so.
 2. **The index is its own page,** not a section on each tracker.
 
 ## Acceptance criteria (mechanically verifiable)
