@@ -632,15 +632,24 @@ class ReviewFixes(PublishTest):
         self.assertEqual(publish.last_marker(second["body"]).group(2), "feat-0002")
 
     def test_f1_a_forger_that_sorts_first(self):
-        """F1: an earlier issue with another quest's marker mid-body is not that quest's."""
-        forged = self.gh.add_issue("forged", "intro\n" + marker_of(
+        """F1, as amended by N1: an earlier issue carrying the label and a marker is owned,
+        the documented trust boundary, so it is adopted, never duplicated; one whose marker
+        names another file is left untouched (F5)."""
+        adopted = self.gh.add_issue("forged", "intro\n" + marker_of(
             "feat-0001", ".quests/feat-0001-a.md") + "\nnot a marker last", {"zen:published"})
+        stray = self.gh.add_issue("stray", "intro\n" + marker_of(
+            "feat-0002", ".quests/elsewhere.md") + "\nnot a marker last", {"zen:published"})
         self.repo.write(".quests/feat-0001-a.md", quest("feat-0001"))
-        self.apply_three_times()
-        self.assertEqual(forged["title"], "forged")
-        self.assertTrue(forged["body"].endswith("not a marker last"))
+        self.repo.write(".quests/feat-0002-b.md", quest("feat-0002"))
+        for _ in range(3):
+            self.publish()
+        self.assertEqual(adopted["title"], "feat-0001: Do the thing")
         self.assertEqual(len([i for i in self.gh.issues.values()
                               if i["title"].startswith("feat-0001")]), 1)
+        self.assertEqual(stray["title"], "stray")
+        self.assertTrue(stray["body"].endswith("not a marker last"))
+        self.assertEqual(len([i for i in self.gh.issues.values()
+                              if i["title"].startswith("feat-0002")]), 0)
 
     def test_f2_orphaned_and_private_quests_keep_their_links(self):
         """F2: a quest gone or made private keeps its sub-issue and blocked-by links."""
@@ -760,6 +769,53 @@ class ReviewFixes(PublishTest):
         """F9: output that is not JSON is reported, not a traceback."""
         with self.assertRaises(publish.PublishError):
             publish._json_pages("HTTP 502 Bad Gateway")
+
+
+class ReCheckFixes(PublishTest):
+    """The feat-0106 re-check's reproductions (N1 to N3), each re-run after the fix."""
+
+    def test_n1_text_typed_below_the_marker_keeps_ownership(self):
+        """N1: a hand edit below the marker; three applies make no second issue."""
+        self.repo.write(".quests/feat-0001-a.md", quest("feat-0001"))
+        self.publish()
+        issue = self.gh.find("feat-0001")
+        original = issue["body"]
+        issue["body"] = original + "\n\nA note a person typed below the marker."
+        for _ in range(3):
+            self.publish()
+        self.assertEqual(len(self.gh.issues), 1)
+        self.assertEqual(issue["body"], original)
+
+    def test_n2_quests_dropping_their_spec_leave_a_frozen_spec_issue(self):
+        """N2, decision (d): both quests drop their spec; they become top-level, and the
+        spec issue, now named by none, is otherwise untouched."""
+        spec = "docs/spec/alpha.md"
+        self.repo.write(".quests/feat-0001-a.md", quest("feat-0001", spec=spec))
+        self.repo.write(".quests/feat-0002-b.md", quest("feat-0002", spec=spec))
+        self.publish()
+        alpha = self.gh.find("Spec: alpha")
+        before = dict(alpha, labels=set(alpha["labels"]))
+        self.repo.write(".quests/feat-0001-a.md", quest("feat-0001"))
+        self.repo.write(".quests/feat-0002-b.md", quest("feat-0002"))
+        out = self.publish()
+        self.assertEqual(alpha["children"], set())
+        for key in ("title", "body", "state", "labels"):
+            self.assertEqual(alpha[key], before[key], key)
+        self.assertIn(f"#{alpha['number']} (spec alpha) is named by no published quest", out)
+        self.assertIn("0 operation(s)", self.plan())
+
+    def test_n3_a_quest_under_a_private_spec_is_reported_as_kept(self):
+        """N3: the note says the quest stays under its private spec, and it does."""
+        spec = "docs/spec/alpha.md"
+        self.repo.write(".quests/feat-0001-a.md", quest("feat-0001", spec=spec))
+        self.publish()
+        alpha, one = self.gh.find("Spec: alpha"), self.gh.find("feat-0001")
+        self.repo.write("docs/spec/alpha.md", SPEC.replace("status: approved",
+                                                           "status: approved\nprivate: true"))
+        out = self.publish()
+        self.assertIn("its issue is left under its spec, which is private", out)
+        self.assertNotIn("top-level", out)
+        self.assertEqual(alpha["children"], {one["number"]})
 
 
 class ValidatorKeys(unittest.TestCase):

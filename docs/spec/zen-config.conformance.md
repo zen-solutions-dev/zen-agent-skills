@@ -239,7 +239,7 @@ Maintainer decision C1 added the `self-merge-sampled` opt-in to `merge_policy` (
 
 ## Amended by feat-0106, 2026-11-25, by the implementer, not re-audited
 
-Maintainer decision R2-2 added opt-in publishing of the local tracker to GitHub (S-047 to S-059), with the issue shape the maintainer approved at the `feat-0106` check-in gate. **Every row here was written by the agent that wrote the code (`A7`)**; none was derived by an independent auditor. Code rows cite [`publish.py`](../../.agents/skills/new-quest/scripts/publish.py) and the two validator copies; tests are in [`tests/test_publish.py`](../../tests/test_publish.py), 51 passing on Linux with Python 3.13, run against a fake `gh` that answers the documented REST endpoints in memory. **No row rests on a call to the real GitHub API**: a live apply has not been exercised, so the endpoint paths and payloads are as documented, not as observed.
+Maintainer decision R2-2 added opt-in publishing of the local tracker to GitHub (S-047 to S-059), with the issue shape the maintainer approved at the `feat-0106` check-in gate. **Every row here was written by the agent that wrote the code (`A7`)**; none was derived by an independent auditor. Code rows cite [`publish.py`](../../.agents/skills/new-quest/scripts/publish.py) and the two validator copies; tests are in [`tests/test_publish.py`](../../tests/test_publish.py), 54 passing on Linux with Python 3.13, run against a fake `gh` that answers the documented REST endpoints in memory. **No row rests on a call to the real GitHub API**: a live apply has not been exercised, so the endpoint paths and payloads are as documented, not as observed.
 
 | Section | Element | Status | Implementation | Evidence |
 |---|---|---|---|---|
@@ -273,4 +273,12 @@ Dogfood: the dry run over this repository's own tracker, in a scratch clone with
 | F6, the digest | sha256 of the rendered body without the marker, 12 hex | `test_f6_the_digest_is_of_the_body_without_the_marker` |
 | F7, a fixed marker allowance | The room is the marker's real length | `test_f7_a_long_path_still_fits_the_limit` |
 | F9, non-JSON from `gh` | `_json_pages()` raises `PublishError` | `test_f9_non_json_from_gh_is_a_publish_error` |
+
+**Re-check fix round, 2026-11-25, by the implementer, not re-audited.** The re-check of `6841a25` confirmed F1 to F9 and found N1 to N3; the maintainer decided (a) to (d), recorded in [`publishing.md`](../../.agents/skills/new-quest/references/publishing.md). Each reproduction is a test in `ReCheckFixes`, failing on `6841a25` (3 of 3) and passing after.
+
+| Finding | Change | Evidence |
+|---|---|---|
+| N1, text below the marker lost ownership | `last_marker()` takes the last marker-shaped line anywhere; `test_f1_a_forger_that_sorts_first` is rewritten to match: a forger with the right source is adopted, never duplicated, the documented trust boundary, and one naming another file is untouched | `test_n1_text_typed_below_the_marker_keeps_ownership`, `test_f1_a_forger_that_sorts_first` |
+| N2, decision (d) | `plan()` unlinks a published quest with no spec to sit under from a spec issue outside `spec_items`, unless `keep_parent` holds it | `test_n2_quests_dropping_their_spec_leave_a_frozen_spec_issue` |
+| N3, the private-spec note | The note says "its issue is left under its spec, which is private", or that it is not linked | `test_n3_a_quest_under_a_private_spec_is_reported_as_kept` |
 

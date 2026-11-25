@@ -531,16 +531,17 @@ Added 2026-11-25 by `feat-0106`, as are S-048 to S-059.
   characters, cut with a note when longer at a boundary outside fenced code, and ends in the
   marker line `<!-- zen-publish v1 kind=<quest|spec> id=<id> source=<path> digest=<12 hex> -->`,
   whose digest is the sha256 of the body above it; and marker-shaped text in the file itself is
-  rendered broken (`&lt;!--`), so the last line is the only marker the body holds.
+  rendered broken (`&lt;!--`), the one rewrite besides links (maintainer decision (a),
+  2026-11-25), so the marker is the only marker-shaped line the body holds.
 
 ### Scenario S-053: publishing is idempotent by marker
 
 - **Given** a repository published once
 - **When** the publisher runs again with no file changed
 - **Then** its plan holds no operation; a changed file, a title or body edited by hand on GitHub,
-  or a quest moved to `done/` edits the same issue, found by the marker on its last non-empty line
-  and never by its title or by marker text elsewhere in it, and no second issue is created for any
-  quest or spec.
+  text a person typed below the marker, or a quest moved to `done/` edits the same issue, found by
+  the last marker-shaped line of its body and never by its title, and no second issue is created
+  for any quest or spec.
 
 ### Scenario S-054: status maps from the file
 
@@ -568,7 +569,9 @@ Added 2026-11-25 by `feat-0106`, as are S-048 to S-059.
   or an issue whose marker's `source` names neither the item's path nor a file carrying its id
 - **When** the publisher runs
 - **Then** the issue is left as it was, its sub-issue and blocking links included, and named once
-  in the notes, and no call deletes or transfers an issue.
+  in the notes, and no call deletes or transfers an issue; the one change near it is decision
+  (d)'s, in S-058: a published quest that drops its spec is unlinked from such a spec issue,
+  which is otherwise untouched.
 
 ### Scenario S-057: private and unpublishable files stay off GitHub
 
@@ -576,8 +579,10 @@ Added 2026-11-25 by `feat-0106`, as are S-048 to S-059.
   or a quest whose `spec` names a file outside `spec_dir` or a report beside a spec
 - **When** the publisher runs
 - **Then** the private or untracked file gets no issue; a file made private after it was published
-  keeps its issue unedited and unclosed, named in the notes; the quest naming an unpublishable spec
-  is published top-level with a note; a quest file `validate.py` reports an error against, or
+  keeps its issue unedited and unclosed, named in the notes; a quest naming an unpublishable spec
+  is published top-level with a note; a quest naming a private spec stays where it is, under that
+  spec's issue if it already was, and the note says so; a quest file `validate.py` reports an
+  error against (decision (c)), or
   whose path holds a character other than letters, digits, `.`, `_`, `-` and `/`, is not
   published, with a note; an issue already published for any of them keeps its links as well as
   its text and state; and a quest's `private` other than `true` or `false` fails the shipped
@@ -589,8 +594,9 @@ Added 2026-11-25 by `feat-0106`, as are S-048 to S-059.
 - **When** the publisher runs, and again after the `spec` or `depends_on` changes
 - **Then** the first is a native sub-issue of its spec's issue and moves to the new spec's issue
   when its `spec` changes; the second is marked blocked by the first and unmarked when the
-  dependency is removed; a quest without a spec is a top-level issue; and a dependency on a done,
-  never-published quest makes no link.
+  dependency is removed; a quest without a spec is a top-level issue, and one that drops its spec
+  is unlinked from the old spec's issue even when that issue is left as it is (maintainer decision
+  (d), 2026-11-25); and a dependency on a done, never-published quest makes no link.
 
 ### Scenario S-059: triage recommends and applies only on the person's go
 

@@ -54,8 +54,8 @@ import sys
 from pathlib import Path
 
 MARKER_VERSION = "v1"
-# The marker is the body's last non-empty line and nothing else (the approved shape), so no
-# text inside a quest or spec can give an issue another identity. Any marker-shaped text in
+# The marker is the body's last marker-shaped line (the approved shape, as amended on
+# 2026-11-25), so no text inside a quest or spec can give an issue another identity. Any marker-shaped text in
 # the rendered file is neutralised before the real marker is appended (`neutralise()`).
 MARKER_RE = re.compile(
     r"^<!-- zen-publish v1 kind=(quest|spec) id=([A-Za-z0-9._-]+) "
@@ -85,9 +85,17 @@ class PublishError(Exception):
 
 
 def last_marker(body):
-    """The marker match on the body's last non-empty line, or None."""
-    lines = [line for line in (body or "").replace("\r\n", "\n").split("\n") if line.strip()]
-    return MARKER_RE.match(lines[-1].strip()) if lines else None
+    """The match of the last marker-shaped line anywhere in the body, or None.
+
+    The publisher neutralises marker text in every file it renders, so in a body it wrote the
+    last marker-shaped line is always its own marker, even when a person has typed text below
+    it on GitHub (N1 of the feat-0106 re-check, which a last-line-only rule lost ownership to).
+    """
+    for line in reversed((body or "").replace("\r\n", "\n").split("\n")):
+        match = MARKER_RE.match(line.strip())
+        if match:
+            return match
+    return None
 
 
 def neutralise(text):
@@ -482,6 +490,10 @@ def plan(quests, specs, owned, labels, repo, branch):
     published = [q for q in quests if not q["refused"] and not q["private"]
                  and ("quest", q["id"]) not in frozen and (not q["done"] or has_issue(q))]
     spec_of, spec_items = {}, {}
+    # Quests whose spec field still names a spec issue left as it is (private, or a marker
+    # naming another file): they stay where they are. Every other quest with no spec to
+    # publish under is top-level, and leaves a spec issue it sits under (decision (d)).
+    keep_parent = set()
     for q in published:
         if not q["spec"]:
             continue
@@ -492,7 +504,12 @@ def plan(quests, specs, owned, labels, repo, branch):
             continue
         skey = ("spec", spec["id"])
         if spec["private"]:
-            note(f"{q['id']} names spec {q['spec']}, which is private: its issue is top-level")
+            keep_parent.add(q["id"])
+            under = (skey in owned and ("quest", q["id"]) in owned
+                     and owned[("quest", q["id"])]["number"] in owned[skey].get("children", set()))
+            note(f"{q['id']} names spec {q['spec']}, which is private: "
+                 + ("its issue is left under its spec, which is private" if under
+                    else "its issue is not linked to it"))
             if skey in owned:
                 note(f"spec {spec['id']} is private now and was published as "
                      f"#{owned[skey]['number']}: left as it is")
@@ -502,6 +519,7 @@ def plan(quests, specs, owned, labels, repo, branch):
                  f"{owned[skey]['source']}, not {spec['path']}: left as it is")
             frozen.add(skey)
             spec_of[q["id"]] = None
+            keep_parent.add(q["id"])
         else:
             spec_items[spec["id"]] = spec
             spec_of[q["id"]] = spec["id"]
@@ -576,9 +594,18 @@ def plan(quests, specs, owned, labels, repo, branch):
                     for k in frozen if k[0] == "spec" and k in owned):
                 op["replace"] = True
             adds.append(op)
-    # A spec issue that is not published this run is frozen, so its sub-issues stay as
-    # they are; a published quest under it is linked to its new spec by the adds below,
-    # which GitHub refuses while the old parent holds it, and that refusal is reported.
+    # Decision (d), 2026-11-25: a published quest that no longer has a spec to sit under
+    # moves to top-level even when the spec issue holding it is frozen. Only the quest's own
+    # issue is unlinked; the spec issue is otherwise left as it is. A spec in `spec_items`
+    # already unlinked the children it does not want, above.
+    for q in published:
+        qkey = ("quest", q["id"])
+        if spec_of.get(q["id"]) or q["id"] in keep_parent or qkey not in owned:
+            continue
+        for skey, issue in sorted(owned.items()):
+            if (skey[0] == "spec" and skey[1] not in spec_items
+                    and owned[qkey]["number"] in issue.get("children", set())):
+                ops.append({"op": "unlink-sub", "parent": skey, "child": qkey})
     published_keys = {("quest", q["id"]) for q in published}
     for q in published:
         qkey = ("quest", q["id"])

@@ -67,10 +67,11 @@ quest updates its issue's title.
 - The last line is the hidden marker:
   `<!-- zen-publish v1 kind=quest id=feat-0106 source=.quests/feat-0106-tracker-publishing.md digest=<sha256 of the rendered body, 12 hex> -->`
   (`kind=spec`, and the spec file's stem as `id`, for a spec).
-- How the script holds to that shape, settled at the feat-0106 review: only the body's last
-  non-empty line is read as the marker, and any marker-shaped comment in the file's own text
-  is broken (`<!--` written `&lt;!--`) before publishing, so no quest or spec can carry a
-  second marker. The digest is the sha256 of the rendered body without the marker line, first
+- How the script holds to that shape, settled at the feat-0106 review and re-check: the last
+  marker-shaped line anywhere in the body is read as the marker, and any marker-shaped comment
+  in the file's own text is broken (`<!--` written `&lt;!--`) before publishing, so no quest or
+  spec can carry a second marker, and text a person types below the marker on GitHub does not
+  cost the issue its identity. The digest is the sha256 of the rendered body without the marker line, first
   12 hex; whether to edit is decided by comparing the whole title and body. A file whose path
   or id holds anything but letters, digits, `.`, `_`, `-` and `/` cannot be carried by the
   marker, and is refused with a note.
@@ -78,6 +79,20 @@ quest updates its issue's title.
   state, parses their markers, and keys on kind and id. Found means edit, only if something
   changed; not found means create. Never matched by title. A quest moving to `.quests/done/`
   keeps its id, so only its source path updates.
+
+**Amendments, decided by the maintainer on 2026-11-25** after the `feat-0106` re-check,
+relayed by the round 2 orchestrator (session `session_017QLseoWFoRQDJMZM5nR9DQ`):
+
+- **(a)** Breaking `<!-- zen-publish` as `&lt;!-- zen-publish` in file text is the one
+  exception to "Nothing else is rewritten" above.
+- **(b)** A body over the limit is cut at the last heading before it when that keeps at least
+  half the limit, else at the last paragraph break, else by a hard cut; never inside an open
+  fenced code block, and a `#` line inside one is not a heading.
+- **(c)** A quest file `.quests/validate.py` rejects is not published, its existing issue is
+  left as it is, and the dry run says so.
+- **(d)** A quest that drops its spec moves to top-level even when the old spec's issue is left
+  as it is: the quest's own issue is unlinked from it, and the spec issue itself is untouched. A
+  quest whose `spec` still names a private spec stays where it is.
 
 **Labels**, created on apply only when missing, with fixed names and no new keys (Q5):
 
@@ -114,12 +129,13 @@ An issue the publisher owns is **left as it is** when its quest file is gone, re
 below) or made private; when its spec is made private or no published quest names it any more;
 or when its marker's `source=` names neither the item's current path nor a file carrying its id.
 Left as it is means no edit, close, reopen, label change, unlink or unblock touches it, and the
-notes name it once. A published quest moving off such a spec issue onto a new spec is moved
-with GitHub's `replace_parent`, on the new parent, rather than by unlinking the old one.
+notes name it once. Two moves touch only a published quest's own issue, never the frozen spec
+issue it leaves: a quest moving onto a new spec is moved with GitHub's `replace_parent`, on the
+new parent; a quest that drops its spec is unlinked from the old one, per amendment (d).
 
 ## The trust boundary
 
-Ownership is the `zen:published` label plus a valid marker on the last line. So **anyone who can
+Ownership is the `zen:published` label plus a valid marker, the last marker-shaped line of the body. So **anyone who can
 apply `zen:published` to an issue can make the publisher edit it**: write a marker for a quest
 id, and the next apply rewrites that issue's title and body from the quest file. Protect the
 label: only people trusted to change issues should be able to apply it, issue templates and
