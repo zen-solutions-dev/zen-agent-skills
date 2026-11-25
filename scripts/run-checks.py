@@ -285,7 +285,15 @@ COUNT_RES = (
 # check shipped with (six promoted skills named as drafts, and `count:ship=19` and
 # `count:drafts=10`) all stopped firing. A count key names its stale value, so a
 # different wrong count is a new finding rather than this one.
-ROADMAP_STATUS_EXCEPTIONS = frozenset()
+#
+# Refilled 2026-11-25 by feat-0106, which adds the `triage` draft while ROADMAP.md belongs to
+# the round 2 integration (feat-0109): its Current state then counts and lists the new draft,
+# and these three keys fire "no longer needed" and are deleted there.
+ROADMAP_STATUS_EXCEPTIONS = frozenset({
+    "missing:triage",
+    "count:skills=31",
+    "count:drafts=6",
+})
 
 
 # The changelog's task-log line limit (retro R-204, feat-0103). AGENTS.md says "at most

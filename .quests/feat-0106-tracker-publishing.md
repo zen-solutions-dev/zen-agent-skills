@@ -25,6 +25,11 @@ touched_files:
   - .agents/hooks/skill-reachability-reminder.py
   - docs/reviews/2026-11-25-dogfood/publish.md
   - .quests/.scaffold.json
+  - .claude-plugin/plugin/.claude-plugin/plugin.json
+  - .claude-plugin/plugin/skills/new-quest/SKILL.md
+  - .claude-plugin/plugin/skills/new-quest/references/publishing.md
+  - .claude-plugin/plugin/skills/new-quest/scripts/publish.py
+  - .claude-plugin/plugin/skills/init-worktracking/templates/validate.py
 created: 2026-11-25
 ---
 
@@ -44,6 +49,8 @@ The shape of a published issue is a one-way door. It was proposed at a check-in 
 - The `zen-config` amendment (S-047 to S-059, dated, flagged for re-approval) and its conformance rows.
 - The draft [`triage`](../.agents/skills/triage/SKILL.md), user-invoked, report-first.
 - [`test_publish.py`](../tests/test_publish.py), against a fake `gh`; the dogfood record.
+
+Also, to keep the acceptance command green: the regenerated `.claude-plugin/` tree, and three named keys in `ROADMAP_STATUS_EXCEPTIONS` (`missing:triage`, `count:skills=31`, `count:drafts=6`) because `ROADMAP.md` is the integration's to update; each fires as stale once it is.
 
 **Out of scope:** `zen`'s and `docs/CATALOG.md`'s lines for `triage` (the integration's, passed under Notes), the `private` field's line in `.quests/_TEMPLATE.md` and `_TEMPLATE.md.tmpl` (not owned), Campaign and Quest chain issues, GitLab, a live apply against a real repository, and the approved `tracker-links` contract, which stays unchanged.
 
