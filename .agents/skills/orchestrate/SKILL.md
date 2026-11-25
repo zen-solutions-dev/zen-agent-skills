@@ -86,9 +86,14 @@ because the excess is steps and gates every run needs; the memory's layout and l
    instead of asking, with the revert that would undo it.
 7. Commit the plan (children, doors, decisions, probe results) to the integration branch and push.
    This commit, and any other you make there, is your own work: list it in the pull request body as
-   unverified, or have it verified like a child's. **While children are in flight, hold every later
-   commit of your own on a side branch** and land it after the wave: a commit of yours on the tip
-   makes every running child merge again.
+   unverified, or have it verified like a child's. In the plan and every other shared planning
+   document, **name a child's quest by its id in backticks, and link its file only once it is
+   closed**: a link to a quest file that is about to move breaks when it moves. **While children
+   are in flight, hold every later commit of your own on a side branch**: a commit of yours on the
+   tip makes every running child merge again. After the wave lands, **cherry-pick or re-commit
+   each held commit onto the integration tip yourself**, as your own work, listed in the pull
+   request body as unverified under this item's rule. Never merge the side branch. The one
+   exception to holding is the quest-file close in Step 5 item 6, which travels with a landing.
 
 Done when the integration branch exists on the remote at the target tip plus the plan commit, every
 remote action the run needs is recorded as allowed or refused, every one-way door in the plan
@@ -113,7 +118,8 @@ Step 3. Each brief carries:
 - "You are a leaf"; "push your branch, open no pull request"; "merge the integration tip into your
   branch before you report", so landing is a fast-forward; "after you report, push nothing more
   unless asked", so the verified commit stays the head;
-- "leave your quest file where it is": the orchestrator moves it at close (Step 6);
+- "leave your quest file where it is, and in any shared document name another child's quest by
+  id in backticks": the orchestrator closes each quest file when that child lands (Step 5);
 - "acknowledge every relay in one line before acting on it";
 - "after a restart of your worker, fetch, check your branch against the remote, and re-read this
   brief and the plan before anything else";
@@ -194,7 +200,12 @@ named owner.
    verified sha goes back to be verified again. **A conflict that is not mechanical is never
    resolved by guess**: it goes back to the child with both sides named, under the conflict rule in
    `reconcile-worktrees` Step 5. These are the only merges an orchestrator may make.
-6. **Push after every landing.** After any restart of this session, check the remote state
+6. **Close the child's quest file at landing, in the same push**: move it to `done/` with
+   `status: done`, re-anchor its relative links for the extra directory level, and turn any
+   backticked mention of its id in the plan into a link. This is a commit of your own, listed in
+   the pull request as unverified. It touches only that child's quest file and the plan, which no
+   running child owns, so it adds no conflict to the merge the landing already asks of them.
+   **Push after every landing.** After any restart of this session, check the remote state
    (`git fetch`, `git status -sb`, `git log origin/<integration>..<integration>`) and **re-read the
    plan** before anything else: the plan and the remote, not memory, say what has landed.
 7. **A `fail` or `blocked`** goes back to a fresh child with the verdict's reasons. **Cap: two
@@ -203,9 +214,10 @@ named owner.
    of its own.
 8. Recompute the frontier and return to Step 3 for any child it newly admits.
 
-Done when every child is landed and pushed, or is with the person after the cap, every mechanical
-merge is listed for the pull request, every held commit of your own has landed after its wave, and
-the frontier is empty.
+Done when every child is landed and pushed with its quest file closed in the same push, or is with
+the person after the cap; every mechanical merge is listed for the pull request; every held commit
+of your own is cherry-picked or re-committed onto the tip after its wave and listed as unverified,
+with no side branch merged; and the frontier is empty.
 
 ### Step 6: close with one review, one fix, then stop
 
@@ -217,9 +229,9 @@ the frontier is empty.
    [`house-review`](../house-review/SKILL.md) Step 8 and rule 8 of the
    [`review-quality`](../../rules/review-quality.md) protocol define it. A second broad review does
    not converge; do not run one.
-3. **Close the quest files**: move every landed child's quest file to `done/`, with its ledger
-   lines, in one commit of your own (it is listed like the plan commit). Read and follow
-   [`doc-sync`](../doc-sync/SKILL.md) over the reader-facing documents, then run the acceptance
+3. **Check that every landed child's quest file was closed at its landing** (Step 5 item 6), and
+   add the ledger lines (changelog, roadmap) in one commit of your own, listed like the plan
+   commit. Read and follow [`doc-sync`](../doc-sync/SKILL.md) over the reader-facing documents, then run the acceptance
    command on the tip.
 4. Write the body with [`pr-describe`](../pr-describe/SKILL.md), offering a stacked split when the
    branch is large and holds a one-way door, and open **one draft pull request** into the base

@@ -32,15 +32,22 @@ asked, and the session keeps working meanwhile.
 ## The rarity ladder
 
 Every cited source, and every finding, carries one rarity: how far it can be trusted. One ladder,
-lowest first, shared with the evidence tiers `sitrep` puts on figures:
+lowest first, shared word for word with the evidence tiers `sitrep` puts on figures:
 
-| Rarity | A source or claim that is |
-|---|---|
-| White | unverified: nobody has checked it against any source |
-| Green | secondary: taken from a source that reports on the primary one (an article, a summary, a forum answer) |
-| Blue | checked against the source: a secondary claim confirmed by reading the source it reports on |
-| Purple | primary source cited: the specification, the code at a commit, the author's own statement |
-| Gold | primary and independently confirmed: Purple, and a second independent check agrees (another primary source, a run, a measurement) |
+**White**:
+Unverified: a claim nobody has checked against any source.
+
+**Green**:
+Secondary: taken from a source that reports on the primary one, such as an article, a summary or a forum answer.
+
+**Blue**:
+Checked against the source: a secondary claim someone confirmed by reading the source it reports on.
+
+**Purple**:
+Primary source cited: the claim names the primary source itself (the specification, the code, the author's own statement).
+
+**Gold**:
+Primary and independently confirmed: a blue or purple claim that an independent check agrees with: a second primary source, a run, a measurement, or a test that pins it.
 
 A finding takes the rarity of the weakest source it rests on. A rarity is earned by what was read in
 this run, never asserted: a primary source the researcher could not reach is not Purple, it is

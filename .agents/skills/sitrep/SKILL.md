@@ -78,16 +78,34 @@ repository no longer has, it says `watermark reset` and looks back seven days in
 ## Figures and their tiers
 
 Every figure on the board carries a tier, derived from where it came from and never asserted. The
-tiers are the one rarity ladder this kit uses for sources and figures alike, the ladder `research`
-puts on citations, so a colour means the same trust on a research note as on this board:
+tiers are the one rarity ladder this kit uses for sources and figures alike, word for word the
+ladder `research` puts on citations, so a colour means the same trust on a research note as on this
+board:
 
-| Tier | On the ladder | Given to |
-|---|---|---|
-| White | unverified | a figure over a file git does not hold at the current revision, and a hand-entered value |
-| Green | secondary | a quest entry, and a count of quest entries: a quest file reports on the work, it is not the work |
-| Blue | checked against the source | a figure of kind `value` read from a tracked file at the current revision |
-| Purple | primary source cited | a figure of kind `count` computed over a tracked file, and anything read from git's current state |
-| Gold | primary and independently confirmed | a Blue or Purple figure pinned to a test name a tracked test file contains |
+**White**:
+Unverified: a claim nobody has checked against any source.
+
+**Green**:
+Secondary: taken from a source that reports on the primary one, such as an article, a summary or a forum answer.
+
+**Blue**:
+Checked against the source: a secondary claim someone confirmed by reading the source it reports on.
+
+**Purple**:
+Primary source cited: the claim names the primary source itself (the specification, the code, the author's own statement).
+
+**Gold**:
+Primary and independently confirmed: a blue or purple claim that an independent check agrees with: a second primary source, a run, a measurement, or a test that pins it.
+
+The board gives each tier to:
+
+| Tier | Given to |
+|---|---|
+| White | a figure over a file git does not hold at the current revision, and a hand-entered value |
+| Green | a quest entry, and a count of quest entries: a quest file reports on the work, it is not the work |
+| Blue | a figure of kind `value` read from a tracked file at the current revision |
+| Purple | a figure of kind `count` computed over a tracked file, and anything read from git's current state |
+| Gold | a Blue or Purple figure pinned to a test name a tracked test file contains: the test is the independent check |
 
 A repository declares its own figures in a committed `.sitrep.json` at its top level:
 

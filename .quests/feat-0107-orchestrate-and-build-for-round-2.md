@@ -11,27 +11,39 @@ scenarios: [S-016, S-017, S-018, S-019, S-020]
 external: ""
 mode: "afk"
 touched_files:
+  - .agents/skills/agent-handoff/SKILL.md
+  - .agents/skills/fix-batch/SKILL.md
   - .agents/skills/orchestrate/SKILL.md
   - .agents/skills/orchestrate/references/claude-code.md
   - .agents/skills/orchestrate/references/first-run.md
+  - .agents/skills/orchestrate/references/memory.md
   - .agents/skills/reconcile-worktrees/SKILL.md
-  - .agents/skills/fix-batch/SKILL.md
-  - .agents/skills/agent-handoff/SKILL.md
-  - .agents/skills/systematic-debugging/SKILL.md
   - .agents/skills/research/SKILL.md
-  - .agents/skills/tdd/SKILL.md
   - .agents/skills/sitrep/SKILL.md
-  - .agents/rules/autonomy.md
-  - docs/agents/zen.md
-  - docs/spec/systematic-debugging.md
-  - docs/spec/systematic-debugging.conformance.md
-  - docs/spec/zen-config.md
-  - GLOSSARY.md
-  - tests/test_systematic_debugging.py
-  - tests/fixtures/supporting-files.txt
-  - docs/reviews/2026-11-24-retro-marjana.md
-  - docs/reviews/2026-11-25-marjana-decisions.md
+  - .agents/skills/systematic-debugging/SKILL.md
+  - .agents/skills/systematic-debugging/scripts/hitl_loop.py
+  - .agents/skills/tdd/SKILL.md
+  - .claude-plugin/plugin/.claude-plugin/plugin.json
+  - .claude-plugin/plugin/skills/agent-handoff/SKILL.md
+  - .claude-plugin/plugin/skills/fix-batch/SKILL.md
+  - .claude-plugin/plugin/skills/reconcile-worktrees/SKILL.md
+  - .claude-plugin/plugin/skills/tdd/SKILL.md
   - .quests/.scaffold.json
+  - .quests/feat-0107-orchestrate-and-build-for-round-2.md
+  - GLOSSARY.md
+  - docs/agents/memory/2026-11-25-hold-own-commits.md
+  - docs/agents/memory/2026-11-25-memory-location.md
+  - docs/agents/memory/2026-11-25-question-picker-and-emojis.md
+  - docs/agents/memory/2026-11-25-recurring-jobs-need-repositories.md
+  - docs/agents/memory/2026-11-25-shared-terms-verbatim.md
+  - docs/agents/memory/2026-11-25-verifier-on-moved-head.md
+  - docs/agents/memory/README.md
+  - docs/agents/zen.md
+  - docs/reviews/2026-11-25-dogfood/orchestrate.md
+  - docs/spec/systematic-debugging.conformance.md
+  - docs/spec/systematic-debugging.md
+  - tests/fixtures/supporting-files.txt
+  - tests/test_systematic_debugging.py
 created: 2026-11-25
 ---
 
@@ -62,6 +74,10 @@ rungs with the spec amendment `S-017` to `S-020` and the new
 `claude --bg` section in `agent-handoff`; the re-pitch rule; a round 2 section in
 `orchestrate/references/first-run.md`; the dogfood record
 `docs/reviews/2026-11-25-dogfood/orchestrate.md`.
+
+**Read, not changed:** `.agents/rules/autonomy.md` (`A8`'s mechanical merge, pointed at),
+`docs/spec/zen-config.md` (the `memory` key's type), `docs/reviews/2026-11-24-retro-marjana.md` and
+`docs/reviews/2026-11-25-marjana-decisions.md` (the items' sources).
 
 **Out of scope:** `zen`, `docs/CATALOG.md`, `CHANGELOG.md`, `ROADMAP.md`, `README.md` (lines passed
 to integration); `sitrep`'s script; promoting `research` or `systematic-debugging`; amending

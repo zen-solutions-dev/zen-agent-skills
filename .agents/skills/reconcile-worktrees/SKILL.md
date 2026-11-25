@@ -214,8 +214,9 @@ undone is named with its reason (for a conflict, with both sides), and every ski
 
 If quest files or the changelog ended up inconsistent across worktrees, resolve them into one correct
 state in the main checkout. On an integration branch, children leave their quest files where they
-are, and the orchestrator moves each to `done/` once, at close, in the same push as the ledger
-lines. In this kit: one `.quests/` (or, under its old name, `.tasks/`) file per item in its final location with
+are, and the orchestrator closes each child's quest file when that child lands, in the same push:
+moved to `done/` with `status: done` and its relative links re-anchored. Shared planning documents
+name a quest by id in backticks until it is closed, and link it only after. In this kit: one `.quests/` (or, under its old name, `.tasks/`) file per item in its final location with
 `status: done`, every checkbox honest, and one dated `CHANGELOG.md` line per quest id. Re-run each
 task's acceptance criteria and `python .quests/validate.py` on the consolidated result before marking
 anything done.

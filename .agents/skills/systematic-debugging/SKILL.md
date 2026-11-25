@@ -70,7 +70,8 @@ a report, a pull request. **Before any of them goes into the record, replace eve
 `<REDACTED>`**: tokens, passwords, keys, cookies, session ids, and personal data the defect does not
 need. Build the red command to read credentials from the environment, so the secret stays out of the
 command line you record. A captured request or log carries headers: quote only the lines that carry
-the signal. When the redacted evidence is not enough to establish the cause, say so in
+the signal. The human-in-the-loop script of step 2 logs its steps and answers verbatim, so redact
+the steps file before you run it. When the redacted evidence is not enough to establish the cause, say so in
 `missing_input` rather than quoting the secret.
 
 Done when no command, output or artifact in the record carries a secret, and every redaction reads
@@ -103,7 +104,8 @@ A **red command** is one command that you have **already run at least once**, an
 
 The one exception to the last property is the final rung below: when a person is present and no
 unattended route reaches the defect, a scripted human-in-the-loop command stands in, and
-`reproduction` says so. An unattended run has no such exception.
+`reproduction` says so. An unattended run has no such exception: with nobody present, return
+`verdict: not_reproducible` with `missing_input` naming the person's step the reproduction needs.
 
 **A cause inferred from reading code alone is a guess**, however good it looks. The red command
 replaces it: steps 4 and 5 consume it, and every trial is a run of it.

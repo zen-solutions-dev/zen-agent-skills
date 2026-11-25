@@ -13,7 +13,8 @@ question, and the answer, for the diagnosis record's `reproduction` field. Redac
 a step or answer that carries a secret is written as given.
 
 Exit status: 1 when the person saw the symptom (red), 0 when they did not (green), and 2 when the
-run could not complete (no steps, an unreadable file, or nobody answering). Two means unanswered,
+run could not complete (no steps, an unreadable steps file, a log that cannot be written, or nobody
+answering). Two means unanswered,
 never green. Standard library only.
 """
 import argparse
@@ -73,8 +74,13 @@ def main(argv=None):
         record = {"time": datetime.now(timezone.utc).isoformat(timespec="seconds"),
                   "steps": steps, "question": args.question, "answer": answer,
                   "symptom_seen": seen}
-        with open(args.log, "a", encoding="utf-8") as handle:
-            handle.write(json.dumps(record) + "\n")
+        try:
+            with open(args.log, "a", encoding="utf-8") as handle:
+                handle.write(json.dumps(record) + "\n")
+        except OSError as exc:
+            print(f"hitl_loop: cannot write the log, the run did not complete: {exc}",
+                  file=sys.stderr)
+            return 2
     print("red: the symptom was seen" if seen else "green: the symptom was not seen")
     return 1 if seen else 0
 

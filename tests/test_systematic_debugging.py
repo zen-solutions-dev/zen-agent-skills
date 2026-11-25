@@ -918,6 +918,8 @@ class TestTheE6Amendment(SkillTestCase):
                             "nothing tells the run to redact what it records")
         self.assertContains(part, "read credentials from the environment",
                             "the red command may carry a secret on its command line")
+        self.assertContains(part, "redact the steps file before you run it",
+                            "the human-in-the-loop log would record an unredacted step")
         self.assertContains(part, "say so in `missing_input` rather than quoting the secret",
                             "a run whose redacted evidence falls short has no stated exit")
         self.assertLess(self.body.index("## Redact every secret first"),
@@ -941,8 +943,11 @@ class TestTheE6Amendment(SkillTestCase):
 
     def test_s019_a_person_in_the_loop_command_needs_a_person_present_and_is_recorded(self):
         step = section(self.body, "### 2. Build a red command before you explain")
-        self.assertContains(step, "An unattended run has no such exception.",
+        self.assertContains(step, "An unattended run has no such exception:",
                             "the human-in-the-loop rung could be used with nobody there")
+        self.assertContains(step, "with nobody present, return `verdict: not_reproducible` with "
+                                  "`missing_input` naming the person's step the reproduction needs",
+                            "the unattended branch of S-019 has no stated verdict")
         self.assertContains(step, "`reproduction` names it as a person-in-the-loop command and "
                                   "records each answer",
                             "a red command that needed a person reads as an unattended one")
@@ -954,6 +959,8 @@ class TestTheE6Amendment(SkillTestCase):
                             "the performance branch is missing")
         self.assertContains(step, "record the median and the spread of each",
                             "a single timing is taken as a measurement")
+        self.assertContains(step, "the red command then asserts a threshold between the two",
+                            "the measured baseline is recorded but nothing goes red on it")
 
     def test_bisection_runs_outside_the_checkout_under_investigation(self):
         step = section(self.body, "### 2. Build a red command before you explain")
@@ -1007,6 +1014,23 @@ class TestTheHumanInTheLoopScript(unittest.TestCase):
         done, _ = self.run_hitl("\n  \n", "y\n")
         self.assertEqual(done.returncode, 2)
         self.assertIn("no steps", done.stderr)
+
+    def test_an_unwritable_log_is_a_run_that_could_not_complete(self):
+        """Found by the feat-0107 verifier: an unwritable log raised and exited 1, which reads
+        as red even after the person answered no. Either answer must come back as 2."""
+        import subprocess
+        for answer in ("y", "n"):
+            with self.subTest(answer=answer), tempfile.TemporaryDirectory() as tmp:
+                steps_file = Path(tmp) / "steps.txt"
+                steps_file.write_text("Open the page\n", encoding="utf-8")
+                log = Path(tmp) / "missing-directory" / "log.jsonl"
+                done = subprocess.run(
+                    [sys.executable, "-I", str(HITL), str(steps_file), "--question", "Seen?",
+                     "--log", str(log)], input=f"\n{answer}\n", capture_output=True,
+                    text=True, timeout=30)
+                self.assertEqual(done.returncode, 2, done.stdout + done.stderr)
+                self.assertIn("cannot write the log", done.stderr)
+                self.assertNotIn("Traceback", done.stderr)
 
     def test_a_missing_steps_file_is_refused(self):
         import subprocess
