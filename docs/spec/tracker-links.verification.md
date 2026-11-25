@@ -1,7 +1,7 @@
 ---
 title: tracker-links verification
 spec: docs/spec/tracker-links.md
-task: .quests/done/feat-0031-pr-describe-emits-closing-references.md
+task: .tasks/done/feat-0031-pr-describe-emits-closing-references.md
 verified: 2026-07-28
 verdict: pass
 ---
@@ -12,7 +12,7 @@ Evaluation record for the scenarios of [`tracker-links.md`](tracker-links.md) th
 body rather than in code. `pr-describe` is a prose procedure an agent follows, not a script with an
 entry point, so there is nothing to import and call: S-001 to S-006 and S-009 carry no unit tests by
 nature, and this record is their evidence instead. S-007 and S-008 are code and are covered by
-[`tests/test_quests_validate.py`](../../tests/test_quests_validate.py).
+[`tests/test_tasks_validate.py`](../../tests/test_quests_validate.py).
 
 Format follows the record `feat-0024` established at
 [`house-review.verification.md`](house-review.verification.md).
@@ -53,7 +53,7 @@ Nobody closed issue #1 by hand. The merge closed it, which is the whole behavior
 | S-003 | Every task in the branch was linked. Needs a pull request whose tasks carry no `external` value |
 | S-004 | The pull request targeted `main`. Needs one targeting a non-default branch, to prove the keyword is dropped and the reason stated |
 | S-005 | The reference was same-repository. Needs an `owner/repo#123` value, which this repository has no natural occasion for yet |
-| S-009 | `feat-0031` was still in `.quests/` when the body was drafted, and moved to `.quests/done/` only at closeout. Needs a branch that moves the file and drafts the body afterwards |
+| S-009 | `feat-0031` was still in `.tasks/` when the body was drafted, and moved to `.tasks/done/` only at closeout. Needs a branch that moves the file and drafts the body afterwards |
 
 Two of seven exercised. The record says so rather than inferring the rest from one success, which is
 the same discipline `feat-0024` applied: a branch that has never fired on real work is unexercised no
@@ -69,7 +69,7 @@ rubric at all, and it was reintroduced by an author who had read the rule earlie
 is the argument for the check existing rather than the rule being written down.
 
 **One observation worth carrying.** S-009 could not be exercised because of ordering: the task file
-moves to `.quests/done/` during closeout, which happens after the pull request body is drafted. That
+moves to `.tasks/done/` during closeout, which happens after the pull request body is drafted. That
 is not a flaw in the scenario, it is a property of the workflow, and it means S-009 will only ever be
 exercised by a change that closes a *previous* task rather than its own. Worth remembering before
 anyone reads its absence here as an oversight.

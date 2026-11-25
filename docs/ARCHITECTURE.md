@@ -22,7 +22,7 @@ flowchart LR
   D --> J[Committed plugin marketplace]
   J --> K[Claude Code plugin install]
   A --> G[validate-skills.py]
-  H[AGENTS.md and tasks] --> I[Skill maintenance]
+  H[AGENTS.md and quests] --> I[Skill maintenance]
   I --> A
 ```
 
@@ -116,7 +116,7 @@ The kit dogfoods its own work-tracking model:
 - [`docs/spec/`](spec/) holds the behavioral contracts, and [`tests/`](../tests/) the tests derived from them.
 - [`docs/OBSERVATORY.md`](OBSERVATORY.md) explains how to run the observatory, the local reporting surface over this repository's own session corpus, whose contract is [`spec/agent-observatory.md`](spec/agent-observatory.md).
 
-Work tracking stays local by design, because that is what keeps an agent's reading list short and the system usable offline. A task may nevertheless name the GitHub issue it serves through an optional `external` field, which `pr-describe` carries into the pull request description as a closing reference. The link is one-directional on purpose: the quest file is the source of truth and nothing is ever read back from GitHub, so there is no second writable copy to diverge from. The contract is [`docs/spec/tracker-links.md`](spec/tracker-links.md); the practical guide is [`ISSUE-LINKING.md`](ISSUE-LINKING.md).
+Work tracking stays local by design, because that is what keeps an agent's reading list short and the system usable offline. A quest may nevertheless name the GitHub issue it serves through an optional `external` field, which `pr-describe` carries into the pull request description as a closing reference. The link is one-directional on purpose: the quest file is the source of truth and nothing is ever read back from GitHub, so there is no second writable copy to diverge from. The contract is [`docs/spec/tracker-links.md`](spec/tracker-links.md); the practical guide is [`ISSUE-LINKING.md`](ISSUE-LINKING.md).
 
 ## Authoring and release flow
 

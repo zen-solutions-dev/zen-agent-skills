@@ -1,7 +1,7 @@
 ---
 title: validate-skills verification
 spec: docs/spec/validate-skills.md
-task: .quests/done/chore-0003-test-validate-skills.md
+task: .tasks/done/chore-0003-test-validate-skills.md
 verified: 2026-07-24
 verdict: pass
 ---

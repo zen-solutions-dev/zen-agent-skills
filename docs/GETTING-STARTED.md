@@ -11,7 +11,7 @@ Zen Agent Skills is a collection of reusable playbooks for working with an AI co
 Think of it like a well-organized studio shelf:
 
 - 🧭 **The kit** is the shelf of playbooks.
-- 🛠️ **A skill** is one playbook for a recurring job, such as setting up a project, turning an idea into a task, reviewing a change, or preparing a handoff.
+- 🛠️ **A skill** is one playbook for a recurring job, such as setting up a project, turning an idea into a quest (one tracked piece of work), reviewing a change, or preparing a handoff.
 - 🤖 **Your AI coding tool** is the assistant that follows the playbook. Examples include Claude Code, Cursor, VS Code with Copilot, and OpenCode.
 - 📁 **Your project** is the thing you are building: a website, app, automation, internal tool, research project, or other digital product.
 
@@ -26,7 +26,7 @@ The repository contains:
 - 📦 An installer for Claude Code and OpenCode in [`scripts/install.py`](../scripts/install.py).
 - 🔌 Project adapters for Cursor and VS Code or Copilot in [`scripts/build-adapters.py`](../scripts/build-adapters.py).
 - ✅ A skill checker in [`scripts/validate-skills.py`](../scripts/validate-skills.py).
-- 🗺️ A work-tracking system with tasks, a roadmap, and a changelog.
+- 🗺️ A work-tracking system with quests (one file per piece of work), a roadmap, and a changelog.
 - 📚 Documentation for both people and agents, including the [architecture guide](ARCHITECTURE.md) and [skill catalog](CATALOG.md).
 
 The kit is intentionally lightweight. It is Markdown plus standard-library Python scripts. It does not require a database, hosted service, or special Zen platform account.
@@ -213,7 +213,7 @@ Try:
 
 The `grill` skill asks a few questions at a time, each with a recommended answer you can accept with a "yes". It looks facts up in the project rather than asking you, so the questions that reach you are real decisions. It ends with a short record of what you decided.
 
-Then turn the decisions into work. For a small change, `new-quest` writes one task with a clear acceptance check. For behaviour someone has to agree before it is built, `spec-author` writes a short specification first and waits for your approval. If you are unsure which, ask `zen`, the router (in the plugin, or `--profile all` with the installer).
+Then turn the decisions into work. For a small change, `new-quest` writes one quest with a clear acceptance check. For behaviour someone has to agree before it is built, `spec-author` writes a short specification first and waits for your approval. If you are unsure which, ask `zen`, the router (in the plugin, or `--profile all` with the installer).
 
 ### 7. Work in small loops
 
@@ -359,17 +359,17 @@ A typical collaboration loop is:
 
 0. 🔥 `grill` interviews you about the idea until every decision is made, and `spec-author` runs the same interview before it writes anything.
 1. 📜 `spec-author` turns a rough idea into a written specification of what the result should do, then stops and waits for you to approve it. Nothing is built until you do.
-2. 📝 `new-quest` breaks the approved specification into focused tasks, each small enough for one fresh agent session.
-3. 🧑‍💻 A builder or agent completes the task.
+2. 📝 `new-quest` breaks the approved specification into focused quests, each small enough for one fresh agent session.
+3. 🧑‍💻 A builder or agent completes the quest.
 4. ✅ The acceptance command proves the intended result.
 5. 🧪 `test-author` derives tests from the specification, so each test traces back to the behavior it protects.
 6. 📐 `spec-conformance` audits whether the implementation actually matches the specification, which is a different question from whether the tests pass.
 7. ✅ `verifier-agent` independently runs the agreed commands and answers one question with evidence: pass, fail, or blocked. "Blocked" means it could not check, which is deliberately different from "it failed".
-8. 🔍 `house-review` checks the change twice, once against what the specification or task asked and once against your written standards, and reports findings without editing.
-9. 🌳 `fix-batch` can dispatch independent tasks to isolated worktrees when a team is ready for parallel work. Each agent it starts begins with a fresh context, may not start agents of its own, and works at medium effort; the verification runs at high effort.
+8. 🔍 `house-review` checks the change twice, once against what the specification or quest asked and once against your written standards, and reports findings without editing.
+9. 🌳 `fix-batch` can dispatch independent quests to isolated worktrees when a team is ready for parallel work. Each agent it starts begins with a fresh context, may not start agents of its own, and works at medium effort; the verification runs at high effort.
 10. 🔄 `reconcile-worktrees` brings verified work back into the main project.
 11. 🔎 `doc-sync` reports which documents the change made wrong. It never edits one without your approval, and it will not touch a document that governs the code, because a disagreement there means the code is wrong.
-12. 📬 `pr-describe` drafts the change summary for review. If the task named a GitHub issue, the description carries a reference that closes it on merge, so the board stays honest without anyone tidying it up afterwards.
+12. 📬 `pr-describe` drafts the change summary for review. If the quest named a GitHub issue, the description carries a reference that closes it on merge, so the board stays honest without anyone tidying it up afterwards.
 13. 🤝 `human-handoff` or `agent-handoff` carries context to the next person or session.
 14. 🔁 `retro` looks back at what needed correcting and proposes a check or a written standard so it never needs correcting again.
 
@@ -463,7 +463,7 @@ Progress is not measured by how much code appeared. It is measured by whether th
 
 - 🚪 Read the main [README](../README.md) for the repository overview.
 - ⚙️ Read the [installation reference](INSTALL.md) for every profile, harness, and troubleshooting step.
-- 🔗 Read [linking tasks to GitHub issues](ISSUE-LINKING.md) if your team plans work on a GitHub board.
+- 🔗 Read [linking quests to GitHub issues](ISSUE-LINKING.md) if your team plans work on a GitHub board.
 - 🧰 Browse the [skill catalog](CATALOG.md) to see what is shipped, planned, or still being tested.
 - 🧱 Read the [architecture guide](ARCHITECTURE.md) if you want to understand how the kit stays portable.
 - 🗺️ Read [`AGENTS.md`](../AGENTS.md) if an AI assistant is working directly inside this repository.

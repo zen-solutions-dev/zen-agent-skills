@@ -3030,7 +3030,8 @@ class RenamedSkillTests(_FixtureKit):
         shutil.rmtree(old_src)
         inst.MANIFEST.write_text(json.dumps({"entries": [
             {"tool": "claude", "name": "new-task", "target": str(target),
-             "mode": mode, "source": str(old_src), "digests": {}}]}), encoding="utf-8")
+             "mode": mode, "source": str(old_src),
+             "digests": {"SKILL.md": "0" * 64}}]}), encoding="utf-8")
         return target
 
     def test_the_old_name_places_the_new_skill(self):
@@ -3053,6 +3054,12 @@ class RenamedSkillTests(_FixtureKit):
                 self.assertEqual(self._placed(), {"alpha", "new-quest"})
                 recorded = json.loads(inst.MANIFEST.read_text(encoding="utf-8"))
                 self.assertNotIn(str(target), {e["target"] for e in recorded["entries"]})
+
+    def test_check_names_the_rename_for_a_placement_under_the_old_name(self):
+        self._place_under_the_old_name("copy")
+        code, out = self._call(inst.check, self.home)
+        self.assertEqual(code, 2, out)
+        self.assertIn("renamed 'new-quest'", out)
 
     def test_an_unrecorded_directory_under_the_old_name_is_left_alone(self):
         # The person's own skill that happens to be called `new-task` is not ours.

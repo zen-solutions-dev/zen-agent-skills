@@ -504,6 +504,9 @@ Added 2026-11-25 by `feat-0101`.
   directory it is placing into
 - **Then** it removes that target and its entry in the record, and reports it as `retired`, naming
   the new name; a target under the old name that the record does not name is left alone.
+- **And when** `--check` meets such a target before that run
+- **Then** it reports the error it reports for any entry whose source is gone, and adds that the
+  skill was renamed and that an install run retires it.
 
 ## Proposed Surface
 

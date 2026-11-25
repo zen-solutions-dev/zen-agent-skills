@@ -99,8 +99,8 @@ added, because it would misstate the relationship as sequencing when it is a sha
 Dispatch them one after the other, or expect to reconcile that file.
 
 **Both task files omit the files they create from `touched_files`, and that is a contradiction in the
-kit rather than a defect in the tasks.** The `new-quest` skill says to list a test file at the path it
-should be created at; `.quests/validate.py:456` promotes a missing path to an error under `--strict`,
+kit rather than a defect in the tasks.** The `new-task` skill says to list a test file at the path it
+should be created at; `.tasks/validate.py:456` promotes a missing path to an error under `--strict`,
 and CI runs `--strict`. The two rules cannot both be satisfied.
 [`feat-0038`](../../.quests/done/feat-0038-hooks-module-and-delegation-reminder.md) met the same
 conflict and resolved it the same way, listing only pre-existing files while creating an entire

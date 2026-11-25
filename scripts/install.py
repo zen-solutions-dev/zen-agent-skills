@@ -1494,8 +1494,11 @@ def _check_entry(entry) -> tuple:
                                 f"anywhere: {target}")
         return "diverged", f"the installed target is gone: {target}"
     if not source.is_dir():
+        renamed = RENAMED_SKILLS.get(entry.get("name", ""))
+        hint = (f" The skill was renamed {renamed!r}: an install run retires this one and "
+                f"places that." if renamed else "")
         return "error", (f"the kit no longer has a source at {source}, so the installed "
-                         f"copy cannot be compared against anything.")
+                         f"copy cannot be compared against anything.{hint}")
     tool = entry.get("tool", "")
     if target.is_symlink():
         try:

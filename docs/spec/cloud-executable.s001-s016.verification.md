@@ -1,7 +1,7 @@
 ---
 title: cloud-executable verification (S-001 to S-016)
 spec: docs/spec/cloud-executable.md
-task: .quests/done/feat-0045-committed-acceptance-command.md
+task: .tasks/done/feat-0045-committed-acceptance-command.md
 verified: 2026-08-07
 verdict: fail
 branch_exercised: S-001 to S-016, by an independent session
@@ -50,7 +50,7 @@ by mutation, not by reading.
 **1. The `S-005` restatement guard was vacuous for five of the seven gates.**
 `test_ci_does_not_separately_restate_any_gate` built assertions of the form
 `assertNotIn("run: python --strict", workflow)`, using each command's *last token*. A real restatement
-reads `run: python .quests/validate.py --strict`, so those strings could never appear and the
+reads `run: python .tasks/validate.py --strict`, so those strings could never appear and the
 assertions could never fail. Four genuine restatements were reinserted into `checks.yml` and the suite
 stayed green. Only two hardcoded lines did any work, while the test's own comment claimed it made the
 `chore-0029` lesson "mechanical for all seven".
