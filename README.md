@@ -35,17 +35,26 @@ python scripts/install.py --skills sitrep --include-drafts  # one skill and what
 
 **Use one route per harness.** The plugin and the installer's `claude` target place the same skills under different names, so having both loads every description twice. To try the drafts in Claude Code, use the installer for Claude Code instead of the plugin.
 
-Then, in each repository, run `init-worktracking` once: it sets up task tracking and **configures the skills for that repository** in `docs/agents/zen.md` (tracker, glossary, specs, acceptance command, branches, whether work defaults to running unattended), asking you one section at a time. For a new repository, start with `project-bootstrap`, which hands over to it. After that, start with **"grill me"** on the change you want to make, or ask `zen` which skill fits. Both come with the plugin; with the installer, `grill` is in the default profile and `zen` in `--profile all`.
+Then, in each repository, run `init-worktracking` once: it sets up quest tracking (`.quests/`) and **configures the skills for that repository** in `docs/agents/zen.md` (tracker, glossary, specs, acceptance command, branches, whether work defaults to running unattended), asking you one section at a time. For a new repository, start with `project-bootstrap`, which hands over to it. After that, start with **"grill me"** on the change you want to make, or ask `zen` which skill fits. Both come with the plugin; with the installer, `grill` is in the default profile and `zen` in `--profile all`.
 
-Cursor and VS Code or Copilot use project-level adapters instead, and narrower profiles keep the description budget small. Both are in [`docs/INSTALL.md`](docs/INSTALL.md), with uninstall and troubleshooting.
+Cursor, VS Code or Copilot, and Codex use project-level adapters instead, and narrower profiles keep the description budget small. Both are in [`docs/INSTALL.md`](docs/INSTALL.md), with uninstall and troubleshooting.
 
 ## What's new in this release
+
+Nothing is tagged since `v0.1.0`; the next release is cut on the maintainer's go, as [`docs/RELEASING.md`](docs/RELEASING.md) describes. What it will carry, newest first.
+
+The 2026-11-25 Marjana round 2, planned in [the round 2 plan](docs/reviews/2026-11-25-marjana-r2-plan.md):
+
+- **Tasks are now quests.** `.tasks/` is `.quests/`, `new-task` is `new-quest`, and the hierarchy is Campaign, Quest chain, Quest and Side quest ([`GLOSSARY.md`](GLOSSARY.md)). An adopter's `.tasks/`, `tracker: tasks` and `new-task` keep working, with a warning, until the second tagged release.
+- **Six new drafts**: `teach`, `vet-skill`, `prototype`, `wayfinder`, `wait-what`, and `triage`, which sorts GitHub issues into role labels. Opt-in tracker publishing in `new-quest` mirrors the local tracker one way to GitHub issues; it and `triage` stay drafts until a live run.
+- **Sharper review and landing.** `house-review` checks every guard of a contract and adds a security axis on a one-way door; an orchestrator may land by a mechanical merge, and a repository may opt into a sampled self-merge of a two-way door (`A8`).
+- **New gates**: a changelog line-length warning, a check that `zen` and the catalog name every skill, a composed-by check, a quoted-phrase audit, an opt-in destructive-git hook, and a `VERSION` file with [`release.py`](scripts/release.py).
 
 The 2026-11-24 "Marjana" round, a deep clean planned in [the Marjana plan](docs/reviews/2026-11-24-marjana-plan.md) from [what Matt Pocock's newest work teaches](docs/reviews/2026-11-24-sources-delta.md) and [an inventory of this repository's own dust](docs/reviews/2026-11-24-marjana-inventory.md):
 
 - **Configure once per repository.** `init-worktracking` now ends by configuring the skills: one committed file, `docs/agents/zen.md`, says where this repository keeps its tracker, glossary, specs and acceptance command, so no skill has to rediscover it. The format is a [draft contract](docs/spec/zen-config.md) checked by the scaffolded `validate.py`.
 - **Orchestrate a day of work.** The `orchestrate` draft runs one session that holds the conversation with you while child agents research and build on their own branches, lands each verified commit on one integration branch, and hands you one pull request. The `research` draft writes one cited report per question. The autonomy rules now say exactly which merge an orchestrator may make (`A8`).
-- **AFK or human in the loop, named.** A task can say `mode: afk` or `mode: hitl`, set from how reversible the change is and how far it reaches.
+- **AFK or human in the loop, named.** A quest can say `mode: afk` or `mode: hitl`, set from how reversible the change is and how far it reaches.
 - **Review once, fix once, then stop.** `house-review` re-checks only the fixed findings after one fix round. `retro` samples sessions, ratchets a stricter check in with an exception list, and prunes checks that fire on good code.
 - **Lighter to carry.** This repository's always-loaded `AGENTS.md` fell from about 28 KB to about 9 KB, the two scaffolds no longer spend an adopter's description budget, and the installer's budget figure now counts only what Claude Code loads.
 - **New gates for the drift this round found**: a warning for a workflow step with no completion criterion, and a roadmap check that fails when a skill's stated status disagrees with its frontmatter.
@@ -90,7 +99,7 @@ commands:
 
 That contract has since been approved, so the same run today would proceed to a verdict on the work itself. The record is dated for exactly that reason: it states what was true when it ran, rather than being quietly updated to match the tree. The full record, including why the trigger was genuine rather than staged, is at [`docs/spec/house-review.verification.md`](docs/spec/house-review.verification.md).
 
-The same discipline runs through the kit. [`spec-plan-readiness`](.agents/skills/spec-plan-readiness/SKILL.md) blocks implementation until a spec and its task decomposition are provably implementable. [`spec-conformance`](.agents/skills/spec-conformance/SKILL.md) produces a positive matrix of what conformed, what diverged, and what was never built, rather than an assurance. [`doc-sync`](.agents/skills/doc-sync/SKILL.md) checks reader-facing prose against repository facts and defaults to a dry run. Coverage is stated honestly where it is partial: `tracker-links` is recorded at two of seven scenarios verified, because that is what was verified.
+The same discipline runs through the kit. [`spec-plan-readiness`](.agents/skills/spec-plan-readiness/SKILL.md) blocks implementation until a spec and its quest decomposition are provably implementable. [`spec-conformance`](.agents/skills/spec-conformance/SKILL.md) produces a positive matrix of what conformed, what diverged, and what was never built, rather than an assurance. [`doc-sync`](.agents/skills/doc-sync/SKILL.md) checks reader-facing prose against repository facts and defaults to a dry run. Coverage is stated honestly where it is partial: `tracker-links` is recorded at two of seven scenarios verified, because that is what was verified.
 
 ## No skill ships cold
 
@@ -107,7 +116,7 @@ Pick the row that matches you. Each path is short, and none of them require read
 | New to agent workflows, or not a developer by trade | [`docs/GETTING-STARTED.md`](docs/GETTING-STARTED.md): a plain-language walkthrough with prompts you can copy |
 | A developer who just wants it installed | [Quick start](#quick-start) above, about five minutes |
 | Deciding whether this is worth adopting | [`docs/CATALOG.md`](docs/CATALOG.md) for what each skill does, then [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) for how it stays portable |
-| An AI agent asked to work **on this repository** | [`AGENTS.md`](AGENTS.md) in full, then your assigned task file. It defines the reading protocol and the contribution bar |
+| An AI agent asked to work **on this repository** | [`AGENTS.md`](AGENTS.md) in full, then your assigned quest file. It defines the reading protocol and the contribution bar |
 | An AI agent asked to **use one of these skills** | That skill's own `SKILL.md` under [`.agents/skills/`](.agents/skills/). Each is self-contained: what it does, when not to use it, the procedure, and how to tell it worked |
 
 ## How the workflow fits together
@@ -145,7 +154,7 @@ flowchart LR
   K --> R
 ```
 
-`project-bootstrap` and `init-worktracking` set a repository up once, in front of all of this. A change starts with a grilling: the agent interviews you until every decision is made, looking facts up rather than asking. Behaviour a person must agree becomes a written specification, and once you approve it, tasks each sized to one fresh context window. The spec and its tasks are gated for readiness together, and a blocked verdict authorizes nothing. Work is built test-first or dispatched to isolated agents, tested against the spec's scenarios, audited against the contract, independently verified with evidence, and reviewed on two axes. Only then is it reconciled, its stale documents found, and its pull request described with its merge danger. `retro` closes the loop by turning what went wrong into a check.
+`project-bootstrap` and `init-worktracking` set a repository up once, in front of all of this. A change starts with a grilling: the agent interviews you until every decision is made, looking facts up rather than asking. Behaviour a person must agree becomes a written specification, and once you approve it, quests each sized to one fresh context window. The spec and its quests are gated for readiness together, and a blocked verdict authorizes nothing. Work is built test-first or dispatched to isolated agents, tested against the spec's scenarios, audited against the contract, independently verified with evidence, and reviewed on two axes. Only then is it reconciled, its stale documents found, and its pull request described with its merge danger. `retro` closes the loop by turning what went wrong into a check.
 
 Three report-only lenses are composed by the skills above rather than run on their own: `spec-quality`, `test-quality`, and `review-quality`. Not sure where you are? Ask `zen`, the router.
 
@@ -166,14 +175,14 @@ flowchart TD
 ```
 
 - **Direct.** A change you will finish in one sitting, with no contract to agree: make it, run the project's acceptance command, and review it if the change warrants one.
-- **Task file.** Work that spans sittings or goes to another agent: `new-quest` writes one file with an acceptance command, and `verifier-agent` checks it before it lands. No spec needed.
+- **Quest file.** Work that spans sittings or goes to another agent: `new-quest` writes one file with an acceptance command, and `verifier-agent` checks it before it lands. No spec needed.
 - **Full spine.** Behaviour a person has to agree before anyone builds it: `spec-author`, approval, then the rest of the chain above.
 
 A short grilling is worth it on all three: it is how you find out which one you are on. Where you draw the lines is your call; the point is that the light path is named, so nobody has to infer it.
 
 ## Connecting it to an issue tracker
 
-The spine is local by default: a task file lives in your repository, not in a tracker, which is what keeps an agent's context small and lets the whole system work offline. When a team needs the work visible on a board, a task can name the GitHub issue it serves with an `external` field (`#123`, or `owner/repo#123` for another repository). [`pr-describe`](.agents/skills/pr-describe/SKILL.md) then puts a closing reference in the pull request description, so merging closes the issue without anyone remembering to.
+The spine is local by default: a quest file lives in your repository, not in a tracker, which is what keeps an agent's context small and lets the whole system work offline. When a team needs the work visible on a board, a quest can name the GitHub issue it serves with an `external` field (`#123`, or `owner/repo#123` for another repository). [`pr-describe`](.agents/skills/pr-describe/SKILL.md) then puts a closing reference in the pull request description, so merging closes the issue without anyone remembering to.
 
 The point is not the plumbing, which is one line of text. It is that GitHub's rules for that line fail silently in four different ways: a keyword is ignored in a pull request title and in comments, it is ignored entirely unless the pull request targets the default branch, and one keyword followed by a list closes only the first issue. Each of those produces a pull request that looks right, merges cleanly, and leaves the tracker wrong. `pr-describe` knows all four. See [`docs/ISSUE-LINKING.md`](docs/ISSUE-LINKING.md) for setup, or [`docs/spec/tracker-links.md`](docs/spec/tracker-links.md) for the contract.
 
@@ -182,10 +191,10 @@ The point is not the plumbing, which is one line of text. It is that GitHub's ru
 | Path | Purpose |
 |---|---|
 | [`.agents/skills/`](.agents/skills/) | Canonical, reusable skills. One directory per skill, each with a harness-agnostic `SKILL.md` |
-| [`.agents/rules/`](.agents/rules/) | The four swappable lenses skills compose: [`house-style.md`](.agents/rules/house-style.md) for writing and formatting, [`review-quality.md`](.agents/rules/review-quality.md) for the review rubric and severities, [`autonomy.md`](.agents/rules/autonomy.md) for what an agent may do when nobody is watching, and, in `A10` and `A11`, for what it may do with material it did not author and with the check that judges its work, on any run at all, and [`writing-for-agents.md`](.agents/rules/writing-for-agents.md) for how a document behaves when an agent reads it. Installed alongside the skills, because a skill that references a lens is not self-contained without it |
+| [`.agents/rules/`](.agents/rules/) | The five swappable lenses skills compose: [`house-style.md`](.agents/rules/house-style.md) for writing and formatting, [`review-quality.md`](.agents/rules/review-quality.md) for the review rubric and severities, [`autonomy.md`](.agents/rules/autonomy.md) for what an agent may do when nobody is watching, and, in `A10` and `A11`, for what it may do with material it did not author and with the check that judges its work, on any run at all, [`writing-for-agents.md`](.agents/rules/writing-for-agents.md) for how a document behaves when an agent reads it, and [`deep-modules.md`](.agents/rules/deep-modules.md) for the words used to judge module shape. Installed alongside the skills, because a skill that references a lens is not self-contained without it |
 | [`.agents/hooks/`](.agents/hooks/) | Optional runtime guardrails, placed only by `install.py --with-hooks` and inactive until you register them. See [`.agents/hooks/README.md`](.agents/hooks/README.md) |
 | [`.claude-plugin/`](.claude-plugin/) | The committed Claude Code plugin marketplace: the shipped skills and the lenses, generated by `build-adapters.py --marketplace` and checked for drift on every run of the acceptance command. Never edit it by hand |
-| [`scripts/`](scripts/) | [`install.py`](scripts/install.py) (cross-platform installer), [`build-adapters.py`](scripts/build-adapters.py) (Cursor and VS Code adapters, plus an opt-in Claude Code plugin tree), [`validate-skills.py`](scripts/validate-skills.py) (kit-level lint), [`check-provenance.py`](scripts/check-provenance.py) (re-fetches every recorded upstream source and reports drift), [`check-citations.py`](scripts/check-citations.py) (resolves every conformance-matrix citation), [`scan-secrets.py`](scripts/scan-secrets.py) (the secret scan), [`run-checks.py`](scripts/run-checks.py) (every acceptance gate in one command, which CI calls too). Alongside them, [`observatory/`](scripts/observatory/) is maintainer tooling rather than a deliverable: it ships to nobody and `install.py` never places it |
+| [`scripts/`](scripts/) | [`install.py`](scripts/install.py) (cross-platform installer), [`build-adapters.py`](scripts/build-adapters.py) (Cursor, VS Code and Codex adapters, plus an opt-in Claude Code plugin tree), [`validate-skills.py`](scripts/validate-skills.py) (kit-level lint), [`check-provenance.py`](scripts/check-provenance.py) (re-fetches every recorded upstream source and reports drift), [`check-citations.py`](scripts/check-citations.py) (resolves every conformance-matrix citation), [`scan-secrets.py`](scripts/scan-secrets.py) (the secret scan), [`run-checks.py`](scripts/run-checks.py) (every acceptance gate in one command, which CI calls too). Alongside them, [`observatory/`](scripts/observatory/) is maintainer tooling rather than a deliverable: it ships to nobody and `install.py` never places it |
 | [`.quests/`](.quests/) | Atomic work items for maintaining the kit, plus their validator |
 | [`tests/`](tests/) | The kit's own test suite, derived from the specifications under `docs/spec/` |
 | [`docs/spec/`](docs/spec/) | Behavioral specifications, plus the conformance, verification, readiness, characterization, and runbook records that sit beside them |

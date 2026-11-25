@@ -20,6 +20,8 @@ external: ""
 # loop; a one-way door, a wide blast radius, or a change hard to review). Empty
 # takes default_mode from docs/agents/zen.md, else hitl.
 mode: ""
+# Optional. "true" keeps this quest off GitHub when docs/agents/zen.md opts into publishing.
+private: false
 touched_files:
   - path/to/file/the/quest/will/change
   - path/to/its/test
