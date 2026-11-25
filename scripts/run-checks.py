@@ -285,7 +285,19 @@ COUNT_RES = (
 # check shipped with (six promoted skills named as drafts, and `count:ship=19` and
 # `count:drafts=10`) all stopped firing. A count key names its stale value, so a
 # different wrong count is a new finding rather than this one.
-ROADMAP_STATUS_EXCEPTIONS = frozenset()
+#
+# Refilled 2026-11-25 by feat-0108, whose five new drafts the roadmap cannot name yet: only the
+# integration quest feat-0109 edits ROADMAP.md. Each key fires until that edit lands, then is
+# deleted. The two count keys name the stale values the roadmap holds.
+ROADMAP_STATUS_EXCEPTIONS = frozenset({
+    "missing:prototype",
+    "missing:teach",
+    "missing:vet-skill",
+    "missing:wait-what",
+    "missing:wayfinder",
+    "count:skills=31",
+    "count:drafts=6",
+})
 
 
 # The changelog's task-log line limit (retro R-204, feat-0103). AGENTS.md says "at most
