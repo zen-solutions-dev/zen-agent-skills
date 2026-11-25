@@ -560,8 +560,9 @@ def check_changelog_lines(repo_root=None, exceptions=None, limit=None):
         report = [f"WARN  {CHANGELOG}: exception {key!r} matches no line over the limit; "
                   f"delete it from CHANGELOG_LONG_LINE_EXCEPTIONS in scripts/run-checks.py"
                   for key in sorted(exceptions)]
-        report.append(f"{CHANGELOG}: no `## Task log` heading, so 0 task-log lines were "
-                      f"measured; {len(exceptions)} stale exception(s).")
+        warn = "WARN " if exceptions else ""
+        report.append(f"{warn}{CHANGELOG}: no `## Task log` heading, so 0 task-log lines "
+                      f"were measured; {len(exceptions)} stale exception(s).")
         return True, "\n".join(report)
     entries = [(n, line) for n, line in enumerate(lines[start:], start + 1)
                if line.startswith("- ")]

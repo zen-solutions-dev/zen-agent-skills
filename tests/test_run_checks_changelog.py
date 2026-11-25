@@ -85,7 +85,8 @@ class ChangelogLinesTests(unittest.TestCase):
     def test_without_the_heading_every_exception_is_reported_stale(self):
         report, shown = self.check("# Changelog\n\n" + LONG, {"0123456789abcdef"})
         self.assertIn("WARN  CHANGELOG.md: exception '0123456789abcdef' matches no line", report)
-        self.assertIn("1 stale exception(s).", shown)
+        self.assertEqual(shown, "WARN CHANGELOG.md: no `## Task log` heading, so 0 task-log "
+                                "lines were measured; 1 stale exception(s).")
 
     def test_the_real_changelog_is_measured_and_never_fails(self):
         # Deliberately not asserting the absence of a warning: that would turn the gate's
