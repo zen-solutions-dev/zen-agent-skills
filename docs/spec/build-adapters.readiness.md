@@ -11,7 +11,7 @@ branch_exercised: spec-plan-readiness blocking paths
 
 A [`spec-plan-readiness`](../../.agents/skills/spec-plan-readiness/SKILL.md) run over
 [`build-adapters.md`](build-adapters.md) plus its proposed task decomposition
-([`chore-0015`](../../.tasks/done/chore-0015-state-build-adapters-overwrite-asymmetry.md)), performed
+([`chore-0015`](../../.quests/done/chore-0015-state-build-adapters-overwrite-asymmetry.md)), performed
 2026-07-27 to exercise the last of the three branches named in ROADMAP Epic A item 8.
 
 Format reused from [`house-review.verification.md`](house-review.verification.md).

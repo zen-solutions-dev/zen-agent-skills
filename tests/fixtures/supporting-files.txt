@@ -1,0 +1,52 @@
+# Every file a skill ships beside its SKILL.md, one per line: `<kind> <path under .agents/skills/>`.
+# Read by `test_classification_of_the_real_shipped_supporting_files` in tests/test_validate_skills.py.
+# One line per file, sorted by path, so two branches that each add a file merge as two lines
+# instead of colliding on one total (retro R-203, feat-0103). Kinds: markdown (link-checked in
+# place), template (written somewhere else), other (not markdown).
+other doc-author/scripts/wizard.py
+markdown doc-sync/references/notes.md
+markdown domain-language/references/adr-format.md
+markdown domain-language/references/glossary-format.md
+markdown fix-batch/references/claude-code.md
+markdown fix-batch/references/incidents.md
+markdown house-review/references/claude-code.md
+markdown house-review/references/rationale.md
+markdown improve-architecture/references/report.md
+markdown init-worktracking/references/migrate-a-tracker.md
+markdown init-worktracking/references/tier-stripping.md
+template init-worktracking/templates/AGENTS.md.tmpl
+template init-worktracking/templates/CHANGELOG.md.tmpl
+template init-worktracking/templates/CLAUDE.md.tmpl
+template init-worktracking/templates/ROADMAP.md.tmpl
+template init-worktracking/templates/_TEMPLATE.md.tmpl
+template init-worktracking/templates/agent-skills.md.tmpl
+template init-worktracking/templates/copilot-instructions.md.tmpl
+template init-worktracking/templates/cursor-rule.mdc.tmpl
+template init-worktracking/templates/quests-README.md.tmpl
+other init-worktracking/templates/validate.py
+template init-worktracking/templates/zen.md.tmpl
+markdown new-quest/references/why-these-rules.md
+markdown orchestrate/references/claude-code.md
+markdown orchestrate/references/first-run.md
+markdown orchestrate/references/memory.md
+markdown pr-describe/references/visuals.md
+other project-bootstrap/templates/editorconfig
+other project-bootstrap/templates/eslint.config.mjs
+markdown project-bootstrap/templates/house-code-style.md
+other project-bootstrap/templates/prettierrc.json
+other project-bootstrap/templates/ruff.toml
+markdown prototype/references/logic.md
+markdown prototype/references/ui.md
+markdown quest-tracker/references/authoring-guide.md
+markdown quest-tracker/references/why-claims.md
+other quest-tracker/scripts/tracker.py
+other quest-tracker/templates/quest-tracker.html
+markdown reconcile-worktrees/references/lessons.md
+other sitrep/scripts/sitrep.py
+other spec-author/scripts/spec_digest.py
+markdown systematic-debugging/references/red-flags.md
+other systematic-debugging/scripts/hitl_loop.py
+markdown tdd/references/examples.md
+markdown triage/references/publishing.md
+other triage/scripts/publish.py
+markdown wayfinder/references/map-format.md

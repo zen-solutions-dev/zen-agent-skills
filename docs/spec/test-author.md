@@ -5,7 +5,7 @@ status: approved
 
 # test-author
 
-Behavioral contract for the `test-author` skill (ROADMAP Epic B item 5). Drafted 2026-07-24
+Behavioral contract for the `test-author` skill (ROADMAP Campaign B item 5). Drafted 2026-07-24
 by the `spec-author` skill as its first in-kit dogfood, and self-checked to `ready` with the
 `spec-quality` lens.
 
@@ -15,6 +15,8 @@ defines it with `approved_digest`. The skill refuses a spec the digest script re
 `malformed`, or `unreadable`, as it already refused a draft, and uses an `unbound` one while saying
 so. No scenario, input, or output changes; if the maintainer reads the refusal as a contract term,
 it becomes a scenario and this note records where it came from.
+
+**Noted 2026-11-25: rename-only edit, `feat-0101`, no behaviour change.** The rename from tasks to quests changed words and paths here; no scenario, surface element or guard changed.
 
 ## Problem
 

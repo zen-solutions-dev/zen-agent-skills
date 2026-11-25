@@ -12,7 +12,7 @@ Evaluation record for the scenarios of [`tracker-links.md`](tracker-links.md) th
 body rather than in code. `pr-describe` is a prose procedure an agent follows, not a script with an
 entry point, so there is nothing to import and call: S-001 to S-006 and S-009 carry no unit tests by
 nature, and this record is their evidence instead. S-007 and S-008 are code and are covered by
-[`tests/test_tasks_validate.py`](../../tests/test_tasks_validate.py).
+[`tests/test_tasks_validate.py`](../../tests/test_quests_validate.py).
 
 Format follows the record `feat-0024` established at
 [`house-review.verification.md`](house-review.verification.md).

@@ -11,7 +11,7 @@ two causes in one month is a class rather than an incident.
 
 Citations here are by symbol, section heading, or quoted phrase, never by line number:
 `bug-0037` removed line anchors on purpose and this checker deliberately does not make
-them safe again. It decides three forms, none of which is a line anchor.
+them safe again. It decides four forms, none of which is a line anchor.
 
 Exit codes
 ----------
@@ -55,6 +55,15 @@ Three forms are decided:
 | Test name | `test_*`, anywhere in a matrix row | a `def` under `tests/` | a test name is a Python function name, so no file attribution is needed at all |
 | Symbol | `name(...)` or `UPPER_SNAKE`, in the Evidence column | word-boundary presence in a candidate | a renamed symbol leaves the file entirely |
 | Quoted phrase | a multi-token span, in the Evidence column | normalised substring of a candidate | a substring test against a named file |
+| Double-quoted phrase | a multi-token `"..."` outside code spans, in the Evidence column | the same, with Markdown markup also removed | the same; **reported, never failed**, until its first-run reports are disposed (R-004) |
+
+The fourth form was added by `feat-0103` (retro `R-004`). Before it, a matrix row quoting
+its source in double quotes was never read, and two such quotes went stale in one change
+(`feat-0083`). Measured on the corpus on 2026-11-25 before it was switched on: 290 phrases,
+24 resolving in no file their row names. Those 24 are listed by the run as `WARN` lines and
+do not change the exit code; the run that disposes of them by hand is what may switch the
+form to failing, the order R-004 asked for. Markup is removed on both sides for this form
+only, because a quoted sentence drops the emphasis and code spans of the prose it quotes.
 
 Everything else is unchecked and counted as such: single words, flags, task and scenario
 ids, bare filenames, prose, section headings named in running text rather than in
@@ -69,7 +78,7 @@ sentence. An earlier version of this checker attributed by position, taking the 
 recent `` `file` / `` marker as the subject of every span after it. Measured against the
 real corpus on 2026-08-28, that produced false positives and no true findings: the S-005
 row of `tracker-links.conformance.md` cites `pr-describe`'s clause and then, in the same
-cell, `EXTERNAL_RE`, which lives in `.tasks/validate.py`, and positional attribution
+cell, `EXTERNAL_RE`, which lives in `.quests/validate.py`, and positional attribution
 checked the second against the first.
 
 So attribution does not guess. Every file a row names becomes a **candidate**, and a
@@ -176,6 +185,17 @@ ELISION = re.compile(r"\.\.\.|<[A-Za-z][A-Za-z0-9_ -]*>")
 # it the spans are flags, ids, and single identifiers, none of which is a quoted phrase.
 MIN_PHRASE_LENGTH = 9
 
+# A double-quoted phrase in an Evidence cell, outside every code span (retro R-004,
+# feat-0103). Until then only backticked spans were audited, so a conformance row quoting
+# its source in double quotes went unchecked, and two such quotes went stale in one change.
+DOUBLE_QUOTED = re.compile(r'"([^"\n]+)"')
+CODE_SPAN = re.compile(r"`[^`]*`")
+# Markdown markup removed on both sides before a double-quoted phrase is matched: a row
+# quotes prose, and prose carries emphasis and code spans its quotation renders or drops.
+# Measured on the corpus on 2026-11-25: 52 of 290 phrases unresolved without it, 24 with.
+MARKUP = re.compile(r"[`*]")
+DOUBLE_QUOTED_KIND = "double-quoted phrase"
+
 UNCHECKED_ELISION = "signposted elision"
 UNCHECKED_NO_SUBJECT = "no resolvable subject file"
 UNCHECKED_BUILTIN = "builtin name whose presence test could not fail"
@@ -280,6 +300,16 @@ class Result:
     def unresolved(self):
         return [c for c in self.citations if c.status == "unresolved"]
 
+    @property
+    def reported(self):
+        """Double-quoted phrases that resolve nowhere: warned, never failed (R-004).
+
+        The class is report-only until its first-run reports are disposed by hand, the
+        order R-004 set: measure before switching on, so the switch does not fail every
+        matrix at once over quotes written before anything read them.
+        """
+        return [c for c in self.citations if c.status == "reported"]
+
     def audited_kinds(self):
         """What was actually decided, by form. Sums to `audited`."""
         return _tally(c.kind for c in self._partition()[0])
@@ -370,6 +400,20 @@ class _Sources:
 
     def __init__(self):
         self._cache = {}
+
+    def demarked(self, path):
+        """The four variants with Markdown markup removed, for a double-quoted phrase."""
+        key = ("demarked", str(path))
+        if key not in self._cache:
+            try:
+                text = MARKUP.sub("", _read(path))
+            except NotUTF8:
+                text = ""
+            plain = _collapse(text)
+            uncommented = _collapse(FULL_LINE_COMMENT.sub("", text))
+            self._cache[key] = (plain, uncommented,
+                                _unquoted(plain), _unquoted(uncommented))
+        return self._cache[key]
 
     def variants(self, path):
         key = str(path)
@@ -640,6 +684,26 @@ def audit(root=None):
                         "resolved" if _resolves(kind, needle, candidates, sources)
                         else "unresolved",
                         candidates=candidates))
+                code_spans = [m.span() for m in CODE_SPAN.finditer(evidence)]
+                for match in DOUBLE_QUOTED.finditer(evidence):
+                    phrase = match.group(1)
+                    if any(a <= match.start() < b for a, b in code_spans):
+                        continue  # a quote inside a code span is part of that span
+                    if " " not in phrase.strip() or len(phrase) < MIN_PHRASE_LENGTH:
+                        continue  # a quoted word is not a quotation
+                    kind = DOUBLE_QUOTED_KIND
+                    if ELISION.search(phrase):
+                        citations.append(Citation(matrix, item, kind, phrase,
+                                                  "unchecked", UNCHECKED_ELISION))
+                    elif not candidates:
+                        citations.append(Citation(matrix, item, kind, phrase,
+                                                  "unchecked", UNCHECKED_NO_SUBJECT))
+                    else:
+                        citations.append(Citation(
+                            matrix, item, kind, phrase,
+                            "resolved" if _resolves(kind, phrase, candidates, sources)
+                            else "reported",
+                            candidates=candidates))
     return Result(matrices, citations, unreadable)
 
 
@@ -647,10 +711,12 @@ def _resolves(kind, needle, candidates, sources):
     if kind == "symbol":
         pattern = re.compile(r"\b%s\b" % re.escape(needle))
         return any(pattern.search(sources.variants(c)[0]) for c in candidates)
-    collapsed = _collapse(needle)
+    demark = kind == DOUBLE_QUOTED_KIND
+    collapsed = _collapse(MARKUP.sub("", needle) if demark else needle)
     unquoted = _unquoted(collapsed)
     for candidate in candidates:
-        plain, uncommented, plain_q, uncommented_q = sources.variants(candidate)
+        plain, uncommented, plain_q, uncommented_q = (
+            sources.demarked(candidate) if demark else sources.variants(candidate))
         if (collapsed in plain or collapsed in uncommented
                 or unquoted in plain_q or unquoted in uncommented_q):
             return True
@@ -694,6 +760,17 @@ def report(result, root, out):
                   "code before repointing it: a citation repaired without\nre-deriving "
                   "what it supports asserts a freshness the repair did not establish.\n\n")
 
+    reported = result.reported
+    for citation in reported:
+        where = _relative(citation.matrix, root)
+        named = ", ".join(sorted(_relative(c, root) for c in citation.candidates))
+        out.write(f"WARN  {where}\n    {citation.item}\n    {citation.kind} "
+                  f"\"{citation.text}\" is in none of {named}\n")
+    if reported:
+        out.write("\nA double-quoted phrase that resolves nowhere is reported, not failed, "
+                  "until the class's first-run\nreports are disposed by hand (R-004): the "
+                  "phrase may be a paraphrase, quote a file the row\ndoes not name, or "
+                  "have gone stale.\n\n")
     # No `if kind != "other"` filter here any more, and none is needed: every citation of
     # the `other` kind is unchecked by construction, so the audited half never holds one.
     # That filter was part of what disguised the arithmetic defect described on `Result`.
@@ -708,7 +785,8 @@ def report(result, root, out):
         if matrix not in unreadable_paths:
             out.write(f"note: {matrix} yielded no citation. Readable, and nothing in it "
                       f"cites anything yet.\n")
-    out.write(f"Matrix citations: {len(unresolved)} unresolved.\n")
+    out.write(f"Matrix citations: {len(unresolved)} unresolved, {len(reported)} "
+              f"double-quoted phrase(s) reported.\n")
     out.write(f"Audited {result.audited} of {result.extracted} citation(s) "
               f"by decidable form: {audited_kinds}.\n")
     out.write(f"Unaudited {result.unaudited} of {result.extracted}, reported rather than "

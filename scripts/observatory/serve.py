@@ -673,8 +673,8 @@ def _live_project(conn, session_id: str, corpus: Path) -> str:
     the most permissive rule tried, every non-alphanumeric character to a dash, and a
     separator-only rule misses all twenty-six because project names also flatten spaces and
     underscores. The cause is that the working directory drifts within a session while the
-    project directory does not: `D:\\hts-app\\docs` and `D:\\hts-app\\content-engine` both live
-    under `D--hts-app`, and one worktree's sessions live under a different worktree's
+    project directory does not: `D:\\sample-app\\docs` and `D:\\sample-app\\content-engine` both live
+    under `D--sample-app`, and one worktree's sessions live under a different worktree's
     directory entirely. A transform would attribute those to projects that do not exist,
     which is worse than saying so.
     """

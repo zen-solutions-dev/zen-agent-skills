@@ -1,6 +1,6 @@
 # Dogfood record: WS-A, context and ledgers (2026-11-24)
 
-Workstream WS-A of the [Marjana plan](../2026-11-24-marjana-plan.md), task [`chore-0100`](../../../.tasks/done/chore-0100-marjana-context-and-ledgers.md), rule 8. WS-A owns no skill, so these are the kit skills it used on its own work. **How they were loaded:** the session started with no kit skill reachable (the `skill-reachability-reminder` hook said so at start), so each skill below was run by reading its `SKILL.md` from `.agents/skills/` and following it step by step. That is a real run of the procedure, not of the harness's skill loading.
+Workstream WS-A of the [Marjana plan](../2026-11-24-marjana-plan.md), task [`chore-0100`](../../../.quests/done/chore-0100-marjana-context-and-ledgers.md), rule 8. WS-A owns no skill, so these are the kit skills it used on its own work. **How they were loaded:** the session started with no kit skill reachable (the `skill-reachability-reminder` hook said so at start), so each skill below was run by reading its `SKILL.md` from `.agents/skills/` and following it step by step. That is a real run of the procedure, not of the harness's skill loading.
 
 | Skill | What it ran on | Evidence | Verdict | What changed in the skill |
 |---|---|---|---|---|

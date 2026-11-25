@@ -38,12 +38,27 @@ built. The three verdicts, the record's fields and their presence conditions, th
 the bound are unchanged, and `S-001` through `S-015` are untouched. The idea is adapted from Matt
 Pocock's `diagnosing-bugs`, recorded in the skill's provenance.
 
+**Amended 2026-11-25 (`feat-0107`, the maintainer's decision `E6` of 2026-11-25) to finish the
+debugging techniques: `S-017` to `S-020` are new, and `S-016` gains one exception.** This amendment
+is **pending the maintainer's re-approval**, and `status` is left reading `approved` for the reason
+the 2026-08-29 amendment gives. What it adds: every secret is redacted before it enters the record
+(`S-017`); three to five ranked, falsifiable hypotheses are shown to the person before the first
+trial, without blocking a run nobody attends (`S-018`); a scripted human-in-the-loop reproduction is
+allowed only when a person is present and no unattended route exists, and is recorded as such
+(`S-019`, which is the one change to `S-016`: its "runs without a person" now reads with that
+exception); and a performance regression's red command compares a measured baseline (`S-020`). The
+browser, fuzz and `git bisect run` rungs join the construction ladder in the skill without a
+scenario of their own, because the ladder is not part of this contract; bisection running in a
+separate clone or worktree is already what `S-014` requires. The three verdicts, the record's fields
+and their presence conditions, the four inputs and the bound are unchanged, and `S-001` to `S-015`
+are untouched. Adapted from Matt Pocock's `diagnosing-bugs`, recorded in the skill's provenance.
+
 ## Problem
 
 The kit's spine assumes work arrives already diagnosed. Nothing in it establishes a cause.
 
 [`spec-author`](../../.agents/skills/spec-author/SKILL.md) accepts "a raw idea, feature request, or
-bug" and turns it straight into a contract. [`new-task`](../../.agents/skills/new-task/SKILL.md) sets
+bug" and turns it straight into a contract. [`new-quest`](../../.agents/skills/new-quest/SKILL.md) sets
 the bar a task file must clear: honest `touched_files`, a `## Problem` grounded in reproduction, and
 an acceptance command that passes only when the work is done. **All three of those require the cause
 to already be known.** A bug arriving at either skill undiagnosed produces a contract or a task file
@@ -69,7 +84,7 @@ anything that diagnoses.
    from the symptom that was reported.
 2. Return a **deterministic verdict**, so a run that could not find a cause is never mistaken for one
    that did, and an unattended run cannot end ambiguously.
-3. Produce a diagnosis that **feeds `new-task` directly**, carrying the facts a task file's bar
+3. Produce a diagnosis that **feeds `new-quest` directly**, carrying the facts a task file's bar
    demands and cannot otherwise obtain.
 4. **Refuse to repair.** The skill diagnoses; every other skill in the spine keeps its job.
 5. **Bound the investigation**, so a hypothesis loop that will not converge terminates with a verdict
@@ -80,7 +95,7 @@ anything that diagnoses.
 - **Fixing the defect.** The fix is a task, dispatched by `fix-batch`.
 - **Writing the regression test.** That is [`test-author`](../../.agents/skills/test-author/SKILL.md),
   which the diagnosis feeds by naming the observable the test must pin.
-- **Writing the task file.** That is `new-task`.
+- **Writing the task file.** That is `new-quest`.
 - **Judging code quality.** A cause that happens to sit in ugly code is still just the cause;
   [`house-review`](../../.agents/skills/house-review/SKILL.md) owns quality.
 - **Confirming a fix worked.** That is [`verifier-agent`](../../.agents/skills/verifier-agent/SKILL.md).
@@ -154,7 +169,7 @@ anything that diagnoses.
 
 ### Scenario S-006: the diagnosis carries what a task file's bar demands
 - **Given** a run that returned `verdict: root_cause_found` for a cause that implicates code
-- **When** the diagnosis is handed to `new-task`
+- **When** the diagnosis is handed to `new-quest`
 - **Then** `implicated_files` names the files the cause implicates, `reproduction` supplies the basis
   for an acceptance command, and `regression_observable` names the observable a regression test must
   pin
@@ -223,10 +238,42 @@ anything that diagnoses.
 - **When** the skill reaches the point of proposing why the defect happens
 - **Then** `reproduction` already carries a red command, one command the run has executed at least
   once that drives the real code path, fails on the reported symptom specifically, is deterministic
-  or carries a pinned and recorded reproduction rate, is fast, and runs without a person, built
-  without changing any tracked file; and when no such command can be built, the run returns
+  or carries a pinned and recorded reproduction rate, is fast, and runs without a person (or, under
+  `S-019` only, through a scripted person-in-the-loop command), built without changing any tracked
+  file; and when no such command can be built, the run returns
   `verdict: not_reproducible` with `missing_input` naming what would let one be built, and
   `hypotheses` holds no entry proposing a cause
+
+### Scenario S-017: every secret is redacted before it enters the record
+- **Given** a run whose commands, outputs or captured artifacts carry a secret (a token, a password,
+  a key, a cookie, a session id) or personal data the defect does not need
+- **When** the run writes any of them into the record
+- **Then** each secret appears as `<REDACTED>`, the red command reads credentials from the
+  environment rather than carrying them on its command line, and where the redacted evidence is not
+  enough to establish a cause, `missing_input` says so and no secret is quoted
+
+### Scenario S-018: ranked hypotheses are shown before the first trial
+- **Given** a run that holds a red command and has localized the failure
+- **When** it reaches the point of testing a cause
+- **Then** `hypotheses` first carries three to five candidate causes, ranked most likely first, each
+  with the prediction that would falsify it; the ranked list is shown to the person before the first
+  trial, and with nobody present the record says it was not seen and the run proceeds in its own
+  order without waiting; and a candidate whose trial has not run does not count toward the bound
+
+### Scenario S-019: a person-in-the-loop reproduction needs a person present
+- **Given** a defect that no unattended command reaches, such as one behind a manual step
+- **When** a person is present for the run
+- **Then** a scripted command that walks the person through fixed steps and records each answer may
+  stand in for an unattended red command, and `reproduction` names it as a person-in-the-loop
+  command with every answer it recorded; with nobody present, the run returns
+  `verdict: not_reproducible` with `missing_input` naming the person's step
+
+### Scenario S-020: a performance regression's red command is measured against a baseline
+- **Given** a defect reported as slowness or a resource regression
+- **When** the skill builds its red command
+- **Then** `reproduction` records a baseline measured on a known-good state and the bad one with the
+  same harness, repeated, with the median and spread of each, and the red command asserts a threshold
+  between them
 
 ## Proposed Surface
 

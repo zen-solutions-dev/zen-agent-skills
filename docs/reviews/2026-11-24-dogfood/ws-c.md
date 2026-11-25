@@ -2,7 +2,7 @@
 
 Plan rule 8 of [the Marjana plan](../2026-11-24-marjana-plan.md): every skill WS-C owns, what it ran
 on, the evidence, the verdict, and what changed in the skill because of it. Task:
-[`feat-0092`](../../../.tasks/done/feat-0092-marjana-orchestrate-and-build.md).
+[`feat-0092`](../../../.quests/done/feat-0092-marjana-orchestrate-and-build.md).
 
 **How WS-C ran.** One session (WS-C) wrote `D1`, `orchestrate` and `research` itself, and dispatched
 the rest to fresh-context leaf agents, in the shape `orchestrate` describes, on branch

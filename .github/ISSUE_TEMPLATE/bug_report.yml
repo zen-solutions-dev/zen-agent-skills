@@ -31,6 +31,39 @@ body:
     validations:
       required: true
   - type: input
+    id: kit_version
+    attributes:
+      label: Kit version
+      description: >
+        The `VERSION` file's contents once releases are tagged, else the commit you installed from
+        (`git rev-parse --short HEAD` in your kit checkout). `python scripts/install.py --check` says
+        whether the installed copy still matches it.
+      placeholder: "0.2.0, or a1b2c3d"
+    validations:
+      required: true
+  - type: input
+    id: model
+    attributes:
+      label: Model
+      description: The model that ran the session, if one was involved; write none for a script run by hand.
+      placeholder: claude-opus-5-5
+    validations:
+      required: false
+  - type: dropdown
+    id: effort
+    attributes:
+      label: Effort or reasoning level
+      description: The same skill behaves differently at different effort levels.
+      options:
+        - low
+        - medium
+        - high
+        - xhigh
+        - max
+        - Not set, or the harness has no such setting
+    validations:
+      required: false
+  - type: input
     id: os
     attributes:
       label: Operating system

@@ -21,12 +21,12 @@ Conventions: your answer follows [`house-style.md`](../../rules/house-style.md).
 
 ## How to answer
 
-1. **Place the person.** From what they said and what the repository shows (a `.tasks/` directory,
+1. **Place the person.** From what they said and what the repository shows (a `.quests/` directory, or `.tasks/`, its old name,
    a spec under `docs/spec/`, an open branch, a failing command), name the stage they are in: no
    project yet, an idea, a plan, a build, a change to verify, a change to ship, or a look back.
    Look beyond the current checkout too: another worktree or an unmerged branch may already hold
    work on the same thing (`git worktree list`, `git branch -a`), and that changes the route.
-   When the repository has `.tasks/` but no `docs/agents/zen.md`, add one line to the reply: the
+   When the repository has `.quests/` but no `docs/agents/zen.md`, add one line to the reply: the
    configure step of `init-worktracking` records what the skills read here, so they stop
    rediscovering it.
    Done when you can name one stage, or you have asked the one question that decides it.
@@ -35,8 +35,14 @@ Conventions: your answer follows [`house-style.md`](../../rules/house-style.md).
 3. **Read before you recommend.** Before you say what a skill does or that a step can be skipped,
    read that skill's `SKILL.md` if it is installed; the summaries below are for orientation. Name
    any draft you recommend as a draft, and say it needs `install.py --include-drafts`.
+   **Before recommending a new skill**, one the kit does not have (the person asks for one, or the
+   honest answer is "nothing fits; write one"), read the repository's declined-ideas register when
+   it keeps one (in the Zen Agent Skills repository, `docs/declined-ideas.md`). When the idea is
+   there, say so: when and where it was declined, the reason, and whether a later decision reopened
+   it. A declined idea is recommended again only with a reason the register's entry did not weigh.
    Done when every skill the reply will name has had its `SKILL.md` read or is said to be not
-   installed, and every draft among them is marked as one.
+   installed, every draft among them is marked as one, and, before any new skill is suggested, the
+   register was read or its absence said.
 4. **Reply with the hint.** The skill to start now, one line on why, the skill that usually
    follows it, and whether the work suits **AFK** (nobody watching: well specified, low risk, easy
    to verify) or **human in the loop** (a one-way door, a wide blast radius, or hard to review).
@@ -50,9 +56,9 @@ The full chain is something a change earns. Ask in this order; the first yes win
 1. **Does a person have to agree the behaviour before it is built?** Full flow: `spec-author`
    (which runs the `grill` interview first), approval, and the rest of the chain below.
 2. **Are there decisions only the person can make, but no behaviour anyone else must agree?**
-   `grill` on its own, then `new-task` writes the task files from its decisions record. No spec.
-3. **Does it span more than one sitting, or go to another agent?** Task file: `new-task` writes one
-   file with an acceptance command, and `verifier-agent` checks it before it lands. No spec.
+   `grill` on its own, then `new-quest` writes the quest files from its decisions record. No spec.
+3. **Does it span more than one sitting, or go to another agent?** Quest file: `new-quest` writes one
+   file with an acceptance command, and the [one-quest flow](#the-flows) builds it. No spec.
 4. **Otherwise, direct.** Make the change, run the project's acceptance command, and ask for
    `house-review` if the change warrants one.
 
@@ -65,9 +71,12 @@ step is also useful on its own. *(draft)* marks a skill not yet promoted.
 
 - `project-bootstrap`: a new or bare repository gets a stack-matched baseline, then hands to
   `init-worktracking`.
-- `init-worktracking`: an existing repository gets `AGENTS.md`, `.tasks/`, and by tier a roadmap and
+- `init-worktracking`: an existing repository gets `AGENTS.md`, `.quests/`, and by tier a roadmap and
   changelog. Every task-based skill below needs it. Its configure step writes `docs/agents/zen.md`,
   the facts the skills read; run it alone on a repository already tracked.
+- `vet-skill` *(draft)*: another author's skill you are about to install. Pins the revision,
+  checks provenance and license, and hunts for injection and exfiltration; report only. A person
+  starts it.
 
 **Align**, before anything is written down:
 
@@ -75,6 +84,11 @@ step is also useful on its own. *(draft)* marks a skill not yet promoted.
   Facts are looked up; only decisions go to the person. Start here for any real change.
 - `domain-language`: a term is settled or contested, or a decision is hard to reverse.
   Keeps the glossary and writes an ADR only when one is earned.
+- `wayfinder` *(draft)*: an effort too big and too foggy for one session. Charts it as a decision
+  map and resolves one decision per session until a spec or quests can be written. A person starts
+  it.
+- `prototype` *(draft)*: a design question talk cannot settle. Throwaway code on a throwaway
+  branch, with the verdict recorded on the quest.
 
 **Plan**:
 
@@ -82,20 +96,30 @@ step is also useful on its own. *(draft)* marks a skill not yet promoted.
   sources and writes one cited file.
 - `spec-author`: behaviour a person must agree. Writes Given/When/Then scenarios and stops for
   approval. It composes `spec-quality`, the lens that judges a spec's well-formedness.
-- `new-task`: an approved spec, or a change that needs a task file, becomes tasks each sized to one
+- `new-quest`: an approved spec, or a change that needs a quest file, becomes tasks each sized to one
   fresh context window.
 - `spec-plan-readiness`: the go/no-go gate over a spec plus its tasks, before any code.
+- `triage` *(draft)*: a GitHub repository's open issues to sort into the role labels
+  `docs/agents/zen.md` names. Recommends; labels only on the person's go. A person starts it.
+  It also holds the opt-in tracker publishing that `new-quest` loads.
 
 **Build**:
 
+- **One quest**, the single-quest flow: read the quest file (with `AGENTS.md` and its
+  `touched_files`, nothing more), build it with `tdd` at the seams its plan agreed, run its
+  acceptance command, have `verifier-agent` check it (run by someone other than the builder), then
+  `house-review`, and close it as the repository's lifecycle says.
+- **A bug**: `systematic-debugging` *(draft)* first, then `tdd`. The diagnosis ends in a red command
+  and a named cause; that red command is `tdd`'s first failing test, and the fix is built from it.
+  Diagnosing never fixes, so the chain is the whole repair.
 - `tdd`: new code, test-first, one red-green slice at a time.
 - `orchestrate` *(draft)*: a piece of work too big for one context. One session holds the
   conversation; child sessions research and build on their own branches, landing on one
   integration branch and reaching the person as one pull request.
-- `fix-batch`: two or more independent task files to parallel agents, each in its own worktree,
+- `fix-batch`: two or more independent quest files to parallel agents, each in its own worktree,
   each starting fresh. A person starts it.
 - `systematic-debugging` *(draft)*: something is broken and the cause is unknown. Builds a red
-  command first and diagnoses; it never fixes.
+  command first and diagnoses; it never fixes, so `tdd` follows it (the bug chain above).
 - `test-author`: tests from an approved spec, or tests that pin legacy behaviour, after the fact.
 - `test-quality`: the lens `tdd`, `test-author` and `fix-batch` use to judge a test.
 
@@ -120,15 +144,19 @@ step is also useful on its own. *(draft)* marks a skill not yet promoted.
 - `retro`: after a build, especially one that went sideways. A repeated correction
   becomes a check; a judgement call becomes a written standard. A person starts it.
 - `improve-architecture`: a spare moment, or a bug with no good seam to test it at. Finds
-  deepening refactors in the hot spots; a chosen one goes back to `grill` or `new-task`. A person
+  deepening refactors in the hot spots; a chosen one goes back to `grill` or `new-quest`. A person
   starts it.
+- `teach` *(draft)*: a concept the person wants to understand. One small piece at their level,
+  then a check that it stuck. A person starts it.
 
 **Handoffs and context**:
 
 - `agent-handoff`: at a phase boundary, whether to continue, clear, hand off, dispatch a subagent,
   or compact, and the brief when it is a handoff. Keep align and plan in one unbroken session where
-  they fit; each build task can start fresh from its task file.
+  they fit; each build task can start fresh from its quest file.
 - `human-handoff`: an update for a partner, client, or teammate.
+- `wait-what` *(draft)*: the last message did not land. Re-pitches it with the context the person
+  lacks. A person starts it.
 
 **Documents**:
 
@@ -137,7 +165,7 @@ step is also useful on its own. *(draft)* marks a skill not yet promoted.
 
 **Status**:
 
-- `sitrep` *(draft)*: "where are we" for one repository, from its task files and git.
+- `sitrep` *(draft)*: "where are we" for one repository, from its quest files and git.
 - `agent-observatory` *(draft)*: questions across many agent sessions: what is running, what it
   cost.
 - `quest-tracker` *(draft)*: a season of work run from a shared tracker page.
@@ -154,7 +182,9 @@ step is also useful on its own. *(draft)* marks a skill not yet promoted.
 Adapted, in this kit's own words, from Matt Pocock's `ask-matt` router: a user-invoked map of every
 skill, the main flow with on-ramps, reading a skill before recommending it, and context hygiene at
 phase boundaries are his. The light paths, the stage-placement step and the kit's own flows are this
-repository's. The phase-boundary tree itself lives in `agent-handoff`.
+repository's. The one-quest flow is adapted from his `implement` (`feat-0105`, 2026-11-25), with
+verification by someone other than the builder added; reading a declined-ideas register before
+recommending a new skill echoes his `.out-of-scope/` directory, kept here as one dated file. The phase-boundary tree itself lives in `agent-handoff`.
 
 ```provenance
 source: https://raw.githubusercontent.com/mattpocock/skills/main/skills/engineering/ask-matt/SKILL.md
@@ -172,4 +202,13 @@ license: MIT
 retrieved: 2026-11-23
 sha256: a8aa20158609ef39e2b308b6ba0660c91066838d07a867202e63a7744a88a3ed
 note: fetched with urllib and digested with hashlib on the retrieved date, at 4,249 bytes. Read for the context-hygiene line; the tree itself is adapted in agent-handoff.
+```
+
+```provenance
+source: https://raw.githubusercontent.com/mattpocock/skills/main/skills/engineering/implement/SKILL.md
+author: Matt Pocock
+license: MIT
+retrieved: 2026-11-25
+sha256: 483bdc4ccf4ac31d86ac7beeaa0d0db80313e71e120bb8c59b3196ae5decd53d
+note: fetched with urllib and digested with hashlib on the retrieved date, at 622 bytes, upstream HEAD d653911. Source of the one-quest flow line; adapted, not copied.
 ```

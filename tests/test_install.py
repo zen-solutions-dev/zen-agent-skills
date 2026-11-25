@@ -539,7 +539,7 @@ class InstallAcceptanceTests(unittest.TestCase):
 EXPECTED_PROFILE_MEMBERSHIP = {
     "core": {"init-worktracking", "pr-describe", "project-bootstrap"},
     "spine": {"doc-author", "doc-revise", "doc-sync", "domain-language", "fix-batch",
-              "grill", "house-review", "init-worktracking", "new-task", "pr-describe",
+              "grill", "house-review", "init-worktracking", "new-quest", "pr-describe",
               "project-bootstrap", "reconcile-worktrees", "spec-author",
               "spec-conformance", "spec-plan-readiness", "spec-quality", "tdd",
               "test-author", "test-quality", "verifier-agent"},
@@ -3003,6 +3003,179 @@ class NamedSkillsTests(_FixtureKit):
         self.assertEqual(self._placed(), set())
 
 
+class RenamedSkillTests(_FixtureKit):
+    """feat-0101: `new-task` became `new-quest`, and the old name stays an alias."""
+
+    def setUp(self):
+        super().setUp()
+        _meta_skill(self.skills, "alpha", "does alpha things when asked")
+        _meta_skill(self.skills, "new-quest", "writes quest files when asked")
+        self._renamed = mock.patch.dict(inst.RENAMED_SKILLS, {"new-task": "new-quest"},
+                                        clear=True)
+        self._renamed.start()
+        self.addCleanup(self._renamed.stop)
+
+    def _place_under_the_old_name(self, mode):
+        # What an install before the rename left: a recorded target named `new-task`
+        # whose source directory no longer exists.
+        old_src = self.root / "gone" / "new-task"
+        old_src.mkdir(parents=True)
+        (old_src / "SKILL.md").write_text("---\nname: new-task\n---\n", encoding="utf-8")
+        target = self.home / inst.TOOL_SUBPATHS["claude"] / "new-task"
+        target.parent.mkdir(parents=True)
+        if mode == "symlink":
+            os.symlink(old_src, target, target_is_directory=True)
+        else:
+            shutil.copytree(old_src, target)
+        shutil.rmtree(old_src)
+        inst.MANIFEST.write_text(json.dumps({"entries": [
+            {"tool": "claude", "name": "new-task", "target": str(target),
+             "mode": mode, "source": str(old_src),
+             "digests": {"SKILL.md": "0" * 64}}]}), encoding="utf-8")
+        return target
+
+    def test_the_old_name_places_the_new_skill(self):
+        code, out = self._main("--skills", "new-task", "--tools", "claude")
+        self.assertEqual(code, 0, out)
+        self.assertEqual(self._placed(), {"new-quest"})
+        self.assertIn("'new-task' was renamed 'new-quest'", out)
+
+    def test_the_old_name_warns_that_the_alias_expires(self):
+        # R2-10 (feat-0103): a warning that names the expiry and the new spelling.
+        code, out = self._main("--skills", "new-task", "--tools", "claude")
+        self.assertEqual(code, 0, out)
+        self.assertIn("warning: 'new-task' was renamed 'new-quest'", out)
+        self.assertIn("v0.2.0 warns; v0.3.0 removes the old names", out)
+        self.assertIn("Use --skills new-quest.", out)
+
+    def test_the_new_name_carries_no_alias_warning(self):
+        code, out = self._main("--skills", "new-quest", "--tools", "claude")
+        self.assertEqual(code, 0, out)
+        self.assertNotIn("v0.3.0 removes the old names", out)
+
+    def test_a_recorded_placement_under_the_old_name_is_retired(self):
+        modes = ["copy"] + (["symlink"] if SYMLINKS_WORK else [])
+        for mode in modes:
+            with self.subTest(mode=mode):
+                if self.home.exists():
+                    shutil.rmtree(self.home)
+                target = self._place_under_the_old_name(mode)
+                code, out = self._install(mode=mode)
+                self.assertEqual(code, 0, out)
+                self.assertFalse(target.is_symlink() or target.exists(), out)
+                self.assertIn("retired", out)
+                self.assertEqual(self._placed(), {"alpha", "new-quest"})
+                recorded = json.loads(inst.MANIFEST.read_text(encoding="utf-8"))
+                self.assertNotIn(str(target), {e["target"] for e in recorded["entries"]})
+
+    def test_check_names_the_rename_for_a_placement_under_the_old_name(self):
+        self._place_under_the_old_name("copy")
+        code, out = self._call(inst.check, self.home)
+        self.assertEqual(code, 2, out)
+        self.assertIn("renamed 'new-quest'", out)
+
+    def test_a_run_that_does_not_place_the_successor_keeps_the_old_placement(self):
+        _meta_skill(self.skills, "zeta", "does zeta things when asked")
+        target = self._place_under_the_old_name("copy")
+        (target / "SKILL.md").write_text("edited by the person\n", encoding="utf-8")
+        code, out = self._main("--skills", "zeta", "--tools", "claude", "--mode", "copy")
+        self.assertEqual(code, 0, out)
+        self.assertEqual((target / "SKILL.md").read_text(encoding="utf-8"),
+                         "edited by the person\n")
+        self.assertIn("kept", out)
+        self.assertIn("does not place", out)
+        self.assertNotIn("retired", out)
+        recorded = json.loads(inst.MANIFEST.read_text(encoding="utf-8"))
+        self.assertIn(str(target), {e["target"] for e in recorded["entries"]})
+
+    def test_a_run_that_places_the_successor_retires_the_old_placement(self):
+        target = self._place_under_the_old_name("copy")
+        code, out = self._main("--skills", "new-quest", "--tools", "claude", "--mode", "copy")
+        self.assertEqual(code, 0, out)
+        self.assertFalse(target.exists(), out)
+        self.assertIn("retired", out)
+
+    def test_an_unrecorded_directory_under_the_old_name_is_left_alone(self):
+        # The person's own skill that happens to be called `new-task` is not ours.
+        own = self.home / inst.TOOL_SUBPATHS["claude"] / "new-task"
+        own.mkdir(parents=True)
+        (own / "SKILL.md").write_text("mine\n", encoding="utf-8")
+        code, out = self._install()
+        self.assertEqual(code, 0, out)
+        self.assertTrue((own / "SKILL.md").is_file())
+        self.assertNotIn("retired", out)
+
+@unittest.skipUnless(SYMLINKS_WORK, "needs symlinks to give the home a second spelling")
+class RenamedSkillThroughAliasedHomeTests(RenamedSkillTests):
+    """The rename tests again, with the home reached through a symlinked directory.
+
+    CI on macOS and Windows failed every retire test (PR #118): the temp home the tests
+    record is `/var/...` (or an 8.3 short path) while the installer resolves `--home` to
+    `/private/var/...` (or the long path), so the recorded entry was never found by string
+    equality. Linux has no such alias for its temp directory, so it passed. A symlinked
+    parent gives Linux the same two spellings, and the installer must match a recorded
+    target whatever spelling the manifest holds.
+    """
+
+    def setUp(self):
+        super().setUp()
+        real = self.root / "real"
+        real.mkdir()
+        os.symlink(real, self.root / "alias", target_is_directory=True)
+        self.home = self.root / "alias" / "home"
+
+    def test_the_home_really_has_two_spellings(self):
+        self.home.mkdir()
+        self.assertNotEqual(str(self.home), str(self.home.resolve()))
+
+    def test_a_managed_copy_recorded_under_the_other_spelling_is_updated(self):
+        # `is_managed` answers the same question by the same string equality: an install
+        # recorded under the alias must still own its target, not report a CONFLICT.
+        code, out = self._install()
+        self.assertEqual(code, 0, out)
+        target = self.home / inst.TOOL_SUBPATHS["claude"] / "alpha"
+        recorded = json.loads(inst.MANIFEST.read_text(encoding="utf-8"))
+        for entry in recorded["entries"]:
+            entry["target"] = entry["target"].replace(str(self.home.resolve()),
+                                                      str(self.home))
+        inst.MANIFEST.write_text(json.dumps(recorded), encoding="utf-8")
+        self.assertIn(str(target), {e["target"] for e in recorded["entries"]})
+        code, out = self._install()
+        self.assertEqual(code, 0, out)
+        self.assertNotIn("CONFLICT", out)
+        self.assertIn("updated", out)
+        after = json.loads(inst.MANIFEST.read_text(encoding="utf-8"))
+        names = [e["name"] for e in after["entries"] if e.get("tool") == "claude"]
+        self.assertEqual(len(names), len(set(names)), after)
+
+
+class RealRenameTableTests(unittest.TestCase):
+    """feat-0101: the production rename table, read as shipped, against the real kit.
+
+    `RenamedSkillTests` patches the table to isolate the mechanism; these do not, so
+    emptying or breaking `RENAMED_SKILLS` itself fails here.
+    """
+
+    def test_the_table_maps_new_task_to_a_skill_the_kit_has(self):
+        self.assertEqual(inst.RENAMED_SKILLS.get("new-task"), "new-quest")
+        for old, new in inst.RENAMED_SKILLS.items():
+            with self.subTest(old=old):
+                self.assertTrue((inst.SKILLS_DIR / new / "SKILL.md").is_file())
+                self.assertFalse((inst.SKILLS_DIR / old).exists())
+
+    def test_skills_new_task_dry_run_places_new_quest_from_the_real_kit(self):
+        home = Path(tempfile.mkdtemp())
+        self.addCleanup(shutil.rmtree, home, ignore_errors=True)
+        buf = io.StringIO()
+        with contextlib.redirect_stdout(buf):
+            code = inst.main(["--skills", "new-task", "--tools", "claude", "--dry-run",
+                              "--home", str(home)])
+        out = buf.getvalue()
+        self.assertEqual(code, 0, out)
+        self.assertIn("'new-task' was renamed 'new-quest'", out)
+        self.assertRegex(out, r"new-quest\s+->")
+        self.assertNotIn("no skill is named", out)
+
 class InvocationRenderingTests(_FixtureKit):
     """feat-0079: a user-invoked skill reaches Claude Code with the rendered key.
 
@@ -3230,7 +3403,7 @@ class SharedLinkReaderTests(unittest.TestCase):
 class SpanHelpersAgreeWithTheBacklogValidatorTests(unittest.TestCase):
     """chore-0059, closed inside feat-0090: the shared copy agrees with the original.
 
-    After feat-0090 the span helpers live in three places, not four: `.tasks/validate.py`,
+    After feat-0090 the span helpers live in three places, not four: `.quests/validate.py`,
     its `init-worktracking` template copy (held together by `ValidatorCopiesAgreeTests`),
     and `scripts/_skillmeta.py`. This compares the third with the original, as dumped ASTs
     with docstrings stripped, which is the comparison chore-0059 measured by hand.
@@ -3256,7 +3429,7 @@ class SpanHelpersAgreeWithTheBacklogValidatorTests(unittest.TestCase):
         return found
 
     def test_the_shared_copy_is_identical_to_the_original(self):
-        original = self._definitions(REPO_ROOT / ".tasks" / "validate.py")
+        original = self._definitions(REPO_ROOT / ".quests" / "validate.py")
         shared = self._definitions(REPO_ROOT / "scripts" / "_skillmeta.py")
         for name in self.NAMES:
             with self.subTest(name=name):

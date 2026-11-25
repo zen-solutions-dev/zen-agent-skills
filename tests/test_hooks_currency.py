@@ -158,16 +158,16 @@ class SpeaksTests(FixtureCase):
 
     def test_a_stale_install_produces_one_reminder_naming_the_stale_skill(self):
         self.fx.write_skill("doc-sync")
-        self.fx.write_skill("new-task")
+        self.fx.write_skill("new-quest")
         self.fx.record("doc-sync")
-        self.fx.record("new-task")
+        self.fx.record("new-quest")
         self.fx.edit_source("doc-sync", "the kit moved after this was installed")
         self.fx.write_manifest()
 
         text = self.context()
         self.assertIn(icr.BANNER, text)
         self.assertIn("doc-sync", text)
-        self.assertNotIn("new-task", text)
+        self.assertNotIn("new-quest", text)
         self.assertIn("stale", text)
         self.assertIn("install.py --check", text)
 
@@ -254,9 +254,9 @@ class StaysQuietTests(FixtureCase):
 
     def test_a_current_install_produces_no_output(self):
         self.fx.write_skill("doc-sync")
-        self.fx.write_skill("new-task")
+        self.fx.write_skill("new-quest")
         self.fx.record("doc-sync")
-        self.fx.record("new-task")
+        self.fx.record("new-quest")
         self.fx.write_manifest()
         self.assertIsNone(icr.evaluate(startup(), root=self.fx.root))
 
@@ -339,7 +339,7 @@ class CostTests(FixtureCase):
         # hook that enumerates skills or digests a tree before checking for the manifest
         # fails this by name instead of merely being slow.
         self.fx.write_skill("doc-sync")
-        self.fx.write_skill("new-task")
+        self.fx.write_skill("new-quest")
         original_text, original_bytes = Path.read_text, Path.read_bytes
 
         def boom(self, *args, **kwargs):

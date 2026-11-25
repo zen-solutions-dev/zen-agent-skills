@@ -12,9 +12,11 @@ Drafted 2026-07-28 by `spec-author`, whose `spec-quality` self-check returned `n
 the first draft and was revised to `ready`. Approved by the author on 2026-07-28, together with the
 decision recorded in S-009.
 
+**Noted 2026-11-25: rename-only edit, `feat-0101`, no behaviour change.** The rename from tasks to quests changed words and paths here; no scenario, surface element or guard changed.
+
 ## Problem
 
-The kit's work tracking is entirely local. A task file in [`.tasks/`](../../.tasks/) has an id, a
+The kit's work tracking is entirely local. A task file in [`.quests/`](../../.quests/) has an id, a
 parent, and acceptance criteria, and none of that is visible to anyone who has not cloned the
 repository. A team planning a sprint, assigning work, or reporting progress works in an issue
 tracker instead, so today the two halves cannot see each other: the tracker does not know a task
@@ -30,7 +32,7 @@ the rules are narrow and every violation fails silently, producing a pull reques
 correct, merges cleanly, and leaves the tracker wrong.
 
 [`pr-describe`](../../.agents/skills/pr-describe/SKILL.md) already drafts the pull request body and
-already reads the `.tasks/` system to reference the work item, so it is the one place in the spine
+already reads the `.quests/` system to reference the work item, so it is the one place in the spine
 that holds both halves at once.
 
 ## Goals
@@ -121,8 +123,8 @@ that holds both halves at once.
 
 ### Scenario S-009: a task completed in the same change still gets a reference
 
-- **Given** a task whose `external` value is `#123`, whose file the branch moves from `.tasks/` to
-  `.tasks/done/`
+- **Given** a task whose `external` value is `#123`, whose file the branch moves from `.quests/` to
+  `.quests/done/`
 - **When** the pull request body is drafted
 - **Then** the body contains `Closes #123`, the same as for a task still open, because the pull
   request is what completes the work.
@@ -140,5 +142,5 @@ that holds both halves at once.
 
 ## Open Questions
 
-None. The one question this spec carried, whether a task moved to `.tasks/done/` in the same change
+None. The one question this spec carried, whether a task moved to `.quests/done/` in the same change
 still gets a reference, was decided yes on 2026-07-28 and is now S-009.

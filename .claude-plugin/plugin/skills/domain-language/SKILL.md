@@ -3,8 +3,8 @@ name: domain-language
 description: >-
   Keeps a project's shared language: adds settled terms to its glossary and records a decision as
   an ADR only when it is hard to reverse, surprising, and a real trade-off. Use when a term is
-  settled or contested, when writing or editing GLOSSARY.md or an ADR, or when grill closes with
-  new terms. Reports a glossary-versus-code mismatch; never renames code.
+  settled or contested, when writing or editing GLOSSARY.md or an ADR, or when grill settles a term
+  mid-interview. Reports a glossary-versus-code mismatch and offers the rename; never renames code.
 license: MIT
 ---
 
@@ -21,12 +21,25 @@ own report.
 
 ## When to use
 
-- A grilling session closes with terms in its decisions record.
+- `grill` settles a term mid-interview and hands it here (see [One term from grill](#one-term-from-grill)).
+- A grilling session closes with terms in its decisions record that no glossary took.
 - The person or the code uses one word for two things, or two words for one thing.
 - Someone asks to write or edit the glossary, or to record a decision.
 
 Reading the glossary for vocabulary is not this skill: any skill can do that. This skill is for
 changing the language.
+
+## One term from grill
+
+A term has **settled** only when the person chose it or confirmed it; with nobody present to do
+either, it is deferred, reported as deferred, and not written. When `grill` sends one term the
+moment it settles, run steps 1 to 3 for that term alone and go back
+to the interview: step 1 only once per interview, step 2's challenges only where the interview has
+not already put them to the person, and step 3 writes the entry now. An ADR candidate the term raises
+is noted for step 4 at the interview's close, not argued mid-round. Report the term written in one
+line inside the interview; the full step 5 report waits for the close.
+
+Done when the term is in the glossary or deferred with a reason, and the interview has resumed.
 
 ## Procedure
 
@@ -37,11 +50,11 @@ Look before creating anything. When the repository has `docs/agents/zen.md`, its
 say so. A key the file does not set, or sets to a value outside its allowed set, is discovered
 instead, and so is a path it names that does not exist, saying that the configured path was missing.
 Ask the person when discovery finds several candidates. When the block does not parse or names a
-newer `config_version`, use none of it and say that `python .tasks/validate.py` shows why. The
+newer `config_version`, use none of it and say that `python .quests/validate.py` (`.tasks/validate.py` where the tracker keeps its old name) shows why. The
 glossary may be `GLOSSARY.md`, `docs/glossary.md`, a "Terminology" section of a README or
 `AGENTS.md`, or a glossary per bounded context with a map file at the root. Decision records may be
 `docs/adr/`, `docs/decisions/`, `adr/`, a numbered series under another name, or no directory at
-all: many repositories record decisions in each task file's Decisions section and keep the reasoning
+all: many repositories record decisions in each quest file's Decisions section and keep the reasoning
 in a rationale directory (`docs/rationale/`). Use what you find, in its format; that convention is
 where step 4 writes.
 
@@ -72,8 +85,9 @@ For each candidate term:
 - **Check the code and the plans.** Grep for the term and its synonyms in the code, and in the task
   files and specs, where a term is used before any code exists. When either names the concept
   differently from the glossary, or uses the glossary's word for something else, record a
-  **finding**: the term, the glossary's meaning, the other name, and where. Never rename code or
-  rewrite a plan; that is a separate task the person may choose to write.
+  **finding**: the term, the glossary's meaning, the other name, and where. Offer the **rename** as
+  a recommended answer the person can accept: the code, or the plan, adopts the glossary's word, as
+  its own quest written with `new-quest`. Never rename code or rewrite a plan in this run.
 
 Done when every candidate is settled with the person, deferred with a reason, or dropped as a
 general programming word that does not belong (timeouts, retries, and error types are not domain
@@ -102,7 +116,7 @@ Missing any one, skip it: an easy reversal will simply be reversed, an unsurpris
 defence, and a choice with no alternative has nothing to record. When one is earned and the person
 agrees, write it where step 1 found decisions recorded. When that is a record directory, create it
 only now if it does not exist, numbered after the highest existing record; when the repository
-records decisions in task files, write it as a Decisions entry in the task that carries the work,
+records decisions in quest files, write it as a Decisions entry in the task that carries the work,
 and create no record directory. Format: [references/adr-format.md](references/adr-format.md).
 
 Done when each candidate decision is recorded or explicitly judged not to earn a record.
@@ -110,7 +124,8 @@ Done when each candidate decision is recorded or explicitly judged not to earn a
 ### 5. Report
 
 List the terms added or changed, the records written, the terms deferred, and every
-glossary-versus-code or glossary-versus-plan finding with its location. An empty findings list means
+glossary-versus-code or glossary-versus-plan finding with its location and whether the person took
+the rename it offered. An empty findings list means
 you grepped and found none; say what you grepped for, and where.
 
 When this run created the glossary, nothing points at it yet, and a glossary no session reads does

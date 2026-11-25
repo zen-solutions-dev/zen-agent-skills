@@ -30,11 +30,28 @@ Non-Goal and the registration Constraint now say the session-start hook is wired
 opencode as well. `S-032` still holds there, because the sitrep counts as installed only when
 the skill sits in the person's own user-scope install.
 
+**Amended 2026-11-25 by `feat-0101`** (the rename from tasks to quests, maintainer decision R2-4 in
+the [round 2 plan](../reviews/2026-11-25-marjana-r2-plan.md)): task files are read from `.quests/`,
+and from `.tasks/`, the old name, as an alias (S-010 as amended, new S-041). **This amendment needs
+the maintainer's re-approval in the round 2 pull request.**
+
+**Amended 2026-11-25 by `feat-0103`** (maintainer decision R2-10 in the
+[round 2 plan](../reviews/2026-11-25-marjana-r2-plan.md): warn on an old name, remove the aliases at
+the second tagged release): a board reading files tracked under `.tasks/` carries a notice that the
+alias expires (new S-042). **This amendment needs the maintainer's re-approval in the round 2 pull
+request.**
+
+**Noted 2026-11-25, round 2 close** (the maintainer's answer to the whole-branch review's S3): the
+expiry is named by version, "v0.2.0 warns; v0.3.0 removes the old names", in place of "the kit's
+second tagged release", in S-042 and the notice. **For re-approval with the amendment above.**
+
+**Note 2026-11-25:** example repository names in this contract were neutralised (to `sample-app`), at the maintainer's decision; no behaviour changed.
+
 ## Problem
 
 Agent sessions produce work faster than the person directing them can hold its state, and that state
 is written down in several places that disagree: task files, the roadmap, the changelog, dated status
-documents and published pages. On 2026-09-10, in the `hts-app` repository, a remaining-work figure of
+documents and published pages. On 2026-09-10, in a sample application repository (`sample-app`), a remaining-work figure of
 `1,085` sat in several documents while the tool that computes it reported `1,088`.
 
 A status report written from memory is wrong in both directions, and nothing marks which way. The same
@@ -46,10 +63,10 @@ read exactly like the right ones: a simulator result quoted as `74` that is abou
 across seeds, a run count roughly doubled by counting entries instead of runs, a threshold called
 unmeasured that had been measured against 172 items, and a diagnosis built on two mistyped field names
 that each returned empty and were read as absence. An untracked local file looks like state too: a
-simulator output left in `hts-app`'s `content-engine/out/` reported 70 skills mastered where a fresh
+simulator output left in `sample-app`'s `content-engine/out/` reported 70 skills mastered where a fresh
 run reported 74.
 
-A prototype in `hts-app` (`scripts/status-page.mjs`, tasks `feat-0059` and `feat-0060`, now parked in
+A prototype in `sample-app` (`scripts/status-page.mjs`, tasks `feat-0059` and `feat-0060`, now parked in
 its own draft pull request) showed that deriving the board from the repository works, and how it goes
 wrong. It dropped the only P1 from the queue, because it counted a task as answered when a decision
 existed anywhere in the file, including above a newer question. It reported nothing in progress while a
@@ -115,7 +132,9 @@ far to trust a number.
   [`install.md`](install.md).
 - Task files are read in the format that
   [`init-worktracking`](../../.agents/skills/init-worktracking/SKILL.md) scaffolds: frontmatter `id`,
-  `title`, `status`, `priority` and `depends_on`, with completed tasks under `.tasks/done/`.
+  `title`, `status`, `priority` and `depends_on`, with completed tasks under `.quests/done/`.
+  A repository scaffolded before the rename to quests keeps them under `.tasks/` and `.tasks/done/`,
+  and is read the same way (S-041).
 - The tier ladder and the status meanings under Proposed Surface are the single definition. The rules
   module that restates them for agents uses the same names.
 
@@ -151,7 +170,7 @@ far to trust a number.
 
 ### Scenario S-005: a closed task never waits on the person
 
-- **Given** a task file under `.tasks/done/` whose body has an `Open question` heading with no
+- **Given** a task file under `.quests/done/` whose body has an `Open question` heading with no
   `Decision` heading below it
 - **When** the board is generated
 - **Then** the task is not listed under waiting on you
@@ -164,7 +183,7 @@ far to trust a number.
 
 ### Scenario S-007: a task with an unfinished dependency is blocked
 
-- **Given** an open task whose `depends_on` names a task id that has no file under `.tasks/done/`
+- **Given** an open task whose `depends_on` names a task id that has no file under `.quests/done/`
 - **When** the board is generated
 - **Then** blocked lists the task and names each dependency that is not done
 
@@ -184,14 +203,14 @@ far to trust a number.
 
 ### Scenario S-010: a repository without task tracking still gets a board
 
-- **Given** a git repository with no `.tasks/` directory
+- **Given** a git repository with neither a `.quests/` nor a `.tasks/` directory
 - **When** the board is generated
 - **Then** the board carries in flight and changed since you caught up, carries the notice
   `no task tracking`, and lists nothing under waiting on you or blocked
 
 ### Scenario S-011: changes since the watermark are summarised
 
-- **Given** that since the watermark one task file moved into `.tasks/done/` and another task file
+- **Given** that since the watermark one task file moved into `.quests/done/` and another task file
   changed in place
 - **When** the board is generated
 - **Then** changed since you caught up gives the number of commits since the watermark, lists the
@@ -404,6 +423,29 @@ far to trust a number.
 - **When** the next board is generated
 - **Then** that session does not move the person's watermark
 
+
+### Scenario S-041: the tracker's old name is read
+
+Added 2026-11-25 by `feat-0101`.
+
+- **Given** a repository whose task files sit under `.tasks/` and `.tasks/done/`, the tracker's name
+  before the rename to quests, or whose history moves them from there to `.quests/`
+- **When** the board is generated
+- **Then** the files are read as they would be under `.quests/`, and a file already under a `done/`
+  directory that only moved between the two names is not listed as closed
+- **And** when files are tracked under both names at once, the board reads them together and carries
+  a notice naming the fix: finish the move with `git mv` into `.quests/`
+
+
+### Scenario S-042: the tracker's old name carries an expiry notice
+
+Added 2026-11-25 by `feat-0103`.
+
+- **Given** a repository with task files tracked under `.tasks/`, alone or beside `.quests/`
+- **When** the board is generated
+- **Then** the board carries a notice that `.tasks/` is the old name, read as an alias (v0.2.0
+  warns; v0.3.0 removes the old names), naming the fix: `git mv .tasks .quests`
+- **And** a repository tracking files only under `.quests/` carries no such notice
 ## Proposed Surface
 
 ### Terms

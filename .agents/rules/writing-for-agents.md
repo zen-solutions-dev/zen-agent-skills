@@ -124,6 +124,14 @@ instruction to load:
 - **A mention stays a mention.** A neighbour named only to say where a skill sits in a chain is not
   composed; leave it in backticks, with no load instruction and no link, so it creates no install
   edge.
+- **A draft is loaded by name, guarded.** A shipped skill cannot link a draft sibling, because the
+  link would install it, and a backticked name alone is only a mention. Compose a draft with exactly
+  this form, at the step that needs it: a sentence that starts ``If `<name>` is installed, read and
+  follow it``, then, in the same sentence, a fallback clause starting `; otherwise`. For example:
+  ``If `research` is installed, read and follow it now; otherwise answer from the sources already in
+  hand.`` The name stays in backticks, so it draws no install edge, and the fallback keeps the step
+  whole when the draft is absent. `validate-skills.py` in the Zen Agent Skills repository recognises
+  this form.
 
 ## Invocation
 
@@ -155,6 +163,9 @@ Pick model-invoked only when the agent must reach the skill on its own, or anoth
 - The autonomy rules are reached with one pointer line to `core.md`, not restated.
 - Every dispatched subagent starts with a fresh context, not a fork of the parent, and is told it
   is a leaf that dispatches nothing further.
+- A dispatch names its effort level where the harness has one: **medium** for an agent that builds,
+  **high** for one that verifies or debugs. Verifying and debugging are where a shallow pass returns
+  a confident wrong verdict, and building is where extra effort mostly buys extra scope.
 - Every step ends on a clear, demanding completion criterion, on a line of its own beginning
   "Done when".
 - A summary, verdict rule or opening promise that restates a step is re-read against that step

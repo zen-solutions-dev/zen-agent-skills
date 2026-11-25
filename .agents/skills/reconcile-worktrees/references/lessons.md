@@ -19,7 +19,7 @@ have checked it.
 
 A branch that lags its target cannot see any file authored after the cut, so the acceptance command
 passes on the branch while the merge result fails. This happened twice in the repository the skill
-was written in. Wave 2's branch could not see a task file added to the target after the cut, one
+was written in. Wave 2's branch could not see a quest file added to the target after the cut, one
 that linked to a task the wave had moved into `done/`: the branch ran green and the `pull_request`
 job ran red on all six CI cells. Wave 4 repeated the shape and is the sharper case, because its
 `pull_request` job never fired at all, leaving the branch-alone run, green by construction, as the

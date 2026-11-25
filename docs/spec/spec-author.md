@@ -5,12 +5,12 @@ status: approved
 
 # spec-author
 
-Behavioral contract for the `spec-author` skill (ROADMAP Epic B item 2). Drafted 2026-07-24
+Behavioral contract for the `spec-author` skill (ROADMAP Campaign B item 2). Drafted 2026-07-24
 and reviewed with the `spec-quality` lens as the first in-kit dogfood of that skill.
 
 ## Problem
 
-The kit can turn a rough idea into atomic task files with [`new-task`](../../.agents/skills/new-task/SKILL.md),
+The kit can turn a rough idea into atomic task files with [`new-quest`](../../.agents/skills/new-quest/SKILL.md),
 and it now has a [`spec-quality`](../../.agents/skills/spec-quality/SKILL.md) lens for reviewing
 scenario-based specs. But nothing drafts the spec in the first place. Ideas jump straight to tasks
 with no durable behavioral contract, so intent is not captured before decomposition and there is
@@ -24,11 +24,12 @@ has a lens but no author.
 2. Compose the `spec-quality` lens so the returned draft has a `spec-quality` verdict of `ready`.
 3. Represent an explicit human approval state that downstream decomposition can gate on.
 4. Align with the person before drafting: settle every decision the contract depends on through a
-   structured interview, so the draft records decisions the person made rather than assumptions.
+   structured interview, or take it from a decisions record the person already confirmed in this
+   conversation, so the draft records decisions the person made rather than assumptions.
 
 ## Non-Goals
 
-- Decomposing the spec into task files. That is `new-task`.
+- Decomposing the spec into task files. That is `new-quest`.
 - Writing implementation code, tests, or architecture.
 - Choosing implementation strategy or file layout.
 
@@ -40,7 +41,7 @@ has a lens but no author.
   repository has no spec location of its own.
 - The skill composes `spec-quality` rather than restating its rules inline.
 - The interview follows the `grill` skill's mechanism and is composed from it rather than designed
-  anew; when `grill` is not installed, the skill runs the same mechanism inline.
+  anew.
 - Specification work is read-only for implementation surfaces: a run creates or edits only the spec
   file, never implementation source.
 - Frontmatter carries a `status` field whose value is one of `draft` or `approved`. `approved` is
@@ -70,8 +71,8 @@ has a lens but no author.
 ### Scenario S-003: approval gate before decomposition
 
 - **Given** a spec whose frontmatter `status` is `draft`
-- **When** `new-task` is asked to decompose it
-- **Then** `new-task` refuses and reports that the spec is not `approved`.
+- **When** `new-quest` is asked to decompose it
+- **Then** `new-quest` refuses and reports that the spec is not `approved`.
 
 ### Scenario S-004: read-only for implementation surfaces
 
@@ -116,8 +117,8 @@ question, only for an idea too vague to yield a contract. The id is kept so it i
 ### Scenario S-010: approved text edited after its approval is not decomposed
 
 - **Given** a spec with `status: approved` whose `approved_digest` no longer matches its text
-- **When** `new-task` is asked to decompose it
-- **Then** `new-task` refuses and reports that the approved text changed and waits on re-approval.
+- **When** `new-quest` is asked to decompose it
+- **Then** `new-quest` refuses and reports that the approved text changed and waits on re-approval.
 
 ### Scenario S-011: an amendment leaves the approval record alone
 
@@ -126,6 +127,14 @@ question, only for an idea too vague to yield a contract. The id is kept so it i
 - **Then** it leaves `status` and `approved_digest` exactly as they were, adds a dated note naming
   the amendment as pending re-approval, and reports that the spec now reads `changed` until the
   person re-approves it.
+
+### Scenario S-012: a confirmed decisions record skips the interview
+
+- **Given** a conversation that already holds a `grill` decisions record for the request, which the
+  person confirmed and which settles every decision the contract depends on
+- **When** spec-author runs
+- **Then** it asks the person no question that record settled, names the record it drafted from, and
+  writes each of the record's deferred decisions as an Open Question.
 
 ## Proposed Surface
 
@@ -138,6 +147,7 @@ question, only for an idea too vague to yield a contract. The id is kept so it i
 | Body sections | Problem, Goals, Non-Goals, Constraints, Scenarios, Proposed Surface, Open Questions |
 | Scenario ids | stable `S-NNN`, never renumbered; a retired id stays in place, marked retired |
 | Interview round | numbered questions, each with a recommended answer worded so "yes" accepts it; ends when no open decision remains and the person confirms |
+| Synthesise-only mode | taken when this conversation holds a confirmed `grill` decisions record for the request; no interview round for what the record settled, and a round only for a decision it left unsettled |
 
 ## Open Questions
 
@@ -177,3 +187,16 @@ Only the Proposed Surface output-file row changes; `S-006` is unchanged in wordi
 configured location as well as a discovered one. No id was renumbered or reused. `status` is
 deliberately left `approved`: **this amendment changes behavior and is pending the maintainer's
 re-approval.**
+
+Amended on 2026-11-25 by `feat-0105`: a synthesise-only mode. Goal 4 also accepts a decisions record
+the person already confirmed in this conversation; `S-012` (a confirmed decisions record skips the
+interview) and a Proposed Surface row are added. `S-008` is unchanged: a decision the record leaves
+open is still put to the person before any file is written. No id was renumbered or reused. `status`
+is deliberately left `approved`: **this amendment changes behavior and is pending the maintainer's
+re-approval.**
+
+Amended again on 2026-11-25 by `feat-0105`, by the maintainer's decision that day: the Constraint on
+the interview no longer says that the skill runs `grill`'s mechanism inline when `grill` is not
+installed. The skill has carried no inline fallback since `feat-0084`, and `install.py` always places
+`grill` with `spec-author` because the skill links it. No scenario or id changes. Pending the
+maintainer's re-approval with the amendment above.

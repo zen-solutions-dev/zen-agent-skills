@@ -4,7 +4,7 @@
 One command, one exit code, no flags. This exists because until now the seven gates
 lived only as seven separate steps in .github/workflows/checks.yml, so the only ways to
 get the answer were to push and read CI, or to run seven commands by hand and remember
-all seven. Measured 2026-08-07: the 97 acceptance chains across .tasks/ and .tasks/done/
+all seven. Measured 2026-08-07: the 97 acceptance chains across .quests/ and .quests/done/
 run one, two, three, or five commands, and none of them runs the seven.
 
 For a person that is friction. For an agent working unattended it is disqualifying: it
@@ -61,6 +61,7 @@ Standard library only.
 """
 from __future__ import annotations
 
+import hashlib
 import os
 import platform
 import re
@@ -92,6 +93,8 @@ PY = sys.executable
 # the commonest way one reaches a public repository. Everything else exercises code.
 DOCS_GATES = frozenset({
     "backlog",
+    "changelog lines",
+    "skill listings",
     "doc links",
     "matrix citations",
     "roadmap bookkeeping",
@@ -190,15 +193,15 @@ STALE_HEADER = re.compile(r"Last updated:.{0,20}?\d{4}-\d{2}-\d{2}")
 
 
 def task_locations(repo_root=None):
-    """Every task id under `.tasks/`, mapped to the directories holding it.
+    """Every task id under `.quests/`, mapped to the directories holding it.
 
     A set rather than a string, because an id sitting in both directories is a real state
     this must not silently resolve to one of them.
     """
     repo_root = REPO_ROOT if repo_root is None else Path(repo_root)
     found = {}
-    for directory, where in ((repo_root / ".tasks", "open"),
-                             (repo_root / ".tasks" / "done", "done")):
+    for directory, where in ((repo_root / ".quests", "open"),
+                             (repo_root / ".quests" / "done", "done")):
         if not directory.is_dir():
             continue
         for path in directory.glob("*.md"):
@@ -282,7 +285,44 @@ COUNT_RES = (
 # check shipped with (six promoted skills named as drafts, and `count:ship=19` and
 # `count:drafts=10`) all stopped firing. A count key names its stale value, so a
 # different wrong count is a new finding rather than this one.
+#
+# Refilled 2026-11-25 by feat-0108 and feat-0106 with six `missing:<draft>` keys and the
+# two stale counts the roadmap held, as a bridge until the integration quest feat-0109
+# rewrote "Current state"; emptied by feat-0109 the same day, when every one stopped firing.
 ROADMAP_STATUS_EXCEPTIONS = frozenset()
+
+
+# The changelog's task-log line limit (retro R-204, feat-0103). AGENTS.md says "at most
+# about 300 characters"; the gate measures the raw Markdown line, links included, and
+# warns past 330, the figure R-204 proposed, so "about" keeps its slack. A warning, not a
+# failure: shortening a line is a person's edit, and the integrator is the one who writes
+# these lines. The lines over it when the check landed are excepted by the SHA-256 of the
+# line (first 16 hex digits), so editing one, or adding a new one, is what warns. The list
+# only shrinks: a line shortened or archived to docs/history/ leaves a stale entry, which
+# the gate names for deletion.
+CHANGELOG = "CHANGELOG.md"
+CHANGELOG_LINE_LIMIT = 330
+CHANGELOG_LONG_LINE_EXCEPTIONS = frozenset({
+    "3688bd439971ac56",  # 2026-11-23 chore-0033, 817 characters
+    "a8fd524e8ea08cb5",  # 2026-11-23 chore-0092, 623 characters
+    "b12444ee19cd7aaf",  # 2026-11-23 chore-0090, 552 characters
+    "336650278762dbb0",  # 2026-11-23 chore-0085, 470 characters
+    "4dcaa3a9fdcc72a9",  # 2026-11-23 release readiness for pull request 109, 1160 characters
+    "d005b073b9cec670",  # 2026-11-23 chore-0096, 864 characters
+    "dca9009bbeec6655",  # 2026-11-23 feat-0083, 1471 characters
+    "4f5f4c13c479fd0b",  # 2026-11-23 feat-0082, 1040 characters
+    "ef173590525ad0e8",  # 2026-11-23 feat-0081, 2063 characters
+    "127986e6aa7d025b",  # 2026-11-23 feat-0080 closed, 831 characters
+    "afb652b03a9e44b5",  # 2026-11-23 feat-0080 part A, 1025 characters
+    "deb839d1e9e5dcdc",  # 2026-11-23 feat-0079, 1158 characters
+    "6430932ec95570d8",  # 2026-11-23 feat-0078, 1055 characters
+    "96b5b3100ed4f428",  # 2026-11-23 feat-0077, 981 characters
+    "9493cf148573b3d3",  # 2026-11-23 feat-0076, 980 characters
+    "ab7f3f111344ff17",  # 2026-11-23 chore-0095, 777 characters
+    "af58a07ccd793bc6",  # 2026-10-21 feat-0072 amended, 707 characters
+    "760f5011aa8053a4",  # 2026-10-20 feat-0072 closed, 2342 characters
+    "98831ddae89253c4",  # 2026-10-20 chore-0094, 1942 characters
+})
 
 
 def skill_statuses(repo_root):
@@ -402,7 +442,7 @@ def roadmap_status_findings(text, statuses):
 
 
 def check_roadmap(repo_root=None, status_exceptions=None):
-    """The `roadmap bookkeeping` gate: does ROADMAP.md still agree with .tasks/?
+    """The `roadmap bookkeeping` gate: does ROADMAP.md still agree with .quests/?
 
     Returns (ok, report). Two of the three shapes chore-0066 mapped, and a bound naming
     what is left. The bound is not decoration. This catches the bookkeeping class and
@@ -434,7 +474,7 @@ def check_roadmap(repo_root=None, status_exceptions=None):
     for number, phrases, ids in findings:
         lines.append(
             f"{ROADMAP}:{number}: {', '.join(ids)} "
-            f"{'is' if len(ids) == 1 else 'are'} in .tasks/done/, and this block "
+            f"{'is' if len(ids) == 1 else 'are'} in .quests/done/, and this block "
             f"reads as outstanding: {'; '.join(repr(p) for p in phrases)}")
     if header:
         lines.append(
@@ -482,8 +522,8 @@ def check_roadmap(repo_root=None, status_exceptions=None):
                        f"excepted, {len(stale)} stale exception(s)")
 
     lines.append(
-        f"Checked {ROADMAP}: {len(named)} task ids named, {len(closed)} in .tasks/done/, "
-        f"{len(outstanding)} in .tasks/, {len(unresolved)} unresolved; {len(blocks)} "
+        f"Checked {ROADMAP}: {len(named)} task ids named, {len(closed)} in .quests/done/, "
+        f"{len(outstanding)} in .quests/, {len(unresolved)} unresolved; {len(blocks)} "
         f"blocks read, {len(findings)} carrying an open-state claim over a closed id; "
         f"1 header rule, {0 if header is None else 1} tripped; {status_note}. "
         f"Not judged: the "
@@ -494,6 +534,128 @@ def check_roadmap(repo_root=None, status_exceptions=None):
         f"about bookkeeping and about nothing else.")
     return (not findings and header is None and not failing_status,
             "\n".join(lines))
+
+
+def _line_key(line):
+    return hashlib.sha256(line.encode("utf-8")).hexdigest()[:16]
+
+
+def check_changelog_lines(repo_root=None, exceptions=None, limit=None):
+    """The `changelog lines` gate: a task-log line over the limit warns (R-204).
+
+    Returns (ok, report), and ok is always True: this gate warns and never fails. The
+    findings go on the report's last line, the one `coverage_line()` shows beside a
+    passing gate, so a warning is visible without a failure to carry it. Reads the lines
+    starting `- ` under `## Task log` only; the releases section above it is prose.
+    """
+    repo_root = REPO_ROOT if repo_root is None else Path(repo_root)
+    exceptions = (CHANGELOG_LONG_LINE_EXCEPTIONS if exceptions is None
+                  else frozenset(exceptions))
+    limit = CHANGELOG_LINE_LIMIT if limit is None else limit
+    path = repo_root / CHANGELOG
+    if not path.is_file():
+        return True, f"{CHANGELOG}: absent, so 0 task-log lines were measured."
+    lines = path.read_text(encoding="utf-8").splitlines()
+    # Found without regard to case or trailing space: a heading retyped as "## Task Log"
+    # must not switch the gate off while it reports a clean pass.
+    start = next((n + 1 for n, line in enumerate(lines)
+                  if line.strip().lower() == "## task log"), None)
+    if start is None:
+        report = [f"WARN  {CHANGELOG}: exception {key!r} matches no line over the limit; "
+                  f"delete it from CHANGELOG_LONG_LINE_EXCEPTIONS in scripts/run-checks.py"
+                  for key in sorted(exceptions)]
+        warn = "WARN " if exceptions else ""
+        report.append(f"{warn}{CHANGELOG}: no `## Task log` heading, so 0 task-log lines "
+                      f"were measured; {len(exceptions)} stale exception(s).")
+        return True, "\n".join(report)
+    entries = [(n, line) for n, line in enumerate(lines[start:], start + 1)
+               if line.startswith("- ")]
+    report, new, excepted, seen = [], [], 0, set()
+    for number, line in entries:
+        if len(line) <= limit:
+            continue
+        key = _line_key(line)
+        if key in exceptions:
+            excepted += 1
+            seen.add(key)
+            continue
+        new.append(number)
+        report.append(f"WARN  {CHANGELOG}:{number}: task-log line is {len(line)} characters, "
+                      f"over {limit}; keep a closeout line to about 300 and put the detail "
+                      f"in the quest file it links")
+    stale = sorted(exceptions - seen)
+    for key in stale:
+        report.append(f"WARN  {CHANGELOG}: exception {key!r} matches no line over the "
+                      f"limit; delete it from CHANGELOG_LONG_LINE_EXCEPTIONS in "
+                      f"scripts/run-checks.py")
+    warned = (f"WARN {len(new)} new line(s) over {limit} characters, at line(s) "
+              f"{', '.join(map(str, new))}" if new else "0 new lines over the limit")
+    report.append(f"Measured {len(entries)} task-log line(s) in {CHANGELOG}: {warned}; "
+                  f"{excepted} excepted, {len(stale)} stale exception(s).")
+    return True, "\n".join(report)
+
+
+# The two documents that list the kit for a reader (E9, feat-0103): the `zen` router, which
+# an agent reads to pick a skill, and the catalog a person reads. A skill neither names is
+# reachable only by someone who already knows it exists. A draft is named too, or excepted
+# here by name with the reason; an exception for a skill that is named, or gone, fails.
+SKILL_LISTINGS = (".agents/skills/zen/SKILL.md", "docs/CATALOG.md")
+# Emptied 2026-11-25 by feat-0109, which listed the six round 2 drafts (`prototype`, `teach`,
+# `triage`, `vet-skill`, `wait-what`, `wayfinder`) in `zen` and the catalog.
+UNLISTED_DRAFT_EXCEPTIONS = {}
+
+
+def _names(text, name):
+    """A listing names a skill as `` `name` ``, `[name]`, or by the path `name/SKILL.md`.
+
+    Any backticked mention counts, even one in a sentence that says the skill is absent:
+    the gate checks that a listing names each skill, not what it says about it. The rule
+    lives in `_skillmeta.names_skill`, shared with `validate-skills.py`'s dogfood match.
+    """
+    return _skillmeta.names_skill(text, name)
+
+
+def check_skill_listings(repo_root=None, exceptions=None):
+    """The `skill listings` gate: do the router and the catalog name every skill?
+
+    Returns (ok, report). `zen` is not required to name itself.
+    """
+    repo_root = REPO_ROOT if repo_root is None else Path(repo_root)
+    exceptions = UNLISTED_DRAFT_EXCEPTIONS if exceptions is None else dict(exceptions)
+    statuses = skill_statuses(repo_root)
+    lines, failing, checked = [], 0, 0
+    for listing in SKILL_LISTINGS:
+        path = repo_root / listing
+        if not path.is_file():
+            lines.append(f"{listing}: absent, so no skill could be found in it.")
+            failing += 1
+            continue
+        checked += 1
+        text = path.read_text(encoding="utf-8")
+        owner = Path(listing).parent.name if listing.endswith("SKILL.md") else None
+        for name in sorted(statuses):
+            if name == owner:
+                continue
+            named = _names(text, name)
+            if named and name in exceptions:
+                lines.append(f"{listing}: names {name!r}, so its exception in "
+                             f"UNLISTED_DRAFT_EXCEPTIONS is stale; delete it.")
+                failing += 1
+            elif not named and name in exceptions and statuses[name]:
+                lines.append(f"{listing}: {name!r} excepted: {exceptions[name]}")
+            elif not named:
+                kind = "draft" if statuses[name] else "shipped skill"
+                lines.append(f"{listing}: does not name the {kind} {name!r}; add it, as "
+                             f"`{name}`" + (", or except the draft in "
+                             f"UNLISTED_DRAFT_EXCEPTIONS with the reason"
+                             if kind == "draft" else ""))
+                failing += 1
+    for name in sorted(set(exceptions) - set(statuses)):
+        lines.append(f"exception {name!r} names no skill in the kit; delete it.")
+        failing += 1
+    lines.append(f"Checked {checked} of {len(SKILL_LISTINGS)} listing(s) against "
+                 f"{len(statuses)} skill(s): {failing} finding(s) failing.")
+    return failing == 0, "\n".join(lines)
 
 
 def gates():
@@ -517,7 +679,7 @@ def gates():
         Gate("test suite",
              [[PY, "-m", "unittest", "discover", "-s", "tests", "-p", "test_*.py"]],
              hermetic_home=True),
-        Gate("backlog", [[PY, ".tasks/validate.py", "--strict"]]),
+        Gate("backlog", [[PY, ".quests/validate.py", "--strict"]]),
         Gate("adapters dry run", [[PY, "scripts/build-adapters.py", "--dry-run"]]),
         # Added by feat-0079. The Claude Code marketplace is a generated tree committed
         # under .claude-plugin/, because that is what `claude plugin marketplace add`
@@ -546,7 +708,7 @@ def gates():
              [[PY, "scripts/install.py", "--with-hooks"] + install_home,
               [PY, "scripts/install.py", "--with-hooks"] + install_home],
              cleanup=[PY, "scripts/install.py", "--uninstall"] + install_home),
-        # Calls the link rule in .tasks/validate.py rather than restating it. An inline
+        # Calls the link rule in .quests/validate.py rather than restating it. An inline
         # copy of that rule drifted once already (chore-0029). Globbed rather than
         # listed, because a hardcoded list silently excludes every new document.
         #
@@ -556,7 +718,7 @@ def gates():
         # green over 9 documents of 45. The three trees are all guaranteed present here,
         # which is why no pattern needs an escape and none is offered.
         Gate("doc links",
-             [[PY, ".tasks/validate.py", "--links",
+             [[PY, ".quests/validate.py", "--links",
                "*.md", ".github/**/*.md", "docs/**/*.md"]]),
         # Added by chore-0049. The doc-links gate above resolves a markdown link's path
         # and stops there; a conformance matrix's evidence is a symbol, a test name, or a
@@ -569,9 +731,16 @@ def gates():
         # script. Nothing above reads ROADMAP.md, which AGENTS.md calls authoritative for
         # what happens next: `backlog` walks the task files, and `doc links` resolves this
         # file's link paths and stops there. So a sentence saying a task is still to be
-        # done, beside that task's own file sitting in `.tasks/done/`, passed every gate,
+        # done, beside that task's own file sitting in `.quests/done/`, passed every gate,
         # which is what chore-0066 measured when it corrected nine of them at once.
         Gate("roadmap bookkeeping", [], check=check_roadmap),
+        # Added by feat-0103 (retro R-204). Warns, never fails: a closeout line over the
+        # limit is named on the line a passing gate shows. A documentation gate, since
+        # CHANGELOG.md is prose.
+        Gate("changelog lines", [], check=check_changelog_lines),
+        # Added by feat-0103 (E9): the router and the catalog name every skill. A
+        # documentation gate, since the catalog is prose.
+        Gate("skill listings", [], check=check_skill_listings),
         # Added by chore-0098 (retro R-008). Runs on every change, documentation-only ones
         # included, which is why it is in DOCS_GATES.
         Gate("secret scan", [[PY, "scripts/scan-secrets.py"]]),
@@ -719,7 +888,7 @@ def coverage_line(output):
 
     Every gate here already prints what it covered, and each of those counts was added
     by a task that had just been burned by its absence: `validate-skills.py`'s skill and
-    supporting-file counts, `.tasks/validate.py`'s `Checked N task files`, `install.py`'s
+    supporting-file counts, `.quests/validate.py`'s `Checked N quest files`, `install.py`'s
     placed count and description budget, and `--links`'s document count. Until bug-0045
     this aggregator captured all of them and printed none, so seven gates passing over a
     full tree and seven gates passing over an empty one were byte-identical reports.

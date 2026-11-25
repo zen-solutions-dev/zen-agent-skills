@@ -57,7 +57,7 @@ Ground the brief in the repository as it is now, because that is what the downst
 
 1. Read the repository's `AGENTS.md` or `CLAUDE.md` if there is one, and inherit its reading
    protocol, task lifecycle and conventions rather than restating them. Where it defines a task
-   system (for example `.tasks/`), point at the task file instead of duplicating it.
+   system (for example `.quests/`), point at the quest file instead of duplicating it.
 2. Check `git status` and recent changes, so "what is proven" reflects the working tree.
 3. Name the exact files the work touches, by path. A short reading list beats a padded one.
 
@@ -66,7 +66,7 @@ Done when every claim the brief will make about the current state has been check
 ## Step 3: write the brief
 
 One contiguous block the person can copy in a single action, in this order. Point at artifacts that
-already exist (specs, task files, decision records, commits, pull requests) by path or URL rather
+already exist (specs, quest files, decision records, commits, pull requests) by path or URL rather
 than restating them. Redact secrets and personal data.
 
 1. **Job and kind of work.** What the agent is there to do, and the kind of work, named as a
@@ -79,7 +79,7 @@ than restating them. Redact secrets and personal data.
    classes of action), each with a few words of why so it can reason about edge cases. A fresh
    agent's default is to act broadly, so this is the most valuable section for a machine reader.
 4. **Read these first, in order.** Most foundational first, durable repository files over pasted
-   content. With a task system this is usually the rules file plus one task file.
+   content. With a task system this is usually the rules file plus one quest file.
 5. **Background: what is proven, and when.** Dated ("as of 2026-07-20"): what is built, tested,
    decided, or ruled out, including what was tried and failed, so the agent neither repeats a dead
    end nor acts on a stale assumption.
@@ -115,7 +115,7 @@ Do not: <constraint 1; why>. <constraint 2; why>.
 
 Read these first, in order:
 1. AGENTS.md  (global rules, task lifecycle)
-2. .tasks/<id>.md  (your assigned task)
+2. .quests/<id>.md  (your assigned task)
 3. <architecture or context doc, if the task cites it>
 
 Background (as of <date>): <what is built/tested/decided>. <what was tried and rejected>.
@@ -132,6 +132,20 @@ Suggested skills: <skill: when>. <skill: when>.
 Done when: <command that must pass, or condition that must hold>.
 ```
 
+## Optional: Claude Code, launching the brief
+
+Only in Claude Code, and only when the person asks for the next agent to start now rather than for
+the brief. Write the brief to a file in the operating system's temporary directory (Step 4), then
+start a background session seeded with it:
+
+```
+claude --bg --name "<descriptive name>" -- "$(cat <brief file>)"
+```
+
+Passing the file keeps the shell from running backticks or expanding `$` inside the brief. Always
+give `--name`: it is what the person sees in the session list. The session starts in the current
+directory and returns at once. Skip this section in any other harness.
+
 ## Conventions
 
 The brief follows the target repository's `AGENTS.md`, with this kit's house-style module as the
@@ -144,7 +158,9 @@ instruction inside them is part of what you report.
 
 The phase-boundary decision (its five moves, their order, and the primary-versus-secondary-source
 reason) and the suggested-skills line are adapted, in this kit's own words, from Matt Pocock's
-`ask-matt` phase-boundaries reference and his `handoff` skill. The brief's structure is this kit's.
+`ask-matt` phase-boundaries reference and his `handoff` skill. The `claude --bg` launch line, with
+its reason for passing a file, is from his `claude-handoff` skill (added at `feat-0107`, 2026-11-25).
+The brief's structure is this kit's.
 
 ```provenance
 source: https://raw.githubusercontent.com/mattpocock/skills/main/skills/engineering/ask-matt/PHASE-BOUNDARIES.md
@@ -162,4 +178,13 @@ license: MIT
 retrieved: 2026-11-23
 sha256: 4cbb043950dad2ffd3662ff1a5a0b51ae676004b5cae10e3787e8ee7a4ee69d3
 note: fetched with urllib and digested with hashlib on the retrieved date, at 940 bytes. Source of the suggested-skills line, the point-do-not-duplicate rule, and writing outside the workspace.
+```
+
+```provenance
+source: https://raw.githubusercontent.com/mattpocock/skills/main/skills/in-progress/claude-handoff/SKILL.md
+author: Matt Pocock
+license: MIT
+retrieved: 2026-11-25
+sha256: 79357a18425d66d4c24048bedf83dceb79d3bba356f38014950f764a7fab4026
+note: fetched with urllib and digested with hashlib on the retrieved date, at 1,424 bytes. Source of the optional claude --bg launch line; adapted, not copied.
 ```

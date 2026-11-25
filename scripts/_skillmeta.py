@@ -39,7 +39,7 @@ A link inside an inline code span or a fenced code block renders as literal text
 a body *showing* an example, not making one: it is neither a link to check nor an install
 edge. Before `feat-0090` the installer and the adapter builder scanned the raw text, so an
 example in a fence became an install edge the validator never saw. The span helpers are
-reproduced from `.tasks/validate.py`, which ships to adopters and so may import nothing
+reproduced from `.quests/validate.py`, which ships to adopters and so may import nothing
 from here; `tests/test_install.py` holds the two copies identical.
 
 Standard library only. Like `_textio.py`, it reaches no adopter: `install.py` never places
@@ -62,7 +62,7 @@ RENDERED_LINE = f"{RENDERED_KEY}: true"
 # A run of one or more backticks, and a fenced code block delimiter: a whole line whose
 # content is a run of three or more backticks, optionally followed by an info string.
 # Up to three spaces of indentation, per CommonMark. Kept character-identical to
-# `.tasks/validate.py`, the original, where bug-0015 and bug-0017 taught the backlog
+# `.quests/validate.py`, the original, where bug-0015 and bug-0017 taught the backlog
 # validator that a link rendered as literal text is not a link; a test compares the two.
 BACKTICK_RUN_RE = re.compile(r"`+")
 FENCE_RE = re.compile(r"^ {0,3}(`{3,})([^`]*)$")
@@ -83,7 +83,7 @@ def code_span_ranges(text):
     Scanned one line at a time, deliberately, and an unmatched run opens nothing:
     pairing runs across the whole file means one stray backtick swallows everything up
     to the next stray one, and a caller that skips those ranges then reports success
-    while checking nothing. See `code_span_ranges()` in .tasks/validate.py, the original.
+    while checking nothing. See `code_span_ranges()` in .quests/validate.py, the original.
     """
     ranges = []
     offset = 0
@@ -115,7 +115,7 @@ def fenced_block_ranges(text):
     code_span_ranges() makes for an unmatched run and for the same reason: a detector
     that ran an unclosed fence to end of file would switch the caller's link check off
     for everything below it and report success while doing so. See
-    `fenced_block_ranges()` in .tasks/validate.py, the original.
+    `fenced_block_ranges()` in .quests/validate.py, the original.
     """
     ranges = []
     offset = 0
@@ -165,6 +165,19 @@ def sibling_edges(text):
     """
     ranges = literal_ranges(text)
     return {m.group(1) for m in SIBLING_LINK_RE.finditer(text) if _outside(m.start(), ranges)}
+
+
+def names_skill(text: str, name: str) -> bool:
+    """Whether `text` names the skill `name`: as `` `name` ``, `[name]`, or `name/SKILL.md`.
+
+    The one answer, shared since the round 2 close by `run-checks.py`'s listing gate and
+    `validate-skills.py`'s dogfood-record match, so a bare word that happens to equal a
+    skill's name (a draft called `plan`, and the word "plan" in prose) names nothing. Any
+    backticked mention counts, whatever the sentence around it says: the match is lexical.
+    """
+    escaped = re.escape(name)
+    return re.search(rf"`{escaped}`|\[{escaped}\]|(?<![\w-]){escaped}/SKILL\.md",
+                     text) is not None
 
 
 def _frontmatter_lines(text: str):

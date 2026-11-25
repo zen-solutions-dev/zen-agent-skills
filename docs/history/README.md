@@ -1,6 +1,6 @@
 # History
 
-Archived ledger entries, moved out of the files every closeout opens so those stay small. Each archive keeps the entries unchanged except for links re-anchored to this directory. Started 2026-11-24 by [`chore-0100`](../../.tasks/done/chore-0100-marjana-context-and-ledgers.md).
+Archived ledger entries, moved out of the files every closeout opens so those stay small. Each archive keeps the entries unchanged except for links re-anchored to this directory. Started 2026-11-24 by [`chore-0100`](../../.quests/done/chore-0100-marjana-context-and-ledgers.md).
 
 | File | Holds | Moved from |
 |---|---|---|

@@ -87,6 +87,13 @@ with a reason, or, for a checks-audit-only run, this step is skipped and said to
 
 ### 3. Classify each candidate
 
+Read [`writing-for-agents.md`](../../rules/writing-for-agents.md) now, before classifying: its
+pruning rules (the no-op test, one source of truth, the environment as a source of truth) decide the
+**No-op instruction** and **Misplaced instruction** categories below, and its pointer and
+composition rules decide **Navigation**. Then read the repository's register of declined ideas,
+`docs/declined-ideas.md`, where it exists: a candidate that matches a declined entry is dismissed,
+quoting the entry, unless it brings evidence the entry did not weigh, which the proposal then names.
+
 | Category | Ask | Usual fix |
 |---|---|---|
 | **Automated check** | Could a check have caught this mistake before review? | Wire or repair an existing check first; otherwise the cheapest new one: type, lint rule, test, hook, CI job. |
@@ -115,16 +122,16 @@ ignore, a list the test reads), so it is visible and only ever shrinks: a file c
 when it passes, and no file goes onto it after the check is on. New files are held to the strict
 check from the first commit.
 
-Done when every candidate has exactly one category, every standards violation with a fixed shape is
-proposed as a check rather than a rule, and every check that cannot pass today is proposed as a
-ratchet with its exception list counted at the commit it would land on.
+Done when every candidate has exactly one category, every candidate matching a declined idea is
+dismissed with the entry quoted or carries the new evidence, every standards violation with a fixed
+shape is proposed as a check rather than a rule, and every check that cannot pass today is proposed
+as a ratchet with its exception list counted at the commit it would land on.
 
 ### 4. Rank and report
 
 Rank by severity: a mistake that shipped or would have, then one review caught at real cost, then
-friction that only cost time. Within a rank, a recurring candidate outranks a one-off. Before you
-write a proposal that changes an agent-facing document, read
-[`writing-for-agents.md`](../../rules/writing-for-agents.md) and hold the proposal to its checklist.
+friction that only cost time. Within a rank, a recurring candidate outranks a one-off. Hold every
+proposal that changes an agent-facing document to the checklist of the writing lens read in step 3.
 
 Done when every candidate carries all the fields below.
 
@@ -142,7 +149,7 @@ proposals:
     exceptions: <for a ratchet: the starting list and its count>
     firings: <for a prune: the firings judged good code, with where they came from>
 sample: <for a sample of sessions: how many of how many, and how they were chosen>
-dismissed: [candidate: reason, ...]
+dismissed: [candidate: reason, or the declined-ideas entry it matches, ...]
 ```
 
 ### 5. Apply only what was approved

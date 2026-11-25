@@ -1,7 +1,7 @@
 ---
 name: init-worktracking
 description: >-
-  Scaffolds agent-ready work tracking into a repository (AGENTS.md, .tasks/ with validate.py, and
+  Scaffolds agent-ready work tracking into a repository (AGENTS.md, .quests/ with validate.py, and
   by tier a roadmap and changelog), then configures the kit's skills for it in docs/agents/zen.md.
 license: MIT
 metadata:
@@ -13,11 +13,11 @@ disable-model-invocation: true
 
 Scaffold a low-context work-tracking system into the repository this runs in, then record what the
 kit's skills need to know about that repository. The system is separate files at four altitudes, so
-an assigned agent loads only what its task needs:
+an assigned agent loads only what its quest needs:
 
 - **`AGENTS.md`**: the few rules an agent cannot find by looking, including the reading protocol
-  (this file, one task file, and only that task's `touched_files`).
-- **`.tasks/`**: one file per task, `done/` for finished ones, and a shipped `validate.py`.
+  (this file, one quest file, and only that quest's `touched_files`).
+- **`.quests/`**: one file per quest, `done/` for finished ones, and a shipped `validate.py`.
 - **`ROADMAP.md`** and **`CHANGELOG.md`**: the strategy layer and the ledger, by tier.
 - **`CLAUDE.md`**, which imports `AGENTS.md` with `@AGENTS.md`, and optional Cursor and Copilot
   pointers. `AGENTS.md` is the one canonical file.
@@ -25,15 +25,15 @@ an assigned agent loads only what its task needs:
   lands), written with the person by the configure step.
 
 Templates live in [`templates/`](templates/). Fill their `{{PLACEHOLDERS}}` from the repository and
-never clobber an existing file. `fix-batch` dispatches one task file per worktree agent and
-`new-task` writes them, so the honesty of `touched_files`, `depends_on` and the acceptance command is
+never clobber an existing file. `fix-batch` dispatches one quest file per worktree agent and
+`new-quest` writes them, so the honesty of `touched_files`, `depends_on` and the acceptance command is
 what everything downstream rests on; `validate.py` checks the mechanical part.
 
 ## Footprint tiers
 
 | Tier | Writes | For |
 |---|---|---|
-| **lite** | `AGENTS.md`, `.tasks/` (README, `_TEMPLATE.md`, `validate.py`, `done/`), `CLAUDE.md` | small or solo repositories |
+| **lite** | `AGENTS.md`, `.quests/` (README, `_TEMPLATE.md`, `validate.py`, `done/`), `CLAUDE.md` | small or solo repositories |
 | **standard** | lite + `ROADMAP.md` + `CHANGELOG.md` | most repositories |
 | **team** | standard + the validator wired into CI or pre-commit + optional Cursor and Copilot pointers | many contributors or agents |
 
@@ -46,11 +46,15 @@ lite, strike every reference to the absent files as you write them:
 ### Step 1: survey, read-only
 
 1. Confirm a git repository (`git rev-parse --is-inside-work-tree`). If not, ask whether to
-   `git init`; the parallel workflow this feeds needs `.tasks/` tracked.
-2. When the person asked only to configure the skills and `.tasks/validate.py` exists, go straight
-   to step 6, whether or not a manifest exists. Otherwise, when `.tasks/.scaffold.json` exists,
+   `git init`; the parallel workflow this feeds needs `.quests/` tracked.
+2. When the person asked only to configure the skills and `.quests/validate.py` exists, go straight
+   to step 6, whether or not a manifest exists. Otherwise, when `.quests/.scaffold.json` exists,
    this is a re-run: go to step 5.
-3. Note which of `AGENTS.md`, `.tasks/`, `ROADMAP.md`, `CHANGELOG.md`, `CLAUDE.md` exist.
+3. Note which of `AGENTS.md`, `.quests/`, `ROADMAP.md`, `CHANGELOG.md`, `CLAUDE.md` exist. A
+   `.tasks/` holding `validate.py` is this scaffold under its name before the rename to quests: treat
+   it as `.quests/` in every step below, and keep it where it is. Moving it is the person's choice,
+   offered once in the report as `git mv .tasks .quests` with `tracker: quests`; both names stay
+   valid either way.
 4. Look for a tracker under another name or shape: `TODO.md`, `BACKLOG.md`, `TASKS.md`, `PLAN.md`,
    changelog equivalents (`HISTORY.md`, `NEWS.md`), a `tasks/` or `issues/` directory, a "TODO",
    "Backlog" or "Roadmap" heading inside the README or docs, and out-of-repository trackers
@@ -95,16 +99,16 @@ Done when every placeholder the tier uses has a value taken from the repository 
 | Template | Writes to | Tier |
 |---|---|---|
 | `AGENTS.md.tmpl` | `AGENTS.md` | all |
-| `tasks-README.md.tmpl` | `.tasks/README.md` | all |
-| `_TEMPLATE.md.tmpl` | `.tasks/_TEMPLATE.md` | all |
-| `validate.py` | `.tasks/validate.py`, copied verbatim | all |
+| `quests-README.md.tmpl` | `.quests/README.md` | all |
+| `_TEMPLATE.md.tmpl` | `.quests/_TEMPLATE.md` | all |
+| `validate.py` | `.quests/validate.py`, copied verbatim | all |
 | `CLAUDE.md.tmpl` | `CLAUDE.md` | all |
 | `ROADMAP.md.tmpl` | `ROADMAP.md` (`{{DATE}}`, `{{CURRENT_STATE}}`) | standard, team |
 | `CHANGELOG.md.tmpl` | `CHANGELOG.md` (`{{PROJECT_NAME}}`) | standard, team |
 | `copilot-instructions.md.tmpl` | `.github/copilot-instructions.md` | opt-in |
 | `cursor-rule.mdc.tmpl` | `.cursor/rules/agents.mdc` | opt-in |
 
-- A new file is written filled. `.tasks/` gets `done/.gitkeep` so the empty directory commits.
+- A new file is written filled. `.quests/` gets `done/.gitkeep` so the empty directory commits.
 - An existing `AGENTS.md`, `ROADMAP.md` or `CHANGELOG.md` is never overwritten: show what the
   scaffold would add and offer to merge the missing sections, or to write `AGENTS.scaffold.md`
   beside it. The person chooses.
@@ -123,7 +127,7 @@ changed without the person's choice.
 Read the manifest's `tier` and `version`, report them against this skill's, and offer
 **repair/upgrade** (the default) or **fresh**. Repair adds missing files and those of a higher tier
 the person now wants, and refreshes `_TEMPLATE.md` and `validate.py` only where they are unmodified
-from the last scaffold; it never touches an authored task file or edited `AGENTS.md` prose, and
+from the last scaffold; it never touches an authored quest file or edited `AGENTS.md` prose, and
 offers a diff of new template sections instead. Fresh happens only on an explicit request, after a
 backup. When the person asked only to configure the skills, go straight to step 6.
 
@@ -136,7 +140,8 @@ format, every key, and what a valid value is are in `docs/spec/zen-config.md` in
 Skills repository; `templates/zen.md.tmpl` is the file shape. Offer this step at the end of every
 fresh scaffold; the person may decline it.
 
-1. **Explore, read-only.** `git remote -v` (GitHub or GitLab), `.tasks/` (the `tasks` tracker), an
+1. **Explore, read-only.** `git remote -v` (GitHub or GitLab), `.quests/` (the `quests` tracker;
+   write `quests` on a first run, and keep `tasks`, its alias, where a block already sets it), an
    existing `docs/agents/zen.md` and its block, the glossary, a decision-record directory, a spec
    directory, the standards documents (the conventions section of `AGENTS.md`, a style guide), the
    acceptance command from step 3, the default branch (`git symbolic-ref refs/remotes/origin/HEAD`),
@@ -150,10 +155,15 @@ fresh scaffold; the person may decline it.
    only); documents (`glossary`, `adr_dir`, `spec_dir`, `standards`); how work lands (`acceptance`,
    `base_branch`, `integration_prefix`, `merge_policy`); agent work (`default_mode`, `session_logs`,
    `memory`). Lead each with the recommended answer, so one word accepts it. Recommend `hitl` as the
-   default mode unless the person says agents here run unattended. A fact the repository does not
+   default mode unless the person says agents here run unattended. For `merge_policy`, recommend
+   `none`, and mention the `self-merge-sampled` opt-in only as an option the person chooses: it is
+   off unless the value parses exactly and `base_branch` is set explicitly (`A8` in
+   [`autonomy.md`](../../rules/autonomy.md)). With a `quests` tracker on GitHub, mention the
+   `publish` and `publish_repo` keys as a draft feature (opt-in publishing to GitHub issues, in the
+   `triage` draft), recommend leaving them out, and write them only when the person asks. A fact the repository does not
    have is `none`, and a fact nobody knows yet is left out. For `tracker: other`, ask for a paragraph
    saying how to create, read, label and close an item, and put it below the block.
-3. **On a re-run**, first run `python .tasks/validate.py`; when the block does not parse, write
+3. **On a re-run**, first run `python .quests/validate.py`; when the block does not parse, write
    nothing, show the person what the validator reported, and ask them to repair the file by hand.
    Otherwise keep every line of the existing file byte-identical, prose and comments included;
    propose values only for keys it lacks, appended at the end of the block, and change a key only
@@ -165,11 +175,12 @@ fresh scaffold; the person may decline it.
    `AGENTS.md`, replaced in place when it exists (it ends at the next heading of level two or
    higher) and otherwise appended at the end (with no `AGENTS.md`, put the block in your reply
    instead, and create no file for it); and a `memory` file that does not exist
-   yet, holding one heading line. Then run `python .tasks/validate.py` and fix what it reports.
+   yet, holding one heading line. Then run `python .quests/validate.py` and fix what it reports.
 6. **Labels**: for each `role.` label a `github` or `gitlab` tracker lacks, print
    `gh label create '<label>'` or `glab label create --name '<label>'`, writing each `'` in a label
    as `'\''`. When the label list could not be read, print one for every configured label other
-   than `none` and say why. Print none for `tasks` or `other`, and run none.
+   than `none` and say why. Print none for `quests` (or its alias `tasks`) or `other`, and run
+   none.
 
 Done when the person confirmed or declined the draft; on confirmation, `validate.py` reports no error
 against `docs/agents/zen.md`, `AGENTS.md` holds one `## Agent skills` section, and every missing
@@ -177,8 +188,8 @@ label has a printed command; on a decline, no file changed.
 
 ### Step 7: write the manifest, and keep it git-safe
 
-1. Write `.tasks/.scaffold.json`, seeding `id_high_water` from the highest `NNNN` per type already in
-   `.tasks/` and `.tasks/done/` so adopted ids never collide:
+1. Write `.quests/.scaffold.json`, seeding `id_high_water` from the highest `NNNN` per type already in
+   `.quests/` and `.quests/done/` so adopted ids never collide:
 
    ```json
    {
@@ -186,27 +197,27 @@ label has a printed command; on a decline, no file changed.
      "version": "1.1.0",
      "tier": "standard",
      "created": "YYYY-MM-DD",
-     "files": ["AGENTS.md", "CLAUDE.md", ".tasks/README.md", ".tasks/_TEMPLATE.md"],
+     "files": ["AGENTS.md", "CLAUDE.md", ".quests/README.md", ".quests/_TEMPLATE.md"],
      "id_high_water": {"bug": 0, "feat": 0, "chore": 0, "epic": 0}
    }
    ```
 
-2. Check that `.gitignore` excludes none of `.tasks/`, `AGENTS.md`, `ROADMAP.md`, `CHANGELOG.md`,
+2. Check that `.gitignore` excludes none of `.quests/`, `AGENTS.md`, `ROADMAP.md`, `CHANGELOG.md`,
    `docs/agents/`; offer a negating rule for any it does. Commit nothing unless asked.
-3. At team tier, show the snippet that runs `python .tasks/validate.py` in the repository's CI or
+3. At team tier, show the snippet that runs `python .quests/validate.py` in the repository's CI or
    pre-commit, and let the person place it.
 
-Done when the manifest exists, `python .tasks/validate.py` exits 0, and every ignored target is
+Done when the manifest exists, `python .quests/validate.py` exits 0, and every ignored target is
 reported with a fix offered.
 
 ### Step 8: report and offer the next step
 
 Summarise what was written and what was skipped and why. Then offer, without starting either, the
 two next steps and let the person choose: the contract-driven path, `spec-author`, for behaviour a
-person must agree before it is built; or the direct path, `new-task`, for a first task file. This
+person must agree before it is built; or the direct path, `new-quest`, for a first quest file. This
 skill invents no work items unless asked. When neither skill is installed, copy `_TEMPLATE.md` and
-fill it for a known bug or feature, so the person sees the format on their own work, and run
-`python .tasks/validate.py` over it.
+fill it for a known bug or feature request, so the person sees the format on their own work, and run
+`python .quests/validate.py` over it.
 
 Done when the report lists every file written or skipped, and both next steps are offered and
 neither is started.

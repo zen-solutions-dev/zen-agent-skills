@@ -16,9 +16,9 @@ an agent can explore, change and test without bouncing across a dozen files. Poo
 is harder to explore, and an agent pays for that on every task in it.
 
 It reports and proposes. It refactors nothing. A candidate the person picks becomes a spec
-(`spec-author`) or a task (`new-task`).
+(`spec-author`) or a task (`new-quest`).
 
-Every suggestion uses the vocabulary in [`references/vocabulary.md`](references/vocabulary.md)
+Every suggestion uses the vocabulary in the deep-module lens, [`deep-modules.md`](../../rules/deep-modules.md),
 exactly: **module**, **interface**, **implementation**, **depth**, **seam**, **adapter**,
 **leverage**, **locality**, and the **deletion test**. Read it before Step 2.
 
@@ -90,7 +90,7 @@ repository. It must work offline: no CDN, no external script, font or stylesheet
 
 One card per candidate: files, problem (one sentence), proposed deepening (one sentence), wins in
 vocabulary terms, its deletion-test result, a before-and-after diagram, its dependency category (one
-of the four in `vocabulary.md`: in-process, local stand-in, owned remote, third-party), and a
+of the four in `deep-modules.md`: in-process, local stand-in, owned remote, third-party), and a
 strength of `Strong`, `Worth exploring` or `Speculative`. A candidate that contradicts a decision
 record appears only when the friction justifies reopening it, and says so. End with a top
 recommendation and why.

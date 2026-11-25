@@ -146,15 +146,15 @@ Neither trigger the held section named has fired.
 ### A11
 
 *Cited internally, with outside research for the class, and marked as such.* Added 2026-11-23 by
-[`feat-0082`](../../.tasks/done/feat-0082-an-agent-may-not-edit-its-own-judge.md), on the author's
+[`feat-0082`](../../.quests/done/feat-0082-an-agent-may-not-edit-its-own-judge.md), on the author's
 decision. The rule rests on two kinds of evidence, and they answer different questions.
 
 **That this kit already works this way.** Two closed tasks show the shape exercised rather than
-invented. [`bug-0013`](../../.tasks/done/bug-0013-validator-rejects-file-scheme-links.md) found half
+invented. [`bug-0013`](../../.quests/done/bug-0013-validator-rejects-file-scheme-links.md) found half
 of its own acceptance criterion wrong (a grep it expected to return three hits returned five) and
 recorded that "rather than quietly satisfied", leaving the two extra hits alone because changing them
 "would weaken a real check rather than fix this one".
-[`bug-0010`](../../.tasks/done/bug-0010-install-records-an-unresolved-home.md) met an assertion that
+[`bug-0010`](../../.quests/done/bug-0010-install-records-an-unresolved-home.md) met an assertion that
 would fail on macOS for a correct reason and fixed it "by comparing resolved forms rather than by
 loosening it until it passes". Neither names a rule; both obey this one.
 
@@ -236,7 +236,7 @@ end to put the check on. Recorded as `bug-0043`.
 *Cited, with one honest qualification.* The shape is exercised: `pr-describe` is "draft text only,
 never touches GitHub", printing both artifacts and surfacing the command rather than running it, so
 the agent prepares and a person dispatches. **The specific ceiling, a `claude/` branch and a draft
-pull request that is never merged, is a decision recorded in `ROADMAP.md` Epic E rather than a rule
+pull request that is never merged, is a decision recorded in `ROADMAP.md` Campaign E rather than a rule
 this kit has already run under.** It is the only rule in v1 in that position, it is named as such
 rather than dressed up as consolidated, and confirming or amending it against a real unattended run
 is the first job of v2.
@@ -251,6 +251,32 @@ the commit a fresh-context verifier passed. The guards were tightened while that
 after two of its landings had used orchestrator merge commits that the final text sends back to the
 child; [the orchestrator's dogfood record](../reviews/2026-11-24-dogfood/orchestrator.md) says so.
 
+**Two amendments, added 2026-11-25 (`feat-0102`).**
+
+- **The mechanical merge (`B1`).** Retro proposal `R-201` of the
+  [Marjana retro](../reviews/2026-11-24-retro-marjana.md) found that the 2026-11-24 orchestrator had
+  landed WS-C and WS-B by its own merge commits while the text said such a landing goes back to the
+  child, and that the send-back it then imposed on WS-E cost a round trip. It offered fast-forward
+  only, or merges confined to generated files, ledger lines and planning documents. The maintainer
+  chose "mechanical-only orchestrator merges, re-checked and listed in the PR"
+  ([decisions](../reviews/2026-11-25-marjana-decisions.md), `A8` and `B1`). The rule takes the
+  narrow reading: a ledger or planning conflict needs a choice of order or wording, which is
+  judgement, so only a conflict a command resolves is mechanical. Re-deriving the two 2026-11-24
+  merges with `git merge-tree` on 2026-11-25 showed both conflicted in `ROADMAP.md` and the plan
+  document, and the second in a test file too, so this definition would have sent both back; the
+  record is in [the round 2 rules dogfood](../reviews/2026-11-25-dogfood/rules.md).
+- **Sampled self-merge (`C1`).** "Allow it per repository, opt-in, with sampling." It sits in `A8`
+  because it is the one place an agent merges work it authored, and in `merge_policy` because that
+  is the per-repository fact the skills already read. Default off, and off on any value a reader
+  cannot parse, so a typo fails toward a person. The two-way-door list follows `pr-describe`'s merge
+  danger, widened by the kit's own one-way surfaces (approved specs, the acceptance command, CI and
+  hook configuration). Sampling was first written as "pull request number divisible by N"; at the
+  check-in gate on 2026-11-25 the maintainer approved the wording and changed that one point:
+  sampling must be random. It is now the merge commit's full sha, read as a hexadecimal integer,
+  divisible by N: unpredictable before the merge, because the platform creates the commit, and
+  checkable by anyone after it. A pull request number is known in advance, so an agent could have
+  steered which of its merges a person sees. Not yet run anywhere: a decision, not a consolidation.
+
 ## Considered for v1 and held, for want of a citation
 
 The gate is only real if it excludes things. These were wanted and left out, because this kit has not
@@ -259,7 +285,7 @@ and it stays listed with the reason, because a gate that can be emptied quietly 
 
 - **Retry limits and futility classification.** Scoped as task `feat-0042`, which states honestly
   that it is preventive rather than observed, and carries its own kill criterion.
-- **Token, wall-clock, or compute budgets.** Held as Epic E item 7, behind the batch mode, because a
+- **Token, wall-clock, or compute budgets.** Held as Campaign E item 7, behind the batch mode, because a
   bound with no observed run to calibrate against is a guess with a number on it.
 - **Escalation paths, meaning when an unattended agent should stop and wait for a person rather than
   reporting and finishing.** Real, and currently unanswerable: nothing here has run unattended long
