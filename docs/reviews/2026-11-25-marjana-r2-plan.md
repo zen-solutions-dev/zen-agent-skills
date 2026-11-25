@@ -37,6 +37,10 @@ Integration branch: **`zen/marjana-r2-2026-11-25`**, cut from `developer` at `ba
 - Contextual emojis in chat messages. Repository files keep the house style.
 - Every question with choices or free-form input goes through the clickable picker, never a wall of text to scroll. This supersedes the handoff's section 7 suggestion of a plain-conversation round.
 
+### Check-in gate on `feat-0102`, 2026-11-25
+
+The maintainer approved the A8/B1 and C1 wording with these answers: a **mechanical** merge stays strict (no conflict, or conflicts only in regenerated generated files; ledger and plan conflicts go back to the child); self-merge targets `base_branch` only; and sampling is **random**, not by pull request number. The orchestrator implemented "random" as: a self-merged pull request is sampled when its merge commit's sha, read as a hexadecimal integer, is divisible by N (unpredictable before the merge, checkable after; default N 5, cap 20). Revert: one commit to guard 4.
+
 ## The orchestrator's own Wave 1 items (`chore-0104`)
 
 **B5, done 2026-11-25.** A personal cloud environment `zen-agent-skills` (`env_011PpDpVBLXkHjUyyytf9Sdb`), approved by the maintainer in its prompt, saved for this repository. Its setup script installs the kit with drafts (`python3 scripts/install.py --include-drafts`), run first by hand from the checkout's parent and seen to place every skill. Network: limited to `github.com`, `raw.githubusercontent.com`, `codeload.github.com`, `api.github.com`, package registries and MCP servers. The Default environment is unchanged. Wave 2 children start on it.
