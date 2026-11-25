@@ -20,6 +20,12 @@ Dated reports about this kit, one per pass. None is loaded into a session unaske
 | [Podcast extraction](2026-11-25-podcast-extraction.md) | 2026-11-25 | live | Notes from the full "How to Actually Code with AI" podcast: the loop, the practices, 34 items new to the kit |
 | [Marjana decisions](2026-11-25-marjana-decisions.md) | 2026-11-25 | live | The maintainer's answers to the Marjana decision sheet, verbatim, and what is still open |
 | [Round 2 handoff](2026-11-25-round-2-handoff.md) | 2026-11-25 | live | The brief the round 2 orchestrating session starts from |
+| [Plan F1: daily improvement loop](2026-11-25-plan-f1-improvement-loop.md) | 2026-11-25 | live | Plan only (`chore-0110`): a scheduled `improve-architecture` run opening one pull request; asks which repositories |
+| [Plan F2: knowledge wiki](2026-11-25-plan-f2-knowledge-wiki.md) | 2026-11-25 | live | Plan only (`chore-0111`): a private wiki fed by the maintainer's channels, outside this repository |
+| [Plan F3: shared vocabulary](2026-11-25-plan-f3-shared-vocabulary.md) | 2026-11-25 | live | Plan only (`chore-0112`): `GLOSSARY.md` as the one vocabulary for kit, website and courses |
+| [Plan F4: issue-to-PR loop](2026-11-25-plan-f4-issue-to-pr.md) | 2026-11-25 | live | Plan only (`chore-0113`): labelled issues on public repositories become draft pull requests |
+| [Plan F5: sandboxed runs](2026-11-25-plan-f5-sandboxed-runs.md) | 2026-11-25 | live | Plan only (`chore-0114`): running untrusted code and skills with no secrets, network or write path |
+| [Rollout campaign map](2026-11-25-plan-rollout-campaign.md) | 2026-11-25 | live | Plan only (`chore-0115`): installing and proving the kit in each of the maintainer's repositories, the Zen product app first |
 
 Dogfood records for the Marjana workstreams are under [`2026-11-24-dogfood/`](2026-11-24-dogfood/).
 
