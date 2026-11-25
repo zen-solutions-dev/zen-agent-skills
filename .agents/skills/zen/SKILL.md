@@ -34,14 +34,14 @@ Conventions: your answer follows [`house-style.md`](../../rules/house-style.md).
 3. **Read before you recommend.** Before you say what a skill does or that a step can be skipped,
    read that skill's `SKILL.md` if it is installed; the summaries below are for orientation. Name
    any draft you recommend as a draft, and say it needs `install.py --include-drafts`.
-   Done when every skill the reply will name has had its `SKILL.md` read or is said to be not
-   installed, and every draft among them is marked as one.
    **Before recommending a new skill**, one the kit does not have (the person asks for one, or the
    honest answer is "nothing fits; write one"), read the repository's declined-ideas register when
    it keeps one (in the Zen Agent Skills repository, `docs/declined-ideas.md`). When the idea is
    there, say so: when and where it was declined, the reason, and whether a later decision reopened
    it. A declined idea is recommended again only with a reason the register's entry did not weigh.
-   Done when the register was read, or its absence is said, before any new skill is suggested.
+   Done when every skill the reply will name has had its `SKILL.md` read or is said to be not
+   installed, every draft among them is marked as one, and, before any new skill is suggested, the
+   register was read or its absence said.
 4. **Reply with the hint.** The skill to start now, one line on why, the skill that usually
    follows it, and whether the work suits **AFK** (nobody watching: well specified, low risk, easy
    to verify) or **human in the loop** (a one-way door, a wide blast radius, or hard to review).

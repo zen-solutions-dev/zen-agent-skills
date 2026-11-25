@@ -6,8 +6,8 @@ status: in_progress
 priority: P1
 parent: "Marjana round 2, Wave 2: Align and plan (docs/reviews/2026-11-25-marjana-r2-plan.md)"
 depends_on: []
-spec: ""
-scenarios: []
+spec: docs/spec/spec-author.md
+scenarios: [S-012]
 external: ""
 mode: "afk"
 touched_files:

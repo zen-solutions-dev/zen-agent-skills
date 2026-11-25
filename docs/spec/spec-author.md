@@ -41,7 +41,7 @@ has a lens but no author.
   repository has no spec location of its own.
 - The skill composes `spec-quality` rather than restating its rules inline.
 - The interview follows the `grill` skill's mechanism and is composed from it rather than designed
-  anew; when `grill` is not installed, the skill runs the same mechanism inline.
+  anew.
 - Specification work is read-only for implementation surfaces: a run creates or edits only the spec
   file, never implementation source.
 - Frontmatter carries a `status` field whose value is one of `draft` or `approved`. `approved` is
@@ -194,3 +194,9 @@ interview) and a Proposed Surface row are added. `S-008` is unchanged: a decisio
 open is still put to the person before any file is written. No id was renumbered or reused. `status`
 is deliberately left `approved`: **this amendment changes behavior and is pending the maintainer's
 re-approval.**
+
+Amended again on 2026-11-25 by `feat-0105`, by the maintainer's decision that day: the Constraint on
+the interview no longer says that the skill runs `grill`'s mechanism inline when `grill` is not
+installed. The skill has carried no inline fallback since `feat-0084`, and `install.py` always places
+`grill` with `spec-author` because the skill links it. No scenario or id changes. Pending the
+maintainer's re-approval with the amendment above.
