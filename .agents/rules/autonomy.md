@@ -207,8 +207,8 @@ parse alone. Split the `merge_policy` value on spaces, tabs and `;`, and drop em
 - The first token is exactly `self-merge-sampled`, in lower case. Otherwise: off.
 - If the next token starts with a digit, it is the rate and must be exactly `1/N`, N an integer
   from 1 to 20 written without a leading zero. Otherwise: off. With no such token, N is 5.
-- The same file sets `base_branch` to a branch name, explicitly; absent, empty or `none`: off. Self-
-  merge never goes to a branch the agent discovered, such as the remote's default.
+- The same file sets `base_branch` to a branch name, explicitly; absent, empty or `none`: off.
+  Self-merge never goes to a branch the agent discovered, such as the remote's default.
 - The repository's merge method for that branch creates a new commit (a merge commit or a squash).
   A repository that merges by fast-forward only cannot opt in, because guard 4 needs a commit the
   platform creates at the merge.
