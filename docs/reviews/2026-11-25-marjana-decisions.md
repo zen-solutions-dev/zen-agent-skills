@@ -102,3 +102,15 @@ The sheet's free-text brain dump was empty when read.
 - **Tracker publishing.** The coverage map's rule 12 (tracking is deliberately local, while `zen-config` accepts GitHub trackers and role labels that nothing reads) was not on the sheet. C1's per-repository auto-merge leans toward GitHub, but the question itself is undecided and is a one-way door.
 - **A guarded load-by-name for drafts** (coverage map rule 9) was not on the sheet.
 - **F1's repositories**, **F6**, and **B12** (a GitHub setting only the maintainer can read).
+
+## Round 2, Phase 0 answers (2026-11-25)
+
+Given by the maintainer in the round 2 orchestrating session, in conversation, after the three questions of the [round 2 handoff](2026-11-25-round-2-handoff.md) section 6.
+
+| Id | Item | Answer |
+|---|---|---|
+| G7 | The build order | Yes, as proposed: wave 1 is Rules and lenses plus Platform and gates, with the orchestrator's own B13 and B5; wave 2 is Align and plan, Orchestrate and build, Ship and learn; the F1 to F5 plans last. The final text of A8/B1 and C1 comes back before it lands. |
+| T1 | Tracker publishing (coverage map rule 12) | (a) Opt-in publishing as a draft: `.tasks/` stays the source of truth and is mirrored one way, specs as issues and tasks as sub-issues, with a `triage` draft as the consumer of the `role.*` labels. |
+| T2 | A guarded load-by-name for drafts (coverage map rule 9) | Yes: a shipped skill may say "if `<draft>` is installed, read and follow it now", and `validate-skills.py` accepts it without an install edge. |
+| T3 | How questions are asked (coverage map rule 16) | The maintainer prefers the clickable multiple-choice picker over questions in prose, which feel overwhelming to scroll. This settles rule 16's comparison for this maintainer: keep the structured question tool. |
+| T4 | Direction | Adopt the skills Matt Pocock uses in his daily work with agents and fleets of agents. |
