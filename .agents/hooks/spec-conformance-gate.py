@@ -24,7 +24,7 @@ so the gate recognises two shapes and blocks on either:
 ---------------------------------------
 Upstream's terminal set includes `approved`. Here `approved` means the opposite end of the
 lifecycle: a human has signed off on the contract so decomposition may begin, which is the
-gate `spec-author` and `new-task` enforce between them. Every spec in this repository is
+gate `spec-author` and `new-quest` enforce between them. Every spec in this repository is
 `approved`. Treating it as closing would block the next edit to all of them and demand a
 matrix for work not yet written, so the hook would be uninstalled within the hour and the
 idea discredited by its own first run. There is a test pinning this, because the removal
@@ -156,7 +156,9 @@ def _repo_root(path, cwd):
         return cwd
     current = os.path.dirname(os.path.abspath(path))
     while True:
-        if any(os.path.exists(os.path.join(current, m)) for m in (".git", "AGENTS.md", ".tasks")):
+        # `.tasks` is the tracker's name before the rename to quests, still in adopters' trees.
+        markers = (".git", "AGENTS.md", ".quests", ".tasks")
+        if any(os.path.exists(os.path.join(current, m)) for m in markers):
             return current
         parent = os.path.dirname(current)
         if parent == current:

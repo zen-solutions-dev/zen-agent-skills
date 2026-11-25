@@ -20,7 +20,7 @@ and the offending entry, rather than acting on a record it cannot read.
     python scripts/install.py --check             # is an installed set still current?
     python scripts/install.py --replace-adopted   # take the kit's rules module, lose yours
     python scripts/install.py --uninstall         # remove what this installed
-    python scripts/install.py --skills new-task   # one skill plus its sibling-link closure
+    python scripts/install.py --skills new-quest   # one skill plus its sibling-link closure
     python scripts/install.py --include-drafts    # also place draft skills, to try them
 
 Named skills, drafts, and rendered copies (feat-0079)
@@ -126,6 +126,15 @@ RULES_DIR = REPO_ROOT / ".agents" / "rules"
 HOOKS_DIR = REPO_ROOT / ".agents" / "hooks"
 MANIFEST = REPO_ROOT / "scripts" / ".install-manifest.json"
 
+# A skill's old name mapped to its current one. The old name is an alias: `--skills`
+# accepts it, and a run retires a placement this tool recorded under it, which would
+# otherwise point at a source that no longer exists. `new-task` became `new-quest` in the
+# rename from tasks to quests (feat-0101).
+RENAMED_SKILLS = {"new-task": "new-quest"}
+# When an old name stops being accepted (maintainer decision R2-10, the versions named at
+# the round 2 close): v0.2.0 carries the warning, v0.3.0 removes the aliases.
+ALIAS_EXPIRY = "The old name is an alias: v0.2.0 warns; v0.3.0 removes the old names."
+
 TOOL_SUBPATHS = {
     "claude": Path(".claude") / "skills",
     "opencode": Path(".agents") / "skills",
@@ -144,7 +153,7 @@ TOOL_SUBPATHS = {
 # (feat-0080). `--skills` places any single skill with its closure. See docs/spec/install.md.
 PROFILE_SEEDS = {
     "core": ["project-bootstrap", "init-worktracking", "pr-describe"],
-    "spine": ["spec-author", "spec-plan-readiness", "new-task", "fix-batch", "test-author",
+    "spine": ["spec-author", "spec-plan-readiness", "new-quest", "fix-batch", "test-author",
               "spec-conformance", "verifier-agent", "reconcile-worktrees", "doc-sync",
               "pr-describe", "project-bootstrap", "init-worktracking", "house-review",
               "doc-author"],
@@ -477,9 +486,29 @@ def save_manifest(entries, dry):
                         encoding="utf-8", newline="")
 
 
+def _canon(target) -> str:
+    """One spelling for a target path, so a recorded entry is found however it was spelled.
+
+    A home has more than one spelling on some systems: macOS's temp directory is `/var/...`
+    and also `/private/var/...`, Windows has 8.3 short names, and any home can sit behind a
+    symlinked parent. `install` resolves `--home`, so an entry recorded under another
+    spelling never matched by string equality (PR #118: every retire test failed on macOS
+    and Windows). The parent chain is resolved and the final component is not, as in
+    `_beneath`: in symlink mode the target *is* a link this tool made, and resolving it
+    would yield its source. `normcase` folds case where the file system does.
+    """
+    t = Path(target)
+    try:
+        t = t.parent.resolve() / t.name
+    except (OSError, RuntimeError):
+        pass
+    return os.path.normcase(str(t))
+
+
 def is_managed(target: Path, manifest) -> bool:
-    tp = str(target)
-    return any(e.get("target") == tp for e in manifest["entries"])
+    tp = _canon(target)
+    return any(_canon(e["target"]) == tp for e in manifest["entries"]
+               if e.get("target"))
 
 
 # The one placed module an adopter is invited to rewrite. Matched by the entry name this
@@ -562,6 +591,11 @@ HOOK_REGISTRATIONS = [
     # rather than a branch in either: it asks whether the files a harness loaded at launch
     # are committed, which is neither reachability nor currency (feat-0081).
     ("instruction-provenance-reminder.py", "SessionStart", "startup"),
+    # The one gate on `PreToolUse`, the only event early enough to stop a command rather
+    # than report it. Opt-in (feat-0103, D3): printed here for a person to register, and
+    # registered in no wiring this repository commits. Shell tools only; the hook
+    # re-checks the tool name and tokenises the whole command itself.
+    ("destructive-git-gate.py", "PreToolUse", "^Bash$|^PowerShell$"),
 ]
 
 
@@ -577,8 +611,16 @@ def hook_interpreter() -> str:
     return "python" if os.name == "nt" else "python3"
 
 
-def claude_registration(home: Path) -> str:
+# Gates registered apart from the reminders (feat-0103, review F6): a gate blocks work, so
+# opting into it is its own step. Pasting the reminders' block never opts into a gate.
+OPT_IN_GATES = frozenset({"destructive-git-gate.py"})
+
+
+def claude_registration(home: Path, gates: bool = False) -> str:
     """The settings.json block a user pastes to activate the hooks.
+
+    `gates=False` gives the reminders' block, every hook outside OPT_IN_GATES; `gates=True`
+    gives the gates' block alone, printed separately and labelled as a gate.
 
     Printed rather than merged. Editing someone's settings file is the one step of this
     install the uninstall manifest cannot cleanly reverse, and a hook is the only thing
@@ -601,6 +643,8 @@ def claude_registration(home: Path) -> str:
     by_event = {}
     for script_name, event, matcher in HOOK_REGISTRATIONS:
         if not (HOOKS_DIR / script_name).is_file():
+            continue
+        if (script_name in OPT_IN_GATES) != gates:
             continue
         command = f"{hook_interpreter()} \"{hooks_home / script_name}\""
         by_event.setdefault(event, []).append({
@@ -775,7 +819,9 @@ def install(tools, mode, home: Path, dry: bool, profile: str = DEFAULT_PROFILE,
         return report_unreadable_manifest(
             exc, "Nothing was placed: this run would have written a fresh record over "
                  "the damaged one, losing whatever it still records.")
-    entries = {e["target"]: e for e in manifest["entries"]}
+    # Keyed by one spelling of each target (`_canon`), so a record made under another
+    # spelling of the same home is found, retired or replaced rather than duplicated.
+    entries = {_canon(e["target"]): e for e in manifest["entries"]}
     conflicts = 0
     preserved_adopted = False
     tag = "[dry-run] " if dry else ""
@@ -792,6 +838,7 @@ def install(tools, mode, home: Path, dry: bool, profile: str = DEFAULT_PROFILE,
         base = home / TOOL_SUBPATHS[tool]
         if not dry:
             base.mkdir(parents=True, exist_ok=True)
+        placed_here = set()
         for src in skills:
             target = base / src.name
             render = renders_for(tool, src)
@@ -801,9 +848,10 @@ def install(tools, mode, home: Path, dry: bool, profile: str = DEFAULT_PROFILE,
             if status == "CONFLICT":
                 conflicts += 1
             else:
+                placed_here.add(src.name)
                 if render and not dry:
                     (target / "SKILL.md").write_bytes(rendered_skill_md(src))
-                entries[str(target)] = {
+                entries[_canon(target)] = {
                     "tool": tool, "name": src.name,
                     "target": str(target), "mode": placed_mode, "source": str(src),
                     "digests": expected_digests(src, tool),
@@ -812,6 +860,22 @@ def install(tools, mode, home: Path, dry: bool, profile: str = DEFAULT_PROFILE,
                 (["rendered: user-invoked"] if render else [])
             print(f"{tag}{status:9} {tool:8} {src.name}  -> {target}"
                   + (f"  ({'; '.join(marks)})" if marks else ""))
+
+        for old, new in RENAMED_SKILLS.items():
+            retired = base / old
+            if _canon(retired) not in entries:
+                continue  # never placed here by this tool: not ours to remove
+            if new not in placed_here:
+                # Retiring it without its successor would leave the person with neither,
+                # and remove a copy they may have edited for nothing in return.
+                print(f"{tag}{'kept':9} {tool:8} {old}  ({retired}: renamed {new}, which "
+                      f"this run does not place; add it, e.g. --skills {new}, to retire "
+                      f"{old})")
+                continue
+            if not dry and (retired.is_symlink() or retired.exists()):
+                _rm(retired)
+            del entries[_canon(retired)]
+            print(f"{tag}{'retired':9} {tool:8} {old}  ({retired}: renamed {new})")
 
         # The rules module, as the sibling <base>/../rules, so each skill's
         # ../../rules/<file>.md reference resolves in the installed layout too.
@@ -823,7 +887,7 @@ def install(tools, mode, home: Path, dry: bool, profile: str = DEFAULT_PROFILE,
         # before it is overwritten.
         if RULES_DIR.is_dir():
             rules_target = base.parent / "rules"
-            previous = entries.get(str(rules_target)) or {}
+            previous = entries.get(_canon(rules_target)) or {}
             recorded = previous.get("digests")
             # A real directory this tool did not place as a whole, or one it merged into
             # before, is merged into file by file (feat-0079). Refusing it whole left every
@@ -836,20 +900,20 @@ def install(tools, mode, home: Path, dry: bool, profile: str = DEFAULT_PROFILE,
                     RULES_DIR, rules_target, dry, recorded or {}, replace_adopted)
                 conflicts += clashes
                 if digests:
-                    entries[str(rules_target)] = {
+                    entries[_canon(rules_target)] = {
                         "tool": tool, "name": "rules", "target": str(rules_target),
                         "mode": "merged", "source": str(RULES_DIR), "digests": digests,
                     }
                 else:
                     # Nothing of the kit's is in there, so there is nothing to record.
-                    entries.pop(str(rules_target), None)
+                    entries.pop(_canon(rules_target), None)
             else:
                 status, digests, notes = _place_adopted(
                     RULES_DIR, rules_target, mode, dry, manifest, recorded, replace_adopted)
                 if status == "CONFLICT":
                     conflicts += 1
                 else:
-                    entries[str(rules_target)] = {
+                    entries[_canon(rules_target)] = {
                         "tool": tool, "name": "rules",
                         "target": str(rules_target), "mode": mode,
                         "source": str(RULES_DIR), "digests": digests,
@@ -871,7 +935,7 @@ def install(tools, mode, home: Path, dry: bool, profile: str = DEFAULT_PROFILE,
             if status == "CONFLICT":
                 conflicts += 1
             else:
-                entries[str(hooks_target)] = {
+                entries[_canon(hooks_target)] = {
                     "tool": tool, "name": "hooks",
                     "target": str(hooks_target), "mode": mode, "source": str(HOOKS_DIR),
                     "digests": digest_tree(HOOKS_DIR),
@@ -922,6 +986,13 @@ def install(tools, mode, home: Path, dry: bool, profile: str = DEFAULT_PROFILE,
                   f"~/.claude/settings.json:\n")
             print(claude_registration(home))
             print(f"\nRemove that block to deactivate; `--uninstall` removes the files.")
+            gate_names = sorted(n for n in OPT_IN_GATES if (HOOKS_DIR / n).is_file())
+            if gate_names:
+                print(f"\n{tag}Separately, an opt-in GATE was placed and is not in the "
+                      f"block above: {', '.join(gate_names)}. A gate BLOCKS commands it "
+                      f"judges destructive rather than reminding. To opt in, also merge "
+                      f"this second block; leave it out to keep the gate inactive:\n")
+                print(claude_registration(home, gates=True))
         elif placed_tool == "opencode":
             print(f"\n{tag}{opencode_activation_note(home, placed_target)}")
         else:
@@ -1027,7 +1098,8 @@ def _recorded_link(target: Path, points_to, manifest) -> bool:
     if points_to is None:
         return False
     for entry in manifest["entries"]:
-        if entry.get("target") == str(target) and entry.get("source"):
+        if entry.get("target") and _canon(entry["target"]) == _canon(target) \
+                and entry.get("source"):
             try:
                 if Path(entry.get("source")).resolve() == points_to:
                     return True
@@ -1479,8 +1551,11 @@ def _check_entry(entry) -> tuple:
                                 f"anywhere: {target}")
         return "diverged", f"the installed target is gone: {target}"
     if not source.is_dir():
+        renamed = RENAMED_SKILLS.get(entry.get("name", ""))
+        hint = (f" The skill was renamed {renamed!r}: an install run that places "
+                f"{renamed!r} retires this one." if renamed else "")
         return "error", (f"the kit no longer has a source at {source}, so the installed "
-                         f"copy cannot be compared against anything.")
+                         f"copy cannot be compared against anything.{hint}")
     tool = entry.get("tool", "")
     if target.is_symlink():
         try:
@@ -1785,6 +1860,13 @@ def _main(argv=None) -> int:
         if not only:
             print("--skills was given no skill names.")
             return 2
+        # A warning, not a refusal (R2-10, feat-0103): the old name keeps working until
+        # the aliases are removed, and the person learns when that is before it happens.
+        for old in [n for n in only if n in RENAMED_SKILLS]:
+            print(f"warning: {old!r} was renamed {RENAMED_SKILLS[old]!r}; placing "
+                  f"{RENAMED_SKILLS[old]!r}. {ALIAS_EXPIRY} Use "
+                  f"--skills {RENAMED_SKILLS[old]}.")
+        only = list(dict.fromkeys(RENAMED_SKILLS.get(n, n) for n in only))
     profile = args.profile or DEFAULT_PROFILE
     if profile not in PROFILE_SEEDS:
         print(f"Unknown profile: {profile!r}. Choose from {list(PROFILE_SEEDS)}.")

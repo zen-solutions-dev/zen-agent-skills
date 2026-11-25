@@ -6,17 +6,17 @@ status: approved
 # cloud-executable
 
 Behavioral contract for making this repository workable from a cloud agent session, written
-2026-08-07 for item 2 of Epic E in [`ROADMAP.md`](../../ROADMAP.md). **Approved by the author on
+2026-08-07 for item 2 of Campaign E in [`ROADMAP.md`](../../ROADMAP.md). **Approved by the author on
 2026-08-07.**
 
 **Amended 2026-08-20 (`chore-0051`) to repoint `S-017` and `S-018` at an open task: their **Given**
-clauses named [`bug-0018`](../../.tasks/done/bug-0018-reinstall-destroys-an-adopter-edited-lens.md),
+clauses named [`bug-0018`](../../.quests/done/bug-0018-reinstall-destroys-an-adopter-edited-lens.md),
 which closed on 2026-08-08, one day after the runbook that dispatches it was written.** This
 amendment is **pending the author's re-approval**. The contract specified a proof run that could not
 be performed, and nothing reported it: all seven gates pass, and `validate.py --strict` passes because
 the runbook's link to that task resolves correctly into `done/`, so the move made the link more valid
 rather than less. The substitute is
-[`bug-0020`](../../.tasks/done/bug-0020-check-unknown-remedy-is-wrong-for-the-adopted-lens.md), chosen
+[`bug-0020`](../../.quests/done/bug-0020-check-unknown-remedy-is-wrong-for-the-adopted-lens.md), chosen
 because `S-018`'s "the unfixed `install.py`" stays literally true of it and its first acceptance
 criterion already requires a test failing against the current message. `status` is left reading
 `approved` per the convention in [`README.md`](README.md), for the reason that file gives. Nothing
@@ -62,6 +62,8 @@ where the risk sits. A retrospective spec can be wrong about what the code does,
 that. A forward spec can specify something unbuildable, and nothing finds that until someone tries.
 `spec-plan-readiness` over this spec plus its task decomposition is the gate for that, and it runs
 before any implementation begins rather than after.
+
+**Noted 2026-11-25: rename-only edit, `feat-0101`, no behaviour change.** The rename from tasks to quests changed words and paths here; no scenario, surface element or guard changed.
 
 ## Problem
 
@@ -109,13 +111,13 @@ have caught, and then has no command to catch it with either.
 - **Answering whether an installed skill is still current.** That is `install.py --check`, which
   already exists.
 - **Committing the repository-scope skill or adapter trees.** Whether `.claude/skills/`,
-  `.cursor/rules/`, or `.github/prompts/` should be tracked here is held in Epic E with its own
+  `.cursor/rules/`, or `.github/prompts/` should be tracked here is held in Campaign E with its own
   trigger. This contract defines how they are counted if they are present, and requires none of
   them to be.
 - **Replacing, reducing, or reproducing the CI matrix.** The command is a single-cell check by
   construction.
-- **Generalizing to any other repository.** That is the `cloud-ready` skill, Epic E item 4.
-- **Scheduled or recurring unattended runs.** Held in Epic E until one manual session has landed.
+- **Generalizing to any other repository.** That is the `cloud-ready` skill, Campaign E item 4.
+- **Scheduled or recurring unattended runs.** Held in Campaign E until one manual session has landed.
 - **Changing the autonomy ceiling.** Draft pull request, never merge, is fixed here.
 
 ## Constraints
@@ -288,12 +290,12 @@ have caught, and then has no command to catch it with either.
 
 ### Scenario S-017: the proof run lands as a draft pull request carrying its evidence
 
-- **Given** [`bug-0020`](../../.tasks/done/bug-0020-check-unknown-remedy-is-wrong-for-the-adopted-lens.md)
+- **Given** [`bug-0020`](../../.quests/done/bug-0020-check-unknown-remedy-is-wrong-for-the-adopted-lens.md)
   dispatched to a cloud session under the autonomy rules module
 - **When** the session completes its work
 - **Then** the work is on a branch whose name carries the `claude/` prefix, a pull request exists in
   **draft** state, its body carries a report meeting the nine-field evidence contract from
-  [`feat-0041`](../../.tasks/done/feat-0041-delegate-evidence-contract-for-fix-batch.md) including
+  [`feat-0041`](../../.quests/done/feat-0041-delegate-evidence-contract-for-fix-batch.md) including
   the acceptance command's verbatim output, and nothing has been merged.
 
 ### Scenario S-018: the proof's evidence is a test that failed before the change

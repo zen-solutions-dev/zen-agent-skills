@@ -10,11 +10,12 @@ Spec-vs-implementation audit of `.agents/skills/sitrep/` against [`sitrep.md`](s
 at `feat-0066`'s closeout. The decomposition is `feat-0066` to `feat-0071`, in that order, gated by
 [`sitrep.readiness.md`](sitrep.readiness.md), and each task updates this matrix as it closes.
 
-**Twenty-eight of the forty scenarios are built.** `feat-0066` built what waits on the person and
+**Thirty of the forty-two scenarios are built.** `feat-0066` built what waits on the person and
 what is blocked, which is `S-001` to `S-007`, `S-010` and `S-014`; `feat-0067` added in-flight work
 and changes from git, which is `S-008`, `S-009`, `S-011` and `S-039`; `feat-0068` added evidence
 tiers and declared figures, which is `S-012`, `S-013` and `S-015` to `S-020`; `feat-0069` added the
-person's watermark, which is `S-021` to `S-026` and `S-040`. Every other row is not-built and names
+person's watermark, which is `S-021` to `S-026` and `S-040`; `feat-0101` and `feat-0103` added the
+tracker's old name, `S-041` and `S-042`. Every other row is not-built and names
 the task that owes it.
 
 **Conformed is not unbounded.** The watermark rows rest on a transcript field, `origin`, that
@@ -28,9 +29,10 @@ established and `scripts/check-citations.py` enforces.
 
 ## Coverage proof
 
-The spec carries **40** scenarios, `S-001` to `S-040`. This matrix has **40** rows: **28** conformed,
-**0** diverged, **12** not-built. 28 + 0 + 12 = 40, and the arithmetic is stated rather than the
-claim.
+The spec carries **42** scenarios, `S-001` to `S-042`. This matrix has **42** rows: **30** conformed,
+**0** diverged, **12** not-built. 30 + 0 + 12 = 42, and the arithmetic is stated rather than the
+claim. Recounted 2026-11-25 by `feat-0103`, which added `S-042`; the count had not been moved for
+`S-041` (`feat-0101`).
 
 ## Matrix
 
@@ -45,7 +47,7 @@ claim.
 | `S-007`: a task with an unfinished dependency is blocked | **conformed** | `classify()` in `.agents/skills/sitrep/scripts/sitrep.py` names each dependency with no file under the done directory. Proven by `test_s007_a_task_with_an_unfinished_dependency_is_blocked` and `test_s007_a_task_whose_dependencies_are_all_done_is_not_blocked`. |
 | `S-008`: uncommitted work in a worktree is in flight | **conformed** | `worktree_entries()` in `.agents/skills/sitrep/scripts/sitrep.py` reads the porcelain worktree listing and counts the lines git status reports for each worktree, untracked files included, and never reads task status. Proven by `test_s008_uncommitted_work_in_a_worktree_is_in_flight` and `test_s008_a_clean_worktree_is_not_in_flight`. |
 | `S-009`: a branch with unmerged commits is in flight | **conformed** | `branch_entries()` in `.agents/skills/sitrep/scripts/sitrep.py` counts each local branch against the integration branch `resolve_integration()` chose. Proven by `test_s009_a_branch_with_unmerged_commits_is_in_flight`; `test_s009_the_default_branch_of_origin_is_the_integration_branch` and `test_s009_a_declared_branch_that_does_not_exist_is_reported` pin the surface's resolution order. |
-| `S-010`: a repository without task tracking still gets a board | **conformed** | `load_tasks()` in `.agents/skills/sitrep/scripts/sitrep.py` raises `NOTICE_NO_TASKS` when nothing is tracked under `.tasks/`, and `build_board()` still returns every section. Proven by `test_s010_a_repository_without_task_tracking_still_gets_a_board`. `test_s010_a_board_without_task_tracking_carries_its_work_in_flight` proves the in-flight half. |
+| `S-010`: a repository without task tracking still gets a board | **conformed** | `load_tasks()` in `.agents/skills/sitrep/scripts/sitrep.py` raises `NOTICE_NO_TASKS` when nothing is tracked under `.quests/` (or `.tasks/`, S-041), and `build_board()` still returns every section. Proven by `test_s010_a_repository_without_task_tracking_still_gets_a_board`. `test_s010_a_board_without_task_tracking_carries_its_work_in_flight` proves the in-flight half. |
 | `S-011`: changes since the watermark are summarised | **conformed** | `changes_since()` in `.agents/skills/sitrep/scripts/sitrep.py` counts the commits from the base to HEAD and reads the rename-aware name-status diff over the task directory. Proven by `test_s011_changes_since_a_revision_are_summarised`. The base is the watermark `resolve_since()` chose, or an explicit since. |
 | `S-012`: a count over a tracked file is Purple | **conformed** | `declared_figure()` in `.agents/skills/sitrep/scripts/sitrep.py` reads a file the current revision holds with `held_at_head()` and counts what `select()` yields. Proven by `test_s012_a_count_over_a_tracked_file_is_purple_and_read_at_the_current_revision` and `test_s012_a_filter_matches_a_non_string_in_its_json_spelling`. |
 | `S-013`: a value read from a tracked file is Blue | **conformed** | `declared_figure()` in `.agents/skills/sitrep/scripts/sitrep.py`. Proven by `test_s013_a_value_read_from_a_tracked_file_is_blue`. |
@@ -76,3 +78,5 @@ claim.
 | `S-038`: the board is one versioned document | not-built | Owed to `feat-0070`. |
 | `S-039`: no integration branch reports no branches | **conformed** | `resolve_integration()` in `.agents/skills/sitrep/scripts/sitrep.py` returns `NOTICE_NO_INTEGRATION`, and `build_board()` then lists no branches but still lists worktrees. Proven by `test_s039_a_repository_with_no_integration_branch_reports_no_branches_and_says_so`. |
 | `S-040`: an unmarked prompt never moves the watermark | **conformed** | `human_prompt_after()` in `.agents/skills/sitrep/scripts/sitrep.py` requires the human origin mark. Proven by `test_s040_a_prompt_nobody_is_marked_as_typing_never_moves_the_watermark`. |
+| `S-041`: the tracker's old name is read | **conformed** | `TRACKER_DIRS`, `TASK_PATH_RE` and `DONE_PATH_RE` in `.agents/skills/sitrep/scripts/sitrep.py` read `.quests/` and `.tasks/`; `changes_since()` skips a rename whose source was already under a `done/` directory. Proven by `test_a_tasks_directory_is_read_as_the_tracker` and `test_moving_the_tracker_to_its_new_name_closes_nothing` in `tests/test_sitrep_git.py`; each fails when its half of the change is reverted (mutation runs 2026-11-25, `feat-0101`). Both names at once: `NOTICE_BOTH_TRACKERS` in `load_tasks()`, proven by `test_both_tracker_names_at_once_raise_a_notice` and `test_one_tracker_name_raises_no_notice`; removing the notice fails the first (review fix round, 2026-11-25). Added by the implementer, not re-audited. |
+| `S-042`: the tracker's old name carries an expiry notice | **conformed** | `NOTICE_OLD_TRACKER` in `.agents/skills/sitrep/scripts/sitrep.py`, raised by `load_tasks()` whenever a file is tracked under `.tasks/`. Proven by `test_s042_the_old_name_alone_says_when_the_alias_goes`, `test_a_tasks_directory_is_read_as_the_tracker` and `test_both_tracker_names_at_once_raise_a_notice`, with `test_one_tracker_name_raises_no_notice` for the silent case, in `tests/test_sitrep_git.py`; removing the notice fails the first three (mutation run 2026-11-25, `feat-0103`). Added by the implementer, not re-audited. |

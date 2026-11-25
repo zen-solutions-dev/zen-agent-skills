@@ -319,7 +319,7 @@ class TestFrontmatterParseability(unittest.TestCase):
     def test_plain_scalar_with_a_colon_errors(self):
         # Scenario S-019: the exact construct that shipped in eight skills.
         desc = ("Scaffold a work-tracking system into the current repository: AGENTS.md, a "
-                ".tasks/ directory, and a validate.py checker. Use it when setting one up.")
+                ".quests/ directory, and a validate.py checker. Use it when setting one up.")
         _write_skill(self.root, "alpha", GOOD_FM.format(name="alpha", desc=desc))
         code, out = _run(self.root)
         self.assertEqual(code, 1)
@@ -338,7 +338,7 @@ class TestFrontmatterParseability(unittest.TestCase):
         # Scenario S-019 (negative): this is the fix bug-0007 applied to all eight, so a
         # false positive here would reject the corrected tree.
         frontmatter = ("---\nname: alpha\ndescription: >-\n"
-                       "  Scaffold a system into this repository: AGENTS.md and a .tasks/ directory,\n"
+                       "  Scaffold a system into this repository: AGENTS.md and a .quests/ directory,\n"
                        "  which is what you want when setting one up for the first time.\n---\n")
         _write_skill(self.root, "alpha", frontmatter)
         code, out = _run(self.root)
@@ -1280,14 +1280,14 @@ class TestSupportingFileLinkChecks(unittest.TestCase):
 
     def test_a_template_suffix_file_is_not_checked(self):
         # The stated exclusion, pinned. `AGENTS.md.tmpl` is written into an adopter's
-        # repository root, where `.tasks/` and `ROADMAP.md` resolve; here they resolve
+        # repository root, where `.quests/` and `ROADMAP.md` resolve; here they resolve
         # nowhere, and reporting them would make the rule unusable. Both a plain relative
         # target and one that escapes the shipped tree are covered, because the exclusion
         # is at the file level and not per-rule.
         _write_skill(self.root, "alpha", GOOD_FM.format(name="alpha", desc=LONG_DESC))
         self._write_supporting(
             "alpha", "templates/AGENTS.md.tmpl",
-            "Work lives in [`.tasks/`](.tasks/) and history in "
+            "Work lives in [`.quests/`](.quests/) and history in "
             "[the log](../../../../CHANGELOG.md).\n")
         code, out = _run(self.root)
         self.assertEqual(code, 0, out)
@@ -1373,42 +1373,63 @@ class TestSupportingFileLinkChecks(unittest.TestCase):
         self.assertIn("Link-checked 0 supporting file(s) beside the 1 skill(s) checked; "
                       "skipped 0 template(s)", out)
 
+    SUPPORTING_LIST = REPO_ROOT / "tests" / "fixtures" / "supporting-files.txt"
+
+    @staticmethod
+    def _shipped_supporting_files(skills_dir):
+        """`(path, kind)` for every file a skill ships beside its SKILL.md, sorted by path."""
+        rows = []
+        for d in sorted(p for p in skills_dir.iterdir() if p.is_dir()):
+            for path in sorted(p for p in d.rglob("*") if p.is_file()):
+                if path == d / "SKILL.md" or not vs._is_shipped(path.relative_to(d), path):
+                    continue
+                rows.append((path.relative_to(skills_dir).as_posix(),
+                             vs.classify_supporting_file(path)))
+        return sorted(rows)
+
     def test_classification_of_the_real_shipped_supporting_files(self):
-        # The shipped inventory, counted rather than described. chore-0036 was written
-        # from a survey claiming 14 files across two skills with nine in
-        # `init-worktracking`; the numbers are pinned here so the next reader gets the
-        # count from the tree instead of from prose. Asserted as the classification
-        # rather than as bare totals, because the totals move whenever a skill is added
-        # and the split between checked and excluded is the part the rule is about.
+        # The shipped inventory, listed rather than described. chore-0036 was written from
+        # a survey claiming 14 files across two skills; the inventory is pinned so the next
+        # reader gets it from the tree instead of from prose. Until feat-0103 it was one
+        # literal total, {"markdown": N, ...}, which every branch adding a reference bumped,
+        # so every landing after the first conflicted there (retro R-203). It is now one
+        # line per file in tests/fixtures/supporting-files.txt: parallel additions merge as
+        # separate lines, and a forgotten or misclassified file still fails here, by name.
         skills_dir = REPO_ROOT / ".agents" / "skills"
+        listed = []
+        for line in self.SUPPORTING_LIST.read_text(encoding="utf-8").splitlines():
+            if line.strip() and not line.startswith("#"):
+                kind, path = line.split(" ", 1)
+                listed.append((path, kind))
+        actual = self._shipped_supporting_files(skills_dir)
+        missing = sorted(set(actual) - set(listed))
+        extra = sorted(set(listed) - set(actual))
+        self.assertEqual(
+            (missing, extra), ([], []),
+            "tests/fixtures/supporting-files.txt disagrees with the tree. Add a line "
+            "'<kind> <path>' for each of these files: "
+            f"{[f'{k} {p}' for p, k in missing]}; remove each of these lines: "
+            f"{[f'{k} {p}' for p, k in extra]}")
+        self.assertEqual(len(listed), len(set(listed)), "a line is listed twice")
+        # The walk this enumerates must be the one the validator counts, or the list could
+        # agree with itself while the gate counted something else.
         names = {d.name for d in skills_dir.iterdir() if d.is_dir()}
         counts = {"markdown": 0, "template": 0, "other": 0}
         for d in sorted(p for p in skills_dir.iterdir() if p.is_dir()):
             for kind, n in vs.check_supporting_files(
                     d, names, d.name, [], skills_dir.parent.resolve()).items():
                 counts[kind] += n
-        # 6 since feat-0066 added `sitrep/scripts/sitrep.py`. Markdown 2 since chore-0094
-        # moved `fix-batch`'s incident record into `fix-batch/references/incidents.md`.
-        # feat-0072 added `quest-tracker/references/authoring-guide.md`, read in place and so
-        # link-checked, and two files that are not markdown: the template page
-        # `quest-tracker/templates/quest-tracker.html` and `quest-tracker/scripts/tracker.py`.
-        # feat-0076 added three read-in-place references: `new-task/references/why-these-rules.md`
-        # and the glossary and decision-record formats under `domain-language/references/`.
-        # feat-0077 added four: `tdd/references/examples.md`, `fix-batch/references/
-        # claude-code.md`, `reconcile-worktrees/references/lessons.md` and
-        # `systematic-debugging/references/red-flags.md`.
-        # feat-0078 added four: `house-review/references/rationale.md`,
-        # `doc-sync/references/notes.md`, and `improve-architecture/references/vocabulary.md`
-        # and `report.md`.
-        # chore-0096 added `house-review/references/claude-code.md`, moving the harness
-        # section out of the body the way `fix-batch` already does.
-        # feat-0083 added one that is not markdown: `spec-author/scripts/spec_digest.py`.
-        # feat-0092 added `orchestrate/references/first-run.md` and `claude-code.md`.
-        # feat-0091 added two read-in-place references, `init-worktracking/references/
-        # tier-stripping.md` and `migrate-a-tracker.md`, and two templates, `zen.md.tmpl`
-        # and `agent-skills.md.tmpl`.
-        # feat-0094 added `quest-tracker/references/why-claims.md`, the body's notes moved out.
-        self.assertEqual(counts, {"markdown": 20, "template": 10, "other": 9})
+        derived = {"markdown": 0, "template": 0, "other": 0}
+        for _, kind in listed:
+            derived[kind] += 1
+        self.assertEqual(counts, derived)
+
+    def test_the_supporting_list_reader_reports_a_file_the_list_lacks(self):
+        # The degenerate input: a skills tree with a file the list does not name.
+        _write_skill(self.root, "alpha", GOOD_FM.format(name="alpha", desc=LONG_DESC))
+        self._write_supporting("alpha", "references/new.md", "# New\n")
+        self.assertEqual(self._shipped_supporting_files(self.root),
+                         [("alpha/references/new.md", "markdown")])
 
     def test_a_byte_cache_is_not_counted_as_a_supporting_file(self):
         # The count has to be a fact about the kit and not about whether the tests have
@@ -1500,7 +1521,7 @@ class TestSupportingFileSuffixCase(unittest.TestCase):
         _write_skill(self.root, "alpha", GOOD_FM.format(name="alpha", desc=LONG_DESC))
         self._write_supporting(
             "alpha", "templates/AGENTS.md.TMPL",
-            "Work lives in [`.tasks/`](.tasks/) and history in "
+            "Work lives in [`.quests/`](.quests/) and history in "
             "[the log](../../../../CHANGELOG.md).\n")
         code, out = _run(self.root)
         self.assertEqual(code, 0, out)
@@ -1652,7 +1673,7 @@ class TestPortableMarkdownOutsideTheSkillsTree(unittest.TestCase):
         # chore-0036 made one level down holds here unchanged: a `.tmpl` file's links are
         # authored for its destination and are meant to dangle where it currently sits.
         self._write_beside("rules/AGENTS.md.tmpl",
-                           "Work lives in [`.tasks/`](.tasks/) and above in "
+                           "Work lives in [`.quests/`](.quests/) and above in "
                            "[the log](../../../CHANGELOG.md).\n")
         code, out = _run(self.skills)
         self.assertEqual(code, 0, out)

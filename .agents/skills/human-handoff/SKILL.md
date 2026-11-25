@@ -35,7 +35,7 @@ Done when the audience and the form are both fixed, from the request or from one
 
 ## Before writing: gather the real state
 
-Ground the handoff in reality, not recollection. Read the repo's `AGENTS.md` or `CLAUDE.md` for context, check `git status` and recent changes, and look at the actual docs or task files that describe current state. A handoff built on a stale mental model is worse than none, because the reader acts on it. Date the state you report ("as of 2026-11-24") and, for a team member, cite the commit it was read at: the reader acts later than you write.
+Ground the handoff in reality, not recollection. Read the repo's `AGENTS.md` or `CLAUDE.md` for context, check `git status` and recent changes, and look at the actual docs or quest files that describe current state. A handoff built on a stale mental model is worse than none, because the reader acts on it. Date the state you report ("as of 2026-11-24") and, for a team member, cite the commit it was read at: the reader acts later than you write.
 
 Done when every claim the handoff will make is tied to something you read in this session, with its date.
 

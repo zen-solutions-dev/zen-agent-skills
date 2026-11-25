@@ -328,34 +328,34 @@ class TestSkillUsage(ServerTestCase):
         self.build_store([self.record("a1", sid="s1", skill="doc-sync")])
         other = self.corpus / "D--other"
         self.build_store([self.record("b1", sid="s2", skill="doc-sync"),
-                          self.record("b2", sid="s2", skill="new-task")],
+                          self.record("b2", sid="s2", skill="new-quest")],
                          name="other.jsonl", project=other)
 
-        roster = ["doc-sync", "new-task"]
+        roster = ["doc-sync", "new-quest"]
         self.assertEqual(self.uses(self.report(roster=roster))["doc-sync"], 2)
         self.assertEqual(self.uses(self.report("D--demo", roster))["doc-sync"], 1)
-        self.assertEqual(self.uses(self.report("D--other", roster))["new-task"], 1)
-        self.assertEqual(self.uses(self.report("D--demo", roster))["new-task"], 0,
+        self.assertEqual(self.uses(self.report("D--other", roster))["new-quest"], 1)
+        self.assertEqual(self.uses(self.report("D--demo", roster))["new-quest"], 0,
                          "a skill used only in another project leaked into this one")
 
     def test_the_scoped_count_deduplicates_history_replayed_within_one_project(self):
         """The scoped query's `COUNT(DISTINCT m.uuid)` had no fixture, so `COUNT(*)` survived
         the suite. It is not cosmetic: on the maintainer's real corpus, scoped to this
-        repository, `new-task` would read 510 instead of 339 and five other skills would
+        repository, `new-quest` would read 510 instead of 339 and five other skills would
         likewise inflate. A forked session replays history into a second transcript of the same
         project, which is the case built here and which the unscoped fixtures never produce."""
-        replayed = self.record("r1", sid="s1", skill="new-task")
+        replayed = self.record("r1", sid="s1", skill="new-quest")
         # The same message, replayed verbatim into a second session of the SAME project. Two
         # corpus lines, one message, and the count must be one.
         forked = dict(replayed, sessionId="s1-fork")
-        self.build_store([replayed, self.record("r2", sid="s1", skill="new-task"), forked])
+        self.build_store([replayed, self.record("r2", sid="s1", skill="new-quest"), forked])
 
-        roster = ["new-task"]
+        roster = ["new-quest"]
         self.assertEqual(
-            self.uses(self.report("D--demo", roster))["new-task"], 2,
+            self.uses(self.report("D--demo", roster))["new-quest"], 2,
             "the project-scoped count counted a replayed line as a second use")
         self.assertEqual(
-            self.uses(self.report(roster=roster))["new-task"], 2,
+            self.uses(self.report(roster=roster))["new-quest"], 2,
             "the unscoped and scoped counts disagree over the same single project")
 
 
@@ -1157,10 +1157,10 @@ class TestSkillsReportAcrossProjects(ServerTestCase):
     def test_s018_the_skills_report_identity_holds_when_no_message_spans_projects(self):
         other = self.corpus / "D--other"
         self.build_store([self.record("a1", sid="s1", skill="doc-sync"),
-                          self.record("a2", sid="s1", skill="new-task")])
+                          self.record("a2", sid="s1", skill="new-quest")])
         self.build_store([self.record("b1", sid="s2", skill="doc-sync")],
                          name="other.jsonl", project=other)
-        roster = ["doc-sync", "new-task"]
+        roster = ["doc-sync", "new-quest"]
 
         everywhere = self.report(roster=roster)["total_uses"]
         summed = sum(self.report(project, roster)["total_uses"]
@@ -2001,11 +2001,11 @@ class TestLiveWatcher(ServeTestCase):
         """
         records = [self.record("a1", sid="s1", skill="doc-sync"),
                    self.record("a2", sid="s1", skill="doc-sync"),
-                   self.record("a3", sid="s1", skill="new-task")]
+                   self.record("a3", sid="s1", skill="new-quest")]
 
         # Run A: the corpus alone, ingested the ordinary way.
         self.build_store(records)
-        corpus_only = self.report(roster=["doc-sync", "new-task"])
+        corpus_only = self.report(roster=["doc-sync", "new-quest"])
 
         # Run B: the same work, a fresh store, and the hook shouting about all of it.
         second = self.tmp / "with-events.db"
@@ -2017,7 +2017,7 @@ class TestLiveWatcher(ServeTestCase):
 
         conn = db.connect(second)
         try:
-            with_events = serve.skills_report(conn, None, ["doc-sync", "new-task"])
+            with_events = serve.skills_report(conn, None, ["doc-sync", "new-quest"])
         finally:
             conn.close()
 

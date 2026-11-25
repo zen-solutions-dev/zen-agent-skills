@@ -50,7 +50,7 @@ class ClassificationTests(unittest.TestCase):
     def test_a_skill_a_spec_a_task_or_code_is_not(self):
         for path in (".agents/skills/grill/SKILL.md", ".agents/rules/core.md",
                      ".claude-plugin/plugin/skills/zen/SKILL.md", "docs/spec/install.md",
-                     ".tasks/feat-0001-x.md", "tests/README.md", "scripts/x.py",
+                     ".quests/feat-0001-x.md", "tests/README.md", "scripts/x.py",
                      ".github/workflows/checks.yml", "evals/x/case.md", "notes.txt"):
             with self.subTest(path=path):
                 self.assertFalse(cs.is_documentation(path))

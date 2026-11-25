@@ -138,13 +138,14 @@ everything-claude-code (Affaan Mustafa, MIT).
 
 **A8. Push to a branch of your own and open a draft pull request. Never merge your own work.**
 The ceiling for any unattended run. Carry the evidence report in the pull request body. Landing it is
-a person's decision, and an unattended agent never makes it. Where a configuration exists only for
-unattended runs, a `permissions.deny` rule on the merge commands enforces this better than prose.
+a person's decision, and an unattended agent never makes it, outside the two exceptions below. Where
+a configuration exists only for unattended runs, a `permissions.deny` rule on the merge commands
+enforces this better than prose.
 
 *Cited, with a qualification:* the shape is exercised by `pr-describe`; the specific ceiling is a
-decision recorded in `ROADMAP.md` Epic E rather than a rule this kit has already run under.
+decision recorded in `ROADMAP.md` Campaign E rather than a rule this kit has already run under.
 
-**The one exception: an orchestrator landing other agents' work on an integration branch.** An
+**First exception: an orchestrator landing other agents' work on an integration branch.** An
 **integration branch** is a branch cut for one run to collect its children's work, which reaches a
 person as one draft pull request. An orchestrator may merge a child's branch into it only when every
 guard below holds; if any one fails, `A8` applies unchanged and the child's branch waits for a person.
@@ -158,22 +159,96 @@ guard below holds; if any one fails, `A8` applies unchanged and the child's bran
    not dispatched or briefed by the author, returned a passing verdict on the exact commit being
    merged (`A7`); it is the latest verdict on that commit, no earlier `fail` on it is unanswered, and
    the orchestrator has read its evidence. Unverified, `fail` or `blocked` work does not land.
-3. **A fast-forward onto the integration branch only.** The child merges the integration tip into
-   its own branch first, so the verified commit is the commit that lands. A landing that needs a
-   merge commit or a conflict resolution goes back to the child. Never the base branch, and never a
-   branch a person or another run owns.
+3. **A fast-forward, or a mechanical merge, onto the integration branch only.** The child merges
+   the integration tip into its own branch first, so the verified commit is the commit that lands.
+   When a verified child is behind the integration tip instead, the orchestrator may make the merge
+   itself only if the merge is **mechanical**, as defined below; any other landing goes back to the
+   child. Never the base branch, and never a branch a person or another run owns.
 4. **A person merges into the base branch** (`developer` or `main` here, whatever the repository
    protects elsewhere). The integration branch goes to that person as a draft pull request, and that
-   merge is theirs alone.
+   merge is theirs alone, unless the repository opted into sampled self-merge below.
+
+**A mechanical merge.** A merge of the verified child commit into the integration tip is mechanical
+when one of these holds, and neither can be satisfied by judgement:
+
+- **No conflict.** `git merge --no-ff --no-commit <child>` onto the integration tip reports no
+  conflicted path, and the orchestrator commits the result unedited.
+- **Conflicts only in generated files, regenerated.** Every conflicted path is a generated path,
+  and the orchestrator resolves each by running the command that rebuilds it on the merged sources
+  and adding its output, never by choosing a side or editing a line.
+
+A **generated path** is one the repository names as generated, together with the command that
+rebuilds it, in its `AGENTS.md` or in the prose of its `docs/agents/zen.md`. In this kit `AGENTS.md`
+names `.claude-plugin/`, rebuilt by `build-adapters.py --marketplace`. A repository that names none
+has no generated paths, so only a conflict-free merge can be mechanical there.
+
+Anything else is not mechanical: a conflict in any other file, ledger lines and the orchestrator's
+own planning documents included; a hand edit anywhere in the resolution; or a generated path whose
+command fails. A reader can decide the question afterwards: `git merge-tree --write-tree <integration
+tip> <child commit>` lists the conflicted paths; the merge commit's tree equals that merge's tree
+everywhere outside the generated paths; and every generated path, conflicted or merged cleanly,
+equals what its command produces on the merge commit.
+
+A mechanical merge makes nobody's work the orchestrator's own (guard 1), because it chose no line.
+It is still a commit no verifier passed, so the orchestrator **re-checks** it: it runs the
+repository's acceptance command on the merge commit, and a failure reverts the merge and sends the
+landing back to the child. It **lists every such merge** in the integration pull request's body:
+the merge commit, the child commit it lands, "no conflict" or the regenerated paths with the command
+that rebuilt them, and the acceptance command with the verbatim tail of its result (`A4`).
 
 The orchestrator's **own commits** on the integration branch (the plan, generated files, its own
 fixes) are not landed under this exception: they are its own work, so they go through verification
 like any child's, or are listed in the pull request body as unverified.
 
+**Second exception, opt-in: sampled self-merge of a verified two-way door.** Off by default. A
+repository turns it on in its `docs/agents/zen.md`, and the agent decides whether it is on by this
+parse alone. Split the `merge_policy` value on spaces, tabs and `;`, and drop empty pieces:
+
+- The first token is exactly `self-merge-sampled`, in lower case. Otherwise: off.
+- If the next token starts with a digit, it is the rate and must be exactly `1/N`, N an integer
+  from 1 to 20 written without a leading zero. Otherwise: off. With no such token, N is 5.
+- The same file sets `base_branch` to a branch name, explicitly; absent, empty or `none`: off.
+  Self-merge never goes to a branch the agent discovered, such as the remote's default.
+- The repository's merge method for that branch creates a new commit (a merge commit or a squash).
+  A repository that merges by fast-forward only cannot opt in, because guard 4 needs a commit the
+  platform creates at the merge.
+
+An absent key, an unreadable file, or any failed step means off, and `A8` applies unchanged; the
+agent then merges nothing itself and names the value it read, when there is one, in its report. The
+same format is specified in `docs/spec/zen-config.md` in the Zen Agent Skills repository. When it is
+on, an agent may merge a pull request into that `base_branch` only when every guard holds:
+
+1. **Verified by someone else**, as guard 2 above, on the pull request's exact head commit, and the
+   acceptance command passes on that commit in the platform's own required checks.
+2. **A two-way door.** One revert of the merge undoes it whole: no migration or change to persisted
+   data, no deleted or renamed public surface others call, no published package, tag or release, no
+   sent message or destroyed resource, no change to permissions, secrets, CI or hook configuration,
+   no change to an approved spec or to the acceptance command and its checks, and no quest in it
+   declared `mode: hitl`. Any doubt makes it a one-way door, which a person merges.
+3. **Through the front door.** The platform's normal merge, by a method that creates a new commit,
+   never an administrator override, a bypassed branch protection, or a skipped required check.
+4. **Sampled at random, and recorded.** The agent records the merge on the pull request (verdict,
+   commit, why it is two-way). The sample is decided by the merge commit the platform creates, so
+   nobody can predict it before the merge and anyone can check it after: the pull request is sampled
+   when that commit's full sha, read as a hexadecimal integer, is divisible by N
+   (`int(sha, 16) % N == 0`). The agent never re-creates or amends a merge to change the result. A
+   sampled pull request gets one item for a person to review it after the fact, in the repository's
+   tracker, and a defect that review finds is fixed by reverting the merge first.
+
+This is the one case in which an agent may merge work it authored: the passing verdict of an agent
+that is not its author stands in for the person, and `A7` still decides who that may be. The sample
+is how a person learns whether that substitution holds.
+
 *Cited, with a qualification:* decision `D1` of the 2026-11-24 "Marjana" overhaul, taken by the
 maintainer. This text was written while that overhaul was still running (2026-11-24, before any
 workstream had landed), so it records the decision and the plan, not a finished run of it. The skill
 that runs the pattern is `orchestrate`.
+
+The mechanical merge is decision `B1` of 2026-11-25, answering retro proposal `R-201`, which found
+the 2026-11-24 orchestrator landing two children by its own merge commits. Those two merges
+conflicted in hand-written files as well as generated ones, so this definition would have sent both
+back; the rule is narrower than the practice it answers. The sampled self-merge is decision `C1` of
+the same date, a decision rather than a rule this kit has run under.
 
 ## Scope
 

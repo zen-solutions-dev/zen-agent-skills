@@ -19,9 +19,11 @@ it on every cycle; this skill supplies the loop around it.
 
 - A feature or behaviour change is about to be written, and its interface can be stated before its
   implementation.
-- A bug is about to be fixed: the first red test is the bug's reproduction. If the cause is still
-  unknown, find it with `systematic-debugging` first, which ends on a red command; that command
-  becomes this skill's first test.
+- A bug is about to be fixed: the first red test is the bug's reproduction. When the cause is still
+  unknown, find it before writing any fix.
+  If `systematic-debugging` is installed, read and follow it now, and its red command becomes this skill's first test; otherwise
+  build that red command yourself as step 3's first test, and change no code until it fails on the
+  reported symptom.
 - A person asks for red-green-refactor or test-first work.
 
 ## When not to use
@@ -49,7 +51,7 @@ seam on what a test there catches and what it misses. Prefer the narrow interfac
 module**, one that hides a lot behind a little, because tests there survive refactors.
 
 Ask the person to confirm. When no person is available, as in an unattended run, choose the seams
-yourself and record them, with the reason for each, as a decision in the task file or the run's
+yourself and record them, with the reason for each, as a decision in the quest file or the run's
 report rather than blocking.
 
 Done when every seam you will test is confirmed or recorded, and no test is planned at a seam that

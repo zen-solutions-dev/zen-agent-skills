@@ -1,6 +1,6 @@
 # AGENTS.md
 
-Rules for every AI agent working in this repository. `CLAUDE.md` imports this file; Cursor, Codex, and OpenCode read it natively. Keep it to what an agent cannot find by looking and needs on every task: a file listing, or a command a manifest already shows, goes stale here.
+Rules for every AI agent working in this repository. `CLAUDE.md` imports this file; Cursor, Codex, and OpenCode read it natively. Keep it to what an agent cannot find by looking and needs on every quest: a file listing, or a command a manifest already shows, goes stale here.
 
 {{OVERVIEW}}
 
@@ -8,25 +8,25 @@ Rules for every AI agent working in this repository. `CLAUDE.md` imports this fi
 
 ## Reading protocol
 
-An agent assigned a task reads exactly this file, its one task file in `.tasks/`, and the files that task names in `touched_files` or its body points to. It does not scan `.tasks/` or read other task files, `ROADMAP.md`, or `CHANGELOG.md` unless its task cites them. When a `depends_on` task is not yet in `.tasks/done/`, it stops and reports the blocker.
+An agent assigned a quest reads exactly this file, its one quest file in `.quests/`, and the files that quest names in `touched_files` or its body points to. It does not scan `.quests/` or read other quest files, `ROADMAP.md`, or `CHANGELOG.md` unless its quest cites them. When a `depends_on` quest is not yet in `.quests/done/`, it stops and reports the blocker.
 
 ## Acceptance
 
     {{ACCEPTANCE}}
 
-A change is acceptable when this passes. A task file's acceptance criteria name the exact command for that task.
+A change is acceptable when this passes. A quest file's acceptance criteria name the exact command for that quest.
 
 ## Work tracking
 
-Strategy lives in [`ROADMAP.md`](ROADMAP.md), atomic work in [`.tasks/`](.tasks/) (one file per task, its `parent` naming the roadmap Feature it serves), and finished work in [`CHANGELOG.md`](CHANGELOG.md).
+Strategy lives in [`ROADMAP.md`](ROADMAP.md), atomic work in [`.quests/`](.quests/) (one file per quest, its `parent` naming the roadmap Quest chain it serves, or the Campaign for a Side quest, one in no chain), and finished work in [`CHANGELOG.md`](CHANGELOG.md).
 
-A change finished in one sitting, with nothing anyone must agree first, needs no task file: make it and run the acceptance command. Work that spans sittings or goes to another agent gets a task file. Behaviour a person must agree before it is built gets a written spec first.
+A change finished in one sitting, with nothing anyone must agree first, needs no quest file: make it and run the acceptance command. Work that spans sittings or goes to another agent gets a quest file. Behaviour a person must agree before it is built gets a written spec first.
 
 Lifecycle `open -> in_progress -> done`. On completion:
 
-1. Confirm the acceptance command passes and every `depends_on` task is in `.tasks/done/`.
-2. Move the file to `.tasks/done/` with `status: done`, and add one `../` to each of its relative links.
-3. Add one dated line to [`CHANGELOG.md`](CHANGELOG.md) naming the task id, and strike a finished Feature through in `ROADMAP.md`.
+1. Confirm the acceptance command passes and every `depends_on` quest is in `.quests/done/`.
+2. Move the file to `.quests/done/` with `status: done`, and add one `../` to each of its relative links.
+3. Add one dated line to [`CHANGELOG.md`](CHANGELOG.md) naming the quest id, and strike a finished Quest chain through in `ROADMAP.md`.
 
 ## Conventions (edit freely)
 

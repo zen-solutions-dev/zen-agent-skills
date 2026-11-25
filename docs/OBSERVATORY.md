@@ -376,7 +376,7 @@ reported: a **hook that failed**, with the status it exited on; an **API error**
 of attempts the request took; and a **run the corpus marks as having ended abnormally**.
 
 **It reports what failed and decides nothing about it.** No threshold, no retry limit, no failure
-budget, and no alert. Those are ROADMAP Epic E item 7(c) and stay held, which is why the retry
+budget, and no alert. Those are ROADMAP Campaign E item 7(c) and stay held, which is why the retry
 column says how many attempts a request took and never whether that was too many.
 
 Three things are worth knowing before reading a figure off it.

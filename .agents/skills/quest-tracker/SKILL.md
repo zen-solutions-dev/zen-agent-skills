@@ -4,7 +4,7 @@ description: >-
   Plans and logs a season of project work on a shared quest tracker page of steps that say what to
   do, why, and what closes each. Starts a tracker, works sessions against one, and has agents
   report work as claims a person verifies. Use for "start a quest tracker", "set up a run sheet",
-  "log this session in the tracker", "what is left on the tracker". sitrep reads task files; this
+  "log this session in the tracker", "what is left on the tracker". sitrep reads quest files; this
   runs a shared page.
 license: MIT
 compatibility: >-
@@ -49,8 +49,9 @@ run needs; the reasons behind the rules live in [`references/why-claims.md`](ref
 
 - **The host cannot publish a page with a shared database.** See the decline path in step 0. Do not
   stand up a server, a database, or a file-based imitation instead.
-- The question is about a repository's own task files. That is `sitrep`, which reads them.
-- The work is already tracked in `.tasks/` and the person has not asked for a tracker. A tracker is a
+- The question is about a repository's own quest files in `.quests/`. That is `sitrep`, which
+  reads them.
+- The work is already tracked in `.quests/` and the person has not asked for a tracker. A tracker is a
   working surface shared with people; it does not replace a backlog.
 
 ## Inputs

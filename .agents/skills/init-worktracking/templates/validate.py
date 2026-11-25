@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate the .tasks/ backlog.
+"""Validate the .quests/ backlog, or a .tasks/ one: the directory this file sits in.
 
 Ships with the init-worktracking scaffold. Checks the mechanical integrity a
 multi-agent workflow depends on: every task file has a well-formed frontmatter,
@@ -31,9 +31,9 @@ or `hitl`.
 Standard library only, so it runs anywhere a bare Python 3 does. Exits non-zero
 on any error, so it drops cleanly into CI or a pre-commit hook.
 
-    python .tasks/validate.py            # errors fail, missing files warn
-    python .tasks/validate.py --strict   # warnings become errors too
-    python .tasks/validate.py --links '*.md'   # link-check documents
+    python .quests/validate.py            # errors fail, missing files warn
+    python .quests/validate.py --strict   # warnings become errors too
+    python .quests/validate.py --links '*.md'   # link-check documents
 
 The --links example names only the root markdown this scaffold guarantees. Add
 'docs/**/*.md' to it once there is a docs/ directory, and any other tree as it
@@ -81,8 +81,14 @@ SCAFFOLD_MANIFEST = ".scaffold.json"
 ZEN_CONFIG_PATH = "docs/agents/zen.md"
 ZEN_CONFIG_VERSION = 1
 ZEN_ROLES = {"ready-agent", "ready-human", "needs-info", "blocked", "out-of-scope"}
-ZEN_CHOICES = {"tracker": {"tasks", "github", "gitlab", "other"},
-               "default_mode": {"afk", "hitl"}}
+# `tasks` is the tracker's name before the rename to quests (feat-0101), kept as an alias so
+# a repository configured before it still validates. Both mean the directory this file
+# sits in, `.quests/` or its old name `.tasks/`.
+# `publish` is the opt-in to mirroring the tracker to GitHub issues (feat-0106): off when
+# absent or `none`, so a repository never publishes because a key was left out.
+ZEN_CHOICES = {"tracker": {"quests", "tasks", "github", "gitlab", "other"},
+               "default_mode": {"afk", "hitl"},
+               "publish": {"github", "none"}}
 ZEN_FILES = {"glossary", "memory"}
 ZEN_DIRS = {"adr_dir", "spec_dir"}
 ZEN_PATHS = ZEN_FILES | ZEN_DIRS
@@ -92,7 +98,16 @@ ZEN_PATHS = ZEN_FILES | ZEN_DIRS
 ZEN_FENCE_RE = re.compile(r"^ {0,3}(`{3,}|~{3,})(.*)$")
 ZEN_TEXT = {"acceptance", "base_branch", "integration_prefix", "merge_policy"}
 ZEN_KEYS = ({"config_version", "standards", "session_logs"} | set(ZEN_CHOICES)
-            | ZEN_PATHS | ZEN_TEXT | {"role." + r for r in ZEN_ROLES})
+            | ZEN_PATHS | ZEN_TEXT | {"role." + r for r in ZEN_ROLES}
+            | {"publish_repo"})
+# The repository published issues go to, as `owner/name`. Named explicitly rather than
+# left to `gh`, which picks a fork's upstream when it guesses. The trackers a publisher
+# reads are the local ones only: the issues are a mirror, never the source.
+ZEN_PUBLISH_REPO_RE = re.compile(r"^[A-Za-z0-9](?:[A-Za-z0-9-]*[A-Za-z0-9])?/"
+                                 r"(?!\.{1,2}$)[A-Za-z0-9_.-]+$")
+ZEN_PUBLISH_TRACKERS = {"quests", "tasks"}
+# The optional quest field that keeps one quest off GitHub when publishing is on.
+PRIVATE_VALUES = {"true", "false"}
 # The optional per-task field naming who has to be present while the work runs.
 MODES = {"afk", "hitl"}
 
@@ -142,7 +157,7 @@ LINK_TEXT_RE = re.compile(r"\[([^\]]*)\]\(([^)]+)\)")
 # repository path uses. Prose fails this on the first space, which is the cheapest
 # reliable way to tell "README.md" from "the readme".
 TEXT_PATH_RE = re.compile(r"^[A-Za-z0-9._/-]+$")
-# A trailing `:29`, as in `.tasks/README.md:29`. Text in that form cites a location
+# A trailing `:29`, as in `.quests/README.md:29`. Text in that form cites a location
 # inside a file rather than claiming which file the link opens, so it is left alone.
 LINE_SUFFIX_RE = re.compile(r":\d+$")
 # A run of one or more backticks. Markdown opens an inline code span with a run of
@@ -213,7 +228,7 @@ def task_files():
 
 
 def markdown_files():
-    """Every Markdown file under .tasks/, not only the task files.
+    """Every Markdown file under .quests/, not only the task files.
 
     Wider than task_files() on purpose: a broken link in README.md is exactly as
     clickable as one in a task file, and excluding it would leave a hole for no
@@ -303,7 +318,7 @@ def stale_high_water(manifest_path, ids):
     if recorded is None:
         return []
     if not isinstance(recorded, dict):
-        return ["id_high_water is not an object mapping each task type to its highest "
+        return ["id_high_water is not an object mapping each quest type to its highest "
                 "id, so nothing could be compared against the backlog"]
 
     highest = {}
@@ -409,9 +424,9 @@ def broken_links(path):
     """Relative link targets in `path` that do not resolve from its own directory.
 
     Resolving against `path.parent` rather than against the repository root is the
-    whole point. A task file is authored in .tasks/, where `../src/x.py` is
-    correct, and the lifecycle moves it to .tasks/done/ at closeout, where `../`
-    now means .tasks/ and every such link dangles. Checking a link where the file
+    whole point. A task file is authored in .quests/, where `../src/x.py` is
+    correct, and the lifecycle moves it to .quests/done/ at closeout, where `../`
+    now means .quests/ and every such link dangles. Checking a link where the file
     currently lives is what makes that move fail loudly instead of silently.
 
     A link inside an inline code span or a fenced code block is skipped, the same rule
@@ -421,7 +436,7 @@ def broken_links(path):
     rewording apiece to quote a broken link as the example of the bug they documented.
 
     The ranges are computed once for the file rather than once per link, because this
-    runs over every markdown file under .tasks/ and every globbed document.
+    runs over every markdown file under .quests/ and every globbed document.
     """
     found = []
     content = read_text_utf8(path)
@@ -513,7 +528,7 @@ def mislabelled_links(path):
     """Links in `path` whose text names one repository path and which open another.
 
     The class underneath broken_links(). Once a repository has both a root `README.md`
-    and a `.tasks/README.md`, `../README.md` written from `.tasks/done/` resolves to the
+    and a `.quests/README.md`, `../README.md` written from `.quests/done/` resolves to the
     second: existence is satisfied, nothing dangles, and the reader still lands somewhere
     the link text never named. Three completed task files in the repository this scaffold
     came from carried exactly that link while every check reported success (bug-0012).
@@ -712,6 +727,66 @@ def _exact_path(root, value):
     return current
 
 
+def _holds_quest_files(directory):
+    """True when `directory`, or its `done/`, holds a Markdown file.
+
+    What makes a tracker directory a tracker rather than a leftover. git removes the
+    files it tracks when a checkout moves `.tasks/` to `.quests/`, but not an ignored
+    one such as `__pycache__/`, so the old directory can outlive the move with nothing
+    in it that is a quest (feat-0103, N1).
+    """
+    directory = Path(directory)
+    return any(directory.glob("*.md")) or any((directory / "done").glob("*.md"))
+
+
+def both_tracker_dirs(repo_root):
+    """A warning when `.quests/` and `.tasks/`, its old name, both hold quest files.
+
+    Only the directory this run does not read has to hold one: the run's own directory
+    is the tracker by definition. A directory holding nothing Markdown, such as a stray
+    `.tasks/__pycache__/` an old checkout leaves behind, is not a second tracker.
+    """
+    root = Path(repo_root)
+    dirs = [root / ".quests", root / ".tasks"]
+    if not all(d.is_dir() for d in dirs):
+        return []
+    others = [d for d in dirs if d.resolve() != TASKS_DIR.resolve()]
+    if not any(_holds_quest_files(d) for d in others):
+        return []
+    return ["both .quests/ and .tasks/ hold quest files, and this run checks only "
+            f"{TASKS_DIR.name}/; finish the move with `git mv` of what is left in "
+            ".tasks/ into .quests/, then remove .tasks/"]
+
+
+# The rename to quests (feat-0101) kept the old names as aliases (R2-10); the maintainer
+# named the expiry at the round 2 close: v0.2.0 warns, v0.3.0 removes them. Until then a run
+# that meets one says so.
+ALIAS_REMOVAL = "the old names are aliases: v0.2.0 warns; v0.3.0 removes the old names"
+
+
+def old_name_findings(repo_root):
+    """A warning for each old tracker name this repository still uses; none otherwise.
+
+    Two names reach this validator: the directory it sits in being `.tasks/`, and the
+    setup file's `tracker: tasks`. An unreadable setup file is left to
+    zen_config_findings(), which reports it as an error.
+    """
+    found = []
+    if TASKS_DIR.name == ".tasks":
+        found.append(".tasks/ is the tracker's old name: rename it with "
+                     f"`git mv .tasks .quests`; {ALIAS_REMOVAL}")
+    path = Path(repo_root) / ZEN_CONFIG_PATH
+    if path.is_file():
+        try:
+            values, _ = parse_zen_config(read_text_utf8(path))
+        except NotUTF8:
+            values = {}
+        if values.get("tracker") == "tasks":
+            found.append("`tracker: tasks` is the old name of `tracker: quests`; "
+                         f"change the value; {ALIAS_REMOVAL}")
+    return found
+
+
 def zen_config_findings(repo_root):
     """Every error in the repository's `docs/agents/zen.md`, or none when it is absent.
 
@@ -736,7 +811,7 @@ def zen_config_findings(repo_root):
         # Reported alone (S-007): the newer format's keys would otherwise read as
         # unknown, burying the one fix that matters under findings that are not faults.
         return [f"config_version is {version}, and this validator reads versions up to "
-                f"{ZEN_CONFIG_VERSION}: update .tasks/validate.py from the kit"]
+                f"{ZEN_CONFIG_VERSION}: update {TASKS_DIR.name}/validate.py from the kit"]
 
     for key in sorted(set(values) - ZEN_KEYS):
         found.append(f"unknown key {key!r}")
@@ -748,6 +823,21 @@ def zen_config_findings(repo_root):
     for key, allowed in ZEN_CHOICES.items():
         if key in values and values[key] not in allowed:
             found.append(f"{key} {values[key]!r} is not one of {sorted(allowed)}")
+
+    # Publishing (S-047 to S-050): a malformed opt-in is an error here, and off at the
+    # reader, so nothing is ever published on a guess about what the person meant.
+    publish_repo = values.get("publish_repo")
+    if publish_repo not in (None, "none") and not ZEN_PUBLISH_REPO_RE.match(publish_repo):
+        found.append(f"publish_repo {publish_repo!r} must be owner/name, such as "
+                     f"'octo-org/octo-repo'")
+    if values.get("publish") == "github":
+        if publish_repo in (None, "none"):
+            found.append("publish: github needs publish_repo: owner/name, the repository "
+                         "the issues go to")
+        tracker = values.get("tracker")
+        if tracker is not None and tracker not in ZEN_PUBLISH_TRACKERS:
+            found.append(f"publish: github mirrors the local tracker, and tracker is "
+                         f"{tracker!r}; publish only with tracker quests (or tasks)")
 
     checked = [(key, values[key], key in ZEN_DIRS)
                for key in sorted(ZEN_PATHS) if key in values]
@@ -801,11 +891,11 @@ def main(argv=None) -> int:
     # `argv` is injectable so the CLI layer is reachable from a test. Calling
     # main() with no argument behaves exactly as before.
     args = sys.argv[1:] if argv is None else list(argv)
-    # A second mode, and the only one that does not read .tasks/ at all: link-check an
+    # A second mode, and the only one that does not read .quests/ at all: link-check an
     # arbitrary set of documents, so a CI docs link gate can call this rule rather than
     # restate it. Everything after --links is a glob, resolved from the repository root:
     #
-    #     python .tasks/validate.py --links '*.md'
+    #     python .quests/validate.py --links '*.md'
     #
     # Every pattern must match at least one document, and one that does not fails the
     # run and is named. The bound is per pattern, not per run, so name only the trees
@@ -893,7 +983,7 @@ def main(argv=None) -> int:
             if dep == tid:
                 err(rel, f"depends_on lists itself: {dep}")
             elif dep not in all_ids:
-                err(rel, f"depends_on unresolved: {dep!r} is not a known task id")
+                err(rel, f"depends_on unresolved: {dep!r} is not a known quest id")
             elif tid:
                 # Whatever survives both branches above is an edge between two tasks that
                 # exist, which is the only kind a ring can be made of. A self-edge is
@@ -945,6 +1035,10 @@ def main(argv=None) -> int:
         mode = fm.get("mode", "")
         if mode and mode not in MODES:
             err(rel, f"mode {mode!r} is not one of {sorted(MODES)}")
+        # `private: true` keeps a quest off GitHub when publishing is on (feat-0106).
+        private = fm.get("private", "")
+        if private and private not in PRIVATE_VALUES:
+            err(rel, f"private {private!r} is not one of {sorted(PRIVATE_VALUES)}")
 
     for tid, where in ids_seen.items():
         if len(where) > 1:
@@ -971,6 +1065,19 @@ def main(argv=None) -> int:
     manifest_path = TASKS_DIR / SCAFFOLD_MANIFEST
     for msg in stale_high_water(manifest_path, all_ids):
         warn(manifest_path.relative_to(REPO_ROOT).as_posix(), msg)
+
+    # A half-finished move from the tracker's old name (feat-0101): this run reads only
+    # the directory it sits in, so the other one's files go unchecked, and a reader that
+    # takes both (sitrep) merges them, duplicate ids and all. A warning, like the
+    # manifest's: it names the fix, and failing an adopter's tree mid-move helps nobody.
+    for msg in both_tracker_dirs(REPO_ROOT):
+        warn(TASKS_DIR.name + "/", msg)
+
+    # An old name (R2-10). Always a warning, even under --strict: the alias is a promise
+    # that an adopter's repository keeps working until v0.3.0 removes the old names, and a
+    # strict gate failing on the day the kit is updated would break that promise early.
+    for msg in old_name_findings(REPO_ROOT):
+        warnings.append((TASKS_DIR.name + "/", msg))
 
     # The setup file the kit's skills read, when the repository has one. Errors rather
     # than warnings: a skill reads these values as facts, so a wrong one misleads every
@@ -1016,7 +1123,7 @@ def main(argv=None) -> int:
         print(f"ERROR {f}: {msg}")
 
     n = len(files)
-    print(f"\nChecked {n} task file{'s' if n != 1 else ''}: "
+    print(f"\nChecked {n} quest file{'s' if n != 1 else ''}: "
           f"{len(errors)} error(s), {len(warnings)} warning(s).")
     return 1 if errors else 0
 

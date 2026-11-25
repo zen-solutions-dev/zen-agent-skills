@@ -1,0 +1,69 @@
+# .quests/: active work items
+
+Atomic, agent-assignable work. One file per quest. This directory is the 1,000-foot layer of the work-altitude model; strategy lives one level up in [`../ROADMAP.md`](../ROADMAP.md), and finished work is logged in [`../CHANGELOG.md`](../CHANGELOG.md). The full model is in [`../AGENTS.md`](../AGENTS.md).
+
+## For an assigned agent
+
+Read [`../AGENTS.md`](../AGENTS.md) (global rules) plus your one assigned quest file plus the files it names in `touched_files`. Do not scan this directory or read other quest files.
+
+## Naming
+
+`<type>-<NNNN>-<slug>.md`, where `type` is `bug`, `feat`, `chore`, or `epic`. The `id` frontmatter field equals the `<type>-<NNNN>` prefix. IDs are stable and never reused, even after a quest moves to `done/`. Use the next unused number per type (zero-padded to four digits).
+
+## Authoring a new quest
+
+Copy [`_TEMPLATE.md`](_TEMPLATE.md), give it the next id, and fill every section. A good quest is self-contained: an agent that reads only `AGENTS.md`, this file, and the `touched_files` should be able to complete it without asking questions. Keep `touched_files` honest and complete: it is the agent's entire read/write surface and the whitelist that keeps context small.
+
+Prefer the `new-quest` skill (from Zen Agent Skills) to author quests at the gold-standard bar automatically, then this format is filled for you.
+
+## Validating
+
+Run the shipped checker before dispatching work to agents:
+
+    python .quests/validate.py
+
+It verifies frontmatter schema, id uniqueness, that every `depends_on` resolves to a real quest and no ring of them closes back on itself, that every relative markdown link resolves from the directory the file is actually in, and (with `--strict`) that every `touched_files` path exists. When the repository has `docs/agents/zen.md`, the setup file the agent skills read, it also checks that file's `zen-config` block, and a quest's optional `mode`. It exits non-zero on any error, so it drops cleanly into CI or a pre-commit hook.
+
+## Lifecycle
+
+`open -> in_progress -> done`. On done: move the file to `done/`, set `status: done`, re-anchor the file's relative links for their new depth (a quest authored in `.quests/` links to `../x`; from `done/` that is `../../x`), add one dated line to `../CHANGELOG.md` referencing the quest id, and (if it completed a roadmap Quest chain) strike that Quest chain through in `../ROADMAP.md`. See the work-lifecycle section of `AGENTS.md`.
+
+## Frontmatter fields
+
+| Field | Meaning |
+|---|---|
+| `id` | Stable quest id, matches the filename prefix. |
+| `title` | One-line imperative summary of the work. |
+| `type` | `bug` \| `feat` \| `chore` \| `epic`. |
+| `status` | `open` \| `in_progress` \| `blocked` \| `done`. |
+| `priority` | `P0` (blocks a shipped output) \| `P1` \| `P2`. |
+| `parent` | The roadmap Quest chain or Campaign this quest serves (up-link, 100ft -> 30k ft). |
+| `depends_on` | Quest ids that must reach `done/` before this one starts; `[]` if none. |
+| `spec` | Optional. Path to the approved spec this quest implements. |
+| `scenarios` | Optional. The `S-NNN` scenario ids from that spec this quest covers. |
+| `external` | Optional. The upstream issue this quest serves, as `#123` or `owner/repo#123`. |
+| `mode` | Optional. `afk` (runs with nobody watching) or `hitl` (a person stays in the loop); empty takes `default_mode` from `docs/agents/zen.md`, else `hitl`. |
+| `conformance` | Optional. Where the conformance audit of `spec` is recorded, when it is not `<spec>.conformance.md` beside the spec. |
+| `touched_files` | Every file the quest expects to read or modify, each of which must already exist. |
+| `created` | ISO date the quest was authored. |
+
+`spec` and `scenarios` are what make a quest traceable back to a contract. Omit both for a quest that
+does not come from a spec, which is most of them. Fill both when one exists, because a readiness
+gate run before implementation reads them to confirm every scenario has a quest and every quest has a
+reason to exist.
+
+`external` is the link back to whatever tracker the work was reported in. It holds a GitHub issue
+reference in GitHub's own syntax, `#123` for an issue in this repository or `owner/repo#123` for one
+in another, and a bare number is rejected so the stored value stays identical to the form GitHub
+recognises. The `pr-describe` skill reads it and emits a closing reference in the pull request body,
+so merging the pull request closes the issue. Omit it for a quest nobody filed an issue for.
+
+`touched_files` is the agent's entire read/write surface, and every path in it must already exist:
+`validate.py --strict` reports one that does not, and `--strict` is the mode a backlog gate in CI
+runs, so naming a file that has not been created yet fails the build. A file the quest will **create**
+is named in that quest's **Scope** section instead, with the exact path it belongs at. That is where
+an implementing agent reads where a new file goes, and where an author says it.
+
+## A note on parallel agents
+
+These quest files are the natural unit of work for a batch of parallel, worktree-isolated agents (one quest per agent). For that to be safe, `.quests/` must be tracked by git: if it is gitignored, worktree isolation silently splits the backlog from the main checkout and agents will invent incompatible bookkeeping. Keep this directory committed.

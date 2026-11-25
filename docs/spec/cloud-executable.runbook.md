@@ -17,7 +17,7 @@ that is the record.
 | GitHub is connected to your Claude account | Open [claude.ai/code](https://claude.ai/code) and see whether `zen-solutions-dev/zen-agent-skills` is selectable | Authorize the Claude GitHub App, or run `/web-setup` in a terminal to sync your `gh` token |
 | The branch is on the remote and carries the hook fix | `git log --oneline -1 origin/developer` and `git merge-base --is-ancestor 7703632 origin/developer` | `git push`, or pick a branch that does contain `7703632` |
 | Your local work is committed | `git status` | Commit it. The cloud VM clones from GitHub, not from your disk, so uncommitted work is invisible to it |
-| **The task the prompt dispatches is still open** | `ls .tasks/ \| grep bug-0020`, and confirm it is **not** in `.tasks/done/` | Stop. The prompt below is stale and the scenario is unrunnable until the spec names an open task. This row exists because that is exactly what happened: the prompt dispatched `bug-0018`, which closed one day after this file was written, and nothing reported it for twelve days (`chore-0051`) |
+| **The task the prompt dispatches is still open** | `ls .quests/ \| grep bug-0020`, and confirm it is **not** in `.quests/done/` | Stop. The prompt below is stale and the scenario is unrunnable until the spec names an open task. This row exists because that is exactly what happened: the prompt dispatched `bug-0018`, which closed one day after this file was written, and nothing reported it for twelve days (`chore-0051`) |
 
 Nothing else is needed. The kit is standard-library Python, so the default cloud environment already
 has everything and **no setup script is required**. That is worth keeping true: a setup script's
@@ -37,7 +37,7 @@ mechanism over.
 
 ## The prompt
 
-Dispatches [`bug-0020`](../../.tasks/done/bug-0020-check-unknown-remedy-is-wrong-for-the-adopted-lens.md),
+Dispatches [`bug-0020`](../../.quests/done/bug-0020-check-unknown-remedy-is-wrong-for-the-adopted-lens.md),
 which is the task `S-017` names. Confirm it is still open before pasting this, per the last row of the
 table above.
 
@@ -60,7 +60,7 @@ needed, and end the session. Recovering by rebasing is acceptable only if you th
 re-measure EVERY result on the new base, and say in your report that you did.
 
 Then: read AGENTS.md in full, then
-.tasks/bug-0020-check-unknown-remedy-is-wrong-for-the-adopted-lens.md, then only the files that task
+.quests/bug-0020-check-unknown-remedy-is-wrong-for-the-adopted-lens.md, then only the files that task
 names in touched_files. Implement that task.
 
 Mode: implementation, unattended. You are the proof run for docs/spec/cloud-executable.md scenarios
@@ -75,7 +75,7 @@ Do not touch docs/spec/install.md. An open task, chore-0033, owns that file, and
 spec, so this run amends no contract and adds no re-approval row. If you believe the contract is
 wrong, say so in your report rather than editing it.
 
-Do not move your task file to .tasks/done/, and do not edit CHANGELOG.md or ROADMAP.md. Closeout is
+Do not move your task file to .quests/done/, and do not edit CHANGELOG.md or ROADMAP.md. Closeout is
 done by a person after this run is verified.
 
 Acceptance: 'python scripts/run-checks.py' must exit 0, and its verbatim output goes in the pull

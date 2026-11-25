@@ -609,6 +609,59 @@ class ArgumentTests(unittest.TestCase):
         self.assertIn("takes no arguments", out.getvalue())
 
 
+class DoubleQuotedPhraseTests(unittest.TestCase):
+    """Retro R-004 (feat-0103): a double-quoted phrase in an Evidence cell is audited.
+
+    Reported, never failed, until its first-run reports are disposed by hand: the exit code
+    is unchanged and the phrase is named on a `WARN` line.
+    """
+
+    def test_a_double_quoted_phrase_present_in_the_subject_resolves(self):
+        with _Tree([row('`assemble()` returns "A fixture subject" as its docstring')]) as tree:
+            result = tree.audit()
+            code, report = tree.run()
+        quoted = [c for c in result.citations if c.kind == cc.DOUBLE_QUOTED_KIND]
+        self.assertEqual([("A fixture subject", "resolved")],
+                         [(c.text, c.status) for c in quoted])
+        self.assertEqual(0, code)
+        self.assertIn("0 double-quoted phrase(s) reported", report)
+
+    def test_a_stale_double_quoted_phrase_warns_without_failing(self):
+        with _Tree([row('`assemble()` says "a long gone sentence" somewhere')]) as tree:
+            code, report = tree.run()
+        self.assertEqual(0, code, "the class is report-only until its first run is disposed")
+        self.assertIn('WARN  docs/spec/thing.conformance.md\n    S-001 a thing\n    '
+                      'double-quoted phrase "a long gone sentence" is in none of '
+                      'scripts/thing.py', report)
+        self.assertIn("0 unresolved, 1 double-quoted phrase(s) reported", report)
+
+    def test_markup_in_the_source_does_not_decide_it(self):
+        subject = SUBJECT.replace('"""A fixture subject."""', '"""A **fixture** `subject`."""')
+        with _Tree([row('quotes "A fixture subject" from it')], subject=subject) as tree:
+            code, report = tree.run()
+        self.assertIn("0 double-quoted phrase(s) reported", report)
+
+    def test_a_quote_inside_a_code_span_is_not_a_double_quoted_citation(self):
+        with _Tree([row('`assemble()` / `label = "a long gone sentence"`')]) as tree:
+            result = tree.audit()
+        self.assertEqual([], [c for c in result.citations
+                              if c.kind == cc.DOUBLE_QUOTED_KIND])
+
+    def test_a_quoted_word_and_an_elision_are_not_audited(self):
+        with _Tree([row('says "word" and "the first ... the last" here')]) as tree:
+            result = tree.audit()
+        quoted = [(c.text, c.status, c.reason) for c in result.citations
+                  if c.kind == cc.DOUBLE_QUOTED_KIND]
+        self.assertEqual([("the first ... the last", "unchecked", cc.UNCHECKED_ELISION)],
+                         quoted)
+
+    def test_a_quote_outside_the_evidence_column_is_not_read(self):
+        with _Tree([row("`assemble()`", note='"a long gone sentence" in the note')]) as tree:
+            result = tree.audit()
+        self.assertEqual([], [c for c in result.citations
+                              if c.kind == cc.DOUBLE_QUOTED_KIND])
+
+
 class RealCorpusTests(unittest.TestCase):
     """The one thing worth asserting about this repository's own matrices.
 

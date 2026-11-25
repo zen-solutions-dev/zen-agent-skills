@@ -1,10 +1,10 @@
-"""Acceptance tests for the zen-config check in .tasks/validate.py (feat-0091).
+"""Acceptance tests for the zen-config check in .quests/validate.py (feat-0091).
 
 Derived from docs/spec/zen-config.md; each test names the scenario it covers. The
 scenarios about what a skill does in a conversation (the configure step and the
 readers) are audited in that spec's conformance matrix rather than here.
 
-Both copies of the validator are driven, for the reason test_tasks_validate.py gives:
+Both copies of the validator are driven, for the reason test_quests_validate.py gives:
 the copy `init-worktracking` installs is the one adopters run, and a rule that holds in
 one copy only is the failure `bug-0026` found. The optional task `mode` field, added by
 the same task, is tested here too.
@@ -20,7 +20,7 @@ from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 COPIES = {
-    "repository": REPO_ROOT / ".tasks" / "validate.py",
+    "repository": REPO_ROOT / ".quests" / "validate.py",
     "template": (REPO_ROOT / ".agents" / "skills" / "init-worktracking" / "templates"
                  / "validate.py"),
 }
@@ -89,7 +89,7 @@ class Fixture(unittest.TestCase):
     def setUp(self):
         self._tmp = tempfile.TemporaryDirectory()
         self.root = Path(self._tmp.name)
-        (self.root / ".tasks").mkdir()
+        (self.root / ".quests").mkdir()
         (self.root / "docs" / "spec").mkdir(parents=True)
         (self.root / "docs" / "agents").mkdir()
         for name in ("README.md", "GLOSSARY.md", "AGENTS.md", "docs/style.md"):
@@ -97,7 +97,7 @@ class Fixture(unittest.TestCase):
         self._saved = {}
         for name, module in MODULES.items():
             self._saved[name] = (module.TASKS_DIR, module.REPO_ROOT)
-            module.TASKS_DIR = self.root / ".tasks"
+            module.TASKS_DIR = self.root / ".quests"
             module.REPO_ROOT = self.root
 
     def tearDown(self):
@@ -294,6 +294,29 @@ class ZenConfigTests(Fixture):
         self.assert_one_finding(GOOD.replace("tracker: github", "tracker: jira"),
                                 "tracker", "jira", "gitlab")
 
+    def test_s043_the_old_tracker_name_is_accepted(self):
+        # `tasks` is the name before the rename to quests (feat-0101): a repository
+        # configured before it must still validate, wherever its validator sits.
+        for line in ("tracker: tasks", "tracker: quests"):
+            self.write_config(GOOD.replace("tracker: github", line))
+            for module in self.each():
+                for folder in (".tasks", ".quests"):
+                    with self.subTest(line=line, folder=folder):
+                        module.TASKS_DIR = self.root / folder
+                        self.assertEqual(self.findings(module), [])
+                        code, out = self.run_main(module)
+                        self.assertEqual(code, 0, out)
+
+    def test_s007_the_update_message_names_the_directory_the_validator_sits_in(self):
+        self.write_config(GOOD.replace("config_version: 1", "config_version: 2"))
+        for module in self.each():
+            for folder in (".tasks", ".quests"):
+                with self.subTest(folder=folder):
+                    module.TASKS_DIR = self.root / folder
+                    found = self.findings(module)
+                    self.assertEqual(len(found), 1, found)
+                    self.assertIn(f"update {folder}/validate.py from the kit", found[0])
+
     def test_s008_a_default_mode_outside_the_set_fails(self):
         self.assert_one_finding(GOOD.replace("default_mode: hitl", "default_mode: auto"),
                                 "default_mode", "auto", "afk")
@@ -388,7 +411,7 @@ class ModeFieldTests(Fixture):
     """The optional task `mode` field: `afk` or `hitl`, checked only when present."""
 
     def write_task(self, mode_line):
-        (self.root / ".tasks" / "feat-0001-test.md").write_text(
+        (self.root / ".quests" / "feat-0001-test.md").write_text(
             TASK.format(mode=mode_line), encoding="utf-8")
 
     def test_an_absent_mode_is_valid(self):

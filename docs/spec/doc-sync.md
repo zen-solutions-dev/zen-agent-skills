@@ -5,8 +5,10 @@ status: approved
 
 # doc-sync
 
-Behavioral contract for the `doc-sync` skill (ROADMAP Epic B item 9). Drafted 2026-07-25 by the
+Behavioral contract for the `doc-sync` skill (ROADMAP Campaign B item 9). Drafted 2026-07-25 by the
 `spec-author` skill and self-checked to `ready` with the `spec-quality` lens.
+
+**Noted 2026-11-25: rename-only edit, `feat-0101`, no behaviour change.** The rename from tasks to quests changed words and paths here; no scenario, surface element or guard changed.
 
 ## Problem
 

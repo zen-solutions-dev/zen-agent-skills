@@ -5,7 +5,7 @@ status: approved
 
 # verifier-agent
 
-Behavioral contract for the `verifier-agent` skill (ROADMAP Epic B item 7). Drafted
+Behavioral contract for the `verifier-agent` skill (ROADMAP Campaign B item 7). Drafted
 2026-07-24 by the `spec-author` skill and self-checked to `ready` with the `spec-quality` lens.
 
 Reopened to `draft` on 2026-07-27 and amended (`chore-0014`). The `feat-0024` run hit a state this
@@ -38,6 +38,8 @@ asked for in prose, and the sha is what an integration-branch landing checks bef
 where the harness lets the dispatcher choose the verifier's model, a different model family from the
 implementer's is a stronger independent check. That line is guidance on dispatch, like the
 `feat-0077` note above, and adds no scenario.
+
+**Noted 2026-11-25: rename-only edit, `feat-0101`, no behaviour change.** The rename from tasks to quests changed words and paths here; no scenario, surface element or guard changed.
 
 ## Problem
 

@@ -83,5 +83,5 @@ One larger card: the candidate's name, one sentence on why it comes first, and a
 
 ## Tone
 
-Plain and short. The architectural nouns come from [`vocabulary.md`](vocabulary.md) and from
+Plain and short. The architectural nouns come from [`deep-modules.md`](../../../rules/deep-modules.md) and from
 nowhere else. If a sentence could be a bullet, make it one; if a bullet could go, cut it.

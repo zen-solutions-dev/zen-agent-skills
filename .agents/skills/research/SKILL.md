@@ -29,6 +29,30 @@ asked, and the session keeps working meanwhile.
 3. **The baseline**, when there is one: an earlier report or the current state, so the file records
    only what is new.
 
+## The rarity ladder
+
+Every cited source, and every finding, carries one rarity: how far it can be trusted. One ladder,
+lowest first, shared word for word with the evidence tiers `sitrep` puts on figures:
+
+**White**:
+Unverified: a claim nobody has checked against any source.
+
+**Green**:
+Secondary: taken from a source that reports on the primary one, such as an article, a summary or a forum answer.
+
+**Blue**:
+Checked against the source: a secondary claim someone confirmed by reading the source it reports on.
+
+**Purple**:
+Primary source cited: the claim names the primary source itself (the specification, the code, the author's own statement).
+
+**Gold**:
+Independently confirmed: a blue or purple claim that an independent check agrees with: a second primary source, a run, a measurement, or a test that pins it.
+
+A finding takes the rarity of the weakest source it rests on. A rarity is earned by what was read in
+this run, never asserted: a primary source the researcher could not reach is not Purple, it is
+unreachable. Where the repository keeps a glossary, its terms for this ladder win.
+
 ## Procedure
 
 ### Step 1: probe reach, then dispatch
@@ -64,19 +88,21 @@ Write one markdown file where the repository already keeps such notes, in its co
 convention, pick a place, and say where. It carries:
 
 - the date, the question and the baseline;
-- a **sources table**: each source, reached or not, and what was read; unreachable ones are named
-  with the reason, and the file says which conclusions they would have touched;
-- the findings, each with its citation (a file and line at a commit, a URL and section);
+- a **sources table**: each source, reached or not, what was read, and its rarity; unreachable ones
+  are named with the reason, and the file says which conclusions they would have touched;
+- the findings, each with its citation (a file and line at a commit, a URL and section) and its
+  rarity;
 - a verdict per finding where the asker needs one (adopt, adapt, already have, decline), and what is
   left for a person to decide.
 
-Done when every claim carries a citation, every unreachable source is named, and the file path is
-returned to the asker.
+Done when every claim carries a citation and a rarity, every reached source carries a rarity, every
+unreachable source is named, and the file path is returned to the asker.
 
 ### Step 4: verify before relying on it (the asker)
 
-Spot-check two or three citations against their sources before acting on the report. A citation
-that does not hold sends the whole file back.
+Spot-check two or three citations against their sources before acting on the report, the
+highest-rarity claims first, since those are the ones a reader will rely on unchecked. A citation
+that does not hold, or a rarity its source does not earn, sends the whole file back.
 
 Done when the spot-checked citations hold, or the report is returned with the one that did not.
 
@@ -100,7 +126,8 @@ every page read here.
 
 The shape (a background agent with a fresh context, primary sources, one cited markdown file where
 the repository keeps notes) is adapted, in this kit's own words, from Matt Pocock's `research` skill.
-The reach probe, the unreachable-source rule and the asker's spot-check are this kit's.
+The reach probe, the unreachable-source rule, the asker's spot-check and the rarity ladder (the
+maintainer's decisions R2-6 and R2-9, 2026-11-25) are this kit's.
 
 ```provenance
 source: https://raw.githubusercontent.com/mattpocock/skills/d653911/skills/engineering/research/SKILL.md

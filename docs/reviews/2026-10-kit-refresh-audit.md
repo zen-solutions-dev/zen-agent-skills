@@ -485,7 +485,7 @@ It exists in pieces and is not stated as a path anywhere:
   `doc-sync` and no conformance
   ([`AGENTS.md.tmpl`](../../.agents/skills/init-worktracking/templates/AGENTS.md.tmpl), lines 49 to
   58), the `spec` and `scenarios` fields are optional ("Omit both when there is no spec",
-  [`new-task`](../../.agents/skills/new-task/SKILL.md), line 28), and `init-worktracking` has a lite
+  [`new-task`](../../.agents/skills/new-quest/SKILL.md), line 28), and `init-worktracking` has a lite
   tier.
 - **This repository does not.** Its own lifecycle adds a `doc-sync` pass over the reader-facing
   documents to every task closeout, conformance when a spec is declared, link re-anchoring, a changelog
@@ -587,7 +587,7 @@ run, not a recommendation.
 
 ## 7. A method for testing each skill against a no-skill baseline
 
-Proposed, not run. It builds on [`feat-0051`](../../.tasks/feat-0051-a-paired-evaluation-harness-seeded-from-the-closed-task-corpus.md),
+Proposed, not run. It builds on [`feat-0051`](../../.quests/feat-0051-a-paired-evaluation-harness-seeded-from-the-closed-task-corpus.md),
 which already argues the case well (paired runs, a corpus of closed bugs with known answers, trigger
 disambiguation, a cadence), and changes one premise under it.
 
@@ -678,7 +678,7 @@ Found on the way and not part of the brief, disclosed per `A5` rather than fixed
 - **Inside a worktree, the currency hook and the command it recommends disagree.** At the start of this
   session the install-currency reminder reported three stale installed copies and said to run
   `python scripts/install.py --check`. Run from this worktree, that command printed "Nothing recorded as
-  installed beneath C:\Users\hamsa". The hook walks upward for `scripts/.install-manifest.json`
+  installed beneath C:\Users\<name>". The hook walks upward for `scripts/.install-manifest.json`
   ([`install-currency-reminder.py`](../../.agents/hooks/install-currency-reminder.py), `find_manifest()`
   at line 237) and finds the main checkout's copy; `install.py` reads only its own tree's
   ([`install.py`](../../scripts/install.py), line 98). That file is gitignored, so a worktree starts

@@ -34,7 +34,7 @@ comparison material exists: `install.py` records the manifest at
 `tool`, `name`, `target`, `mode`, `source` and `digests` with no timestamp, so an installed
 skill has no back-pointer to where it came from. A session in some unrelated repository
 cannot answer this at any price. Fixing that needs a new install-time surface, which is
-ROADMAP Epic B item 19's question and not this hook's. The boundary is stated here because
+ROADMAP Campaign B item 19's question and not this hook's. The boundary is stated here because
 this is the file someone would otherwise quietly widen.
 
 Which comparison it makes, and why that one

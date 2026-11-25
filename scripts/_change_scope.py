@@ -24,7 +24,7 @@ one of the documents the test suite reads from the real repository:
 
 - `.agents/` holds the skills and lenses themselves, which are what this kit ships;
   `.claude-plugin/` is their generated copy; `docs/spec/` holds contracts and their
-  conformance matrices, which tests and gates read; `.tasks/` is checked by the backlog
+  conformance matrices, which tests and gates read; `.quests/` is checked by the backlog
   gate and its template is read by tests; `tests/`, `scripts/` and `evals/` are code.
 - `TESTED_DOCUMENTS` names each document a test opens from the real repository. A test that
   starts reading another one is caught by `tests/test_change_scope.py`, which scans the
@@ -58,7 +58,7 @@ FULL = "full"
 NOT_DOCUMENTATION = (
     ".agents/",
     ".claude-plugin/",
-    ".tasks/",
+    ".quests/",
     "docs/spec/",
     "evals/",
     "scripts/",

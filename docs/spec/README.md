@@ -39,13 +39,13 @@ This is a mechanical constraint, not a preference.
 [`verifier-agent`](../../.agents/skills/verifier-agent/SKILL.md) returns `blocked` on a spec whose
 `status` is not `approved`, so a task that amends a contract and flips its status makes the
 verification run for that very change unanswerable, and the amendment can never be verified into
-place. [`new-task`](../../.agents/skills/new-task/SKILL.md) separately refuses to decompose an
+place. [`new-quest`](../../.agents/skills/new-quest/SKILL.md) separately refuses to decompose an
 unapproved spec, so one changed scenario would stall every other task waiting on the same contract.
 Reopening to `draft` was tried once, on [`house-review`](house-review.md) (`chore-0012`), and the
 note recording it is still in that spec's header.
 
 **Since 2026-11-23 (`feat-0083`) a bound spec stalls anyway, and on purpose.** An approved spec that
-carries an `approved_digest` reads `changed` once amended, and `verifier-agent`, `new-task`,
+carries an `approved_digest` reads `changed` once amended, and `verifier-agent`, `new-quest`,
 `spec-plan-readiness`, and `test-author` block on it until the author re-approves. That is the stall the paragraph
 above avoided, chosen deliberately by the maintainer: verifying or decomposing against text nobody
 approved launders it into evidence, which is the reason `verifier-agent` blocks on a draft at all.
@@ -53,7 +53,7 @@ Going back to `draft` still gains nothing, and loses the record of what was last
 
 ### Why there is no third status value, and what the approval digest is
 
-These read a spec's `status`: `verifier-agent` blocks on anything but `approved`; `new-task`
+These read a spec's `status`: `verifier-agent` blocks on anything but `approved`; `new-quest`
 refuses to decompose it; `test-author` refuses to derive tests from it; `spec-plan-readiness` and
 all three of those read it through `spec_digest.py`; [`doc-sync`](../../.agents/skills/doc-sync/SKILL.md) classifies a document
 carrying one as a contract and therefore never edits it; the
@@ -82,6 +82,8 @@ no text. The table below stays as the record of **what** each pending amendment 
 digest cannot say: it tells you that the text moved, not where.
 
 ### The author's re-approval queue
+
+**Note 2026-11-25:** the table below predates the two Marjana rounds. The current queue, including every amendment of 2026-11-24 and 2026-11-25 and the round 1 approvals still to be recorded as digests, is in `ROADMAP.md`, "Owed after this round"; `spec_digest.py --queue` stays the mechanical check.
 
 Every spec listed below is approved and carries an amendment the author has not re-read. Some carry
 more than one: `install` carries two, `build-adapters` four, since `chore-0043`, again since

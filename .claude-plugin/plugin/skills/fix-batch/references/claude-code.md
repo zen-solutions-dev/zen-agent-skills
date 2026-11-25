@@ -24,7 +24,7 @@ procedure in the skill is what matters, and the tool names here are one local im
   so in the prompt rather than assuming the agent infers it.
 - **Built-in `/batch`.** It decomposes an instruction into units itself, runs each in a worktree,
   and publishes each change. Use it for broad mechanical changes. Use `fix-batch` when the items are
-  task files a person already approved and each needs independent verification before anything
+  quest files a person already approved and each needs independent verification before anything
   lands, which `/batch` does not describe.
 - **Do not poll (Step 4).** Background agents re-invoke you on completion.
 - **Resume a false-alarm blocker (Step 5).** Use `SendMessage` addressed to the agent's id or name,

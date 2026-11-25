@@ -9,8 +9,8 @@ branch_exercised: S-001 to S-016, by an independent session
 
 # cloud-executable verification record: S-001 to S-016
 
-An independent verification of [`feat-0045`](../../.tasks/done/feat-0045-committed-acceptance-command.md)
-and [`feat-0046`](../../.tasks/done/feat-0046-session-start-reachability-hook.md) against
+An independent verification of [`feat-0045`](../../.quests/done/feat-0045-committed-acceptance-command.md)
+and [`feat-0046`](../../.quests/done/feat-0046-session-start-reachability-hook.md) against
 [`cloud-executable.md`](cloud-executable.md), run 2026-08-07 by a session that did not write the
 implementation.
 

@@ -1,6 +1,6 @@
 # Installation and integration
 
-The complete installation reference, in the order to reach for it: the Claude Code plugin, then the Python installer (every profile, single skills, drafts, hooks, `--check`), then project-level adapters for Cursor and VS Code, then validation, uninstall, and troubleshooting. For the five-minute path, see the quick start in [`README.md`](../README.md).
+The complete installation reference, in the order to reach for it: the Claude Code plugin, then the Python installer (every profile, single skills, drafts, hooks, `--check`), then project-level adapters for Cursor, VS Code and Codex, then validation, uninstall, and troubleshooting. For the five-minute path, see the quick start in [`README.md`](../README.md).
 
 ## Prerequisites
 
@@ -33,7 +33,7 @@ What you get:
 - **Every shipped skill, and no draft.** Drafts are tried with the installer's `--include-drafts`, below.
 - **The rules module inside the plugin**, at the same relative place the skills' own lens links point to, so `house-review` arrives with its rubric and every skill with its house style. Claude Code copies a plugin to its own cache on install, and nothing outside the plugin directory travels, which is why the lenses live inside it.
 - **User-invoked skills that cost no context.** A skill the kit declares as started by a person carries `disable-model-invocation: true` in the plugin copy, so its description is never loaded; run it by name.
-- **Namespaced names.** Plugin skills are invoked as `/zen-agent-skills:<skill>`, for example `/zen-agent-skills:new-task`.
+- **Namespaced names.** Plugin skills are invoked as `/zen-agent-skills:<skill>`, for example `/zen-agent-skills:new-quest`.
 
 **Updating.** The plugin's version is generated from a digest of its content, so it changes exactly when a skill or lens does. Claude Code turns auto-update on by default only for official marketplaces, so for this one either turn it on (run `/plugin`, open the **Marketplaces** tab, select `zen-agent-skills`, enable auto-update), or update by hand:
 
@@ -52,7 +52,7 @@ The plugin tree is committed under [`.claude-plugin/`](../.claude-plugin/) and g
 
 ## Or install with the Python installer
 
-The installer places skills into Claude Code's and OpenCode's own discovery directories, where they keep their plain names (`/new-task`). Use it for OpenCode, to choose exactly which skills to place, to try drafts, to place the optional hooks, or to own the rules module.
+The installer places skills into Claude Code's and OpenCode's own discovery directories, where they keep their plain names (`/new-quest`). Use it for OpenCode, to choose exactly which skills to place, to try drafts, to place the optional hooks, or to own the rules module.
 
 ### Get the kit
 
@@ -176,7 +176,7 @@ Defaulting to `spine` means `agent-handoff` and `human-handoff` are not placed. 
 Name them instead of a profile. The run places each named skill plus every skill it composes through a sibling link, and prints that closure before placing anything:
 
 ```bash
-python scripts/install.py --skills new-task --dry-run
+python scripts/install.py --skills new-quest --dry-run
 python scripts/install.py --skills pr-describe,init-worktracking
 ```
 
@@ -253,6 +253,27 @@ claude plugin marketplace add ./.tmp/plugin
 
 The committed marketplace this repository publishes is regenerated with `python scripts/build-adapters.py --marketplace`, and checked with `--marketplace --check`.
 
+### Codex
+
+Codex reads skills from `.agents/skills/` in each directory from the working directory up to the repository root, and from `~/.agents/skills/` for the user, as OpenAI's "Build skills" page describes it (read 2026-11-25). Both are covered:
+
+- **For one project**, the `codex` target places each skill there with its `SKILL.md` unchanged, its supporting files, the rules module at `.agents/rules/`, and an `agents/openai.yaml` beside each `SKILL.md`:
+
+  ```bash
+  python scripts/build-adapters.py --target codex --out ../my-project
+  ```
+
+  The sidecar is generated from the skill's frontmatter, never written by hand: its display name is the skill's name, its short description the description's first sentence, and a skill a person starts by name (`metadata.invocation: user`) gets `allow_implicit_invocation: false`, so Codex runs it only when you call it as `$<skill-name>`.
+- **For every repository**, `python scripts/install.py --tools opencode` already places the skills and the rules module under `~/.agents/skills/` and `~/.agents/rules/`, which is the directory Codex reads too. That path places no sidecar, so every skill there is one Codex may pick on its own.
+
+Inside this repository Codex reads `.agents/skills/` directly, and no sidecar is written into it.
+
+**Verified so far**: the `codex` target's output is tested (`tests/test_build_adapters_codex.py`), and every generated sidecar parses as YAML. **Not verified yet**: a Codex session loading the skills, because no Codex CLI was available where this was written (`feat-0103`). The same holds for Copilot: the VS Code prompt adapters are tested as files, and no Copilot session has loaded them.
+
+### Skill names shared with Matt Pocock's skills
+
+This kit and Matt Pocock's skills (`mattpocock/skills`) use some of the same skill names: `tdd`, `research` and `retro`, by the inventory of his skills in [the 2026-11-25 coverage map](reviews/2026-11-25-skills-coverage-map.md), and `teach`, `prototype` and `wayfinder` once this kit's planned drafts of those names land. A harness keys a skill by its directory name, so with both kits installed at the same scope one copy replaces the other, or the harness loads whichever it finds first. `install.py` refuses to overwrite a directory it did not place and reports it as a conflict, so the first kit installed keeps the name. To keep both, install one of them at the other scope (one per user, one per project), or pass `--skills` to install only the skills whose names do not clash. The Claude Code plugin avoids the clash, since a plugin skill carries the `zen-agent-skills:` prefix.
+
 ## Integration by harness
 
 | Harness | Integration | Command or location |
@@ -262,6 +283,8 @@ The committed marketplace this repository publishes is regenerated with `python 
 | OpenCode | Global skill discovery | `python scripts/install.py --tools opencode` |
 | Cursor | Project rule adapter | `python scripts/build-adapters.py --target cursor --out <project>` |
 | VS Code or Copilot | Project prompt adapter | `python scripts/build-adapters.py --target vscode --out <project>` |
+| Codex | Project skills with sidecars | `python scripts/build-adapters.py --target codex --out <project>` |
+| Codex | Global skill discovery (no sidecars) | `python scripts/install.py --tools opencode`, which places into `~/.agents/skills/` |
 | Other harnesses | Read the canonical skill manually or add a local adapter | [`.agents/skills/`](../.agents/skills/) |
 
 The kit does not maintain separate hand-edited versions of a skill for each harness. The canonical source remains the `SKILL.md` file.
@@ -281,7 +304,7 @@ Every request a Claude Code session sends carries more than your instruction fil
 
 ## Use a skill
 
-Ask the installed harness to use a skill by name, or select the generated rule or prompt in the target project. Begin with a workflow skill such as `project-bootstrap`, `init-worktracking`, or `new-task`. Read the skill's `SKILL.md` when you need the complete procedure and acceptance criteria.
+Ask the installed harness to use a skill by name, or select the generated rule or prompt in the target project. Begin with a workflow skill such as `project-bootstrap`, `init-worktracking`, or `new-quest`. Read the skill's `SKILL.md` when you need the complete procedure and acceptance criteria.
 
 ## Validate changes
 

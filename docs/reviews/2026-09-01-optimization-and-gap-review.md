@@ -190,7 +190,7 @@ than a bug, and the one `bug-0050` and the whole install-currency hook exist bec
 test in the suite subscribes after an unsubscribe.
 
 Distinct from open
-[`chore-0086`](../../.tasks/chore-0086-the-live-watcher-retries-a-persistent-failure-with-no-diagnosis.md),
+[`chore-0086`](../../.quests/chore-0086-the-live-watcher-retries-a-persistent-failure-with-no-diagnosis.md),
 which is about a poll that raises on every tick. This one never polls at all.
 
 **Suggested fix:** clear the stop event unconditionally in `subscribe` before deciding whether to
