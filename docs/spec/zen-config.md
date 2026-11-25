@@ -36,7 +36,7 @@ request.**
 **Amended 2026-11-25 by `feat-0102`** (maintainer decision C1 in the
 [decision sheet](../reviews/2026-11-25-marjana-decisions.md): verified two-way-door pull requests
 may merge themselves, per repository, opt-in, with sampling): `merge_policy` stays free text, and a
-value that begins with the word `self-merge-sampled` now also turns that opt-in on, read by the
+value whose first token is exactly `self-merge-sampled` now also turns that opt-in on, read by the
 autonomy lens's rule `A8` (new S-044 to S-046, the `merge_policy` row and the Readers table below).
 Off stays the default: every other value, and an absent key, means no self-merge. Sampling is random, by the merge commit's sha (the maintainer's change at the check-in gate,
 2026-11-25). The validator does
@@ -508,7 +508,7 @@ leading `./`. Each segment must match the name on disk in letter case.
 | `standards` | The documents a review judges written standards against: comma-separated files, each trimmed of surrounding spaces, or `none` alone |
 | `acceptance` | The one command that decides whether a change is acceptable |
 | `base_branch`, `integration_prefix` | Where work lands, and the prefix integration branches carry |
-| `merge_policy` | One line of prose: who merges what into where. Split on spaces, tabs and `;`, empty pieces dropped: when the first token is exactly `self-merge-sampled` (case-sensitive), the repository opts into sampled self-merge of verified two-way doors (S-044); if the next token starts with a digit it is the sampling rate and must be exactly `1/N`, N an integer from 1 to 20 with no leading zero, else the opt-in is off (S-045); with no such token N is 5. The opt-in also needs an explicit `base_branch` (not absent, not `none`) and a merge method that creates a new commit, else it is off (S-045). A merged pull request is sampled when its merge commit's full sha, as a hexadecimal integer, is divisible by N. Any other value leaves it off |
+| `merge_policy` | One line of prose: who merges what into where. Split on spaces, tabs and `;`, empty pieces dropped: when the first token is exactly `self-merge-sampled` (case-sensitive), the repository opts into sampled self-merge of verified two-way doors (S-044); if the next token starts with a digit it is the sampling rate and must be exactly `1/N`, N an integer from 1 to 20 with no leading zero, else the opt-in is off (S-045); with no such token N is 5. The opt-in also needs an explicit `base_branch` (not absent, not empty, not `none`) and a merge method that creates a new commit, else it is off (S-045). A merged pull request is sampled when its merge commit's full sha, as a hexadecimal integer, is divisible by N. Any other value leaves it off |
 | `session_logs` | The directory where the harness keeps session transcripts for this repository: one of the outside spellings defined under Paths (not checked), a repository path (checked), or `none` |
 | `default_mode` | `afk` (runs with nobody watching) or `hitl` (a person stays in the loop), for a task whose `mode` is empty; `hitl` when this key is absent |
 
