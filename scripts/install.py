@@ -486,9 +486,29 @@ def save_manifest(entries, dry):
                         encoding="utf-8", newline="")
 
 
+def _canon(target) -> str:
+    """One spelling for a target path, so a recorded entry is found however it was spelled.
+
+    A home has more than one spelling on some systems: macOS's temp directory is `/var/...`
+    and also `/private/var/...`, Windows has 8.3 short names, and any home can sit behind a
+    symlinked parent. `install` resolves `--home`, so an entry recorded under another
+    spelling never matched by string equality (PR #118: every retire test failed on macOS
+    and Windows). The parent chain is resolved and the final component is not, as in
+    `_beneath`: in symlink mode the target *is* a link this tool made, and resolving it
+    would yield its source. `normcase` folds case where the file system does.
+    """
+    t = Path(target)
+    try:
+        t = t.parent.resolve() / t.name
+    except (OSError, RuntimeError):
+        pass
+    return os.path.normcase(str(t))
+
+
 def is_managed(target: Path, manifest) -> bool:
-    tp = str(target)
-    return any(e.get("target") == tp for e in manifest["entries"])
+    tp = _canon(target)
+    return any(_canon(e["target"]) == tp for e in manifest["entries"]
+               if e.get("target"))
 
 
 # The one placed module an adopter is invited to rewrite. Matched by the entry name this
@@ -799,7 +819,9 @@ def install(tools, mode, home: Path, dry: bool, profile: str = DEFAULT_PROFILE,
         return report_unreadable_manifest(
             exc, "Nothing was placed: this run would have written a fresh record over "
                  "the damaged one, losing whatever it still records.")
-    entries = {e["target"]: e for e in manifest["entries"]}
+    # Keyed by one spelling of each target (`_canon`), so a record made under another
+    # spelling of the same home is found, retired or replaced rather than duplicated.
+    entries = {_canon(e["target"]): e for e in manifest["entries"]}
     conflicts = 0
     preserved_adopted = False
     tag = "[dry-run] " if dry else ""
@@ -829,7 +851,7 @@ def install(tools, mode, home: Path, dry: bool, profile: str = DEFAULT_PROFILE,
                 placed_here.add(src.name)
                 if render and not dry:
                     (target / "SKILL.md").write_bytes(rendered_skill_md(src))
-                entries[str(target)] = {
+                entries[_canon(target)] = {
                     "tool": tool, "name": src.name,
                     "target": str(target), "mode": placed_mode, "source": str(src),
                     "digests": expected_digests(src, tool),
@@ -841,7 +863,7 @@ def install(tools, mode, home: Path, dry: bool, profile: str = DEFAULT_PROFILE,
 
         for old, new in RENAMED_SKILLS.items():
             retired = base / old
-            if str(retired) not in entries:
+            if _canon(retired) not in entries:
                 continue  # never placed here by this tool: not ours to remove
             if new not in placed_here:
                 # Retiring it without its successor would leave the person with neither,
@@ -852,7 +874,7 @@ def install(tools, mode, home: Path, dry: bool, profile: str = DEFAULT_PROFILE,
                 continue
             if not dry and (retired.is_symlink() or retired.exists()):
                 _rm(retired)
-            del entries[str(retired)]
+            del entries[_canon(retired)]
             print(f"{tag}{'retired':9} {tool:8} {old}  ({retired}: renamed {new})")
 
         # The rules module, as the sibling <base>/../rules, so each skill's
@@ -865,7 +887,7 @@ def install(tools, mode, home: Path, dry: bool, profile: str = DEFAULT_PROFILE,
         # before it is overwritten.
         if RULES_DIR.is_dir():
             rules_target = base.parent / "rules"
-            previous = entries.get(str(rules_target)) or {}
+            previous = entries.get(_canon(rules_target)) or {}
             recorded = previous.get("digests")
             # A real directory this tool did not place as a whole, or one it merged into
             # before, is merged into file by file (feat-0079). Refusing it whole left every
@@ -878,20 +900,20 @@ def install(tools, mode, home: Path, dry: bool, profile: str = DEFAULT_PROFILE,
                     RULES_DIR, rules_target, dry, recorded or {}, replace_adopted)
                 conflicts += clashes
                 if digests:
-                    entries[str(rules_target)] = {
+                    entries[_canon(rules_target)] = {
                         "tool": tool, "name": "rules", "target": str(rules_target),
                         "mode": "merged", "source": str(RULES_DIR), "digests": digests,
                     }
                 else:
                     # Nothing of the kit's is in there, so there is nothing to record.
-                    entries.pop(str(rules_target), None)
+                    entries.pop(_canon(rules_target), None)
             else:
                 status, digests, notes = _place_adopted(
                     RULES_DIR, rules_target, mode, dry, manifest, recorded, replace_adopted)
                 if status == "CONFLICT":
                     conflicts += 1
                 else:
-                    entries[str(rules_target)] = {
+                    entries[_canon(rules_target)] = {
                         "tool": tool, "name": "rules",
                         "target": str(rules_target), "mode": mode,
                         "source": str(RULES_DIR), "digests": digests,
@@ -913,7 +935,7 @@ def install(tools, mode, home: Path, dry: bool, profile: str = DEFAULT_PROFILE,
             if status == "CONFLICT":
                 conflicts += 1
             else:
-                entries[str(hooks_target)] = {
+                entries[_canon(hooks_target)] = {
                     "tool": tool, "name": "hooks",
                     "target": str(hooks_target), "mode": mode, "source": str(HOOKS_DIR),
                     "digests": digest_tree(HOOKS_DIR),
@@ -1076,7 +1098,8 @@ def _recorded_link(target: Path, points_to, manifest) -> bool:
     if points_to is None:
         return False
     for entry in manifest["entries"]:
-        if entry.get("target") == str(target) and entry.get("source"):
+        if entry.get("target") and _canon(entry["target"]) == _canon(target) \
+                and entry.get("source"):
             try:
                 if Path(entry.get("source")).resolve() == points_to:
                     return True

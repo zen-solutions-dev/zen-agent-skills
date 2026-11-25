@@ -3105,6 +3105,50 @@ class RenamedSkillTests(_FixtureKit):
         self.assertTrue((own / "SKILL.md").is_file())
         self.assertNotIn("retired", out)
 
+@unittest.skipUnless(SYMLINKS_WORK, "needs symlinks to give the home a second spelling")
+class RenamedSkillThroughAliasedHomeTests(RenamedSkillTests):
+    """The rename tests again, with the home reached through a symlinked directory.
+
+    CI on macOS and Windows failed every retire test (PR #118): the temp home the tests
+    record is `/var/...` (or an 8.3 short path) while the installer resolves `--home` to
+    `/private/var/...` (or the long path), so the recorded entry was never found by string
+    equality. Linux has no such alias for its temp directory, so it passed. A symlinked
+    parent gives Linux the same two spellings, and the installer must match a recorded
+    target whatever spelling the manifest holds.
+    """
+
+    def setUp(self):
+        super().setUp()
+        real = self.root / "real"
+        real.mkdir()
+        os.symlink(real, self.root / "alias", target_is_directory=True)
+        self.home = self.root / "alias" / "home"
+
+    def test_the_home_really_has_two_spellings(self):
+        self.home.mkdir()
+        self.assertNotEqual(str(self.home), str(self.home.resolve()))
+
+    def test_a_managed_copy_recorded_under_the_other_spelling_is_updated(self):
+        # `is_managed` answers the same question by the same string equality: an install
+        # recorded under the alias must still own its target, not report a CONFLICT.
+        code, out = self._install()
+        self.assertEqual(code, 0, out)
+        target = self.home / inst.TOOL_SUBPATHS["claude"] / "alpha"
+        recorded = json.loads(inst.MANIFEST.read_text(encoding="utf-8"))
+        for entry in recorded["entries"]:
+            entry["target"] = entry["target"].replace(str(self.home.resolve()),
+                                                      str(self.home))
+        inst.MANIFEST.write_text(json.dumps(recorded), encoding="utf-8")
+        self.assertIn(str(target), {e["target"] for e in recorded["entries"]})
+        code, out = self._install()
+        self.assertEqual(code, 0, out)
+        self.assertNotIn("CONFLICT", out)
+        self.assertIn("updated", out)
+        after = json.loads(inst.MANIFEST.read_text(encoding="utf-8"))
+        names = [e["name"] for e in after["entries"] if e.get("tool") == "claude"]
+        self.assertEqual(len(names), len(set(names)), after)
+
+
 class RealRenameTableTests(unittest.TestCase):
     """feat-0101: the production rename table, read as shipped, against the real kit.
 
