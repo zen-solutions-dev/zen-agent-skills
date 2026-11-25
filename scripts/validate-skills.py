@@ -1025,10 +1025,12 @@ UNGUARDED_LOAD_RE = re.compile(
 # "its" may name a file of the draft ("read and follow its publishing reference", the
 # maintainer's wording for `new-quest`, round 2 close), and the sentence must go on with a
 # clause starting "; otherwise". The sentence may wrap across lines (plan item (c), retro
-# R-301): only a full stop or a semicolon ends it, and the words between are any but those.
+# R-301), but it ends at a full stop, a semicolon, a blank line, the start of a list item,
+# or a fence line, so a guard cannot borrow "; otherwise" from unrelated later text.
+_GUARD_STOP = r"\n[ \t]*\n|\n[ \t]*(?:[-*+]|\d+[.)])[ \t]|\n[ \t]*(?:```|~~~)"
 GUARD_OPEN_RE = re.compile(
     r"\bIf\s+`([a-z0-9][a-z0-9-]*)`\s+is\s+installed,\s+read\s+and\s+follow\s+its?\b"
-    r"([^.;]*)(;\s*otherwise\b)?")
+    rf"((?:(?!{_GUARD_STOP})[^.;])*)(;\s*otherwise\b)?")
 
 
 def guards_load_of(text: str, name: str) -> bool:

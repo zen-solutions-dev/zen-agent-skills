@@ -186,6 +186,33 @@ class GuardedLoadTests(Fixture):
         code, out = self.run_main()
         self.assertIn("0 error(s), 0 warning(s)", out)
 
+    def test_a_guard_does_not_borrow_a_later_otherwise(self):
+        # Re-check of fix (c): the sentence ends at a blank line, a list item or a fence, so
+        # a guard with no fallback cannot borrow "; otherwise" from unrelated later text.
+        for body in ("If `drafty` is installed, read and follow it now\n\n## Next step\n\n"
+                     "- run tests; otherwise stop\n",
+                     "- If `drafty` is installed, read and follow it\n- Run the build; "
+                     "otherwise report\n",
+                     "If `drafty` is installed, read and follow it now\n\n```bash\n"
+                     "foo; otherwise\n```\n",
+                     "If `drafty` is installed, read and follow it now\n```bash\n"
+                     "foo; otherwise\n```\n",
+                     # Only the blank line stops this one: a new paragraph, no list, no fence.
+                     "If `drafty` is installed, read and follow it now\n\nRun the build; "
+                     "otherwise report.\n"):
+            with self.subTest(body=body):
+                self.write("shipped", skill("shipped", body=body))
+                code, out = self.run_main()
+                self.assertEqual(code, 0, out)
+                self.assertIn("guards the draft 'drafty' with no '; otherwise' clause", out)
+
+    def test_a_guard_wrapped_inside_a_list_item_is_accepted(self):
+        self.write("shipped", skill("shipped", body=(
+            "- If `drafty` is installed, read and follow it now, before the\n  next step; "
+            "otherwise skip it.\n")))
+        code, out = self.run_main()
+        self.assertIn("0 error(s), 0 warning(s)", out)
+
     def test_a_guard_naming_a_file_of_the_draft_is_accepted(self):
         # The maintainer's wording for new-quest's step 8: "read and follow its <file>".
         self.write("shipped", skill("shipped", body=(
