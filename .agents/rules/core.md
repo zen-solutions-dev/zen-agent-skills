@@ -31,7 +31,7 @@ batch, a cloud or scheduled session.
   re-derived on the new base and the report says so.
 - **A8.** Push to a branch of your own and open a draft pull request. Never merge your own work.
   Two exceptions. An orchestrator may land work it did not author on an integration branch, once an
-  agent that is not its author, nor dispatched or briefed by it, passed that commit (`A7`): by
+  agent that is neither the author nor the orchestrator, nor briefed by the author, passed it: by
   fast-forward, or by a mechanical merge (no conflict, or conflicts only in regenerated generated
   files), re-checked and listed in the PR. And where `merge_policy` opts in, a verified two-way door
   may self-merge, sampled. Otherwise only a person merges into the base branch.
