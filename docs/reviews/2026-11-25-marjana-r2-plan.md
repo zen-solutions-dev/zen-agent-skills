@@ -43,7 +43,7 @@ The maintainer approved the A8/B1 and C1 wording with these answers: a **mechani
 
 ### Maintainer answers on `feat-0103`'s questions, 2026-11-25
 
-- Commit a `VERSION` file at **0.2.0**, and `build-adapters.py`'s plugin version reads it. No tag is cut (D5).
+- Commit a `VERSION` file at **0.2.0**, and `build-adapters.py`'s plugin version reads it. No tag is cut (D5). **Superseded the same day**: 0.2.0 broke the release path (no `v0.2.0` section, and 0.2.0 could never be released), so the maintainer set `VERSION` to **0.1.0**, the last real tag; the next release, on his go, cuts 0.2.0.
 - The old-name warnings are **never** promoted by `--strict`.
 - The 24 unresolved quoted phrases `R-004` found go to a quest next round, reserved as `chore-0118`; the audit then switches to failing.
 - The destructive-git gate keeps its four extra rows (`switch --discard-changes`, `push --prune`, `prune`, `worktree remove --force`).
