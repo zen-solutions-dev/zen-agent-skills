@@ -1008,6 +1008,10 @@ def check_composed_by(descriptions: dict, skill_texts: dict, errors: list) -> No
 # unguarded pattern below cannot match, and its backticks are no link.
 # An instruction to load a backticked skill with no guard around it.
 UNGUARDED_LOAD_RE = re.compile(r"\bread and follow `([a-z0-9][a-z0-9-]*)`")
+# The guard's opening, and the rest of its sentence: words such as "now" may follow "it",
+# and the sentence must go on with a clause starting "; otherwise".
+GUARD_OPEN_RE = re.compile(
+    r"\bIf `([a-z0-9][a-z0-9-]*)` is installed, read and follow it\b([^.;\n]*)(;\s*otherwise\b)?")
 
 
 def check_draft_references(skill_texts: dict, errors: list, warnings: list) -> None:
@@ -1029,6 +1033,13 @@ def check_draft_references(skill_texts: dict, errors: list, warnings: list) -> N
                           f"name it in backticks, or load it with the guarded form "
                           f"'If `{ref}` is installed, read and follow it; otherwise ...'")
         ranges = literal_ranges(text)
+        for m in GUARD_OPEN_RE.finditer(text):
+            ref = m.group(1)
+            if (ref in drafts and m.group(3) is None
+                    and not any(a <= m.start() < b for a, b in ranges)):
+                warnings.append(f"{name}/SKILL.md: guards the draft {ref!r} with no "
+                                f"'; otherwise' clause in the same sentence; say what to do "
+                                f"when it is not installed")
         for m in UNGUARDED_LOAD_RE.finditer(text):
             ref = m.group(1)
             if ref in drafts and not any(a <= m.start() < b for a, b in ranges):
@@ -1050,7 +1061,20 @@ def drafted_date(skill_md: Path, text: str):
 
     `source` says where the date came from, or why there is none, for the message.
     """
-    value = metadata_fields(text).get("drafted", "")
+    fields = metadata_fields(text)
+    extended = fields.get("extended", "")
+    if extended:
+        # `metadata.extended: "YYYY-MM-DD: <reason>"` restarts the clock from that date
+        # (the rule feat-0102 wrote for D1). A value that does not start with a date is
+        # reported, never silently honoured.
+        head = extended.split(":", 1)[0].strip()
+        try:
+            if not DRAFTED_RE.match(head):
+                raise ValueError(head)
+            return datetime.date.fromisoformat(head), "metadata.extended"
+        except ValueError:
+            return None, f"metadata.extended {extended!r} does not start with YYYY-MM-DD"
+    value = fields.get("drafted", "")
     if value:
         try:
             if not DRAFTED_RE.match(value):

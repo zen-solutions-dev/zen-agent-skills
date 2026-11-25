@@ -172,6 +172,19 @@ class GuardedLoadTests(Fixture):
         code, out = self.run_main()
         self.assertIn("0 error(s), 0 warning(s)", out)
 
+    def test_words_between_it_and_otherwise_are_accepted(self):
+        self.write("shipped", skill("shipped", body=(
+            "If `drafty` is installed, read and follow it now; otherwise skip it.\n")))
+        code, out = self.run_main()
+        self.assertIn("0 error(s), 0 warning(s)", out)
+
+    def test_a_guard_with_no_otherwise_clause_warns(self):
+        self.write("shipped", skill("shipped", body=(
+            "If `drafty` is installed, read and follow it. Then carry on.\n")))
+        code, out = self.run_main()
+        self.assertEqual(code, 0, out)
+        self.assertIn("guards the draft 'drafty' with no '; otherwise' clause", out)
+
     def test_a_guard_missing_its_otherwise_clause_is_unguarded(self):
         self.write("shipped", skill("shipped", body=(
             "If `drafty` is installed, read and follow it.\nThen read and follow `drafty`.\n")))
@@ -223,6 +236,21 @@ class DraftExpiryTests(Fixture):
         self.write("old", skill("old", meta="metadata:\n  drafted: 2020-01-01\n"))
         code, out = self.run_main()
         self.assertIn("0 warning(s)", out)
+
+    def test_an_extension_restarts_the_ninety_days(self):
+        self.write("drafty", skill("drafty", meta=DRAFT_META + "  drafted: 2026-01-01\n"
+                                   + '  extended: "2026-10-01: waiting on a real run"\n'))
+        code, out = self.run_main()
+        self.assertIn("0 warning(s)", out)
+        self.write("drafty", skill("drafty", meta=DRAFT_META + "  drafted: 2026-01-01\n"
+                                   + '  extended: "2026-08-01: old extension"\n'))
+        code, out = self.run_main()
+        self.assertIn("(since 2026-08-01, from metadata.extended)", out)
+
+    def test_an_extension_without_a_date_is_reported(self):
+        self.write("drafty", skill("drafty", meta=DRAFT_META + '  extended: "soon"\n'))
+        code, out = self.run_main()
+        self.assertIn("metadata.extended 'soon' does not start with YYYY-MM-DD", out)
 
     def test_a_malformed_drafted_value_is_reported_as_unknown(self):
         self.write("drafty", skill("drafty", meta=DRAFT_META + "  drafted: last spring\n"))

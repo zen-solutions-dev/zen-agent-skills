@@ -35,6 +35,8 @@ Each feature was removed or weakened in place, the named tests run, and the file
 | R-003 a | do not call `check_composed_by()` | three `ComposedByTests` |
 | R2-3 | drop the error for a relative link to a draft | `test_a_relative_link_to_a_draft_fails`, `test_a_relative_link_beside_the_guard_still_fails` |
 | R2-3 | drop the unguarded-load warning | `test_an_unguarded_load_of_a_draft_warns`, `test_a_guard_missing_its_otherwise_clause_is_unguarded` |
+| D1 | ignore `metadata.extended` (added after feat-0102's relay) | `test_an_extension_restarts_the_ninety_days`, `test_an_extension_without_a_date_is_reported` |
+| R2-3 | drop the warning for a guard with no "; otherwise" clause (added after feat-0102's relay) | `test_a_guard_with_no_otherwise_clause_warns` |
 | D1 | expire at 90 days inclusive | `test_exactly_ninety_days_is_not_over` |
 | D1 | ignore the dogfood records | `test_a_dogfood_record_naming_it_silences_the_warning`, and two `GuardedLoadTests` whose fixtures rely on a record |
 | B4 | ignore the exception list | `test_an_excepted_long_line_is_silent_and_counted` (a first attempt matched two places and did not apply; void) |

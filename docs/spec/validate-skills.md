@@ -605,20 +605,23 @@ Added 2026-11-25 by `feat-0103`.
 - **And when** it tells the agent to "read and follow \`<draft>\`" outside a code span or fence
 - **Then** it records a warning naming the guarded form, and the exit code is unaffected
 - **And** the sentence "If \`<draft>\` is installed, read and follow it; otherwise ..." is accepted
-  with neither, and draws no install edge, since an edge is a relative link only
+  with neither, words such as "now" may stand between "it" and "; otherwise", and it draws no install
+  edge, since an edge is a relative link only
+- **And** that opening with no "; otherwise" clause in the same sentence records a warning
 
 ### Scenario S-031: a draft nobody has run for 90 days warns
 
 Added 2026-11-25 by `feat-0103`.
 
 - **Given** a draft skill, in a skills directory laid out as `<repository>/.agents/skills/`
-- **And** its drafted date is `metadata.drafted` (YYYY-MM-DD), or when that is absent the date of the
-  first git commit adding its `SKILL.md`
+- **And** its drafted date is the date opening `metadata.extended` (`"YYYY-MM-DD: <reason>"`, which
+  restarts the 90 days), else `metadata.drafted` (YYYY-MM-DD), else the date of the first git commit
+  adding its `SKILL.md`
 - **When** the drafted date is more than 90 days before today, and no file under the repository's
   `docs/reviews/*dogfood*` names the skill (as \`<name>\` or `<name>/SKILL.md`)
 - **Then** the validator records a warning giving the age, the date and where the date came from,
   and the exit code is unaffected
-- **And** when there is no date (a malformed `metadata.drafted`, git unavailable or without such a
+- **And** when there is no date (a malformed `metadata.drafted` or `metadata.extended`, git unavailable or without such a
   commit) and no record names it, the warning says the date is unknown and the expiry cannot be
   checked
 - **And** a skills directory outside that layout is not checked for expiry
