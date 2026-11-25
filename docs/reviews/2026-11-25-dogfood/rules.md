@@ -118,4 +118,13 @@ rule sends to Mermaid.
 
 ## The merge into this branch
 
-Filled in after the merge of `origin/zen/marjana-r2-2026-11-25`, below.
+On 2026-11-25 the integration tip was still `7496499`, the commit this branch was cut from, so
+`git merge-tree --write-tree --name-only HEAD origin/zen/marjana-r2-2026-11-25` printed a tree and no
+conflicted path, and `git merge` answered "Already up to date." Under the new rule that is the
+first case, no conflict, in its degenerate form: nothing to land. `ZEN_CHECKS_SCOPE=full python3
+scripts/run-checks.py` then exited 0 with 11 gates passed.
+
+**A degenerate input, built by hand.** With `improve-architecture`'s link to the new lens replaced
+by plain words, `python3 scripts/validate-skills.py` reported
+`.agents/rules/deep-modules.md: declares itself a lens but no skill references it`, so the move is
+guarded by an existing check, not only by this record. The file was restored afterwards.
