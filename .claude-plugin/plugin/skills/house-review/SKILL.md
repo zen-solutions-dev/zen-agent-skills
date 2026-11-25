@@ -121,13 +121,18 @@ Done when every reviewable file has been read at the Step 2 depth or is named as
   refuses something. In a spec, that is every Constraint, every Non-Goal, and every "must not",
   "never", "only", "at most" or refusal in a scenario's Then; in a quest file, its out-of-scope list
   and every limit in its acceptance criteria; for a change that amends a contract, the guards of the
-  contract as it stood before the amendment as well as after. Quote each guard verbatim, with its
-  file and section, into a numbered list. A conformance matrix or verification record the change's
+  contract as it stood before the amendment as well as after. For a spec with many scenarios, take
+  every Constraint and Non-Goal, and the scenarios the change or its quest names; say how many
+  scenarios were left out. Quote each guard verbatim, with its file and section, into a numbered
+  list. When two sources disagree (a plan and its quest), the more specific one is the contract, and
+  the disagreement is itself a finding. A conformance matrix or verification record the change's
   own author updated is not a guard source and not evidence on this axis.
 - **The door**: one-way or two-way, by the security axis's list in the lens (a migration or change to
   persisted data, a deleted or renamed public surface, a published version, a sent message, a
   destroyed resource, a security, permission or secrets change, a change to CI or hook
-  configuration). One such part makes the whole change one-way; name it. A pull request body's
+  configuration), plus what `autonomy.md`'s self-merge guard adds (a change to an approved spec, to
+  the acceptance command or its checks, or a quest declared `mode: hitl`). One such part makes the
+  whole change one-way; name it. A pull request body's
   Merge danger section, when there is one, is a claim to check against the diff, not the answer.
 - **Standards sources**: every file the target repository uses to say how code is written
   (`CODING_STANDARDS.md` and `CONTRIBUTING.md` whenever they exist, plus any style or conventions
@@ -149,12 +154,13 @@ but wrong (`spec-wrong`). Each finding quotes the contract line it rests on as w
 Then check **every guard** from Step 4 against each step, branch or file the change adds: mark it
 **held** (quote the code or text that keeps it), **broken** (a `spec-wrong` finding, quoting the guard
 and the code that crosses it), or **not reached** (the change touches nothing the guard governs, in a
-few words why). A new step that contradicts an older guard of the same contract is broken even when
-the contract's own amendment does not mention it.
+few words why). A new step that contradicts an older guard of the same contract is broken unless the
+contract's own amendment retires that guard; then mark it held and quote the amendment line.
 
 **Standards axis.** Against the standards sources only: each finding cites the standard (file and
 rule) and quotes the code; a rubric finding with no written standard behind it is a judgement call
-and is labelled as one. Skip anything the repository's tooling already enforces. Read the comments
+and is labelled as one. When the change edits a standards source itself, judge the rest of the change
+by that source as it stood at the base, and say so. Skip anything the repository's tooling already enforces. Read the comments
 the change adds beside a workaround as the lens's fig-leaf smell directs: a comment that explains
 why the code is wrong licenses it rather than fixing it. Apply the lens's **smell baseline** to what
 the diff adds or makes worse, each smell named first in its finding's summary and labelled a
