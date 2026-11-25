@@ -93,7 +93,7 @@ drop the step.
 
 ## Outcome (2026-07-27)
 
-Run against `gaudiya-vaishnava-knowledge-wiki`: three parallel worktree agents adding first test
+Run against a private wiki repository: three parallel worktree agents adding first test
 coverage to three untested modules. Suite went 9 to 47, all three landed, every diff verified
 independently before anything was applied.
 

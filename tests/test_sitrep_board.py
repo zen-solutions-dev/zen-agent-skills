@@ -120,7 +120,7 @@ class WaitingOnYouTests(unittest.TestCase):
     def test_s002_a_decision_above_a_newer_question_does_not_answer_it(self):
         """S-002: a decision above a newer question does not answer it.
 
-        This is feat-0057's shape in hts-app, the case the prototype dropped from the queue.
+        This is feat-0057's shape in sample-app, the case the prototype dropped from the queue.
         """
         self.assertEqual(sitrep.waiting_reasons(DECISION + QUESTION), ["open question"])
 

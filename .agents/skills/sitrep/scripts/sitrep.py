@@ -17,7 +17,7 @@ Six properties are load-bearing and shape everything below.
 
 **Only tracked records are state.** Task files are found with `git ls-files`, never with a
 directory listing, because an untracked file on one machine is not part of the repository. The
-hts-app prototype this replaces met a simulator output in an untracked folder that reported 70
+sample-app prototype this replaces met a simulator output in an untracked folder that reported 70
 where a fresh run reported 74, and it looked exactly as authoritative as everything else.
 
 **A decision answers only the questions above it.** A task routinely carries an answered
@@ -80,7 +80,7 @@ LIST_ITEM_RE = re.compile(r"^[ \t]+-[ \t]*(.*)$")
 # writes "## Open Question" should not lose one for its capitalisation.
 OPEN_QUESTION_RE = re.compile(r"^##[ \t]+open question", re.M | re.I)
 DECISION_RE = re.compile(r"^##[ \t]+decision", re.M | re.I)
-# Any heading, at any level, carrying the phrase bug-0126 in hts-app already used.
+# Any heading, at any level, carrying the phrase bug-0126 in sample-app already used.
 HUMAN_EYE_RE = re.compile(r"^#{1,6}[ \t]+.*held open for a human eye", re.M | re.I)
 PRIORITY_RE = re.compile(r"^P(\d+)$", re.I)
 

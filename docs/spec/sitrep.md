@@ -41,11 +41,13 @@ the second tagged release): a board reading files tracked under `.tasks/` carrie
 alias expires (new S-042). **This amendment needs the maintainer's re-approval in the round 2 pull
 request.**
 
+**Note 2026-11-25:** example repository names in this contract were neutralised (to `sample-app`), at the maintainer's decision; no behaviour changed.
+
 ## Problem
 
 Agent sessions produce work faster than the person directing them can hold its state, and that state
 is written down in several places that disagree: task files, the roadmap, the changelog, dated status
-documents and published pages. On 2026-09-10, in the `hts-app` repository, a remaining-work figure of
+documents and published pages. On 2026-09-10, in a sample application repository (`sample-app`), a remaining-work figure of
 `1,085` sat in several documents while the tool that computes it reported `1,088`.
 
 A status report written from memory is wrong in both directions, and nothing marks which way. The same
@@ -57,10 +59,10 @@ read exactly like the right ones: a simulator result quoted as `74` that is abou
 across seeds, a run count roughly doubled by counting entries instead of runs, a threshold called
 unmeasured that had been measured against 172 items, and a diagnosis built on two mistyped field names
 that each returned empty and were read as absence. An untracked local file looks like state too: a
-simulator output left in `hts-app`'s `content-engine/out/` reported 70 skills mastered where a fresh
+simulator output left in `sample-app`'s `content-engine/out/` reported 70 skills mastered where a fresh
 run reported 74.
 
-A prototype in `hts-app` (`scripts/status-page.mjs`, tasks `feat-0059` and `feat-0060`, now parked in
+A prototype in `sample-app` (`scripts/status-page.mjs`, tasks `feat-0059` and `feat-0060`, now parked in
 its own draft pull request) showed that deriving the board from the repository works, and how it goes
 wrong. It dropped the only P1 from the queue, because it counted a task as answered when a decision
 existed anywhere in the file, including above a newer question. It reported nothing in progress while a

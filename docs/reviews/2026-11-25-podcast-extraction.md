@@ -1,11 +1,11 @@
 # Podcast extraction: "How to Actually Code with AI (ft. Matt Pocock)"
 
-**Provenance of this file.** Written on 2026-11-25 by a research subagent of the Marjana orchestrating session from the video's auto-caption transcript, obtained through the Eden connector and read in full. The transcript itself is not committed; this file is notes, with quotes kept under 25 words. Times are estimates from the chapter markers. Committed per the maintainer's decision G6.
+**Provenance of this file.** Written on 2026-11-25 by a research subagent of the Marjana orchestrating session from the video's auto-caption transcript, obtained through a connector that can fetch transcripts and read in full. The transcript itself is not committed; this file is notes, with quotes kept under 25 words. Times are estimates from the chapter markers. Committed per the maintainer's decision G6.
 
 ## About this extraction
 
 - **Source:** NetworkChuck, YouTube `mU8WKII1gpk`, published 2026-11-20, 2:02:36 (7,356 s). Host: Chuck (NetworkChuck). Guest: Matt Pocock (Total TypeScript, AI Hero, `mattpocock/skills`).
-- **Input:** the Eden `eden_read_social_post` result, field `post.transcript`, 131,768 characters, `transcriptStatus: available`, `transcriptTruncated: false`, `transcriptSource: cache` (YouTube auto-captions). **Read 100%**, in seven slices of about 20,000 characters.
+- **Input:** that connector's result, field `post.transcript`, 131,768 characters, `transcriptStatus: available`, `transcriptTruncated: false`, `transcriptSource: cache` (YouTube auto-captions). **Read 100%**, in seven slices of about 20,000 characters.
 - **Timestamps: the transcript carries none.** Every time below is an estimate, interpolated by character position between the 16 chapter markers in the video description, each pinned to an anchor phrase. Expect an error of roughly 30 seconds. Times are written `~mm:ss` or `~h:mm:ss`.
 - **Speakers are not labelled.** Attribution to Matt or Chuck is inferred from content; where it matters, the line says who.
 - **Mis-transcriptions** (auto-captions), used as corrected below:

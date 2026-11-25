@@ -17,7 +17,7 @@ created: 2026-09-11
 
 ## Problem
 
-The hts-app prototype reported nothing in progress while a worktree held uncommitted work, because it
+The prototype in a sample application repository reported nothing in progress while a worktree held uncommitted work, because it
 read `status: in_progress` and no task file in any of the author's repositories sets it. The spec
 takes in-flight work from git instead, and summarises what changed since a revision the same way.
 

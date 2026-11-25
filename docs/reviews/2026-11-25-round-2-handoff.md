@@ -37,7 +37,7 @@ You start with a fresh context and no memory of the session that wrote this. The
 - **The maintainer approved** every pending contract (A1 to A7, A9), the retro proposals B2 to B9 and B11, and every gap item E1 to E9. See the decision record for C, D and F.
 - **What worked in round 1**: two research children, then five build children with disjoint paths; reports by `send_message`, no intermediate PRs; one fresh-context landing review each, one fix round, a focused re-check pinned to the exact commit; landing by fast-forward; one PR.
 - **What failed or cost time**: task-file moves broke shared links (`R-202`); a shared test count collided (`R-203`); children ran without the kit installed (`R-205`); worker restarts lost branch tracking (`R-206`); branch deletion and tag pushes are refused by the proxy (`R-207`); a relay crossed a report (`R-208`).
-- **Environment facts**: YouTube refuses cloud addresses for transcripts, and the Eden connector's `eden_read_social_post` fetches them. GitHub's GraphQL is refused; open PRs with `gh api repos/<owner>/<repo>/pulls`. CI runs only on the final PR this round (B10: Later).
+- **Environment facts**: YouTube refuses cloud addresses for transcripts, and a connector that can fetch transcripts fetches them. GitHub's GraphQL is refused; open PRs with `gh api repos/<owner>/<repo>/pulls`. CI runs only on the final PR this round (B10: Later).
 - **Effort** (C5): medium for children, high for verifiers and debugging.
 
 ## 6. Scope, in phases, with check-in gates
