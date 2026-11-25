@@ -4,7 +4,7 @@ Run 2026-11-25 by the integration child of Marjana round 2 (branch `zen/marjana-
 `zen/marjana-r2-2026-11-25` at `7dbad71`), following
 [`doc-sync`](../../../.agents/skills/doc-sync/SKILL.md) as written. The brief named the scope and
 approved applying or dismissing each finding, so the run applied findings within the documents
-[`feat-0109`](../../../.quests/feat-0109-integrate-the-round-2-ledgers-and-listings.md) owns.
+[`feat-0109`](../../../.quests/done/feat-0109-integrate-the-round-2-ledgers-and-listings.md) owns.
 
 ## Scope and classification
 

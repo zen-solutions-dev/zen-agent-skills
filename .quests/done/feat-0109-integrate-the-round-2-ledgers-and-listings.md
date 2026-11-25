@@ -2,7 +2,7 @@
 id: feat-0109
 title: Bring the round 2 ledgers and listings up to date and remove the gate bridges
 type: feat
-status: in_progress
+status: done
 priority: P1
 parent: "Marjana round 2, close: Integration (docs/reviews/2026-11-25-marjana-r2-plan.md)"
 depends_on: [feat-0101, feat-0102, feat-0103, feat-0105, feat-0106, feat-0107, feat-0108]
@@ -30,12 +30,12 @@ created: 2026-11-25
 ## Problem
 
 Every round 2 workstream (`feat-0101` to `feat-0108`, and the orchestrator's `chore-0104`, recorded
-in [the round 2 plan](../docs/reviews/2026-11-25-marjana-r2-plan.md)) has landed on
+in [the round 2 plan](../../docs/reviews/2026-11-25-marjana-r2-plan.md)) has landed on
 `zen/marjana-r2-2026-11-25`, and none of the reader-facing ledgers says so: `CHANGELOG.md` has no
 round 2 line, `ROADMAP.md`'s "Current state" counts 31 skills and 6 drafts against a tree of 37 and
-12, and neither [`zen`](../.agents/skills/zen/SKILL.md) nor [`CATALOG.md`](../docs/CATALOG.md)
+12, and neither [`zen`](../../.agents/skills/zen/SKILL.md) nor [`CATALOG.md`](../../docs/CATALOG.md)
 names the six new drafts. Two children kept the gates green with named bridges in
-[`run-checks.py`](../scripts/run-checks.py) (`ROADMAP_STATUS_EXCEPTIONS`,
+[`run-checks.py`](../../scripts/run-checks.py) (`ROADMAP_STATUS_EXCEPTIONS`,
 `UNLISTED_DRAFT_EXCEPTIONS`) that this quest is to delete.
 
 ## Scope
