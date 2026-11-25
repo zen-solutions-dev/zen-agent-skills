@@ -31,7 +31,9 @@ changing the language.
 
 ## One term from grill
 
-When `grill` sends one term the moment it settles, run steps 1 to 3 for that term alone and go back
+A term has **settled** only when the person chose it or confirmed it; with nobody present to do
+either, it is deferred, reported as deferred, and not written. When `grill` sends one term the
+moment it settles, run steps 1 to 3 for that term alone and go back
 to the interview: step 1 only once per interview, step 2's challenges only where the interview has
 not already put them to the person, and step 3 writes the entry now. An ADR candidate the term raises
 is noted for step 4 at the interview's close, not argued mid-round. Report the term written in one

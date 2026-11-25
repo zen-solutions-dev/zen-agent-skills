@@ -112,16 +112,17 @@ Read the source request, the code and documents in the area, and the repository'
 decision records when they exist (`GLOSSARY.md`, `docs/adr/`, or the repository's own names for
 them). Use the glossary's terms throughout.
 
-Then compose `grill`: interview the person over the decision tree until its frontier is empty and
-they confirm the shared understanding. Scale it to the change: a narrow bug may settle in one round,
-a new capability may take several. Write no file until the interview has closed.
+Then read and follow [`grill`](../grill/SKILL.md) now: interview the person over the decision tree
+until its frontier is empty and they confirm the shared understanding. Scale it to the change: a
+narrow bug may settle in one round, a new capability may take several. Write no file until the interview has closed.
 
 **Synthesise only.** When this conversation already holds a `grill` decisions record for this
 request and the person confirmed it, skip the interview and draft from that record: say which record
 you drafted from, and ask nothing it already settled. Its Deferred lines become Open Questions. A
 decision the contract needs that the record never settled still goes to the person before any file
-is written, as a `grill` round over that branch alone. A record from another request, one the person
-never confirmed, or one only summarised from an earlier conversation is not this record: interview.
+is written: read and follow `grill` now for a round over that branch alone. A record from another
+request, one the person never confirmed, or one only summarised from an earlier conversation is not
+this record: interview.
 
 Keep the terms the interview settled, and any decision that is hard to reverse, surprising, and a
 real trade-off: they go to [`domain-language`](../domain-language/SKILL.md) after the spec is
