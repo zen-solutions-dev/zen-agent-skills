@@ -87,6 +87,44 @@ with the positive target.
 - **Sediment** is what accumulates when adding feels safe and removing feels risky. Prune on every
   edit, not in a separate pass nobody schedules.
 
+## Write history, not the present
+
+A document an agent reads later is a record of what was true when it was written, and it reads as
+the present unless it says otherwise. A claim about a moving thing (a file's contents, a count, a
+status, which branch holds what) stays honest only if it carries its own moment:
+
+- **Date the claim.** "On 2026-11-24 `scripts/` held one checker per gate" can be re-checked; "the
+  scripts directory holds one checker per gate" cannot be told apart from a stale one.
+- **Cite the commit a code claim was true at.** A short hash or a tag pins what was read, so the next
+  reader can diff from there instead of trusting the sentence.
+- **Never write a bare "currently", "now" or "at the moment".** Each one is an undated claim wearing
+  the present tense. Replace it with the date, or delete it when the sentence reads the same without.
+- **Supersede, never rewrite.** When a dated claim stops being true, add the newer one with its own
+  date and leave the old line, or move it to a history file. A silently rewritten record loses the
+  evidence that anything changed.
+
+This applies to anything kept across sessions: memory, a handoff, a report, a decision record. A
+rule or a procedure is not a claim about the present and needs no date; the rule above about the
+environment as a source of truth still decides what belongs in a document at all.
+
+## Composition must load
+
+A skill composes another when one of its steps depends on the other's discipline. Naming the
+sibling is not enough: an agent that sees a skill's name in prose reads it as background and often
+carries on from memory, so the sibling's rules never reach the run. Write each composing step as an
+instruction to load:
+
+- **Say read and follow, at the step that needs it.** "Read `../doc-revise/SKILL.md` now and follow it
+  for this edit" loads; "this composes `doc-revise`" only mentions. The same holds
+  for a lens: "apply the rubric in `review-quality.md`" before the step that uses it.
+- **Keep it harness-neutral.** Reading the file works in every harness. Where a harness has its own
+  loader (a skill tool, a slash command), name it in a labelled optional section, never in the step.
+- **Load where the step is, not at the top.** A load instruction in the opening paragraph has decayed
+  by the step that needs it; put it at that step, and keep the opening to a pointer.
+- **A mention stays a mention.** A neighbour named only to say where a skill sits in a chain is not
+  composed; leave it in backticks, with no load instruction and no link, so it creates no install
+  edge.
+
 ## Invocation
 
 - A **model-invoked** skill keeps a model-facing description so the agent can reach it unprompted
@@ -121,12 +159,19 @@ Pick model-invoked only when the agent must reach the skill on its own, or anoth
   "Done when".
 - A summary, verdict rule or opening promise that restates a step is re-read against that step
   whenever either is edited; prefer pointing at the step to restating it.
+- Every composing step tells the agent to read and follow the sibling or lens at that step, not
+  merely names it.
+- A claim the skill writes into a record that outlives the session (memory, a report, a handoff)
+  carries a date, and a code claim its commit; no bare "currently".
 
 ## Provenance
 
 Adapted, in this kit's own words, from Matt Pocock's `writing-for-agents` skill. The two-loads
 framing, the information ladder, completion criteria, leading words, the no-op test and the
-invocation split are his; the checklist and the kit-specific rules are this repository's.
+invocation split are his; the checklist and the kit-specific rules are this repository's. "Write
+history, not the present" is adapted from the memory rules of his `chief-of-staff` skill, and
+"composition must load" from the reason his changelog gives for making cross-skill invocation an
+explicit instruction (`feat-0093`, 2026-11-24).
 
 ```provenance
 source: https://raw.githubusercontent.com/mattpocock/skills/main/skills/productivity/writing-for-agents/SKILL.md
@@ -144,4 +189,22 @@ license: MIT
 retrieved: 2026-11-23
 sha256: c768e6307c7c10728c401c213f2c4ba71c542127eeb7ad2956aabd15a0fa0059
 note: fetched with urllib and digested with hashlib on the retrieved date, at 2,629 bytes. Source of the invocation split.
+```
+
+```provenance
+source: https://raw.githubusercontent.com/mattpocock/skills/main/skills/in-progress/chief-of-staff/SKILL.md
+author: Matt Pocock
+license: MIT
+retrieved: 2026-11-24
+sha256: 1f508d8ebbdbad8704bb24c5016094897a4ebbfe5804e370434b5e5fbeb59c4a
+note: fetched with urllib and digested with hashlib on the retrieved date, at 4,470 bytes, identical to d653911. Source of "write history, not the present".
+```
+
+```provenance
+source: https://raw.githubusercontent.com/mattpocock/skills/main/CHANGELOG.md
+author: Matt Pocock
+license: MIT
+retrieved: 2026-11-24
+sha256: 4428dd2711eb5e51ae8bca7a55a1144e3afd5805afb96c9480faa1081b77622e
+note: fetched with urllib and digested with hashlib on the retrieved date, at 66,893 bytes. The entries for pull requests 878 and 880 are the source of "composition must load"; a changelog moves often, so expect drift here.
 ```

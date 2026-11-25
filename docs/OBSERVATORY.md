@@ -339,8 +339,8 @@ report exists for, the count of skills never used, unreachable.
 
 So the roster comes from the skill directories themselves, and specifically from
 [`install.py`](../scripts/install.py)'s own `discover_skills()`: **every directory under
-[`.agents/skills/`](../.agents/skills/) holding a `SKILL.md`.** That is the set this kit ships, and
-it is the set the contribution-bar section of [`AGENTS.md`](../AGENTS.md) asks its question about.
+[`.agents/skills/`](../.agents/skills/) holding a `SKILL.md`.** That is every skill in the kit, drafts included,
+which `install.py` places only on request, and it is the set the contribution-bar section of [`AGENTS.md`](../AGENTS.md) asks its question about.
 Reading it through the installer rather than from a path written into the server means the two
 cannot come to disagree about what the installed set is.
 

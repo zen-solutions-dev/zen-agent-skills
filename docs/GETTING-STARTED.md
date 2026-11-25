@@ -147,7 +147,7 @@ python scripts/install.py --tools claude
 python scripts/install.py --tools opencode
 ```
 
-That default installs the skills that make up the delivery workflow, not every skill. There is a reason it is not all of them: your assistant reads a one-line summary of every installed skill in order to pick the right one, and that reading budget is shared with any other skills you have installed, so more is not automatically better. If you want the smallest useful set, or all of it:
+That default installs the skills that make up the delivery workflow, not every skill. There is a reason it is not all of them: your assistant reads a one-line summary of every installed skill it may pick on its own (in Claude Code, a skill you start by name costs nothing here), and that reading budget is shared with any other skills you have installed, so more is not automatically better. If you want the smallest useful set, or all of it:
 
 ```bash
 python scripts/install.py --profile core
@@ -282,6 +282,8 @@ Once you are ready, ask it to use `init-worktracking`:
 
 The skill is designed to detect existing trackers and offer a dry-run migration. You can choose to migrate, keep the existing tracker as canonical, or intentionally coexist with both. Coexisting trackers can drift, so choose that option only when there is a clear reason.
 
+Its last step **configures the skills for this repository**. It looks around first, then asks you one short section at a time (which tracker you use, where the glossary and specs live, the command that decides whether a change is acceptable, which branch work lands on, and whether agents should run unattended by default), recommending an answer for each so a "yes" is enough. It writes your answers to `docs/agents/zen.md`, which every skill reads from then on, and changes a value later only when you name it.
+
 ### 5. Start with the project you actually have
 
 After the structure is agreed, use the assistant to answer practical questions:
@@ -312,7 +314,7 @@ The kit is most useful when it reduces repeated confusion.
 
 You can use the kit without adopting its full work-tracking system.
 
-Install the skills for your tool, then use one skill when the need appears. If you cannot remember which, ask `zen`, the router:
+Install the skills for your tool, then use one skill when the need appears. If you cannot remember which, ask `zen`, the router. The default `spine` profile places most of the skills below; `zen`, `retro`, `agent-handoff` and `human-handoff` need `--profile all` or the plugin (measured 2026-11-24 with `install.py --dry-run`):
 
 - 🔥 `grill` for being interviewed about a plan or idea until nothing is silently assumed.
 - 📝 `doc-author` for a new, code-grounded guide.
@@ -334,6 +336,8 @@ Even with the full system in place, most changes do not need all of it. The READ
 ## 👥 The collaboration journey
 
 The kit becomes especially useful when more than one person or agent is involved.
+
+When a day's work splits into several pieces, the `orchestrate` draft runs it from one session: that session talks with you and makes no changes itself, while separate agents research and build on their own branches. Each piece is checked by an agent that did not write it, then lands on one shared branch, and you get **one** pull request to review at the end. Anything hard to undo waits for your decision. It is a draft, so install it with `--include-drafts`.
 
 ```mermaid
 flowchart LR

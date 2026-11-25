@@ -78,6 +78,13 @@ is left reading `approved` per the convention in [`README.md`](README.md): `veri
 `blocked` on a spec that is not approved, so flipping the field would make the verification run for
 this very amendment unanswerable.
 
+**Amended 2026-11-24 (`feat-0094`) under the Marjana plan the maintainer approved that day.
+Pending the maintainer's approval of this amendment itself.** S-028 adds a warning for a workflow
+step that ends on no "Done when" line, the convention `writing-for-agents.md`'s checklist states and
+`chore-0096` measured by hand without wiring into any gate (retro proposal `R-005`). A warning and not
+an error, so a step written without a criterion is flagged at the commit that adds it without
+refusing the rest of the tree. `status` is left reading `approved` for the reason given above.
+
 **Amended 2026-11-23 (`feat-0079`) under the 2026-11 overhaul plan the maintainer approved that day.
 Pending the maintainer's approval of this amendment itself.** S-027 adds the `invocation` field under
 `metadata`, which the kit uses to mark a skill a person starts by name. Every reader treats a value it
@@ -553,6 +560,19 @@ validator is the kit-level lint that enforces that bar.
   to declare `invocation: user` under `metadata` instead, because that key belongs only in a copy
   rendered for Claude Code and claude.ai rejects it. An `invocation:` line in the body is prose and is
   not read.
+
+### Scenario S-028: a workflow step with no "Done when" line warns but does not fail
+
+- **Given** a `SKILL.md` that does not declare itself a lens, with a step whose span holds no line
+  starting "Done when" outside a code fence. A step is a `###` heading inside the `## Procedure`
+  section, or a `## Step N` or `### Step N` heading anywhere; its span runs to the next heading of the
+  same or a higher level, so a `####` subsection belongs to it. Headings inside a fence are not steps.
+- **When** the validator runs
+- **Then** it records one warning for that skill naming every such step, and the exit code is
+  unaffected.
+- **And** a skill that declares itself a lens is not checked, because its headings are a rubric
+  composed into another skill rather than steps an agent executes; and a "Done when" mid-paragraph,
+  or inside a fence, does not count as a criterion.
 
 ## Proposed Surface
 

@@ -241,6 +241,16 @@ this kit has already run under.** It is the only rule in v1 in that position, it
 rather than dressed up as consolidated, and confirming or amending it against a real unattended run
 is the first job of v2.
 
+**The one exception, added 2026-11-24 (`D1`).** An orchestrator may fast-forward an integration
+branch to work it did not author, once an agent that is neither the author nor the orchestrator,
+nor dispatched or briefed by the author, has passed that exact commit; only a person merges into
+the base branch. Cited to the maintainer's decision `D1` in
+[the Marjana plan](../reviews/2026-11-24-marjana-plan.md), approved in person on 2026-11-24, and to
+the run it was written from: that round's orchestrator landed five workstreams this way, each at
+the commit a fresh-context verifier passed. The guards were tightened while that run was under way,
+after two of its landings had used orchestrator merge commits that the final text sends back to the
+child; [the orchestrator's dogfood record](../reviews/2026-11-24-dogfood/orchestrator.md) says so.
+
 ## Considered for v1 and held, for want of a citation
 
 The gate is only real if it excludes things. These were wanted and left out, because this kit has not

@@ -57,6 +57,16 @@ but is the wrong shape (`bug-0024`). The Proposed Surface gains both flags and a
 element, and its `Record` row now describes the per-file digest map every entry carries. Each exit
 code in these scenarios was confirmed by running the tool against throwaway homes on 2026-11-23.
 
+**Amended 2026-11-24 (`feat-0094`), under the Marjana plan the maintainer approved that day.
+Pending the maintainer's approval of this amendment itself: the plan approved the work, and the
+wording below is not this task's to approve.** `S-014`'s budget is what an agent carries: the
+headline and every per-profile figure count model-invoked descriptions only, and the user-invoked
+share is reported beside them rather than inside them. Since `S-023` a user-invoked skill reaches
+Claude Code rendered so that Claude Code never loads its description (OpenCode still does), so the
+old headline overstated a Claude Code session's cost by every user-invoked description in the profile (747 characters on `spine` and 1,586
+on `all`, measured 2026-11-24). The same amendment adds one closing line to an install run: a pointer
+to the per-repository setup step, because placing the skills is half of adopting them.
+
 **Amended 2026-07-28 (`bug-0003`) and re-approved by the author on 2026-07-28.** S-007 was scoped to
 the home it was given and S-012 was added. The original wording, "remove the recorded targets and empty the record",
 was satisfied by an implementation that removed every recorded target from every home ever installed
@@ -247,6 +257,16 @@ overwritten exists only as a branch.
   same total for each available profile so the figure is comparable rather than absolute. It is reported
   as a character count and not as a proportion of any harness's budget, which depends on the context
   window and on skills this tool cannot see.
+- **And** every one of those totals is what Claude Code loads: model-invoked skills only, because
+  Claude Code does not load a user-invoked skill's description (`S-023`), and the headline says so.
+  OpenCode does load it, so when the placed set holds a user-invoked skill, a separate line states
+  their combined characters, names them, and says which tool loads them, as an aside to the total
+  rather than part of it.
+- **And** an install run, real or dry, prints in its summary one line pointing at the
+  per-repository setup step: in each repository, run `init-worktracking` once to configure the
+  skills, naming the file that step writes (`docs/agents/zen.md`). When the run does not place `init-worktracking`, the line says so and how to add it, rather
+  than naming a skill the adopter does not have. `--check` and `--uninstall` do not print it.
+  (Added 2026-11-24, `feat-0094`.)
 
 ### Scenario S-015: a skill marked a draft is placed by no profile
 

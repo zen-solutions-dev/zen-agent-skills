@@ -32,12 +32,18 @@ changing the language.
 
 ### 1. Find what exists
 
-Look before creating anything. The glossary may be `GLOSSARY.md`, `docs/glossary.md`, a
-"Terminology" section of a README or `AGENTS.md`, or a glossary per bounded context with a map file
-at the root. Decision records may be `docs/adr/`, `docs/decisions/`, `adr/`, a numbered series
-under another name, or no directory at all: many repositories record decisions in each task file's
-Decisions section and keep the reasoning in a rationale directory (`docs/rationale/`). Use what you
-find, in its format; that convention is where step 4 writes.
+Look before creating anything. When the repository has `docs/agents/zen.md`, its `glossary` and
+`adr_dir` keys name both places (`none` means the repository has none yet); use each key it sets and
+say so. A key the file does not set, or sets to a value outside its allowed set, is discovered
+instead, and so is a path it names that does not exist, saying that the configured path was missing.
+Ask the person when discovery finds several candidates. When the block does not parse or names a
+newer `config_version`, use none of it and say that `python .tasks/validate.py` shows why. The
+glossary may be `GLOSSARY.md`, `docs/glossary.md`, a "Terminology" section of a README or
+`AGENTS.md`, or a glossary per bounded context with a map file at the root. Decision records may be
+`docs/adr/`, `docs/decisions/`, `adr/`, a numbered series under another name, or no directory at
+all: many repositories record decisions in each task file's Decisions section and keep the reasoning
+in a rationale directory (`docs/rationale/`). Use what you find, in its format; that convention is
+where step 4 writes.
 
 Done when you can name the glossary file and where decisions are recorded, or state that each does
 not exist yet.
@@ -52,6 +58,17 @@ For each candidate term:
   meaning, each with its boundary stated.
 - **Probe with a concrete case.** Invent the edge case that forces the boundary: "a refund on half
   an order: is that a Cancellation?"
+- **Test it in sentences.** Before settling a name, write three or four real sentences the
+  project will say with it (from a spec, a task, a log line, a conversation with a user) and put
+  them in a table beside each candidate name. The name that reads naturally in every sentence, and
+  misleads in none, wins; show the table to the person with your recommendation. A glossary is the
+  data model in words, so a name that fails a sentence fails in the code too.
+
+  | Sentence | `Refund` | `Reversal` |
+  |---|---|---|
+  | "A ___ on half an order leaves the rest shipped." | reads | misleads: sounds like the whole order |
+  | "The ___ failed at the bank." | reads | reads |
+
 - **Check the code and the plans.** Grep for the term and its synonyms in the code, and in the task
   files and specs, where a term is used before any code exists. When either names the concept
   differently from the glossary, or uses the glossary's word for something else, record a

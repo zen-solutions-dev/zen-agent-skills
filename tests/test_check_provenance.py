@@ -1,6 +1,6 @@
 """Acceptance tests for scripts/check-provenance.py.
 
-Covers feat-0043: the provenance convention stated in the conventions section of AGENTS.md,
+Covers feat-0043: the provenance convention stated in CONTRIBUTING.md (moved there from AGENTS.md by chore-0100),
 exercised through the checker that enforces it. Standard library only, per that same section.
 
 test-quality notes: every scenario runs at the lowest faithful layer, calling main() with an

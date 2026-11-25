@@ -118,7 +118,7 @@ if str(_TEXTIO_ROOT) not in sys.path:
     sys.path.insert(0, str(_TEXTIO_ROOT))
 from scripts._textio import NotUTF8, read_text_utf8   # noqa: E402
 from scripts._skillmeta import (   # noqa: E402
-    is_user_invoked_text, metadata_fields, render_for_claude)
+    is_user_invoked_text, metadata_fields, render_for_claude, sibling_edges)
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 SKILLS_DIR = REPO_ROOT / ".agents" / "skills"
@@ -157,8 +157,9 @@ DEFAULT_PROFILE = "spine"
 # which is the form for stating chain position. Authors trip this by writing the readable
 # link form for a neighbour they only meant to name (chore-0040), so the rule is stated
 # for skill authors in AGENTS.md's portability contract, not only here where they will
-# never read it.
-SIBLING_REF_RE = re.compile(r"\]\(\.\./([^/)]+)/SKILL\.md")
+# never read it. The syntax itself is read by `sibling_edges()` in `_skillmeta.py`, the
+# reader the validator and the adapter builder share, so a link shown as an example in a
+# code span or a fence is not an edge here either (feat-0090).
 # Narrow readers for one frontmatter field, deliberately not a YAML parser. The block
 # scalar case matters here for the same reason it does in validate-skills.py: without
 # it the reported description budget is inflated by three characters per skill that
@@ -312,7 +313,7 @@ def draft_conflicts(selected, seed, draft_names) -> list:
 def sibling_refs(skill_dir: Path) -> set:
     """Skill names this skill links to as ../<name>/SKILL.md."""
     text = read_text_utf8(skill_dir / "SKILL.md")
-    return set(SIBLING_REF_RE.findall(text)) - {skill_dir.name}
+    return sibling_edges(text) - {skill_dir.name}
 
 
 def resolve_profile(profile: str, skills):
@@ -326,20 +327,24 @@ def resolve_profile(profile: str, skills):
     seed = PROFILE_SEEDS[profile]
     if seed is None:
         return list(skills), []
-    wanted = {n for n in seed if n in by_name}
-    stack = list(wanted)
-    while stack:
-        for ref in sibling_refs(by_name[stack.pop()]):
-            if ref in by_name and ref not in wanted:
-                wanted.add(ref)
-                stack.append(ref)
+    wanted = closure(seed, by_name)
     added = sorted(wanted - {n for n in seed if n in by_name})
     return [d for d in skills if d.name in wanted], added
 
 
+def model_invoked_budget(skills):
+    """Description characters an agent carries for these skills: the model-invoked ones.
+
+    A user-invoked skill reaches Claude Code with `disable-model-invocation: true`, which
+    keeps its description out of context, so counting it reports a cost no session pays
+    (feat-0094, inventory P11). It is reported beside this figure, never inside it.
+    """
+    return sum(len(description_of(d)) for d in skills if not is_user_invoked(d))
+
+
 def profile_budgets(skills):
-    """Description-character total per profile, so the figure is comparable."""
-    return {name: sum(len(description_of(d)) for d in resolve_profile(name, skills)[0])
+    """Model-invoked description total per profile, so the figure is comparable."""
+    return {name: model_invoked_budget(resolve_profile(name, skills)[0])
             for name in PROFILE_SEEDS}
 
 
@@ -925,21 +930,35 @@ def install(tools, mode, home: Path, dry: bool, profile: str = DEFAULT_PROFILE,
                   f"activate them. Check that tool's own hook wiring.")
     # A count, not a percentage: the harness budget scales with the context window and
     # is shared with skills this tool cannot see, so a proportion here would be invented.
+    # The headline is what Claude Code loads, model-invoked descriptions only (feat-0094,
+    # S-014 as amended); the user-invoked share is the aside below, because a reader takes
+    # the first number away and the old headline overstated a session's cost.
     if only is None and not placed_drafts:
-        print(f"{tag}Description budget: {budgets[profile]} characters for this profile "
-              f"(" + ", ".join(f"{n}={budgets[n]}" for n in PROFILE_SEEDS) + ").")
-    else:
-        print(f"{tag}Description budget: {sum(len(description_of(d)) for d in skills)} "
-              f"characters for this selection (profiles: "
+        print(f"{tag}Description budget: {budgets[profile]} characters for this profile, "
+              f"what Claude Code loads: model-invoked only ("
               + ", ".join(f"{n}={budgets[n]}" for n in PROFILE_SEEDS) + ").")
-    # User-invoked skills are counted above, because the other tools load their
-    # descriptions; Claude Code, given the rendered key, does not.
+    else:
+        print(f"{tag}Description budget: {model_invoked_budget(skills)} characters for this "
+              f"selection, what Claude Code loads: model-invoked only (profiles: "
+              + ", ".join(f"{n}={budgets[n]}" for n in PROFILE_SEEDS) + ").")
     user_invoked = [d for d in skills if is_user_invoked(d)]
-    if user_invoked and "claude" in tools:
-        print(f"{tag}Of that, {sum(len(description_of(d)) for d in user_invoked)} "
-              f"character(s) belong to {len(user_invoked)} user-invoked skill(s) "
-              f"({', '.join(d.name for d in user_invoked)}), which Claude Code keeps out "
-              f"of context: start one by name, as /<name>.")
+    if user_invoked:
+        print(f"{tag}{sum(len(description_of(d)) for d in user_invoked)} character(s) more "
+              f"belong to {len(user_invoked)} user-invoked skill(s) "
+              f"({', '.join(d.name for d in user_invoked)}): Claude Code keeps them out of "
+              f"context, so start one by name, as /<name>; OpenCode loads them.")
+    # The second half of adopting the kit, which nothing used to mention: skills are
+    # installed once per machine and configured once per repository (feat-0094; the
+    # step itself is init-worktracking's, built by feat-0091).
+    # Named only when this run places it: pointing an adopter at a skill they do not have
+    # was the independent verifier's finding on the first version.
+    if any(d.name == "init-worktracking" for d in skills):
+        print(f"{tag}In each repository, run `init-worktracking` once to configure the skills "
+              f"(docs/agents/zen.md).")
+    else:
+        print(f"{tag}Each repository is configured once by `init-worktracking`, and "
+              f"`init-worktracking` is not in this selection: add it with "
+              f"`--skills init-worktracking`.")
     # Printed on every run, because the whole point of the check is that nothing else
     # tells you the copy has gone stale: a reader who never learns the flag exists is in
     # the state chore-0031 was filed on.

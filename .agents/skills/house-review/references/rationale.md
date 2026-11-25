@@ -82,3 +82,27 @@ in the skill body; writing them as numbers makes retuning a visible edit rather 
 **A known gap carried over:** for a path-scope review the signals are computed over the scoped paths,
 which measures the files in full rather than a change, so `reviewable_lines` over-counts. It is
 recorded in the roadmap rather than fixed here.
+
+## Review once, fix once, then stop
+
+Added 2026-11-24 (`feat-0093`), from the sources delta of that date (`docs/reviews/2026-11-24-sources-delta.md` in the Zen Agent
+Skills repository). Matt Pocock's notes on his `implement-spec` and `code-review` skills record a
+review-and-fix loop that ran for four hours without converging: each fresh review read the last fix
+as new work and found something new to say. Nothing in this skill said when to stop, so the same
+loop was open here. Step 8 closes it: the re-check is scoped to the first review's signatures,
+which is what makes it finite, and the only new finding it may raise is a blocker the fix itself
+introduced. An open finding after that is a decision for a person, not a reason for another round.
+
+The signature, which carries no line number, is what makes the re-check cheap: a finding keeps its
+identity across the fix even when the code it cites has moved.
+
+## The fig-leaf smell and the second reviewer
+
+Both added 2026-11-24 (`feat-0093`). A comment that explains a workaround reads as diligence and
+works as permission: the reviewer accepts the code because the author already admitted the problem,
+and the next agent reproduces the pattern with the comment as precedent. It is a smell, not a
+check, because the same words are honest in a comment that points at a filed task. The optional
+second reviewer from another model family comes from the Ronacher and Zechner interview on
+aihero.dev: diversity catches what one family misses, but such reviewers run overzealous, so the
+person filters their findings rather than the gate admitting them on volume.
+

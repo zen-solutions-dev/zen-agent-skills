@@ -12,6 +12,8 @@ instead: S-004's filesystem claim, and S-005's claim about a checked-in workflow
 """
 import importlib.util
 import io
+import os
+import json
 import platform
 import re
 import shutil
@@ -481,6 +483,72 @@ class RealSubprocessTests(unittest.TestCase):
                                         f"{g.name} names a script that does not exist")
 
 
+class HermeticHomeTests(unittest.TestCase):
+    """R-001 (feat-0094): the test gate runs with a home that is not anyone's real home.
+
+    `docs/reviews/2026-11-retro-pr-108.md` R-001: thirty tests read the real home through
+    the hook under test, so they failed on the maintainer's machine, which has a
+    `~/.claude/CLAUDE.md`, and passed on all six CI cells, whose homes hold none. The test
+    files were fixed by `chore-0097`; this is the guard for the next one. The scratch home
+    is seeded with decoy instruction files, so a test that reads the real home sees them in
+    CI too and fails there the same way it would on a person's machine.
+
+    Real subprocesses throughout, for the reason `RealSubprocessTests` gives: what matters
+    is the environment a child process actually receives.
+    """
+
+    PROBE = ("import os, json; print(json.dumps({k: os.environ.get(k) for k in "
+             "('HOME', 'USERPROFILE', 'XDG_CONFIG_HOME')}))")
+
+    def _hermetic(self, code):
+        return rc.Gate("probe", [[rc.PY, "-c", code]], hermetic_home=True)
+
+    def test_the_test_suite_gate_is_hermetic(self):
+        suite = [g for g in rc.gates() if g.name == "test suite"]
+        self.assertEqual(len(suite), 1)
+        self.assertTrue(suite[0].hermetic_home)
+
+    def test_every_home_variable_points_at_one_scratch_directory(self):
+        status, output, _ = rc.run_gate(self._hermetic(self.PROBE))
+        self.assertEqual(status, "ok", output)
+        seen = json.loads(output.strip().splitlines()[-1])
+        real = str(Path.home())
+        self.assertEqual(seen["HOME"], seen["USERPROFILE"])
+        self.assertNotEqual(seen["HOME"], real)
+        self.assertEqual(Path(seen["XDG_CONFIG_HOME"]), Path(seen["HOME"]) / ".config")
+
+    def test_the_scratch_home_holds_the_decoys(self):
+        code = ("import os, pathlib; h = pathlib.Path(os.environ['HOME']); "
+                "print(sorted(str(p.relative_to(h)).replace(os.sep, '/') "
+                "for p in h.rglob('*') if p.is_file()))")
+        status, output, _ = rc.run_gate(self._hermetic(code))
+        self.assertEqual(status, "ok", output)
+        for decoy in (".claude/CLAUDE.md", ".claude/settings.json", "AGENTS.md"):
+            with self.subTest(decoy=decoy):
+                self.assertIn(decoy, output)
+
+    def test_a_test_that_reads_the_real_home_fails_under_the_gate(self):
+        # The constructed bad input: a check that assumes the home holds no CLAUDE.md, the
+        # assumption chore-0097's thirty tests made. Under the hermetic gate it fails
+        # wherever it runs, which is the property R-001 asks for.
+        code = ("import pathlib, sys; "
+                "sys.exit(1 if (pathlib.Path.home() / '.claude' / 'CLAUDE.md').exists() else 0)")
+        status, _, _ = rc.run_gate(self._hermetic(code))
+        self.assertEqual(status, "failed")
+
+    def test_the_scratch_home_is_removed_afterwards(self):
+        status, output, _ = rc.run_gate(self._hermetic(
+            "import os; print(os.environ['HOME'])"))
+        self.assertEqual(status, "ok", output)
+        self.assertFalse(Path(output.strip().splitlines()[-1]).exists())
+
+    def test_a_gate_that_does_not_ask_inherits_the_environment(self):
+        status, output, _ = rc.run_gate(rc.Gate("probe", [[rc.PY, "-c", self.PROBE]]))
+        self.assertEqual(status, "ok", output)
+        self.assertEqual(json.loads(output.strip().splitlines()[-1])["HOME"],
+                         os.environ.get("HOME"))
+
+
 class SummaryTests(unittest.TestCase):
     """S-006: the run states the bound of its own answer."""
 
@@ -792,6 +860,200 @@ class RoadmapBookkeepingTests(unittest.TestCase):
         ok, report = rc.check_roadmap(REPO_ROOT)
         self.assertTrue(ok, report)
         self.assertRegex(report, r"\d+ task ids named")
+
+
+class RoadmapDraftStatusTests(unittest.TestCase):
+    """The draft-status half of `roadmap bookkeeping` (feat-0094, inventory P3).
+
+    `ROADMAP.md`'s "Current state" said on 2026-11-23 that ten skills were drafts, six of
+    them already promoted by PR #113, and the gate passed, because it read task ids and a
+    count or a draft list names none. The status it restates is one `install.py` reads
+    mechanically from `metadata.status`, so this reads the same field and compares.
+
+    Scoped to the `## Current state` section on purpose: it is the one section that
+    claims to say what is true now, and the history below it ("draft `grill`" in a shipped
+    overhaul bullet) is a record, which a whole-file check would misread as a claim.
+    """
+
+    # The bullet verbatim from ROADMAP.md at 9598355, the state the inventory found.
+    STALE = ("- **29 skills**, of which **19 ship** and **10 are drafts** "
+             "(`metadata.status: draft`, placed only on request): `agent-observatory`, "
+             "`domain-language`, `grill`, `improve-architecture`, `quest-tracker`, `retro`, "
+             "`sitrep`, `systematic-debugging`, `tdd`, and `zen`.")
+
+    def _repo(self, current_state, drafts=(), shipped=(), exceptions=None):
+        root = Path(tempfile.mkdtemp())
+        self.addCleanup(shutil.rmtree, root, ignore_errors=True)
+        (root / ".tasks" / "done").mkdir(parents=True)
+        for name in drafts:
+            self._skill(root, name, "  status: draft\n")
+        for name in shipped:
+            self._skill(root, name, "")
+        (root / "ROADMAP.md").write_text(
+            "# Roadmap\n\n## Current state\n\n" + current_state
+            + "\n\n## Forward plan\n\n- draft `shipped-one` was written in 2026-08.\n",
+            encoding="utf-8")
+        return root
+
+    @staticmethod
+    def _skill(root, name, metadata):
+        d = root / ".agents" / "skills" / name
+        d.mkdir(parents=True)
+        meta = f"metadata:\n{metadata}" if metadata else ""
+        (d / "SKILL.md").write_text(
+            f"---\nname: {name}\ndescription: x\n{meta}---\nbody\n", encoding="utf-8")
+
+    def _check(self, root, exceptions=frozenset()):
+        return rc.check_roadmap(root, status_exceptions=exceptions)
+
+    def test_a_promoted_skill_named_as_a_draft_fails(self):
+        root = self._repo("- **2 are drafts**: `draft-one` and `shipped-one`.",
+                          drafts=["draft-one"], shipped=["shipped-one"])
+        ok, report = self._check(root)
+        self.assertFalse(ok, "a promoted skill listed as a draft passed")
+        self.assertIn("shipped-one", report)
+        self.assertIn("named as a draft", report)
+
+    def test_a_draft_named_as_shipped_fails(self):
+        root = self._repo("- **1 is a draft**: `draft-one`.\n"
+                          "- **The shipped spine**: `shipped-one` and `draft-two`.",
+                          drafts=["draft-one", "draft-two"], shipped=["shipped-one"])
+        ok, report = self._check(root)
+        self.assertFalse(ok)
+        self.assertIn("draft-two", report)
+        self.assertIn("named as shipped", report)
+
+    def test_a_draft_missing_from_the_draft_list_fails(self):
+        root = self._repo("- **Drafts**: `draft-one`.",
+                          drafts=["draft-one", "draft-two"], shipped=["shipped-one"])
+        ok, report = self._check(root)
+        self.assertFalse(ok, "an incomplete draft list passed")
+        self.assertIn("draft-two", report)
+        self.assertIn("missing from", report)
+
+    def test_a_stale_count_fails(self):
+        root = self._repo("- **3 skills**, of which **1 ships** and **2 are drafts**: "
+                          "`draft-one`.",
+                          drafts=["draft-one"], shipped=["shipped-one", "shipped-two"])
+        ok, report = self._check(root)
+        self.assertFalse(ok)
+        self.assertIn("says 1 ship", report)
+        self.assertIn("says 2 drafts", report)
+        self.assertNotIn("says 3 skills", report, "the true total is not a finding")
+
+    def test_a_true_section_passes(self):
+        root = self._repo("- **3 skills**, of which **2 ship** and **1 is a draft**: "
+                          "`draft-one`.\n- **The shipped spine**: `shipped-one`, "
+                          "`shipped-two`.",
+                          drafts=["draft-one"], shipped=["shipped-one", "shipped-two"])
+        ok, report = self._check(root)
+        self.assertTrue(ok, report)
+
+    def test_history_outside_the_section_is_not_read(self):
+        # The fixture's Forward plan names `shipped-one` beside the word "draft".
+        root = self._repo("Run `install.py --dry-run` for the current draft list.",
+                          shipped=["shipped-one"])
+        ok, report = self._check(root)
+        self.assertTrue(ok, report)
+
+    def test_the_verbatim_stale_bullet_fails_against_the_tree_it_was_wrong_about(self):
+        drafts = ["agent-observatory", "quest-tracker", "sitrep", "systematic-debugging"]
+        promoted = ["domain-language", "grill", "improve-architecture", "retro", "tdd", "zen"]
+        others = [f"shipped-{i}" for i in range(19)]
+        root = self._repo(self.STALE, drafts=drafts, shipped=promoted + others)
+        ok, report = self._check(root)
+        self.assertFalse(ok)
+        for name in promoted:
+            with self.subTest(skill=name):
+                self.assertIn(f"`{name}`", report)
+
+    # WS-A's rewrite of the section (branch `zen/marjana-ws-a`, 2026-11-24), verbatim: a true
+    # section that the first version of this check failed twice, once for naming the skills
+    # PR #113 promoted in the same bullet as the draft list, once for reading "places 20
+    # skills" as the total. A check that fires on a true roadmap gets switched off.
+    TRUE_REWRITE = "Measured 2026-11-24 at `zen/marjana-2026-11-24` `9598355`, which carries `main` at `220282a` (pull requests #109 to #116 merged). Counts are derived, not kept: `python3 scripts/install.py --dry-run` prints the draft list and every profile, and `ls .agents/skills` the total.\n\n- **29 skills, 25 shipped and 4 drafts** (`metadata.status: draft`, placed only with `--include-drafts`): `agent-observatory`, `quest-tracker`, `sitrep` and `systematic-debugging`. Pull request #113 promoted `domain-language`, `grill`, `improve-architecture`, `retro`, `tdd` and `zen` (`feat-0084` to `feat-0089`).\n- **The shipped skills**: `project-bootstrap` and `init-worktracking` set a repository up; `zen` routes; `grill` and `domain-language` align before planning; `new-task` and the spec chain (`spec-author`, `spec-quality`, `spec-plan-readiness`, `spec-conformance`) turn decisions into contracts and tasks; `fix-batch` and `reconcile-worktrees` dispatch and land parallel work; `tdd`, `test-author`, `test-quality`, `verifier-agent` and `house-review` build and check it; `doc-author`, `doc-revise` and `doc-sync` keep the documents true; `pr-describe`, `agent-handoff` and `human-handoff` close and hand over; `retro` and `improve-architecture` learn from it.\n- **Four swappable lenses** under `.agents/rules/` (`house-style`, `autonomy` with `A1` to `A11`, `review-quality`, `writing-for-agents`), plus the always-loaded `core.md`, and **seven opt-in hooks** under `.agents/hooks/`.\n- **Distribution**: `install.py` (profiles `core`, `spine`, `all`; the default `spine` places 20 skills), `build-adapters.py` for Cursor and VS Code or Copilot, and the committed Claude Code marketplace under `.claude-plugin/`. `run-checks.py` is the acceptance command, and CI calls it.\n- **13 approved behavioural contracts** under `docs/spec/`, several with amendments pending the author's re-approval.\n\nThis section says only what was true on its date; the next change to the kit makes it a record of that date."
+
+    DRAFTS_AT_9598355 = ["agent-observatory", "quest-tracker", "sitrep", "systematic-debugging"]
+    SHIPPED_AT_9598355 = [
+        "agent-handoff", "doc-author", "doc-revise", "doc-sync", "domain-language", "fix-batch",
+        "grill", "house-review", "human-handoff", "improve-architecture", "init-worktracking",
+        "new-task", "pr-describe", "project-bootstrap", "reconcile-worktrees", "retro",
+        "spec-author", "spec-conformance", "spec-plan-readiness", "spec-quality", "tdd",
+        "test-author", "test-quality", "verifier-agent", "zen"]
+
+    def test_a_true_rewrite_naming_promotions_and_a_profile_size_passes(self):
+        root = self._repo(self.TRUE_REWRITE, drafts=self.DRAFTS_AT_9598355,
+                          shipped=self.SHIPPED_AT_9598355)
+        ok, report = self._check(root)
+        self.assertTrue(ok, report)
+
+    def test_the_same_rewrite_still_fails_when_a_draft_is_promoted_under_it(self):
+        drafts = [d for d in self.DRAFTS_AT_9598355 if d != "sitrep"]
+        root = self._repo(self.TRUE_REWRITE, drafts=drafts,
+                          shipped=self.SHIPPED_AT_9598355 + ["sitrep"])
+        ok, report = self._check(root)
+        self.assertFalse(ok)
+        self.assertIn("`sitrep` is named as a draft", report)
+        self.assertIn("says 4 drafts", report)
+
+    def test_an_exception_excuses_its_finding_and_says_so(self):
+        root = self._repo("- **Drafts**: `draft-one`, `shipped-one`.",
+                          drafts=["draft-one"], shipped=["shipped-one"])
+        ok, report = self._check(root, exceptions={"draft:shipped-one"})
+        self.assertTrue(ok, report)
+        self.assertIn("excepted", report)
+
+    def test_a_count_exception_excuses_only_the_value_it_names(self):
+        # The verifier's finding on the first version: a kind-level key would excuse any
+        # future wrong count of that kind for as long as it stood.
+        root = self._repo("- **3 are drafts**: `draft-one`.", drafts=["draft-one"])
+        self.assertTrue(self._check(root, exceptions={"count:drafts=3"})[0])
+        root = self._repo("- **5 are drafts**: `draft-one`.", drafts=["draft-one"])
+        ok, report = self._check(root, exceptions={"count:drafts=3"})
+        self.assertFalse(ok, report)
+        self.assertIn("says 5 drafts", report)
+
+    def test_an_exception_that_no_longer_fires_fails_the_gate(self):
+        # Plan principle 9's prune half, and the landing review's finding: a stale key was
+        # reported only in output nobody sees on a pass, and while it stood it could mask
+        # a regression it happened to name. A stale key now fails, and says why.
+        root = self._repo("- **Drafts**: `draft-one`.", drafts=["draft-one"])
+        ok, report = self._check(root, exceptions={"draft:shipped-one"})
+        self.assertFalse(ok, report)
+        self.assertIn("no longer needed", report)
+        self.assertIn("draft:shipped-one", report)
+
+    def test_the_summary_line_carries_the_stale_key_count(self):
+        root = self._repo("- **Drafts**: `draft-one`.", drafts=["draft-one"])
+        report = self._check(root, exceptions={"draft:shipped-one"})[1]
+        self.assertIn("1 stale exception", rc.coverage_line(report))
+
+    def test_a_finding_is_cited_at_its_own_line(self):
+        root = self._repo("Intro.\n\n- **Drafts**: `draft-one` and, wrapped onto a\n"
+                          "  second line, `shipped-one`.",
+                          drafts=["draft-one"], shipped=["shipped-one"])
+        report = self._check(root)[1]
+        # Line 1 is the title, 3 the heading, 5 "Intro.", 7 the bullet, 8 its wrapped line.
+        self.assertIn("ROADMAP.md:8: `shipped-one`", report)
+        root = self._repo("- **3 are drafts**: `draft-one`.\n- **Shipped**: `shipped-one`.",
+                          drafts=["draft-one"], shipped=["shipped-one"])
+        self.assertIn("ROADMAP.md:5: says 3 drafts", self._check(root)[1])
+
+    def test_no_current_state_section_is_reported_as_not_judged(self):
+        root = Path(tempfile.mkdtemp())
+        self.addCleanup(shutil.rmtree, root, ignore_errors=True)
+        (root / ".tasks").mkdir()
+        (root / "ROADMAP.md").write_text("Nothing here.\n", encoding="utf-8")
+        ok, report = self._check(root)
+        self.assertTrue(ok, report)
+        self.assertIn("no `## Current state` section", report)
+
+    def test_this_repositorys_roadmap_has_the_section_this_reads(self):
+        # Without the heading the check judges nothing; a rename must be seen, not absorbed.
+        ok, report = rc.check_roadmap(REPO_ROOT)
+        self.assertTrue(ok, report)
+        self.assertNotIn("no `## Current state` section", report)
+        self.assertRegex(report, r"\d+ skill status claim")
 
 
 class CheckGateWiringTests(unittest.TestCase):

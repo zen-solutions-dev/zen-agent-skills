@@ -58,7 +58,8 @@ _TEXTIO_ROOT = Path(__file__).resolve().parent.parent
 if str(_TEXTIO_ROOT) not in sys.path:
     sys.path.insert(0, str(_TEXTIO_ROOT))
 from scripts._textio import NotUTF8, read_text_utf8   # noqa: E402
-from scripts._skillmeta import INVOCATION_VALUES, RENDERED_KEY, metadata_fields   # noqa: E402
+from scripts._skillmeta import (   # noqa: E402
+    INVOCATION_VALUES, RENDERED_KEY, fenced_block_ranges, link_targets, metadata_fields)
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 SKILLS_DIR = REPO_ROOT / ".agents" / "skills"
@@ -97,7 +98,6 @@ ALLOWED_FRONTMATTER_KEYS = frozenset({
 # check reads three characters more than a harness would (S-018).
 BLOCK_SCALAR_RE = re.compile(r"^[|>][+-]?\s*")
 
-LINK_RE = re.compile(r"\[[^\]]*\]\(([^)]+)\)")
 SIBLING_SKILL_RE = re.compile(r"^\.\./([^/]+)/SKILL\.md$")
 EXTERNAL_LINK_PREFIXES = ("http://", "https://", "mailto:")
 
@@ -108,19 +108,10 @@ EXTERNAL_LINK_PREFIXES = ("http://", "https://", "mailto:")
 TEMPLATE_SUFFIX = ".tmpl"
 SUPPORTING_MARKDOWN_SUFFIXES = frozenset({".md", ".mdc"})
 
-# A run of one or more backticks, and a fenced code block delimiter: a whole line whose
-# content is a run of three or more backticks, optionally followed by an info string.
-# Up to three spaces of indentation, per CommonMark. The info string may not contain a
-# backtick, because a run followed by a backtick is simply a longer run.
-#
-# These two patterns and the two helpers below are REPRODUCED from `.tasks/validate.py`,
-# where bug-0015 and bug-0017 taught the backlog validator that a link rendered as
-# literal text is not a link. Copied rather than imported: the two validators are
-# separate tools with separate lifecycles, and `validate.py` also ships as a template
-# into other repositories, so neither may depend on the other. The regexes are kept
-# character-identical to the originals so a later reader can diff the two copies.
-BACKTICK_RUN_RE = re.compile(r"`+")
-FENCE_RE = re.compile(r"^ {0,3}(`{3,})([^`]*)$")
+# What a link is, and what renders as literal text, is decided once in `_skillmeta.py`
+# for this script, install.py and build-adapters.py alike (feat-0090). The span helpers
+# there are reproduced from `.tasks/validate.py`, the original, and a test holds the two
+# identical, since `validate.py` ships to adopters and may import nothing from scripts/.
 
 # A skill declaring itself a draft in prose while also declaring itself shipped
 # (typically a "- Shipped <date>" provenance bullet) is self-contradictory.
@@ -243,83 +234,15 @@ def _rel(path: Path) -> str:
         return path.as_posix()
 
 
-def code_span_ranges(text):
-    """Character ranges `(start, end)` of the inline code spans in `text`.
-
-    A span opens with a run of backticks and closes with a run of the same length, so
-    both the single and the double form are spans, and a check that knows only the first
-    fixes half the occurrences it meets.
-
-    Scanned one line at a time, deliberately, and an unmatched run opens nothing:
-    pairing runs across the whole file means one stray backtick swallows everything up
-    to the next stray one, and a caller that skips those ranges then reports success
-    while checking nothing. See `code_span_ranges()` in .tasks/validate.py, the original.
-    """
-    ranges = []
-    offset = 0
-    for line in text.splitlines(keepends=True):
-        runs = [(m.start(), m.end()) for m in BACKTICK_RUN_RE.finditer(line)]
-        i = 0
-        while i < len(runs):
-            opener = runs[i]
-            width = opener[1] - opener[0]
-            closer = next((j for j in range(i + 1, len(runs))
-                           if runs[j][1] - runs[j][0] == width), None)
-            if closer is None:
-                i += 1
-                continue
-            ranges.append((offset + opener[0], offset + runs[closer][1]))
-            i = closer + 1
-        offset += len(line)
-    return ranges
-
-
-def fenced_block_ranges(text):
-    """Character ranges `(start, end)` of the fenced code blocks in `text`.
-
-    A fence is a line-level construct where an inline code span is a character-level
-    one. Its delimiters sit alone on lines of their own, so code_span_ranges() pairs
-    them with nothing: the two rules compose by union rather than by replacement.
-
-    An unterminated opening fence yields no range at all, the same trade
-    code_span_ranges() makes for an unmatched run and for the same reason: a detector
-    that ran an unclosed fence to end of file would switch the caller's link check off
-    for everything below it and report success while doing so. See
-    `fenced_block_ranges()` in .tasks/validate.py, the original.
-    """
-    ranges = []
-    offset = 0
-    start = None
-    width = 0
-    for line in text.splitlines(keepends=True):
-        match = FENCE_RE.match(line.rstrip("\r\n"))
-        if match:
-            if start is None:
-                start, width = offset, len(match.group(1))
-            elif len(match.group(1)) >= width and not match.group(2).strip():
-                ranges.append((start, offset + len(line)))
-                start = None
-        offset += len(line)
-    return ranges
-
-
 def _link_targets(text: str):
     """Yield the raw target of every inline markdown link found in text.
 
     A link whose opening bracket falls inside an inline code span or a fenced code
     block is skipped: it renders as literal text, so it opens nothing and there is no
-    reader to strand. Without this a skill body could not *show* an example markdown
-    link, which is exactly what the documentation skills want to do (bug-0027).
+    reader to strand (bug-0027). The rule is the shared reader's, `link_targets()` in
+    `_skillmeta.py`, so the installer's edges and this check cannot disagree (feat-0090).
     """
-    spans = code_span_ranges(text) + fenced_block_ranges(text)
-    for m in LINK_RE.finditer(text):
-        if any(start <= m.start() < end for start, end in spans):
-            continue
-        target = m.group(1).strip()
-        # Drop an optional "title" suffix, e.g. (path "some title").
-        target = target.split(" ", 1)[0]
-        if target:
-            yield target
+    yield from link_targets(text)
 
 
 def check_links(source: Path, text: str, skill_names: set, label: str, errors: list,
@@ -960,6 +883,65 @@ def check_declared_shape(text: str, rel: str, warnings: list) -> None:
     )
 
 
+ANY_HEADING_RE = re.compile(r"^(#{1,6})[ \t]+(.+?)[ \t]*#*[ \t]*$", re.MULTILINE)
+STEP_HEADING_RE = re.compile(r"^step\s+\d+\b", re.IGNORECASE)
+DONE_WHEN_RE = re.compile(r"^[ \t]*(?:[*_]{1,2})?Done when\b", re.MULTILINE)
+
+
+def steps_missing_done_when(text: str) -> list:
+    """The step headings of a workflow body that carry no "Done when" line (R-005).
+
+    The definitions are `chore-0096`'s, the check it ran by hand and never wired in: a step
+    is a `###` heading inside the `## Procedure` section, or a `## Step N` heading anywhere
+    (the shape `agent-handoff` uses), and its span runs to the next heading of the same or a
+    higher level, so a `####` subsection belongs to its step. A criterion is a line that
+    *starts* "Done when", outside a code fence. Fences are skipped both ways: a heading or a
+    criterion shown inside one is an example, not the skill's own.
+    """
+    fences = fenced_block_ranges(text)
+
+    def outside(pos):
+        return not any(lo <= pos < hi for lo, hi in fences)
+
+    headings = [(m.start(), len(m.group(1)), m.group(2))
+                for m in ANY_HEADING_RE.finditer(text) if outside(m.start())]
+    missing = []
+    section = None
+    for i, (start, level, title) in enumerate(headings):
+        if level <= 2:
+            section = title
+        is_step = ((level == 3 and section is not None and _fills_role(section,
+                                                                       WORKFLOW_SHAPE_ROLE))
+                   or (level in (2, 3) and STEP_HEADING_RE.match(title)))
+        if not is_step:
+            continue
+        end = next((s for s, lv, _ in headings[i + 1:] if lv <= level), len(text))
+        if not any(outside(start + m.start())
+                   for m in DONE_WHEN_RE.finditer(text[start:end])):
+            missing.append(title)
+    return missing
+
+
+def check_steps_end_on_done_when(text: str, rel: str, warnings: list) -> None:
+    """Warn when a workflow-shaped skill has a step with no "Done when" line (R-005).
+
+    A declared lens is exempt: its headings are a rubric composed into another skill, not
+    steps an agent executes. A warning rather than an error, like the shape check above:
+    the criterion is a writing standard (`writing-for-agents.md`'s checklist), and a missing
+    one is a defect in that skill rather than a reason to refuse every other skill in the
+    tree. One line per skill, naming every step, so a long procedure is one finding.
+    """
+    if declares_lens_shape(text):
+        return
+    missing = steps_missing_done_when(text)
+    if missing:
+        named = "; ".join(f"`{t}`" for t in missing)
+        warnings.append(
+            f"{rel}/SKILL.md: {len(missing)} step(s) with no \"Done when\" line: {named}. "
+            f"End each step on a line of its own beginning \"Done when\", per the checklist "
+            f"in writing-for-agents.md")
+
+
 def check_invocation(text: str, fm: dict, rel: str, errors: list) -> None:
     """`metadata.invocation` must be `user` or `model` (feat-0079).
 
@@ -1072,6 +1054,7 @@ def main(skills_dir: Path = SKILLS_DIR) -> int:
         check_frontmatter_is_parseable(text, rel, errors)
         check_folded_hyphen_break(text, rel, errors)
         check_declared_shape(text, rel, warnings)
+        check_steps_end_on_done_when(text, rel, warnings)
         check_status_contradiction(text, rel, warnings)
         check_invocation(text, fm, rel, errors)
 

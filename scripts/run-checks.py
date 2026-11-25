@@ -61,10 +61,13 @@ Standard library only.
 """
 from __future__ import annotations
 
+import os
 import platform
 import re
+import shutil
 import subprocess
 import sys
+import tempfile
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
@@ -74,6 +77,7 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 from scripts import _change_scope  # noqa: E402
+from scripts import _skillmeta  # noqa: E402
 
 # The throwaway home the install gates use. Chosen to match what checks.yml already
 # used, and gitignored via `.tmp/`. Nothing outside it is ever touched: `--uninstall` is
@@ -112,10 +116,15 @@ class Gate:
     than hidden: an in-process gate cannot be run standalone, and it is the one gate whose
     crash could take the aggregator down with it, which `run_gate` handles explicitly.
     A gate carries commands or a check, never both.
+
+    `hermetic_home` (feat-0094, retro R-001) runs the commands with `HOME`, `USERPROFILE`
+    and `XDG_CONFIG_HOME` pointed at a scratch directory seeded with decoy instruction
+    files, then removes it. See `hermetic_home_env`.
     """
 
-    def __init__(self, name, commands, cleanup=None, check=None):
+    def __init__(self, name, commands, cleanup=None, check=None, hermetic_home=False):
         self.name = name
+        self.hermetic_home = hermetic_home
         self.commands = commands
         self.cleanup = cleanup
         self.check = check
@@ -238,7 +247,161 @@ def roadmap_findings(text, locations):
     return findings
 
 
-def check_roadmap(repo_root=None):
+# The draft-status half of the same gate (feat-0094, inventory P3). The section it reads,
+# and nothing else: "Current state" is the one part of ROADMAP.md that claims to say what
+# is true now, while every section below it is a dated record, where "draft `grill`" in a
+# shipped overhaul bullet is history rather than a claim about `grill` today.
+CURRENT_STATE_RE = re.compile(r"^##[ \t]+Current state[ \t]*$", re.MULTILINE)
+NEXT_SECTION_RE = re.compile(r"^##[ \t]+\S", re.MULTILINE)
+BACKTICKED_RE = re.compile(r"`([^`\s]+)`")
+DRAFT_WORD_RE = re.compile(r"\bdrafts?\b", re.IGNORECASE)
+SHIP_WORD_RE = re.compile(r"\bship(?:s|ped|ping)?\b", re.IGNORECASE)
+# A sentence ends at terminal punctuation followed by space, read with code spans masked so
+# `core.md` or `install.py --dry-run` cannot end one. The unit is the sentence, not the
+# block, because a true bullet names what PR #113 promoted right after the draft list
+# (WS-A's rewrite, 2026-11-24), and a block-wide reading took those names for drafts.
+SENTENCE_END_RE = re.compile(r"(?<=[.!?])\s+(?=\S)")
+# A digit count beside the noun it counts, read only in a sentence that makes a draft or
+# ship claim: "the default `spine` places 20 skills" is a profile's size, not the total.
+# Digits only: a number written as a word is not read.
+COUNT_RES = (
+    ("skills", re.compile(r"\b(\d+)\s+skills\b", re.IGNORECASE)),
+    ("ship", re.compile(r"\b(\d+)\s+(?:ship|ships|shipped)\b", re.IGNORECASE)),
+    ("drafts", re.compile(r"\b(\d+)\s+(?:(?:are|is)\s+)?(?:a\s+)?drafts?\b",
+                          re.IGNORECASE)),
+)
+
+# Findings known on the day the check landed, each excused by key and printed as
+# excepted, never silenced (plan principle 9: a stricter check lands with an exception
+# list). Every one is the 2026-11-23 "Current state" bullet the inventory's P3 found
+# stale and `chore-0100` (WS-A) is rewriting in parallel; once that lands, each key here
+# fires "no longer needed" and is deleted. An exception is a debt with a name, not a
+# setting: adding one is a decision for whoever reviews the change.
+#
+# Emptied 2026-11-24 when chore-0100's true "Current state" landed: the eight keys the
+# check shipped with (six promoted skills named as drafts, and `count:ship=19` and
+# `count:drafts=10`) all stopped firing. A count key names its stale value, so a
+# different wrong count is a new finding rather than this one.
+ROADMAP_STATUS_EXCEPTIONS = frozenset()
+
+
+def skill_statuses(repo_root):
+    """`{skill: is_draft}` for every skill under `.agents/skills/`, read as install.py does."""
+    skills_dir = Path(repo_root) / ".agents" / "skills"
+    found = {}
+    if not skills_dir.is_dir():
+        return found
+    for skill_md in sorted(skills_dir.glob("*/SKILL.md")):
+        try:
+            text = skill_md.read_text(encoding="utf-8")
+        except (OSError, UnicodeDecodeError):
+            continue  # validate-skills.py reports an unreadable body; not this gate's subject
+        # A directory name holding a byte that is not UTF-8 arrives as a surrogate escape,
+        # which a strict stream cannot print; it is escaped for the report. No roadmap can
+        # name such a skill, so nothing is compared against the raw name (landing review).
+        name = os.fsencode(skill_md.parent.name).decode("utf-8", "backslashreplace")
+        found[name] = _skillmeta.is_draft_text(text)
+    return found
+
+
+def current_state_section(text):
+    """(first line number, section text) of `## Current state`, or None when absent."""
+    match = CURRENT_STATE_RE.search(text)
+    if match is None:
+        return None
+    following = NEXT_SECTION_RE.search(text, match.end())
+    end = following.start() if following else len(text)
+    return text[:match.start()].count("\n") + 1, text[match.start():end]
+
+
+def _sentences(block):
+    """`(offset, sentence)` for each sentence of a markdown block, split outside code spans."""
+    masked = list(block)
+    for start, end in _skillmeta.code_span_ranges(block):
+        masked[start:end] = "x" * (end - start)
+    masked = "".join(masked)
+    pieces, last = [], 0
+    for match in SENTENCE_END_RE.finditer(masked):
+        pieces.append((last, block[last:match.start()]))
+        last = match.end()
+    pieces.append((last, block[last:]))
+    return [(offset, p) for offset, p in pieces if p.strip()]
+
+
+def roadmap_status_findings(text, statuses):
+    """Claims in "Current state" that disagree with each skill's `metadata.status`.
+
+    Returns `(findings, claims_read)`, where each finding is `(key, line, message)` and a
+    key is what an exception names. Per sentence: a sentence using the word "draft"
+    claims every skill it names in backticks is a draft; otherwise a sentence using
+    "ship" claims every skill it names ships. When any sentence lists drafts, the lists
+    together must name every draft, which is the reverse direction: a list missing a
+    draft is the same rot as a list naming a promoted skill. A digit beside "skills",
+    "ship" or "drafts" in one of those sentences is compared with the tree.
+    """
+    section = current_state_section(text)
+    if section is None:
+        return None, 0
+    first, body = section
+    findings, claims = [], 0
+    listed_drafts = set()
+    any_draft_list = False
+    first_list_line = first
+    counted = []
+    for number, block in markdown_blocks(body):
+        for offset, sentence in _sentences(block):
+            # Cited at the sentence's own line, not the block's or the heading's.
+            line = first + number - 1 + block.count("\n", 0, offset)
+            names = [n for n in BACKTICKED_RE.findall(sentence) if n in statuses]
+            # The words are read with every code span removed, because a span is a name
+            # and not prose: `draft-two` would otherwise make its own sentence a claim.
+            prose = BACKTICKED_RE.sub(" ", sentence)
+            if DRAFT_WORD_RE.search(prose):
+                kind = "draft"
+            elif SHIP_WORD_RE.search(prose):
+                kind = "shipped"
+            else:
+                continue
+            counted.append((line, prose))
+            if kind == "draft" and names and not any_draft_list:
+                any_draft_list = True
+                first_list_line = line
+            for name in names:
+                claims += 1
+                at = line + sentence.count("\n", 0, max(sentence.find(f"`{name}`"), 0))
+                if kind == "draft":
+                    listed_drafts.add(name)
+                    if not statuses[name]:
+                        findings.append((f"draft:{name}", at,
+                                         f"`{name}` is named as a draft, and its SKILL.md "
+                                         f"carries no `status: draft`"))
+                elif statuses[name]:
+                    findings.append((f"shipped:{name}", at,
+                                     f"`{name}` is named as shipped, and its SKILL.md "
+                                     f"carries `status: draft`"))
+    if any_draft_list:
+        for name in sorted(n for n, draft in statuses.items()
+                           if draft and n not in listed_drafts):
+            findings.append((f"missing:{name}", first_list_line,
+                             f"`{name}` carries `status: draft` and is missing from "
+                             f"every draft list in this section"))
+    actual = {"skills": len(statuses),
+              "drafts": sum(1 for d in statuses.values() if d),
+              "ship": sum(1 for d in statuses.values() if not d)}
+    for line, prose in counted:
+        flat = " ".join(prose.replace("*", "").split())
+        for noun, pattern in COUNT_RES:
+            for match in pattern.finditer(flat):
+                claims += 1
+                said = int(match.group(1))
+                if said != actual[noun]:
+                    findings.append((f"count:{noun}={said}", line,
+                                     f"says {said} {noun}, and the tree holds "
+                                     f"{actual[noun]}"))
+    return findings, claims
+
+
+def check_roadmap(repo_root=None, status_exceptions=None):
     """The `roadmap bookkeeping` gate: does ROADMAP.md still agree with .tasks/?
 
     Returns (ok, report). Two of the three shapes chore-0066 mapped, and a bound naming
@@ -287,17 +450,50 @@ def check_roadmap(repo_root=None):
                      f"single task file and were not judged: "
                      f"{', '.join(unresolved)}")
 
+    statuses = skill_statuses(repo_root)
+    exceptions = (ROADMAP_STATUS_EXCEPTIONS if status_exceptions is None
+                  else frozenset(status_exceptions))
+    status_findings, status_claims = roadmap_status_findings(text, statuses)
+    failing_status = []
+    if status_findings is None:
+        status_note = (f"no `## Current state` section, so no skill status claim was "
+                       f"judged")
+        lines.append(f"{ROADMAP}: {status_note}.")
+    else:
+        fired = {key for key, _, _ in status_findings}
+        for key, number, message in status_findings:
+            if key in exceptions:
+                lines.append(f"{ROADMAP}:{number}: excepted ({key}): {message}")
+            else:
+                failing_status.append(key)
+                lines.append(f"{ROADMAP}:{number}: {message}")
+        # A stale key fails the gate (plan principle 9, the prune half). Reported only,
+        # it was invisible on a passing run, and while it stood it excused any later
+        # regression that happened to produce the same key (landing review, 2026-11-24).
+        stale = sorted(exceptions - fired)
+        for key in stale:
+            lines.append(f"{ROADMAP}: exception {key!r} no longer needed; delete it from "
+                         f"ROADMAP_STATUS_EXCEPTIONS in scripts/run-checks.py.")
+        failing_status.extend(f"stale:{key}" for key in stale)
+        status_note = (f"{status_claims} skill status claim(s) in Current state read "
+                       f"against {len(statuses)} SKILL.md file(s), "
+                       f"{len(failing_status) - len(stale)} wrong, "
+                       f"{len(status_findings) - (len(failing_status) - len(stale))} "
+                       f"excepted, {len(stale)} stale exception(s)")
+
     lines.append(
         f"Checked {ROADMAP}: {len(named)} task ids named, {len(closed)} in .tasks/done/, "
         f"{len(outstanding)} in .tasks/, {len(unresolved)} unresolved; {len(blocks)} "
         f"blocks read, {len(findings)} carrying an open-state claim over a closed id; "
-        f"1 header rule, {0 if header is None else 1} tripped. Not judged: the "
+        f"1 header rule, {0 if header is None else 1} tripped; {status_note}. "
+        f"Not judged: the "
         f"restated-contract class (a roadmap claim restating a spec's own bar, which "
         f"needs reading that contract), quoted commands and their written-down output, "
         f"and a hedged phrase in a block that also carries a completion marker. "
         f"2 of the 3 shapes chore-0066 mapped are covered, so a pass here is evidence "
         f"about bookkeeping and about nothing else.")
-    return not findings and header is None, "\n".join(lines)
+    return (not findings and header is None and not failing_status,
+            "\n".join(lines))
 
 
 def gates():
@@ -316,8 +512,11 @@ def gates():
     install_home = ["--home", THROWAWAY_HOME]
     return [
         Gate("lint skills", [[PY, "scripts/validate-skills.py"]]),
+        # Hermetic about the home directory since feat-0094 (retro R-001): a test that
+        # reads the real home now fails in CI the way it fails on a maintainer's machine.
         Gate("test suite",
-             [[PY, "-m", "unittest", "discover", "-s", "tests", "-p", "test_*.py"]]),
+             [[PY, "-m", "unittest", "discover", "-s", "tests", "-p", "test_*.py"]],
+             hermetic_home=True),
         Gate("backlog", [[PY, ".tasks/validate.py", "--strict"]]),
         Gate("adapters dry run", [[PY, "scripts/build-adapters.py", "--dry-run"]]),
         # Added by feat-0079. The Claude Code marketplace is a generated tree committed
@@ -379,6 +578,39 @@ def gates():
     ]
 
 
+# What a person's home holds that a test must never read by accident (R-001). Each decoy
+# says what it is, so a test that trips over one fails with a message naming the cause.
+HOME_DECOYS = {
+    ".claude/CLAUDE.md": "# Decoy from run-checks.py (R-001)\n\nA test read the real "
+                         "home directory. Give it a fixture home instead.\n",
+    ".claude/settings.json": '{"_decoy": "run-checks.py R-001: a test read the real home"}\n',
+    "AGENTS.md": "# Decoy from run-checks.py (R-001)\n\nA test read the real home "
+                 "directory. Give it a fixture home instead.\n",
+}
+
+
+def hermetic_home_env(home):
+    """The environment for a hermetic gate: the current one with every home pointed at `home`.
+
+    All three variables, because the readers differ: `Path.home()` reads `HOME` on POSIX
+    and `USERPROFILE` on Windows, and XDG-aware tools (git among them) read
+    `XDG_CONFIG_HOME` before either. The decoys are written into `home` first, so a test
+    that reads the real home in CI meets instruction files the way it would on a
+    maintainer's machine, rather than an empty runner home that lets it pass (R-001: CI
+    passed all six cells while the same suite failed thirty tests locally).
+    """
+    home = Path(home)
+    for relative, content in HOME_DECOYS.items():
+        target = home / relative
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_text(content, encoding="utf-8")
+    (home / ".config").mkdir(exist_ok=True)
+    env = dict(os.environ)
+    env.update(HOME=str(home), USERPROFILE=str(home),
+               XDG_CONFIG_HOME=str(home / ".config"))
+    return env
+
+
 def _script_of(command):
     """The repository-relative script a command runs, when it names one.
 
@@ -390,7 +622,7 @@ def _script_of(command):
     return command[1]
 
 
-def _run(command, runner=None):
+def _run(command, runner=None, env=None):
     """Execute one command. Returns (ok, unrunnable, output).
 
     The missing-script check happens before the call, and it is not belt-and-braces: a
@@ -409,7 +641,11 @@ def _run(command, runner=None):
         return False, True, f"could not run: {script} does not exist"
     runner = subprocess.run if runner is None else runner
     try:
-        done = runner(command, cwd=str(REPO_ROOT), capture_output=True, text=True)
+        # `env` is passed only when a gate asks for one, so a runner stand-in written
+        # before `hermetic_home` existed keeps the signature it was written against.
+        extra = {} if env is None else {"env": env}
+        done = runner(command, cwd=str(REPO_ROOT), capture_output=True, text=True,
+                      **extra)
     except OSError as exc:
         # The interpreter itself could not be started. Rarer than the case above, and
         # still distinct from a command that ran and returned non-zero.
@@ -447,10 +683,21 @@ def run_gate(gate, runner=None):
     """
     if gate.check is not None:
         return _run_check(gate)
+    if gate.hermetic_home:
+        scratch = tempfile.mkdtemp(prefix="zen-hermetic-home-")
+        try:
+            return _run_commands(gate, runner, hermetic_home_env(scratch))
+        finally:
+            shutil.rmtree(scratch, ignore_errors=True)
+    return _run_commands(gate, runner, None)
+
+
+def _run_commands(gate, runner, env):
+    """The command half of `run_gate`, with the environment it was given."""
     collected = []
     status = "ok"
     for command in gate.commands:
-        ok, unrunnable, output = _run(command, runner)
+        ok, unrunnable, output = _run(command, runner, env)
         collected.append(output)
         if unrunnable:
             status = "unrunnable"
@@ -460,7 +707,7 @@ def run_gate(gate, runner=None):
             break
     cleanup_ok = True
     if gate.cleanup is not None:
-        ok, _unrunnable, output = _run(gate.cleanup, runner)
+        ok, _unrunnable, output = _run(gate.cleanup, runner, env)
         if not ok:
             cleanup_ok = False
             collected.append("cleanup did not complete:\n" + output)

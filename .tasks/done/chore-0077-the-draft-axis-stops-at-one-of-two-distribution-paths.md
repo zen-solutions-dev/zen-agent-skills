@@ -2,7 +2,7 @@
 id: chore-0077
 title: The draft axis stops at one of the two distribution paths, and the kit now has a draft skill
 type: chore
-status: open
+status: done
 priority: P2
 parent: "ROADMAP Epic A: broadly shareable (the public kit)"
 depends_on: []
@@ -21,8 +21,8 @@ created: 2026-08-29
 The kit has two paths that put a skill in front of an agent, and only one of them knows what a
 draft is.
 
-[`install.py`](../scripts/install.py) honours `metadata.status: draft` and places such a skill under
-no profile, including `all`. [`build-adapters.py`](../scripts/build-adapters.py) does not: it has
+[`install.py`](../../scripts/install.py) honours `metadata.status: draft` and places such a skill under
+no profile, including `all`. [`build-adapters.py`](../../scripts/build-adapters.py) does not: it has
 its own `discover_skills()` (the third copy, per `bug-0027`) and generates for every skill it finds.
 Run today:
 
@@ -31,7 +31,7 @@ Run today:
     [dry-run] vscode  agent-observatory -> .github\prompts\agent-observatory.prompt.md
 
 **The divergence is recorded, deliberate, and was reasoned about.**
-[`install.md`](../docs/spec/install.md) states it under Non-Goals, decided 2026-08-05 by
+[`install.md`](../../docs/spec/install.md) states it under Non-Goals, decided 2026-08-05 by
 `feat-0036`, with three reasons: `build-adapters.py` has its own approved contract and extending
 the axis is that contract's amendment to make; `install.py` writes into an adopter's global
 discovery directory where an unblessed skill arrives looking blessed, while adapter generation
@@ -46,7 +46,7 @@ disagree about. Two consequences are checkable rather than hypothetical:
 
 - `run-checks.py`'s adapter gate reports `42 adapter file(s) for 21 skill(s)`, the draft included,
   while its install gate reports `20 of 21`.
-- [`agent-observatory`](../.agents/skills/agent-observatory/SKILL.md)'s own body says "It ships with
+- [`agent-observatory`](../../.agents/skills/agent-observatory/SKILL.md)'s own body says "It ships with
   no profile and reaches no adopter until it has been used on real work and blessed." That is true
   of one path and false of the other, in a sentence a reader has no reason to doubt.
 
@@ -54,7 +54,7 @@ disagree about. Two consequences are checkable rather than hypothetical:
 
 **In scope:** ending the silent disagreement, whichever way the author decides.
 
-The decision is not this task's to make. [`build-adapters.md`](../docs/spec/build-adapters.md) is
+The decision is not this task's to make. [`build-adapters.md`](../../docs/spec/build-adapters.md) is
 `status: approved`, and AGENTS.md makes an approved contract human-owned, so the first step is to
 put the question to the author with the three recorded reasons in front of them. Both outcomes are
 legitimate and each has an artifact:
@@ -110,7 +110,7 @@ schema's allow-list, and the flow form trips `validate-skills.py`'s plain-scalar
   both drafts, the plugin tree included.
 
 - **A premise that turned out false: the second of the three recorded reasons no longer covers every
-  target.** [`install.md`](../docs/spec/install.md)'s Non-Goals passage weighs adapter generation as
+  target.** [`install.md`](../../docs/spec/install.md)'s Non-Goals passage weighs adapter generation as
   writing "into one named project at the request of whoever runs it", decided 2026-08-05 by
   `feat-0036`. `feat-0034` added the `plugin` target the following day, 2026-08-06, and a plugin tree
   carries a `.claude-plugin/marketplace.json` naming a published plugin with a homepage and a version.
@@ -174,3 +174,7 @@ since adapter output is generated on demand and tracked nowhere in this reposito
 - [ ] Conventions in AGENTS.md's conventions section followed.
 - [ ] `doc-sync` run over the reader-facing documents and its findings applied or dismissed with a reason.
 - [ ] File moved to `.tasks/done/`, `status: done`; one dated line added to `CHANGELOG.md` referencing this task id.
+
+## Closeout (2026-11-24, by `chore-0100`): superseded by `feat-0079`
+
+Closed unbuilt by [`chore-0100`](chore-0100-marjana-context-and-ledgers.md) on 2026-11-24, because [`feat-0079`](feat-0079-distribution-that-updates-itself-and-installs-what-you-ask.md) delivered the "carry the axis over" branch in the 2026-11 overhaul, on the maintainer's plan: `build-adapters.md` gained S-021 to S-023 ("a draft is emitted by no target unless asked for"), `draft_refusals` in `build-adapters.py` implements it, `tests/test_build_adapters.py` pins it, and `install.md`'s Non-Goals passage records the withdrawal. Measured 2026-11-24: `python3 scripts/build-adapters.py --dry-run` generates `50 adapter file(s) for 25 skill(s)`, the four drafts withheld. The criteria above are left unticked because this task did not do the work; `feat-0079` carries the evidence. Its own premises (a first draft, 21 skills) are stale and kept as written.

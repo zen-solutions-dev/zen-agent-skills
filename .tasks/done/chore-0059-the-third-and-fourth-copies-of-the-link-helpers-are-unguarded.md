@@ -2,7 +2,7 @@
 id: chore-0059
 title: Two of the four copies of the code-span and fence rule promise in a comment to stay character-identical, and nothing checks that they do
 type: chore
-status: open
+status: done
 priority: P2
 parent: "ROADMAP Kit mechanics hardening (2026-07-27 review pass)"
 depends_on: []
@@ -75,15 +75,15 @@ one, and its own comment at lines 57 to 63 now records what happened to it:
 
 Fixing that drift cost `chore-0029`, which replaced the CI copy with a call. The rule has needed
 four separate fixes across its copies, each teaching one copy something the others did not know:
-[bug-0015](done/bug-0015-link-check-fires-inside-code-spans.md) on 2026-08-05,
-[bug-0017](done/bug-0017-mislabelled-link-check-fires-inside-fenced-blocks.md) on 2026-08-06,
-[bug-0023](done/bug-0023-broken-links-fires-inside-code-spans-and-fences.md) and
-[bug-0027](done/bug-0027-skill-lint-fires-inside-fenced-blocks.md) both on 2026-08-08. Four fixes
+[bug-0015](bug-0015-link-check-fires-inside-code-spans.md) on 2026-08-05,
+[bug-0017](bug-0017-mislabelled-link-check-fires-inside-fenced-blocks.md) on 2026-08-06,
+[bug-0023](bug-0023-broken-links-fires-inside-code-spans-and-fences.md) and
+[bug-0027](bug-0027-skill-lint-fires-inside-fenced-blocks.md) both on 2026-08-08. Four fixes
 in four days across four copies is the pattern that says the next change will do it again.
 
 The copies are identical right now, so this is a missing guard rather than a live defect.
 
-**This task is one of five in the same class**, grouped 2026-08-22 rather than worked as unrelated errands: a guard that does not guard. The other four are [`chore-0032`](done/chore-0032-links-guard-fires-per-run-not-per-pattern.md), [`chore-0049`](done/chore-0049-a-checker-for-conformance-matrix-citations.md), [`chore-0058`](done/chore-0058-no-gate-link-checks-the-markdown-under-agents-outside-skills.md), and [`chore-0060`](done/chore-0060-the-scaffold-manifest-id-high-water-is-stale-and-unguarded.md). `chore-0058` closed 2026-08-27, and `bug-0045` was the sixth and is closed: it found six of seven gates reporting `ok` over a repository containing nothing. **What the grouping asks of whoever works this one**: when you fix it, look for the next member before you finish, because every member of this class so far was found only by looking after the previous one landed. The pattern behind the class is [`chore-0063`](done/chore-0063-the-repository-has-never-written-down-what-it-keeps-learning.md).
+**This task is one of five in the same class**, grouped 2026-08-22 rather than worked as unrelated errands: a guard that does not guard. The other four are [`chore-0032`](chore-0032-links-guard-fires-per-run-not-per-pattern.md), [`chore-0049`](chore-0049-a-checker-for-conformance-matrix-citations.md), [`chore-0058`](chore-0058-no-gate-link-checks-the-markdown-under-agents-outside-skills.md), and [`chore-0060`](chore-0060-the-scaffold-manifest-id-high-water-is-stale-and-unguarded.md). `chore-0058` closed 2026-08-27, and `bug-0045` was the sixth and is closed: it found six of seven gates reporting `ok` over a repository containing nothing. **What the grouping asks of whoever works this one**: when you fix it, look for the next member before you finish, because every member of this class so far was found only by looking after the previous one landed. The pattern behind the class is [`chore-0063`](chore-0063-the-repository-has-never-written-down-what-it-keeps-learning.md).
 
 ## Scope
 
@@ -146,3 +146,13 @@ Both new test files already compute a repository root, so no new path constant i
 - [ ] Conventions in AGENTS.md's conventions section followed.
 - [ ] `doc-sync` run over the reader-facing documents and its findings applied or dismissed with a reason.
 - [ ] File moved to `.tasks/done/`, `status: done`; one dated line added to `CHANGELOG.md` referencing this task id.
+
+## Resolution (2026-11-24, closed inside `feat-0090`)
+
+Superseded rather than built as scoped. `feat-0090` replaced copies three and four with one shared
+copy in `scripts/_skillmeta.py`, imported by `validate-skills.py`, `build-adapters.py` and
+`install.py`, so the two unguarded copies this task was filed on no longer exist. The guard it asked
+for still applies to the one copy left outside `.tasks/validate.py` and its template, and lands in
+reduced form: `SpanHelpersAgreeWithTheBacklogValidatorTests` in `tests/test_install.py` compares the
+four names in `_skillmeta.py` with `.tasks/validate.py` as dumped ASTs, docstrings stripped, failing
+loudly when a name is missing. Recorded in `feat-0090`'s Decisions.
