@@ -48,7 +48,7 @@ The maintainer's decisions of 2026-11-25 ([decision sheet](../docs/reviews/2026-
 
 - **Rejected: the retro's wider option (b) for `R-201`**, which also allowed conflicts in ledger lines and planning documents. The maintainer chose "mechanical-only"; a ledger conflict needs a choice of order, which is judgement, so only generated files qualify.
 - **Rejected: a validator change for C1's token.** `merge_policy` stays free text (S-027); a reader that cannot parse the token treats it as off, so a typo fails safe.
-- **Seam left open:** the extension key for an expiring draft is `metadata.extended` (`YYYY-MM-DD: reason`), named here so `feat-0103` can read it; if that child chose otherwise, integration reconciles.
+- **Seam left open:** the extension key for an expiring draft is `metadata.extended` (`extended: "YYYY-MM-DD: reason"`, quoted), named here so `feat-0103` can read it; if that child chose otherwise, integration reconciles.
 
 ## Risks and rollback
 

@@ -92,7 +92,7 @@ Material adapted from elsewhere carries a provenance block. The convention (fiel
 
 **The bar gates promotion, not drafting.** A draft may be written freely: it reaches no adopter without `--include-drafts`. Promotion to shipped needs real use on real work and iteration from what that use exposed, recorded as a dogfood record (a dated record of a real run under `docs/reviews/`). No speculative skill is promoted.
 
-**A draft expires.** Its age counts from `metadata.drafted` (YYYY-MM-DD), or, when that is absent, from the first commit of its `SKILL.md`. A draft over **90 days** old with no dogfood record is promoted, extended, or removed. An extension is `metadata.extended: YYYY-MM-DD: <reason>`, and the 90 days then count from that date.
+**A draft expires.** Its age counts from `metadata.drafted` (YYYY-MM-DD), or, when that is absent, from the first commit of its `SKILL.md`. A draft over **90 days** old with no dogfood record is promoted, extended, or removed. An extension is `extended: "YYYY-MM-DD: <reason>"` under `metadata`, quoted because the value holds a colon, and the 90 days then count from that date.
 
 **Shareability is the only scope filter.** A skill belongs in the kit when someone other than its author could use it on their own work. A general skill is not excluded for having started as one person's habit; a hyper-specific personal pipeline (one person's content workflow, one client's process) stays out.
 

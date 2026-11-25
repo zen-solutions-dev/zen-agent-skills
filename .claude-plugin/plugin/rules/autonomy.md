@@ -138,8 +138,9 @@ everything-claude-code (Affaan Mustafa, MIT).
 
 **A8. Push to a branch of your own and open a draft pull request. Never merge your own work.**
 The ceiling for any unattended run. Carry the evidence report in the pull request body. Landing it is
-a person's decision, and an unattended agent never makes it, outside the two exceptions below. Where a configuration exists only for
-unattended runs, a `permissions.deny` rule on the merge commands enforces this better than prose.
+a person's decision, and an unattended agent never makes it, outside the two exceptions below. Where
+a configuration exists only for unattended runs, a `permissions.deny` rule on the merge commands
+enforces this better than prose.
 
 *Cited, with a qualification:* the shape is exercised by `pr-describe`; the specific ceiling is a
 decision recorded in `ROADMAP.md` Campaign E rather than a rule this kit has already run under.
@@ -172,17 +173,21 @@ when one of these holds, and neither can be satisfied by judgement:
 
 - **No conflict.** `git merge --no-ff --no-commit <child>` onto the integration tip reports no
   conflicted path, and the orchestrator commits the result unedited.
-- **Conflicts only in generated files, regenerated.** Every conflicted path is a generated file:
-  one the repository marks as generated and rebuilds from its sources with a command it names (in
-  this kit, `.claude-plugin/`, rebuilt by `build-adapters.py --marketplace`). The orchestrator
-  resolves each one by running that command on the merged sources and adding its output, never by
-  choosing a side or editing a line.
+- **Conflicts only in generated files, regenerated.** Every conflicted path is a generated path,
+  and the orchestrator resolves each by running the command that rebuilds it on the merged sources
+  and adding its output, never by choosing a side or editing a line.
 
-Anything else is not mechanical: a conflict in any file a person or an agent writes by hand,
-ledger lines and the orchestrator's own planning documents included; a hand edit anywhere in the
-resolution; or a generated file whose command fails. A reader can decide the question afterwards:
-`git merge-tree --write-tree <integration tip> <child commit>` lists the conflicted paths, and the
-merge commit's tree differs from that output only in those paths, each equal to the command's output.
+A **generated path** is one the repository names as generated, together with the command that
+rebuilds it, in its `AGENTS.md` or in the prose of its `docs/agents/zen.md`. In this kit `AGENTS.md`
+names `.claude-plugin/`, rebuilt by `build-adapters.py --marketplace`. A repository that names none
+has no generated paths, so only a conflict-free merge can be mechanical there.
+
+Anything else is not mechanical: a conflict in any other file, ledger lines and the orchestrator's
+own planning documents included; a hand edit anywhere in the resolution; or a generated path whose
+command fails. A reader can decide the question afterwards: `git merge-tree --write-tree <integration
+tip> <child commit>` lists the conflicted paths; the merge commit's tree equals that merge's tree
+everywhere outside the generated paths; and every generated path, conflicted or merged cleanly,
+equals what its command produces on the merge commit.
 
 A mechanical merge makes nobody's work the orchestrator's own (guard 1), because it chose no line.
 It is still a commit no verifier passed, so the orchestrator **re-checks** it: it runs the
@@ -195,13 +200,22 @@ The orchestrator's **own commits** on the integration branch (the plan, generate
 fixes) are not landed under this exception: they are its own work, so they go through verification
 like any child's, or are listed in the pull request body as unverified.
 
-**Second exception, opt-in: sampled self-merge of a verified two-way door.** Off by default. A repository turns it on
-in its `docs/agents/zen.md`, whose `merge_policy` value then begins with the word
-`self-merge-sampled`, optionally followed by a rate `1/N` (one merged pull request in N is sampled;
-`1/5` when absent; N a whole number from 1 to 20). The format is in that file's contract,
-`docs/spec/zen-config.md` in the Zen Agent Skills repository. Any other value, an absent key, an
-unreadable file, or a rate outside that range means off, and `A8` applies unchanged. When it is on,
-an agent may merge a pull request into the repository's `base_branch` only when every guard holds:
+**Second exception, opt-in: sampled self-merge of a verified two-way door.** Off by default. A
+repository turns it on in its `docs/agents/zen.md`, and the agent decides whether it is on by this
+parse alone. Split the `merge_policy` value on spaces, tabs and `;`, and drop empty pieces:
+
+- The first token is exactly `self-merge-sampled`, in lower case. Otherwise: off.
+- If the next token starts with a digit, it is the rate and must be exactly `1/N`, N an integer
+  from 1 to 20 written without a leading zero. Otherwise: off. With no such token, N is 5.
+- The same file sets `base_branch` to a branch name, explicitly; absent, empty or `none`: off. Self-
+  merge never goes to a branch the agent discovered, such as the remote's default.
+- The repository's merge method for that branch creates a new commit (a merge commit or a squash).
+  A repository that merges by fast-forward only cannot opt in, because guard 4 needs a commit the
+  platform creates at the merge.
+
+An absent key, an unreadable file, or any failed step means off, and `A8` applies unchanged. The
+same format is specified in `docs/spec/zen-config.md` in the Zen Agent Skills repository. When it is
+on, an agent may merge a pull request into that `base_branch` only when every guard holds:
 
 1. **Verified by someone else**, as guard 2 above, on the pull request's exact head commit, and the
    acceptance command passes on that commit in the platform's own required checks.
@@ -210,8 +224,8 @@ an agent may merge a pull request into the repository's `base_branch` only when 
    sent message or destroyed resource, no change to permissions, secrets, CI or hook configuration,
    no change to an approved spec or to the acceptance command and its checks, and no quest in it
    declared `mode: hitl`. Any doubt makes it a one-way door, which a person merges.
-3. **Through the front door.** The platform's normal merge, never an administrator override, a
-   bypassed branch protection, or a skipped required check.
+3. **Through the front door.** The platform's normal merge, by a method that creates a new commit,
+   never an administrator override, a bypassed branch protection, or a skipped required check.
 4. **Sampled at random, and recorded.** The agent records the merge on the pull request (verdict,
    commit, why it is two-way). The sample is decided by the merge commit the platform creates, so
    nobody can predict it before the merge and anyone can check it after: the pull request is sampled

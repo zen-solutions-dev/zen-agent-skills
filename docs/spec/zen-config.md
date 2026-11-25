@@ -424,10 +424,12 @@ Added 2026-11-25 by `feat-0101`.
 
 Added 2026-11-25 by `feat-0102`.
 
-- **Given** a configuration whose `merge_policy` is `self-merge-sampled 1/4; a person merges
-  developer into main`, or `self-merge-sampled`, or `self-merge-sampled; a person reviews samples`
+- **Given** a configuration that sets `base_branch: developer` explicitly, in a repository whose
+  merge method for `developer` creates a new commit (a merge commit or a squash), and whose
+  `merge_policy` is `self-merge-sampled 1/4; a person merges developer into main`, or
+  `self-merge-sampled`, or `self-merge-sampled; a person reviews samples`
 - **When** an agent applying the autonomy lens's `A8` reads it to decide whether it may merge a
-  verified two-way-door pull request into `base_branch`
+  verified two-way-door pull request into `developer`
 - **Then** it treats sampled self-merge as on, with N = 4 for the first value and N = 5 for the other
   two, and still applies every guard `A8` lists; a pull request it merges is sampled for a person's
   review exactly when the merge commit's full sha, read as a hexadecimal integer, is divisible by N
@@ -442,9 +444,12 @@ Added 2026-11-25 by `feat-0102`.
   not begin with the exact lower-case word `self-merge-sampled` (such as `Self-merge-sampled`,
   `allow self-merge-sampled`, `self-merge-sampled-ish`), or that begins with it followed by a token
   starting with a digit that is not `1/N` with N a whole number from 1 to 20 written without a
-  leading zero (such as `1/0`, `1/21`, `2/5`, `1/05`), or a file the reader cannot parse
+  leading zero (such as `1/0`, `1/21`, `2/5`, `1/05`), or a file the reader cannot parse; or a
+  valid opt-in in a file that sets no `base_branch`, or `base_branch: none`, so the branch would
+  have to be discovered (such as the remote's default, usually `main`); or a valid opt-in in a
+  repository that merges into `base_branch` by fast-forward only
 - **When** an agent applying `A8` reads it
-- **Then** it treats sampled self-merge as off and merges nothing into `base_branch`, and names
+- **Then** it treats sampled self-merge as off and merges nothing itself, and names
   the value it read, when there is one, in its report.
 
 ### Scenario S-046: the validator does not judge the opt-in
@@ -503,7 +508,7 @@ leading `./`. Each segment must match the name on disk in letter case.
 | `standards` | The documents a review judges written standards against: comma-separated files, each trimmed of surrounding spaces, or `none` alone |
 | `acceptance` | The one command that decides whether a change is acceptable |
 | `base_branch`, `integration_prefix` | Where work lands, and the prefix integration branches carry |
-| `merge_policy` | One line of prose: who merges what into where. A value whose first word is exactly `self-merge-sampled` (followed by the end of the value, a space or `;`) opts the repository into sampled self-merge of verified two-way doors (S-044); a token after it that starts with a digit is the sampling rate and must be `1/N`, N from 1 to 20 with no leading zero, else the opt-in is off (S-045); with no such token the rate is `1/5`. A merged pull request is sampled when its merge commit's full sha, as a hexadecimal integer, is divisible by N. Any other value leaves it off |
+| `merge_policy` | One line of prose: who merges what into where. Split on spaces, tabs and `;`, empty pieces dropped: when the first token is exactly `self-merge-sampled` (case-sensitive), the repository opts into sampled self-merge of verified two-way doors (S-044); if the next token starts with a digit it is the sampling rate and must be exactly `1/N`, N an integer from 1 to 20 with no leading zero, else the opt-in is off (S-045); with no such token N is 5. The opt-in also needs an explicit `base_branch` (not absent, not `none`) and a merge method that creates a new commit, else it is off (S-045). A merged pull request is sampled when its merge commit's full sha, as a hexadecimal integer, is divisible by N. Any other value leaves it off |
 | `session_logs` | The directory where the harness keeps session transcripts for this repository: one of the outside spellings defined under Paths (not checked), a repository path (checked), or `none` |
 | `default_mode` | `afk` (runs with nobody watching) or `hitl` (a person stays in the loop), for a task whose `mode` is empty; `hitl` when this key is absent |
 
@@ -517,7 +522,8 @@ known version without running the validator; a key it does not know is ignored, 
 value falls outside its closed set or names a missing path is treated as absent. A fact whose key is
 absent it discovers as it does without this file (asking the person when discovery finds several
 candidates). Its reply names the source of each fact once. The self-merge opt-in is the exception to
-discovery: absent means off, and nothing is asked or inferred (S-045). Other skills may become readers later by
+discovery: an absent `merge_policy` means off, and so does an absent `base_branch` for it, since
+self-merge never goes to a discovered branch; nothing is asked or inferred (S-045). Other skills may become readers later by
 amendment.
 
 | Skill | Keys it reads |

@@ -355,6 +355,8 @@ The reason is mechanical: the `main protection` ruleset demands an extra approvi
 
 ### Contribution bar
 
+**Superseded 2026-11-25 by `feat-0102`** (decisions `D1` and `D2`): the bar now gates promotion rather than drafting, drafts expire, and shareability replaces the personal-tier exclusion; see the two sections after this one. The paragraph below is the pre-2026-11-24 text, kept as written.
+
 A skill earns a place in this kit only if it is something the author actually uses and has iterated on. Do not add speculative skills. A freshly drafted skill stays `in_progress` (or is marked as a draft in `ROADMAP.md`) until it has been used and refined; only then is it "shipped." Hyper-specific personal skills stay out of the shared kit (see `docs/CATALOG.md` tiers).
 
 ## Why the contribution bar gates promotion, and why drafts expire

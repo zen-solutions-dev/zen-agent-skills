@@ -229,8 +229,9 @@ descriptions are this kit's.
 **Security axis**: the change against the security category of the rubric, as its own pass with its
 own verdict. **Required when the change is a one-way door**, as the merge danger names it (`pr-describe`
 writes it): a migration or change to persisted data, a deleted or renamed public surface, a
-published package or API version, a sent message, a destroyed resource, or a security or
-permission change. **Optional otherwise**, run when the reviewer or the person asks. A review of a
+published package or API version, a sent message, a destroyed resource, a security, permission
+or secrets change, or a change to CI or hook configuration (the same list as the self-merge guard in
+`autonomy.md`'s `A8`). **Optional otherwise**, run when the reviewer or the person asks. A review of a
 one-way door that skipped this axis says so as its first line, and is not a clean review. The axis
 inspects at least: input that crosses a trust boundary, secrets in code, logs and fixtures,
 authentication and authorisation paths, command, query and template construction, file paths built

@@ -128,3 +128,9 @@ scripts/run-checks.py` then exited 0 with 11 gates passed.
 by plain words, `python3 scripts/validate-skills.py` reported
 `.agents/rules/deep-modules.md: declares itself a lens but no skill references it`, so the move is
 guarded by an existing check, not only by this record. The file was restored afterwards.
+
+**Later merge, 2026-11-25.** The integration tip moved to `c5cfa0e` (a plan-only commit). `git
+merge-tree --write-tree --name-only HEAD origin/zen/marjana-r2-2026-11-25` listed no conflicted
+path, and the merge landed as `35d4df4`, touching only `docs/reviews/2026-11-25-marjana-r2-plan.md`;
+the full acceptance run then exited 0 with 11 gates passed. Under the new rule that is the first
+case, a conflict-free merge.
