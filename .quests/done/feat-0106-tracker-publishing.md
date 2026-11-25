@@ -2,7 +2,7 @@
 id: feat-0106
 title: Publish the local tracker to GitHub issues one way, opt-in, and add a triage draft for the role labels
 type: feat
-status: in_progress
+status: done
 priority: P1
 parent: "Marjana round 2, Wave 2: Tracker publishing (docs/reviews/2026-11-25-marjana-r2-plan.md)"
 depends_on: []
@@ -35,20 +35,20 @@ created: 2026-11-25
 
 ## Problem
 
-Coverage map rule 12 ([`2026-11-25-skills-coverage-map.md`](../docs/reviews/2026-11-25-skills-coverage-map.md), section 4) found the kit inconsistent: [`zen-config`](../docs/spec/zen-config.md) accepts `tracker: github` and five `role.*` labels, `init-worktracking` asks for them, and no skill reads a `role.*` key or publishes to a tracker. The maintainer decided R2-2 in the [round 2 plan](../docs/reviews/2026-11-25-marjana-r2-plan.md): opt-in publishing, as a draft. `.quests/` stays the source of truth and mirrors one way out, specs as issues, quests as sub-issues, `depends_on` as native blocking, and a `triage` draft consumes the role labels.
+Coverage map rule 12 ([`2026-11-25-skills-coverage-map.md`](../../docs/reviews/2026-11-25-skills-coverage-map.md), section 4) found the kit inconsistent: [`zen-config`](../../docs/spec/zen-config.md) accepts `tracker: github` and five `role.*` labels, `init-worktracking` asks for them, and no skill reads a `role.*` key or publishes to a tracker. The maintainer decided R2-2 in the [round 2 plan](../../docs/reviews/2026-11-25-marjana-r2-plan.md): opt-in publishing, as a draft. `.quests/` stays the source of truth and mirrors one way out, specs as issues, quests as sub-issues, `depends_on` as native blocking, and a `triage` draft consumes the role labels.
 
-The shape of a published issue is a one-way door. It was proposed at a check-in gate before any build and approved by the maintainer on 2026-11-25, relayed by the orchestrator, with every recommended answer (Q1 to Q5). The approved text is in [`publishing.md`](../.agents/skills/new-quest/references/publishing.md).
+The shape of a published issue is a one-way door. It was proposed at a check-in gate before any build and approved by the maintainer on 2026-11-25, relayed by the orchestrator, with every recommended answer (Q1 to Q5). The approved text is in [`publishing.md`](../../.agents/skills/new-quest/references/publishing.md).
 
 ## Scope
 
 **In scope:**
 
-- [`publish.py`](../.agents/skills/new-quest/scripts/publish.py), stdlib only: dry run by default, `--offline`, `--apply` through `gh api` only, idempotent by a hidden marker, one way, never deleting.
-- [`publishing.md`](../.agents/skills/new-quest/references/publishing.md), the procedure and the approved shape, and step 8 of [`new-quest`](../.agents/skills/new-quest/SKILL.md), which loads it only when the setup file opts in.
+- [`publish.py`](../../.agents/skills/new-quest/scripts/publish.py), stdlib only: dry run by default, `--offline`, `--apply` through `gh api` only, idempotent by a hidden marker, one way, never deleting.
+- [`publishing.md`](../../.agents/skills/new-quest/references/publishing.md), the procedure and the approved shape, and step 8 of [`new-quest`](../../.agents/skills/new-quest/SKILL.md), which loads it only when the setup file opts in.
 - The `publish` and `publish_repo` keys and the quest field `private` in both copies of `validate.py`.
 - The `zen-config` amendment (S-047 to S-059, dated, flagged for re-approval) and its conformance rows.
-- The draft [`triage`](../.agents/skills/triage/SKILL.md), user-invoked, report-first.
-- [`test_publish.py`](../tests/test_publish.py), against a fake `gh`; the dogfood record.
+- The draft [`triage`](../../.agents/skills/triage/SKILL.md), user-invoked, report-first.
+- [`test_publish.py`](../../tests/test_publish.py), against a fake `gh`; the dogfood record.
 
 Also, to keep the acceptance command green: the regenerated `.claude-plugin/` tree, and one named key in `ROADMAP_STATUS_EXCEPTIONS`, `missing:triage`, because `ROADMAP.md` is the integration's to update; it fires as stale once it is. The two count keys there (`count:skills=31`, `count:drafts=6`) were added independently by `feat-0108` too and are kept from its side of the merge; they are shared, not this quest's alone.
 
