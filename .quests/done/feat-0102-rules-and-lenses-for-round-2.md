@@ -2,7 +2,7 @@
 id: feat-0102
 title: Write round 2's rule and lens changes, from mechanical orchestrator merges to the smell baseline
 type: feat
-status: in_progress
+status: done
 priority: P1
 parent: "Marjana round 2, Wave 1: Rules and lenses (docs/reviews/2026-11-25-marjana-r2-plan.md)"
 depends_on: [feat-0101]
@@ -36,7 +36,7 @@ created: 2026-11-25
 
 ## Problem
 
-The maintainer's decisions of 2026-11-25 ([decision sheet](../docs/reviews/2026-11-25-marjana-decisions.md), [round 2 plan](../docs/reviews/2026-11-25-marjana-r2-plan.md)) approve ten changes to the kit's rules and lenses that no file carries yet: A8 with B1 (mechanical-only orchestrator merges), C1 (opt-in sampled self-merge), D1 (the contribution bar gates promotion; drafts expire), D2 (shareability is the only scope filter), D4 (code-shaped sketches in PR summaries), C3 (the security axis on one-way doors), C5 (effort levels), E4's deep-module lens, E8 (a smell baseline) and R2-3 (guarded load-by-name of a draft).
+The maintainer's decisions of 2026-11-25 ([decision sheet](../../docs/reviews/2026-11-25-marjana-decisions.md), [round 2 plan](../../docs/reviews/2026-11-25-marjana-r2-plan.md)) approve ten changes to the kit's rules and lenses that no file carries yet: A8 with B1 (mechanical-only orchestrator merges), C1 (opt-in sampled self-merge), D1 (the contribution bar gates promotion; drafts expire), D2 (shareability is the only scope filter), D4 (code-shaped sketches in PR summaries), C3 (the security axis on one-way doors), C5 (effort levels), E4's deep-module lens, E8 (a smell baseline) and R2-3 (guarded load-by-name of a draft).
 
 ## Scope
 

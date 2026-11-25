@@ -2,7 +2,7 @@
 id: feat-0101
 title: Rename the work-tracking vocabulary from tasks to quests, keeping the old names as aliases
 type: feat
-status: in_progress
+status: done
 priority: P1
 parent: "Marjana round 2, Wave 0: the quest rename (docs/reviews/2026-11-25-marjana-r2-plan.md, decisions R2-4 to R2-7)"
 depends_on: []
@@ -46,7 +46,7 @@ created: 2026-11-25
 
 The kit names its unit of work a task, its tracker directory `.tasks/`, the skill that writes one
 `new-task`, and the `zen-config` tracker value `tasks`. The maintainer decided on 2026-11-25 (R2-4
-to R2-7 in [the round 2 plan](../docs/reviews/2026-11-25-marjana-r2-plan.md)) to rename the whole
+to R2-7 in [the round 2 plan](../../docs/reviews/2026-11-25-marjana-r2-plan.md)) to rename the whole
 vocabulary to quests, first and alone, so every later workstream writes quests: Campaign (was Epic),
 Quest chain (was Feature), Quest (was Task), and a Side quest for a quest in no chain. An adopter's
 repository configured with the old names must keep working.

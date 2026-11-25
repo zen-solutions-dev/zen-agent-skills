@@ -2,7 +2,7 @@
 id: feat-0107
 title: Fold the round 2 orchestrate-and-build decisions into the skills that dispatch, land and debug
 type: feat
-status: in_progress
+status: done
 priority: P1
 parent: "Marjana round 2, Wave 2: Orchestrate and build (docs/reviews/2026-11-25-marjana-r2-plan.md)"
 depends_on: []
@@ -50,15 +50,15 @@ created: 2026-11-25
 ## Problem
 
 The maintainer approved, on 2026-11-25, a set of changes to the skills that plan, dispatch, land and
-debug work ([decisions](../docs/reviews/2026-11-25-marjana-decisions.md) `B1`, `B2`, `B6` to `B8`,
+debug work ([decisions](../../docs/reviews/2026-11-25-marjana-decisions.md) `B1`, `B2`, `B6` to `B8`,
 `E2`, `E3`, `E6`, `E9`; round 2 plan decisions `R2-6` and `R2-9`; the
-[plan](../docs/reviews/2026-11-25-marjana-r2-plan.md)'s Wave 2 row for this id). As of `d906b20`
-none of them is in the skills: [`orchestrate`](../.agents/skills/orchestrate/SKILL.md) has no memory
+[plan](../../docs/reviews/2026-11-25-marjana-r2-plan.md)'s Wave 2 row for this id). As of `d906b20`
+none of them is in the skills: [`orchestrate`](../../.agents/skills/orchestrate/SKILL.md) has no memory
 location, lint or recurring-job offer, and lands by fast-forward only although
-[`autonomy.md`](../.agents/rules/autonomy.md) `A8` now allows a mechanical merge;
-[`systematic-debugging`](../.agents/skills/systematic-debugging/SKILL.md) lacks redaction, ranked
-hypotheses and four ladder rungs; [`research`](../.agents/skills/research/SKILL.md) marks no rarity,
-and [`sitrep`](../.agents/skills/sitrep/SKILL.md)'s tiers were documented as a separate scale.
+[`autonomy.md`](../../.agents/rules/autonomy.md) `A8` now allows a mechanical merge;
+[`systematic-debugging`](../../.agents/skills/systematic-debugging/SKILL.md) lacks redaction, ranked
+hypotheses and four ladder rungs; [`research`](../../.agents/skills/research/SKILL.md) marks no rarity,
+and [`sitrep`](../../.agents/skills/sitrep/SKILL.md)'s tiers were documented as a separate scale.
 
 ## Scope
 
