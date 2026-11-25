@@ -202,7 +202,7 @@ class OldTrackerNameTests(unittest.TestCase):
         repo.write(".tasks/done/feat-0002-shut.md", task_text("feat-0002"))
         repo.commit()
         tasks, notices = sitrep.load_tasks(repo.dir)
-        self.assertEqual(notices, [])
+        self.assertEqual(notices, [sitrep.NOTICE_OLD_TRACKER])
         self.assertEqual({(t["id"], t["closed"]) for t in tasks},
                          {("feat-0001", False), ("feat-0002", True)})
 
@@ -212,17 +212,24 @@ class OldTrackerNameTests(unittest.TestCase):
         repo.write(".quests/feat-0002-moved.md", task_text("feat-0002"))
         repo.commit()
         tasks, notices = sitrep.load_tasks(repo.dir)
-        self.assertEqual(notices, [sitrep.NOTICE_BOTH_TRACKERS])
+        self.assertEqual(notices, [sitrep.NOTICE_BOTH_TRACKERS, sitrep.NOTICE_OLD_TRACKER])
         self.assertIn("git mv", notices[0])
         self.assertEqual({t["id"] for t in tasks}, {"feat-0001", "feat-0002"})
 
     def test_one_tracker_name_raises_no_notice(self):
-        for folder in (".tasks", ".quests"):
-            with self.subTest(folder=folder):
-                repo = ThrowawayRepo(self)
-                repo.write(f"{folder}/feat-0001-a.md", task_text("feat-0001"))
-                repo.commit()
-                self.assertEqual(sitrep.load_tasks(repo.dir)[1], [])
+        repo = ThrowawayRepo(self)
+        repo.write(".quests/feat-0001-a.md", task_text("feat-0001"))
+        repo.commit()
+        self.assertEqual(sitrep.load_tasks(repo.dir)[1], [])
+
+    def test_s042_the_old_name_alone_says_when_the_alias_goes(self):
+        # R2-10 (feat-0103): the alias still reads, and the board says it expires.
+        repo = ThrowawayRepo(self)
+        repo.write(".tasks/feat-0001-a.md", task_text("feat-0001"))
+        repo.commit()
+        notices = sitrep.load_tasks(repo.dir)[1]
+        self.assertEqual(notices, [sitrep.NOTICE_OLD_TRACKER])
+        self.assertIn("second tagged release", notices[0])
 
     def test_moving_the_tracker_to_its_new_name_closes_nothing(self):
         """A done file that only moved from `.tasks/done/` to `.quests/done/` was closed before."""

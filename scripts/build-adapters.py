@@ -10,6 +10,8 @@ Targets:
     cursor  -> <out>/.cursor/rules/<name>.mdc          (Cursor rule)
     vscode  -> <out>/.github/prompts/<name>.prompt.md   (VS Code / Copilot prompt)
     plugin  -> <out>/skills/<name>/SKILL.md             (Claude Code plugin tree)
+    codex   -> <out>/.agents/skills/<name>/SKILL.md     (Codex, verbatim, plus its
+               <out>/.agents/skills/<name>/agents/openai.yaml sidecar, generated)
 
     python scripts/build-adapters.py                    # cursor and vscode, into ./ (cwd)
     python scripts/build-adapters.py --target cursor --out ../my-project
@@ -118,7 +120,8 @@ if str(_TEXTIO_ROOT) not in sys.path:
     sys.path.insert(0, str(_TEXTIO_ROOT))
 from scripts._textio import NotUTF8, read_text_utf8   # noqa: E402
 from scripts._skillmeta import (   # noqa: E402
-    code_span_ranges, fenced_block_ranges, is_draft_text, render_for_claude, sibling_edges)
+    code_span_ranges, fenced_block_ranges, is_draft_text, is_user_invoked_text,
+    render_for_claude, sibling_edges)
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 SKILLS_DIR = REPO_ROOT / ".agents" / "skills"
@@ -142,6 +145,10 @@ LAYOUTS = {
     "cursor": Layout(".agents/rules", ".agents/skills"),
     "vscode": Layout(".agents/rules", ".agents/skills"),
     "plugin": Layout("rules", "skills"),
+    # Codex reads a skill directory as it is, so its target keeps the source geometry
+    # under `.agents/`, the layout the two inlining targets already place their shared
+    # material in: the three share one copy of it in one project.
+    "codex": Layout(".agents/rules", ".agents/skills"),
 }
 
 # The plugin's published identity, and the one place to edit it. Both manifests
@@ -644,7 +651,75 @@ def _write(dest: Path, content: str, dry: bool, root: Path):
     dest.write_text(content, encoding="utf-8", newline="")
 
 
-EMITTERS = {"cursor": emit_cursor, "vscode": emit_vscode, "plugin": emit_plugin}
+# The Codex sidecar (E7, feat-0103). Codex reads an optional `agents/openai.yaml` inside a
+# skill directory for how its app shows the skill and whether the model may invoke it on
+# its own. It is derived here from SKILL.md, never written by hand: `display_name` is the
+# skill's name, `short_description` the first sentence of its description, and a skill
+# declaring `metadata.invocation: user` gets `allow_implicit_invocation: false`, the
+# Codex spelling of what `disable-model-invocation: true` says to Claude Code.
+#
+# Source, read 2026-11-25: OpenAI's "Build skills" page, https://learn.chatgpt.com/docs/
+# build-skills (where developers.openai.com/codex/skills redirects), in part only as a
+# summary of the page. It names `interface.display_name`, `interface.short_description`
+# and `policy.allow_implicit_invocation` ("When false, Codex won't implicitly invoke the
+# skill based on user prompt; explicit $skill invocation still works"; default true), and
+# says Codex reads skills from `.agents/skills` up to the repository root and from
+# `$HOME/.agents/skills`. It states no length limit: CODEX_SHORT_MAX is this kit's own
+# choice, to keep a one-line label one line. Icons, colours, a default prompt and tool
+# dependencies are not emitted, since SKILL.md carries none of them.
+CODEX_SIDECAR = Path("agents") / "openai.yaml"
+CODEX_SHORT_MAX = 120
+
+
+def _yaml_string(value: str) -> str:
+    """A double-quoted YAML scalar: every character that could end or escape it escaped."""
+    escaped = (value.replace("\\", "\\\\").replace('"', '\\"')
+               .replace("\n", "\\n").replace("\t", "\\t"))
+    return f'"{escaped}"'
+
+
+def short_description(description: str, limit: int = CODEX_SHORT_MAX) -> str:
+    """The description's first sentence, cut at a word boundary to at most `limit`."""
+    text = " ".join(description.split())
+    first = re.split(r"(?<=[.!?])\s", text, maxsplit=1)[0]
+    if len(first) <= limit:
+        return first
+    cut = first[:limit - 3].rsplit(" ", 1)[0].rstrip(",;:")
+    return cut + "..."
+
+
+def codex_sidecar(name: str, description: str, user_invoked: bool) -> str:
+    """The text of a skill's `agents/openai.yaml`."""
+    lines = [f"# generated from .agents/skills/{name}/SKILL.md by build-adapters.py. "
+             f"Do not edit here.",
+             "interface:",
+             f"  display_name: {_yaml_string(name)}",
+             f"  short_description: {_yaml_string(short_description(description))}"]
+    if user_invoked:
+        lines += ["policy:", "  allow_implicit_invocation: false"]
+    return "\n".join(lines) + "\n"
+
+
+def emit_codex(src: Path, name, desc, body, out: Path, dry: bool) -> Path:
+    """Place a skill for Codex: SKILL.md verbatim, plus its generated sidecar.
+
+    The supporting files are placed by `emit_skill_assets` under the same layout. When
+    `out` is the kit itself, the SKILL.md is its own source and is left alone, and no
+    sidecar is written into the source tree: Codex reads the source directly there, and
+    a generated file among the sources is the hand-maintained copy this tool prevents.
+    """
+    skill_dir = out / LAYOUTS["codex"].assets_dir / src.name
+    if skill_dir.resolve() == src.resolve():
+        return skill_dir / "SKILL.md"
+    text = read_text_utf8(src / "SKILL.md")
+    _write(skill_dir / "SKILL.md", text, dry, out)
+    sidecar = skill_dir / CODEX_SIDECAR
+    _write(sidecar, codex_sidecar(name, desc, is_user_invoked_text(text)), dry, out)
+    return sidecar
+
+
+EMITTERS = {"cursor": emit_cursor, "vscode": emit_vscode, "plugin": emit_plugin,
+            "codex": emit_codex}
 
 
 def name_refusals(named_skills, targets, out: Path, tag: str = "") -> list[str]:

@@ -262,6 +262,13 @@ class WiringConsistencyTests(unittest.TestCase):
                              f"{name} should register {self.HOOK} exactly once")
             yield name, matchers[0]
 
+    # A hook shipped opt-in (feat-0103, maintainer decision D3): placed and printed by
+    # `install.py --with-hooks` like any other, so a person can register it, but absent
+    # from the wirings committed in this repository, which a Codex or opencode session
+    # here runs without anyone choosing them. Absence there is asserted, not tolerated.
+    OPT_IN_HOOKS = {"destructive-git-gate.py"}
+    REPO_SCOPED = {".codex/hooks.json"}
+
     def test_every_hook_in_the_module_is_registered_everywhere(self):
         """A hook that ships without a matcher is placed and never fires.
 
@@ -271,16 +278,26 @@ class WiringConsistencyTests(unittest.TestCase):
         """
         shipped = {p.name for p in HOOKS_DIR.glob("*.py")}
         self.assertTrue(shipped, "no hooks found to check")
+        self.assertLessEqual(self.OPT_IN_HOOKS, shipped, "an opt-in hook no longer ships")
         for name, entries in self._entries():
             commands = " ".join(cmd for cmd, _ in entries)
             for hook in sorted(shipped):
                 with self.subTest(source=name, hook=hook):
-                    self.assertIn(hook, commands, f"{hook} is not registered in {name}")
+                    if name in self.REPO_SCOPED and hook in self.OPT_IN_HOOKS:
+                        self.assertNotIn(hook, commands,
+                                         f"{hook} is opt-in and must not be live in {name}")
+                    else:
+                        self.assertIn(hook, commands, f"{hook} is not registered in {name}")
         adapter = (REPO_ROOT / ".opencode" / "plugins" / "zen-hooks.mjs").read_text(
             encoding="utf-8")
         for hook in sorted(shipped):
             with self.subTest(source=".opencode adapter", hook=hook):
-                self.assertIn(hook, adapter, f"{hook} is not invoked by the opencode adapter")
+                if hook in self.OPT_IN_HOOKS:
+                    self.assertNotIn(hook, adapter,
+                                     f"{hook} is opt-in and must not be live in the adapter")
+                else:
+                    self.assertIn(hook, adapter,
+                                  f"{hook} is not invoked by the opencode adapter")
 
     @staticmethod
     def _script_paths(command):

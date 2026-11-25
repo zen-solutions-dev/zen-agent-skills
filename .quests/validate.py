@@ -720,14 +720,63 @@ def _exact_path(root, value):
     return current
 
 
+def _holds_quest_files(directory):
+    """True when `directory`, or its `done/`, holds a Markdown file.
+
+    What makes a tracker directory a tracker rather than a leftover. git removes the
+    files it tracks when a checkout moves `.tasks/` to `.quests/`, but not an ignored
+    one such as `__pycache__/`, so the old directory can outlive the move with nothing
+    in it that is a quest (feat-0103, N1).
+    """
+    directory = Path(directory)
+    return any(directory.glob("*.md")) or any((directory / "done").glob("*.md"))
+
+
 def both_tracker_dirs(repo_root):
-    """A warning when `.quests/` and `.tasks/`, its old name, both exist; none otherwise."""
+    """A warning when `.quests/` and `.tasks/`, its old name, both hold quest files.
+
+    Only the directory this run does not read has to hold one: the run's own directory
+    is the tracker by definition. A directory holding nothing Markdown, such as a stray
+    `.tasks/__pycache__/` an old checkout leaves behind, is not a second tracker.
+    """
     root = Path(repo_root)
-    if (root / ".quests").is_dir() and (root / ".tasks").is_dir():
-        return ["both .quests/ and .tasks/ exist, and this run checks only "
-                f"{TASKS_DIR.name}/; finish the move with `git mv` of what is left in "
-                ".tasks/ into .quests/, then remove .tasks/"]
-    return []
+    dirs = [root / ".quests", root / ".tasks"]
+    if not all(d.is_dir() for d in dirs):
+        return []
+    others = [d for d in dirs if d.resolve() != TASKS_DIR.resolve()]
+    if not any(_holds_quest_files(d) for d in others):
+        return []
+    return ["both .quests/ and .tasks/ hold quest files, and this run checks only "
+            f"{TASKS_DIR.name}/; finish the move with `git mv` of what is left in "
+            ".tasks/ into .quests/, then remove .tasks/"]
+
+
+# The rename to quests (feat-0101) kept the old names as aliases, and they are removed at
+# the kit's second tagged release (R2-10). Until then a run that meets one says so.
+ALIAS_REMOVAL = "the old names are accepted until the kit's second tagged release"
+
+
+def old_name_findings(repo_root):
+    """A warning for each old tracker name this repository still uses; none otherwise.
+
+    Two names reach this validator: the directory it sits in being `.tasks/`, and the
+    setup file's `tracker: tasks`. An unreadable setup file is left to
+    zen_config_findings(), which reports it as an error.
+    """
+    found = []
+    if TASKS_DIR.name == ".tasks":
+        found.append(".tasks/ is the tracker's old name: rename it with "
+                     f"`git mv .tasks .quests`; {ALIAS_REMOVAL}")
+    path = Path(repo_root) / ZEN_CONFIG_PATH
+    if path.is_file():
+        try:
+            values, _ = parse_zen_config(read_text_utf8(path))
+        except NotUTF8:
+            values = {}
+        if values.get("tracker") == "tasks":
+            found.append("`tracker: tasks` is the old name of `tracker: quests`; "
+                         f"change the value; {ALIAS_REMOVAL}")
+    return found
 
 
 def zen_config_findings(repo_root):
@@ -998,6 +1047,12 @@ def main(argv=None) -> int:
     # manifest's: it names the fix, and failing an adopter's tree mid-move helps nobody.
     for msg in both_tracker_dirs(REPO_ROOT):
         warn(TASKS_DIR.name + "/", msg)
+
+    # An old name (R2-10). Always a warning, even under --strict: the alias is a promise
+    # that an adopter's repository keeps working until the second tagged release, and a
+    # strict gate failing on the day the kit is updated would break that promise early.
+    for msg in old_name_findings(REPO_ROOT):
+        warnings.append((TASKS_DIR.name + "/", msg))
 
     # The setup file the kit's skills read, when the repository has one. Errors rather
     # than warnings: a skill reads these values as facts, so a wrong one misleads every

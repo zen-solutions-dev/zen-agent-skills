@@ -35,6 +35,12 @@ the [round 2 plan](../reviews/2026-11-25-marjana-r2-plan.md)): task files are re
 and from `.tasks/`, the old name, as an alias (S-010 as amended, new S-041). **This amendment needs
 the maintainer's re-approval in the round 2 pull request.**
 
+**Amended 2026-11-25 by `feat-0103`** (maintainer decision R2-10 in the
+[round 2 plan](../reviews/2026-11-25-marjana-r2-plan.md): warn on an old name, remove the aliases at
+the second tagged release): a board reading files tracked under `.tasks/` carries a notice that the
+alias expires (new S-042). **This amendment needs the maintainer's re-approval in the round 2 pull
+request.**
+
 ## Problem
 
 Agent sessions produce work faster than the person directing them can hold its state, and that state
@@ -423,6 +429,17 @@ Added 2026-11-25 by `feat-0101`.
   directory that only moved between the two names is not listed as closed
 - **And** when files are tracked under both names at once, the board reads them together and carries
   a notice naming the fix: finish the move with `git mv` into `.quests/`
+
+
+### Scenario S-042: the tracker's old name carries an expiry notice
+
+Added 2026-11-25 by `feat-0103`.
+
+- **Given** a repository with task files tracked under `.tasks/`, alone or beside `.quests/`
+- **When** the board is generated
+- **Then** the board carries a notice that `.tasks/` is the old name, read as an alias until the
+  kit's second tagged release, naming the fix: `git mv .tasks .quests`
+- **And** a repository tracking files only under `.quests/` carries no such notice
 ## Proposed Surface
 
 ### Terms

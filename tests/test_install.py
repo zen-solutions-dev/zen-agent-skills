@@ -3040,6 +3040,19 @@ class RenamedSkillTests(_FixtureKit):
         self.assertEqual(self._placed(), {"new-quest"})
         self.assertIn("'new-task' was renamed 'new-quest'", out)
 
+    def test_the_old_name_warns_that_the_alias_expires(self):
+        # R2-10 (feat-0103): a warning that names the expiry and the new spelling.
+        code, out = self._main("--skills", "new-task", "--tools", "claude")
+        self.assertEqual(code, 0, out)
+        self.assertIn("warning: 'new-task' was renamed 'new-quest'", out)
+        self.assertIn("accepted until the kit's second tagged release", out)
+        self.assertIn("Use --skills new-quest.", out)
+
+    def test_the_new_name_carries_no_alias_warning(self):
+        code, out = self._main("--skills", "new-quest", "--tools", "claude")
+        self.assertEqual(code, 0, out)
+        self.assertNotIn("second tagged release", out)
+
     def test_a_recorded_placement_under_the_old_name_is_retired(self):
         modes = ["copy"] + (["symlink"] if SYMLINKS_WORK else [])
         for mode in modes:

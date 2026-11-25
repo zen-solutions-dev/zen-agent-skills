@@ -73,6 +73,11 @@ amendment in the round 2 pull request.** `S-030` is added: a renamed skill's old
 alias, so `--skills new-task` places `new-quest`, and a placement this tool recorded under the old
 name, whose source no longer exists, is retired by the next placing run.
 
+**Amended 2026-11-25 (`feat-0103`), under decision R2-10 of the same plan (warn on an old name,
+remove the aliases at the kit's second tagged release). Pending the maintainer's re-approval in the
+round 2 pull request.** `S-030`'s first Then now says the message is a warning naming when the
+alias expires and the new spelling.
+
 **Amended 2026-07-28 (`bug-0003`) and re-approved by the author on 2026-07-28.** S-007 was scoped to
 the home it was given and S-012 was added. The original wording, "remove the recorded targets and empty the record",
 was satisfied by an implementation that removed every recorded target from every home ever installed
@@ -498,7 +503,8 @@ Added 2026-11-25 by `feat-0101`.
 - **Given** a skill that was renamed, recorded in the tool's table of old and new names
   (`new-task`, now `new-quest`)
 - **When** `--skills` names the old name
-- **Then** the tool says the skill was renamed and places the new one, with its closure, as if the
+- **Then** the tool warns that the skill was renamed, that the old name is accepted until the kit's
+  second tagged release, and which name to use, and places the new one, with its closure, as if the
   new name had been given.
 - **And when** a placing run finds a target this tool recorded under the old name, in a tool
   directory where the same run placed the new name

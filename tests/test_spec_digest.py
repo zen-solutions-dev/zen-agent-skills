@@ -21,6 +21,7 @@ The defect each group protects against:
 import ast
 import importlib.util
 import io
+import re
 import shutil
 import tempfile
 import unittest
@@ -219,10 +220,39 @@ class ConsumerTests(unittest.TestCase):
     would place a skill whose check names a script that was never installed.
     """
 
-    CONSUMERS = ("verifier-agent", "new-quest", "spec-plan-readiness", "test-author")
+    # What marks a skill as a reader of the approval: it refuses or blocks on an approved
+    # spec whose text was edited or changed since, or after, its approval. Derived rather
+    # than listed (retro R-003, feat-0103): a literal tuple missed `test-author` once
+    # (#108 round 1), and a fifth reader is now covered the day it is written.
+    READER_RE = re.compile(r"(?:edited|changed)\s+(?:since|after)\s+its\s+approval")
+    # The readers known when the derivation replaced the literal. A floor, never a total:
+    # it fails only if the derivation stops finding one of them, so adding a reader never
+    # touches this line.
+    KNOWN_READERS = {"verifier-agent", "new-quest", "spec-plan-readiness", "test-author"}
+
+    @classmethod
+    def consumers(cls, skills_dir=SKILLS):
+        return sorted(
+            d.name for d in skills_dir.iterdir()
+            if d.name != "spec-author" and (d / "SKILL.md").is_file()
+            and cls.READER_RE.search((d / "SKILL.md").read_text(encoding="utf-8")))
+
+    def test_the_derived_consumers_include_every_known_reader(self):
+        self.assertLessEqual(self.KNOWN_READERS, set(self.consumers()))
+
+    def test_the_derivation_finds_a_new_reader_and_ignores_an_unrelated_skill(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            for name, body in (("fifth", "Refuse a spec edited since its\napproval.\n"),
+                               ("other", "Nothing about approval here.\n"),
+                               ("spec-author", "edited since its approval\n")):
+                (root / name).mkdir()
+                (root / name / "SKILL.md").write_text(body, encoding="utf-8")
+            (root / "empty").mkdir()  # a directory with no SKILL.md is not a skill
+            self.assertEqual(self.consumers(root), ["fifth"])
 
     def test_each_consumer_links_spec_author_and_names_the_script(self):
-        for name in self.CONSUMERS:
+        for name in self.consumers():
             with self.subTest(skill=name):
                 body = (SKILLS / name / "SKILL.md").read_text(encoding="utf-8")
                 self.assertIn("](../spec-author/SKILL.md)", body)

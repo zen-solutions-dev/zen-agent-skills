@@ -1273,20 +1273,90 @@ class BothTrackerDirsTests(TasksRootTestCase):
 
     def test_both_directories_warn_and_name_the_fix(self):
         (self.root / ".tasks").mkdir()
+        (self.root / ".tasks" / "feat-0001-left-behind.md").write_text(
+            "left behind\n", encoding="utf-8")
         code, out = self._lenient()
         self.assertEqual(code, 0, out)
-        self.assertIn("WARN  .quests/: both .quests/ and .tasks/ exist", out)
+        self.assertIn("WARN  .quests/: both .quests/ and .tasks/ hold quest files", out)
         self.assertIn("git mv", out)
         self.assertIn("0 error(s), 1 warning(s)", out)
+
+    def test_a_quest_file_left_in_the_old_done_directory_also_warns(self):
+        (self.root / ".tasks" / "done").mkdir(parents=True)
+        (self.root / ".tasks" / "done" / "feat-0001-old.md").write_text(
+            "old\n", encoding="utf-8")
+        code, out = self._lenient()
+        self.assertIn("both .quests/ and .tasks/ hold quest files", out)
 
     def test_one_directory_alone_is_silent(self):
         code, out = self._lenient()
         self.assertEqual(code, 0, out)
         self.assertNotIn(".tasks/", out)
 
+    def test_an_old_directory_holding_only_ignored_bytecode_is_silent_under_strict(self):
+        # N1 (feat-0103): git leaves an ignored `.tasks/__pycache__/` behind after the
+        # rename, and the filesystem test made --strict fail every old checkout on it.
+        cache = self.root / ".tasks" / "__pycache__"
+        cache.mkdir(parents=True)
+        (cache / "validate.cpython-312.pyc").write_bytes(b"\x00")
+        code, out = self._run()
+        self.assertEqual(code, 0, out)
+        self.assertNotIn(".tasks/", out)
+        self.assertIn("0 error(s), 0 warning(s)", out)
+
 
 class BothTrackerDirsTemplateTests(BothTrackerDirsTests):
     """The same warning in the copy `init-worktracking` ships."""
+
+    module = tvt
+
+
+class OldNameTests(TasksRootTestCase):
+    """R2-10 (feat-0103): an old tracker name warns, and says when the alias goes.
+
+    Always a warning, never an error, even under --strict: the alias is a promise that an
+    adopter's repository keeps working until the kit's second tagged release.
+    """
+
+    def _config(self, tracker):
+        path = self.root / "docs" / "agents" / "zen.md"
+        path.parent.mkdir(parents=True)
+        path.write_text("# Setup\n\n```zen-config\nconfig_version: 1\n"
+                        f"tracker: {tracker}\n```\n", encoding="utf-8")
+
+    def test_tracker_tasks_warns_under_strict_without_failing(self):
+        self._config("tasks")
+        code, out = self._run()
+        self.assertEqual(code, 0, out)
+        self.assertIn("`tracker: tasks` is the old name of `tracker: quests`", out)
+        self.assertIn("second tagged release", out)
+        self.assertIn("0 error(s), 1 warning(s)", out)
+
+    def test_tracker_quests_is_silent(self):
+        self._config("quests")
+        code, out = self._run()
+        self.assertEqual(code, 0, out)
+        self.assertIn("0 error(s), 0 warning(s)", out)
+
+    def test_a_validator_run_from_the_old_directory_warns(self):
+        old = self.root / ".tasks"
+        self.tasks.rmdir()
+        old.mkdir()
+        self.module.TASKS_DIR = old
+        code, out = self._run()
+        self.assertEqual(code, 0, out)
+        self.assertIn("WARN  .tasks/: .tasks/ is the tracker's old name", out)
+        self.assertIn("git mv .tasks .quests", out)
+
+    def test_an_empty_setup_file_says_nothing_about_old_names(self):
+        path = self.root / "docs" / "agents" / "zen.md"
+        path.parent.mkdir(parents=True)
+        path.write_text("", encoding="utf-8")
+        self.assertEqual(self.module.old_name_findings(self.root), [])
+
+
+class OldNameTemplateTests(OldNameTests):
+    """The same warnings in the copy `init-worktracking` ships."""
 
     module = tvt
 

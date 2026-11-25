@@ -253,6 +253,27 @@ claude plugin marketplace add ./.tmp/plugin
 
 The committed marketplace this repository publishes is regenerated with `python scripts/build-adapters.py --marketplace`, and checked with `--marketplace --check`.
 
+### Codex
+
+Codex reads skills from `.agents/skills/` in each directory from the working directory up to the repository root, and from `~/.agents/skills/` for the user, as OpenAI's "Build skills" page describes it (read 2026-11-25). Both are covered:
+
+- **For one project**, the `codex` target places each skill there with its `SKILL.md` unchanged, its supporting files, the rules module at `.agents/rules/`, and an `agents/openai.yaml` beside each `SKILL.md`:
+
+  ```bash
+  python scripts/build-adapters.py --target codex --out ../my-project
+  ```
+
+  The sidecar is generated from the skill's frontmatter, never written by hand: its display name is the skill's name, its short description the description's first sentence, and a skill a person starts by name (`metadata.invocation: user`) gets `allow_implicit_invocation: false`, so Codex runs it only when you call it as `$<skill-name>`.
+- **For every repository**, `python scripts/install.py --tools opencode` already places the skills and the rules module under `~/.agents/skills/` and `~/.agents/rules/`, which is the directory Codex reads too. That path places no sidecar, so every skill there is one Codex may pick on its own.
+
+Inside this repository Codex reads `.agents/skills/` directly, and no sidecar is written into it.
+
+**Verified so far**: the `codex` target's output is tested (`tests/test_build_adapters_codex.py`), and every generated sidecar parses as YAML. **Not verified yet**: a Codex session loading the skills, because no Codex CLI was available where this was written (`feat-0103`). The same holds for Copilot: the VS Code prompt adapters are tested as files, and no Copilot session has loaded them.
+
+### Skill names shared with Matt Pocock's skills
+
+This kit and Matt Pocock's skills (`mattpocock/skills`) use some of the same skill names: `tdd`, `research` and `retro`, by the inventory of his skills in [the 2026-11-25 coverage map](reviews/2026-11-25-skills-coverage-map.md), and `teach`, `prototype` and `wayfinder` once this kit's planned drafts of those names land. A harness keys a skill by its directory name, so with both kits installed at the same scope one copy replaces the other, or the harness loads whichever it finds first. `install.py` refuses to overwrite a directory it did not place and reports it as a conflict, so the first kit installed keeps the name. To keep both, install one of them at the other scope (one per user, one per project), or pass `--skills` to install only the skills whose names do not clash. The Claude Code plugin avoids the clash, since a plugin skill carries the `zen-agent-skills:` prefix.
+
 ## Integration by harness
 
 | Harness | Integration | Command or location |
@@ -262,6 +283,8 @@ The committed marketplace this repository publishes is regenerated with `python 
 | OpenCode | Global skill discovery | `python scripts/install.py --tools opencode` |
 | Cursor | Project rule adapter | `python scripts/build-adapters.py --target cursor --out <project>` |
 | VS Code or Copilot | Project prompt adapter | `python scripts/build-adapters.py --target vscode --out <project>` |
+| Codex | Project skills with sidecars | `python scripts/build-adapters.py --target codex --out <project>` |
+| Codex | Global skill discovery (no sidecars) | `python scripts/install.py --tools opencode`, which places into `~/.agents/skills/` |
 | Other harnesses | Read the canonical skill manually or add a local adapter | [`.agents/skills/`](../.agents/skills/) |
 
 The kit does not maintain separate hand-edited versions of a skill for each harness. The canonical source remains the `SKILL.md` file.

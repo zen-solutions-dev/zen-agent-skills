@@ -128,6 +128,14 @@ class GateSetTests(unittest.TestCase):
         ("roadmap bookkeeping",
          [],
          None),
+        # Added by feat-0103 (retro R-204): a callable that warns and never fails.
+        ("changelog lines",
+         [],
+         None),
+        # Added by feat-0103 (E9): the router and the catalog name every skill.
+        ("skill listings",
+         [],
+         None),
         # Added by chore-0098 (retro R-008): runs on every change, docs-only ones included.
         ("secret scan",
          [["scripts/scan-secrets.py"]],

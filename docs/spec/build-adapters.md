@@ -31,6 +31,13 @@ and drift-checked by this tool. S-015 changes in one clause: the plugin manifest
 generated from the emitted content, and the marketplace entry carries none, where both used to carry
 one typed string.
 
+Amended 2026-11-25 (`feat-0103`) under the round 2 plan the maintainer approved that day (decision
+E7, Codex parity). **This amendment is pending the maintainer's re-approval**; `status` is left
+reading `approved` for the reason the `feat-0034` paragraph gives. It adds S-024, a fourth target,
+`codex`, opt-in like `plugin`, which places each skill under `.agents/skills/<name>/` with its
+`SKILL.md` unchanged and an `agents/openai.yaml` generated from it, and the `--target` and emitted-path
+rows that change with it.
+
 Amended 2026-08-19 (`chore-0043`) to state that a markdown link rendering as literal text is not a
 link and is emitted unchanged: scenario S-018, an exception to the rewrite rules S-003 through S-008.
 **This amendment is pending the author's re-approval.** It writes down the behaviour `bug-0028` gave
@@ -381,6 +388,22 @@ every test still pass, because no test asserts the reason.
 - **And** when asked to check it instead, it writes nothing, and exits non-zero naming every file that
   is missing, extra, or different from what a regeneration would write, and zero when there is none.
 
+### Scenario S-024: the Codex target places each skill with a generated sidecar
+
+Added 2026-11-25 by `feat-0103`.
+
+- **Given** the kit's skills
+- **When** the tool runs for the `codex` target into an output root
+- **Then** each emitted skill sits at `.agents/skills/<name>/`, with its `SKILL.md` byte-for-byte the
+  source's, its supporting files, the rules module at `.agents/rules/`, and an
+  `agents/openai.yaml` generated from its frontmatter: `interface.display_name` the skill's name,
+  `interface.short_description` the description's first sentence, each a double-quoted scalar, and
+  `policy.allow_implicit_invocation: false` only for a skill declaring `invocation: user` under
+  `metadata`
+- **And** a second run writes the same bytes, drafts are withheld as S-021 says, and when the output
+  root is the kit itself nothing is written into its source tree
+- **And** `codex` is not in the default target set
+
 ## Proposed Surface
 
 | Element | Detail |
@@ -389,10 +412,10 @@ every test still pass, because no test asserts the reason.
 | `--include-drafts` | Also emit draft skills, per S-021 |
 | `--marketplace` | Regenerate the committed marketplace under `.claude-plugin/`, per S-023; ignores `--target` and `--out`, and refuses `--include-drafts` and `--dry-run` |
 | `--check` | With `--marketplace` only: compare instead of writing, exit 1 on drift, per S-023 |
-| `--target` | Comma-separated subset of the supported targets `cursor`, `vscode`, `plugin`; defaults to the two inlining targets, `cursor,vscode`. `plugin` is opt-in, per S-017 |
+| `--target` | Comma-separated subset of the supported targets `cursor`, `vscode`, `plugin`, `codex`; defaults to the two inlining targets, `cursor,vscode`. `plugin` is opt-in, per S-017, and `codex` too, per S-024 |
 | `--out` | Output project root; defaults to the working directory |
 | `--dry-run` | Preview: report what would be written, write nothing |
-| Emitted per skill | `.cursor/rules/<name>.mdc`, `.github/prompts/<name>.prompt.md`, `skills/<name>/SKILL.md` (plugin) |
+| Emitted per skill | `.cursor/rules/<name>.mdc`, `.github/prompts/<name>.prompt.md`, `skills/<name>/SKILL.md` (plugin), `.agents/skills/<name>/SKILL.md` and `.agents/skills/<name>/agents/openai.yaml` (codex) |
 | Emitted per plugin run | `.claude-plugin/plugin.json`, `.claude-plugin/marketplace.json`, once per run rather than per skill |
 | Emitted shared | Under `.agents/` for the inlining targets and at the plugin root for the plugin target: `<shared>/rules/<file>` (adopted, preserved on a re-run), `<shared>/skills/<name>/<path>` (derived, refreshed on a re-run). Targets sharing a location share one copy |
 | Exit code | non-zero whenever the run refuses rather than proceeds: an unrecognized target, a skill this tool declines to emit from, a destination that would resolve outside the output root (S-020), or a file it cannot read; zero otherwise. Which refusals are *required* is a scenario's question, not this row's |

@@ -78,6 +78,16 @@ is left reading `approved` per the convention in [`README.md`](README.md): `veri
 `blocked` on a spec that is not approved, so flipping the field would make the verification run for
 this very amendment unanswerable.
 
+**Amended 2026-11-25 (`feat-0103`) under the round 2 plan the maintainer approved that day.
+Pending the maintainer's re-approval of this amendment.** Three scenarios over the skills together:
+S-029, a "Composed by" claim in a description fails unless each named composer links the skill
+(retro `R-003`); S-030, a shipped skill may name a draft only in backticks, and may load one by name
+only in the guarded sentence "If \`x\` is installed, read and follow it; otherwise ..." (decision
+R2-3), while a relative link to a draft fails; S-031, a draft older than 90 days that no dogfood
+record names warns (decision D1). "What it reads" now reaches above the distributed tree for S-031:
+the repository's `docs/reviews/*dogfood*` records and, for a draft with no `metadata.drafted`, git's
+history of its `SKILL.md`. `status` is left reading `approved` for the reason given below.
+
 **Amended 2026-11-24 (`feat-0094`) under the Marjana plan the maintainer approved that day.
 Pending the maintainer's approval of this amendment itself.** S-028 adds a warning for a workflow
 step that ends on no "Done when" line, the convention `writing-for-agents.md`'s checklist states and
@@ -574,12 +584,51 @@ validator is the kit-level lint that enforces that bar.
   composed into another skill rather than steps an agent executes; and a "Done when" mid-paragraph,
   or inside a fence, does not count as a criterion.
 
+### Scenario S-029: a "Composed by" claim names composers that link the skill
+
+Added 2026-11-25 by `feat-0103`.
+
+- **Given** a skill whose description says "Composed by A, B and C" (names separated by commas and
+  "and", optionally in backticks, ending at a semicolon, a full stop or the end of the description)
+- **When** the validator runs
+- **Then** it records one error for each named composer that is not a skill in the kit, and one for
+  each whose `SKILL.md` has no relative link to `../<skill>/SKILL.md` outside a code span or fence
+- **And** a description without the phrase is not checked
+
+### Scenario S-030: a shipped skill names a draft in backticks, and loads one only behind a guard
+
+Added 2026-11-25 by `feat-0103`.
+
+- **Given** a skill that is not a draft, and a sibling whose `metadata.status` is `draft`
+- **When** the shipped skill links the draft as `../<draft>/SKILL.md` outside a code span or fence
+- **Then** the validator records an error naming both and the guarded form to use instead
+- **And when** it tells the agent to "read and follow \`<draft>\`" outside a code span or fence
+- **Then** it records a warning naming the guarded form, and the exit code is unaffected
+- **And** the sentence "If \`<draft>\` is installed, read and follow it; otherwise ..." is accepted
+  with neither, and draws no install edge, since an edge is a relative link only
+
+### Scenario S-031: a draft nobody has run for 90 days warns
+
+Added 2026-11-25 by `feat-0103`.
+
+- **Given** a draft skill, in a skills directory laid out as `<repository>/.agents/skills/`
+- **And** its drafted date is `metadata.drafted` (YYYY-MM-DD), or when that is absent the date of the
+  first git commit adding its `SKILL.md`
+- **When** the drafted date is more than 90 days before today, and no file under the repository's
+  `docs/reviews/*dogfood*` names the skill (as \`<name>\` or `<name>/SKILL.md`)
+- **Then** the validator records a warning giving the age, the date and where the date came from,
+  and the exit code is unaffected
+- **And** when there is no date (a malformed `metadata.drafted`, git unavailable or without such a
+  commit) and no record names it, the warning says the date is unknown and the expiry cannot be
+  checked
+- **And** a skills directory outside that layout is not checked for expiry
+
 ## Proposed Surface
 
 | Element | Detail |
 |---|---|
 | Invocation | `python scripts/validate-skills.py` |
-| What it reads | every skill directory under the target skills directory, in full rather than its `SKILL.md` alone: the body, plus the files the kit distributes beside it, of which the markdown is read for S-024 and the rest is counted without being opened. Plus the rest of the distributed tree that skills directory sits in (`.agents/` for the default target, holding the rules module and the hooks module): its markdown is read for S-025, and a rules file is read for S-023 and S-026 as well, while the rest is counted without being opened. A rules file is read for two declarations rather than one: whether it presents itself as a lens (S-023), and whether it claims universal scope (S-026). Both are read out of the file rather than listed here or in the tool, so a lens added later is governed without either being edited. Nothing above that tree is read. The walk outside the skills directory does not always run, and S-025 requires the run to say when it did not. |
+| What it reads | every skill directory under the target skills directory, in full rather than its `SKILL.md` alone: the body, plus the files the kit distributes beside it, of which the markdown is read for S-024 and the rest is counted without being opened. Plus the rest of the distributed tree that skills directory sits in (`.agents/` for the default target, holding the rules module and the hooks module): its markdown is read for S-025, and a rules file is read for S-023 and S-026 as well, while the rest is counted without being opened. A rules file is read for two declarations rather than one: whether it presents itself as a lens (S-023), and whether it claims universal scope (S-026). Both are read out of the file rather than listed here or in the tool, so a lens added later is governed without either being edited. Nothing else above that tree is read, except for S-031: the repository's `docs/reviews/*dogfood*` files and, for a draft with no `metadata.drafted`, git's log of its `SKILL.md`. The walk outside the skills directory does not always run, and S-025 requires the run to say when it did not. |
 | Exit code | non-zero when any error is recorded, zero otherwise (warnings do not fail) |
 | Output | per-issue `WARN`/`ERROR` lines, then a `Checked N skill(s): E error(s), W warning(s).` summary, then a second line reporting how many supporting files were link-checked and how many were skipped, by reason (S-024), and on that same second line what the walk outside the skills directory covered (S-025). That second half must make the three outcomes S-025 names distinguishable from one another: a run that declined to look, a run that looked and found nothing shipped there, and a run that looked and link-checked none of what it found. What is fixed is that the three are told apart, not which words or numbers tell them apart. When the skills directory is absent, a missing-directory error instead of both summary lines; when it is present but empty, a no-skills-found line instead of both. The count `N` is of skills, so an S-023, S-024 or S-025 error raises the error count without changing it. |
 

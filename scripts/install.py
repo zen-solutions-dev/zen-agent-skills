@@ -131,6 +131,9 @@ MANIFEST = REPO_ROOT / "scripts" / ".install-manifest.json"
 # otherwise point at a source that no longer exists. `new-task` became `new-quest` in the
 # rename from tasks to quests (feat-0101).
 RENAMED_SKILLS = {"new-task": "new-quest"}
+# When an old name stops being accepted (maintainer decision R2-10): the first tagged
+# release carries the warning, the second removes the aliases.
+ALIAS_EXPIRY = "The old name is accepted until the kit's second tagged release."
 
 TOOL_SUBPATHS = {
     "claude": Path(".claude") / "skills",
@@ -568,6 +571,11 @@ HOOK_REGISTRATIONS = [
     # rather than a branch in either: it asks whether the files a harness loaded at launch
     # are committed, which is neither reachability nor currency (feat-0081).
     ("instruction-provenance-reminder.py", "SessionStart", "startup"),
+    # The one gate on `PreToolUse`, the only event early enough to stop a command rather
+    # than report it. Opt-in (feat-0103, D3): printed here for a person to register, and
+    # registered in no wiring this repository commits. Shell tools only; the hook
+    # re-checks the tool name and tokenises the whole command itself.
+    ("destructive-git-gate.py", "PreToolUse", "^Bash$|^PowerShell$"),
 ]
 
 
@@ -1812,9 +1820,12 @@ def _main(argv=None) -> int:
         if not only:
             print("--skills was given no skill names.")
             return 2
+        # A warning, not a refusal (R2-10, feat-0103): the old name keeps working until
+        # the aliases are removed, and the person learns when that is before it happens.
         for old in [n for n in only if n in RENAMED_SKILLS]:
-            print(f"{old!r} was renamed {RENAMED_SKILLS[old]!r}; placing "
-                  f"{RENAMED_SKILLS[old]!r}.")
+            print(f"warning: {old!r} was renamed {RENAMED_SKILLS[old]!r}; placing "
+                  f"{RENAMED_SKILLS[old]!r}. {ALIAS_EXPIRY} Use "
+                  f"--skills {RENAMED_SKILLS[old]}.")
         only = list(dict.fromkeys(RENAMED_SKILLS.get(n, n) for n in only))
     profile = args.profile or DEFAULT_PROFILE
     if profile not in PROFILE_SEEDS:

@@ -61,6 +61,7 @@ Standard library only.
 """
 from __future__ import annotations
 
+import hashlib
 import os
 import platform
 import re
@@ -92,6 +93,8 @@ PY = sys.executable
 # the commonest way one reaches a public repository. Everything else exercises code.
 DOCS_GATES = frozenset({
     "backlog",
+    "changelog lines",
+    "skill listings",
     "doc links",
     "matrix citations",
     "roadmap bookkeeping",
@@ -283,6 +286,39 @@ COUNT_RES = (
 # `count:drafts=10`) all stopped firing. A count key names its stale value, so a
 # different wrong count is a new finding rather than this one.
 ROADMAP_STATUS_EXCEPTIONS = frozenset()
+
+
+# The changelog's task-log line limit (retro R-204, feat-0103). AGENTS.md says "at most
+# about 300 characters"; the gate measures the raw Markdown line, links included, and
+# warns past 330, the figure R-204 proposed, so "about" keeps its slack. A warning, not a
+# failure: shortening a line is a person's edit, and the integrator is the one who writes
+# these lines. The lines over it when the check landed are excepted by the SHA-256 of the
+# line (first 16 hex digits), so editing one, or adding a new one, is what warns. The list
+# only shrinks: a line shortened or archived to docs/history/ leaves a stale entry, which
+# the gate names for deletion.
+CHANGELOG = "CHANGELOG.md"
+CHANGELOG_LINE_LIMIT = 330
+CHANGELOG_LONG_LINE_EXCEPTIONS = frozenset({
+    "3688bd439971ac56",  # 2026-11-23 chore-0033, 817 characters
+    "a8fd524e8ea08cb5",  # 2026-11-23 chore-0092, 623 characters
+    "b12444ee19cd7aaf",  # 2026-11-23 chore-0090, 552 characters
+    "336650278762dbb0",  # 2026-11-23 chore-0085, 470 characters
+    "4dcaa3a9fdcc72a9",  # 2026-11-23 release readiness for pull request 109, 1160 characters
+    "d005b073b9cec670",  # 2026-11-23 chore-0096, 864 characters
+    "dca9009bbeec6655",  # 2026-11-23 feat-0083, 1471 characters
+    "4f5f4c13c479fd0b",  # 2026-11-23 feat-0082, 1040 characters
+    "ef173590525ad0e8",  # 2026-11-23 feat-0081, 2063 characters
+    "127986e6aa7d025b",  # 2026-11-23 feat-0080 closed, 831 characters
+    "afb652b03a9e44b5",  # 2026-11-23 feat-0080 part A, 1025 characters
+    "deb839d1e9e5dcdc",  # 2026-11-23 feat-0079, 1158 characters
+    "6430932ec95570d8",  # 2026-11-23 feat-0078, 1055 characters
+    "96b5b3100ed4f428",  # 2026-11-23 feat-0077, 981 characters
+    "9493cf148573b3d3",  # 2026-11-23 feat-0076, 980 characters
+    "ab7f3f111344ff17",  # 2026-11-23 chore-0095, 777 characters
+    "af58a07ccd793bc6",  # 2026-10-21 feat-0072 amended, 707 characters
+    "760f5011aa8053a4",  # 2026-10-20 feat-0072 closed, 2342 characters
+    "98831ddae89253c4",  # 2026-10-20 chore-0094, 1942 characters
+})
 
 
 def skill_statuses(repo_root):
@@ -496,6 +532,115 @@ def check_roadmap(repo_root=None, status_exceptions=None):
             "\n".join(lines))
 
 
+def _line_key(line):
+    return hashlib.sha256(line.encode("utf-8")).hexdigest()[:16]
+
+
+def check_changelog_lines(repo_root=None, exceptions=None, limit=None):
+    """The `changelog lines` gate: a task-log line over the limit warns (R-204).
+
+    Returns (ok, report), and ok is always True: this gate warns and never fails. The
+    findings go on the report's last line, the one `coverage_line()` shows beside a
+    passing gate, so a warning is visible without a failure to carry it. Reads the lines
+    starting `- ` under `## Task log` only; the releases section above it is prose.
+    """
+    repo_root = REPO_ROOT if repo_root is None else Path(repo_root)
+    exceptions = (CHANGELOG_LONG_LINE_EXCEPTIONS if exceptions is None
+                  else frozenset(exceptions))
+    limit = CHANGELOG_LINE_LIMIT if limit is None else limit
+    path = repo_root / CHANGELOG
+    if not path.is_file():
+        return True, f"{CHANGELOG}: absent, so 0 task-log lines were measured."
+    lines = path.read_text(encoding="utf-8").splitlines()
+    try:
+        start = lines.index("## Task log") + 1
+    except ValueError:
+        return True, f"{CHANGELOG}: no `## Task log` heading, so 0 task-log lines were measured."
+    entries = [(n, line) for n, line in enumerate(lines[start:], start + 1)
+               if line.startswith("- ")]
+    report, new, excepted, seen = [], [], 0, set()
+    for number, line in entries:
+        if len(line) <= limit:
+            continue
+        key = _line_key(line)
+        if key in exceptions:
+            excepted += 1
+            seen.add(key)
+            continue
+        new.append(number)
+        report.append(f"WARN  {CHANGELOG}:{number}: task-log line is {len(line)} characters, "
+                      f"over {limit}; keep a closeout line to about 300 and put the detail "
+                      f"in the quest file it links")
+    stale = sorted(exceptions - seen)
+    for key in stale:
+        report.append(f"WARN  {CHANGELOG}: exception {key!r} matches no line over the "
+                      f"limit; delete it from CHANGELOG_LONG_LINE_EXCEPTIONS in "
+                      f"scripts/run-checks.py")
+    warned = (f"WARN {len(new)} new line(s) over {limit} characters, at line(s) "
+              f"{', '.join(map(str, new))}" if new else "0 new lines over the limit")
+    report.append(f"Measured {len(entries)} task-log line(s) in {CHANGELOG}: {warned}; "
+                  f"{excepted} excepted, {len(stale)} stale exception(s).")
+    return True, "\n".join(report)
+
+
+# The two documents that list the kit for a reader (E9, feat-0103): the `zen` router, which
+# an agent reads to pick a skill, and the catalog a person reads. A skill neither names is
+# reachable only by someone who already knows it exists. A draft is named too, or excepted
+# here by name with the reason; an exception for a skill that is named, or gone, fails.
+SKILL_LISTINGS = (".agents/skills/zen/SKILL.md", "docs/CATALOG.md")
+UNLISTED_DRAFT_EXCEPTIONS = {}
+
+
+def _names(text, name):
+    """A listing names a skill as `` `name` ``, `[name]`, or by the path `name/SKILL.md`."""
+    escaped = re.escape(name)
+    return re.search(rf"`{escaped}`|\[{escaped}\]|(?<![\w-]){escaped}/SKILL\.md",
+                     text) is not None
+
+
+def check_skill_listings(repo_root=None, exceptions=None):
+    """The `skill listings` gate: do the router and the catalog name every skill?
+
+    Returns (ok, report). `zen` is not required to name itself.
+    """
+    repo_root = REPO_ROOT if repo_root is None else Path(repo_root)
+    exceptions = UNLISTED_DRAFT_EXCEPTIONS if exceptions is None else dict(exceptions)
+    statuses = skill_statuses(repo_root)
+    lines, failing, checked = [], 0, 0
+    for listing in SKILL_LISTINGS:
+        path = repo_root / listing
+        if not path.is_file():
+            lines.append(f"{listing}: absent, so no skill could be found in it.")
+            failing += 1
+            continue
+        checked += 1
+        text = path.read_text(encoding="utf-8")
+        owner = Path(listing).parent.name if listing.endswith("SKILL.md") else None
+        for name in sorted(statuses):
+            if name == owner:
+                continue
+            named = _names(text, name)
+            if named and name in exceptions:
+                lines.append(f"{listing}: names {name!r}, so its exception in "
+                             f"UNLISTED_DRAFT_EXCEPTIONS is stale; delete it.")
+                failing += 1
+            elif not named and name in exceptions and statuses[name]:
+                lines.append(f"{listing}: {name!r} excepted: {exceptions[name]}")
+            elif not named:
+                kind = "draft" if statuses[name] else "shipped skill"
+                lines.append(f"{listing}: does not name the {kind} {name!r}; add it, as "
+                             f"`{name}`" + (", or except the draft in "
+                             f"UNLISTED_DRAFT_EXCEPTIONS with the reason"
+                             if kind == "draft" else ""))
+                failing += 1
+    for name in sorted(set(exceptions) - set(statuses)):
+        lines.append(f"exception {name!r} names no skill in the kit; delete it.")
+        failing += 1
+    lines.append(f"Checked {checked} of {len(SKILL_LISTINGS)} listing(s) against "
+                 f"{len(statuses)} skill(s): {failing} finding(s) failing.")
+    return failing == 0, "\n".join(lines)
+
+
 def gates():
     """The gate set: every gate that decides whether a change here is acceptable.
 
@@ -572,6 +717,13 @@ def gates():
         # done, beside that task's own file sitting in `.quests/done/`, passed every gate,
         # which is what chore-0066 measured when it corrected nine of them at once.
         Gate("roadmap bookkeeping", [], check=check_roadmap),
+        # Added by feat-0103 (retro R-204). Warns, never fails: a closeout line over the
+        # limit is named on the line a passing gate shows. A documentation gate, since
+        # CHANGELOG.md is prose.
+        Gate("changelog lines", [], check=check_changelog_lines),
+        # Added by feat-0103 (E9): the router and the catalog name every skill. A
+        # documentation gate, since the catalog is prose.
+        Gate("skill listings", [], check=check_skill_listings),
         # Added by chore-0098 (retro R-008). Runs on every change, documentation-only ones
         # included, which is why it is in DOCS_GATES.
         Gate("secret scan", [[PY, "scripts/scan-secrets.py"]]),

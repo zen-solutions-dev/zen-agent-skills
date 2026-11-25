@@ -46,7 +46,9 @@ declines to run over.
 """
 from __future__ import annotations
 
+import datetime
 import re
+import subprocess
 import sys
 from pathlib import Path
 
@@ -59,7 +61,8 @@ if str(_TEXTIO_ROOT) not in sys.path:
     sys.path.insert(0, str(_TEXTIO_ROOT))
 from scripts._textio import NotUTF8, read_text_utf8   # noqa: E402
 from scripts._skillmeta import (   # noqa: E402
-    INVOCATION_VALUES, RENDERED_KEY, fenced_block_ranges, link_targets, metadata_fields)
+    INVOCATION_VALUES, RENDERED_KEY, fenced_block_ranges, is_draft_text, link_targets,
+    literal_ranges, metadata_fields, sibling_edges)
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 SKILLS_DIR = REPO_ROOT / ".agents" / "skills"
@@ -970,7 +973,147 @@ def check_status_contradiction(text: str, rel: str, warnings: list) -> None:
         )
 
 
-def main(skills_dir: Path = SKILLS_DIR) -> int:
+# "Composed by A, B and C" in a description is a claim about other skills' bodies, and
+# it went stale twice with every gate green (retro R-003, #98 F1). Each named composer must
+# link this skill's SKILL.md, which is also the install edge that makes the claim true.
+COMPOSED_BY_RE = re.compile(r"\bComposed by\s+(.+?)(?:;|\.(?:\s|$)|$)")
+
+
+def composed_by_claims(description: str) -> list:
+    """The skill names a description claims compose it, in the order written."""
+    m = COMPOSED_BY_RE.search(description or "")
+    if not m:
+        return []
+    parts = re.split(r",\s*(?:and\s+)?|\s+and\s+", m.group(1).strip())
+    return [p.strip().strip("`") for p in parts if p.strip().strip("`")]
+
+
+def check_composed_by(descriptions: dict, skill_texts: dict, errors: list) -> None:
+    """Fail each claimed composer that does not exist or does not link the claimant."""
+    for name in sorted(descriptions):
+        for composer in composed_by_claims(descriptions[name]):
+            if composer not in skill_texts:
+                errors.append(f"{name}: description says it is composed by {composer!r}, "
+                              f"and no skill has that name")
+            elif name not in sibling_edges(skill_texts[composer]):
+                errors.append(f"{name}: description says it is composed by {composer!r}, "
+                              f"but {composer}/SKILL.md has no relative link to "
+                              f"../{name}/SKILL.md; add the link or drop the claim")
+
+
+# The one way a shipped skill may load a draft (maintainer decision R2-3, feat-0103): the
+# draft is named in backticks, which draws no install edge, inside a guard that says what
+# to do when it is absent. A relative link to a draft is an install edge, and fails. The
+# guarded sentence needs no pattern of its own: it says "read and follow it", which the
+# unguarded pattern below cannot match, and its backticks are no link.
+# An instruction to load a backticked skill with no guard around it.
+UNGUARDED_LOAD_RE = re.compile(r"\bread and follow `([a-z0-9][a-z0-9-]*)`")
+
+
+def check_draft_references(skill_texts: dict, errors: list, warnings: list) -> None:
+    """A shipped skill links no draft, and loads one by name only behind the guard.
+
+    The guarded sentence, "If `x` is installed, read and follow it; otherwise ...", is
+    accepted and draws no install edge, since `install.py` and `build-adapters.py` follow
+    relative links only. An unguarded "read and follow `x`" of a draft warns: it reads
+    as a load that cannot fail, and fails wherever the draft was not installed.
+    """
+    drafts = {n for n, text in skill_texts.items() if is_draft_text(text)}
+    for name in sorted(skill_texts):
+        if name in drafts:
+            continue
+        text = skill_texts[name]
+        for ref in sorted(sibling_edges(text) & drafts):
+            errors.append(f"{name}/SKILL.md: links the draft {ref!r} as ../{ref}/SKILL.md, "
+                          f"an install edge to a skill a default install does not place; "
+                          f"name it in backticks, or load it with the guarded form "
+                          f"'If `{ref}` is installed, read and follow it; otherwise ...'")
+        ranges = literal_ranges(text)
+        for m in UNGUARDED_LOAD_RE.finditer(text):
+            ref = m.group(1)
+            if ref in drafts and not any(a <= m.start() < b for a, b in ranges):
+                warnings.append(f"{name}/SKILL.md: tells the agent to read and follow the "
+                                f"draft {ref!r} with no guard; write 'If `{ref}` is "
+                                f"installed, read and follow it; otherwise ...'")
+
+
+# A draft that nobody has run goes stale (maintainer decision D1, feat-0103): after this
+# many days with no dogfood record naming it, the validator says so. A warning, never an
+# error: whether to promote, keep or drop it is a person's call.
+DRAFT_EXPIRY_DAYS = 90
+DOGFOOD_GLOB = "docs/reviews/*dogfood*"
+DRAFTED_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
+
+
+def drafted_date(skill_md: Path, text: str):
+    """`(date or None, source)`: `metadata.drafted`, else git's first commit of the file.
+
+    `source` says where the date came from, or why there is none, for the message.
+    """
+    value = metadata_fields(text).get("drafted", "")
+    if value:
+        try:
+            if not DRAFTED_RE.match(value):
+                raise ValueError(value)
+            return datetime.date.fromisoformat(value), "metadata.drafted"
+        except ValueError:
+            return None, f"metadata.drafted {value!r} is not YYYY-MM-DD"
+    try:
+        out = subprocess.run(
+            ["git", "log", "--diff-filter=A", "--format=%as", "--", skill_md.name],
+            cwd=skill_md.parent, capture_output=True, text=True, timeout=30)
+    except (OSError, subprocess.SubprocessError):
+        return None, "unknown (no metadata.drafted, and git is unavailable)"
+    dates = out.stdout.split()
+    if out.returncode != 0 or not dates:
+        return None, "unknown (no metadata.drafted, and git has no commit adding it)"
+    try:
+        return datetime.date.fromisoformat(dates[-1]), "the first git commit adding it"
+    except ValueError:
+        return None, "unknown (git printed no date)"
+
+
+def dogfood_text(repo_root: Path) -> str:
+    """Every text file under a `docs/reviews/*dogfood*` path, joined."""
+    chunks = []
+    for top in sorted(repo_root.glob(DOGFOOD_GLOB)):
+        files = [top] if top.is_file() else sorted(p for p in top.rglob("*") if p.is_file())
+        for f in files:
+            try:
+                chunks.append(f.read_text(encoding="utf-8", errors="replace"))
+            except OSError:
+                continue
+    return "\n".join(chunks)
+
+
+def names_skill(text: str, name: str) -> bool:
+    """A record names a skill as `` `name` `` or by its path, `name/SKILL.md`."""
+    return re.search(rf"`{re.escape(name)}`|(?<![\w-]){re.escape(name)}/SKILL\.md",
+                     text) is not None
+
+
+def check_draft_expiry(skills_dir: Path, skill_texts: dict, repo_root: Path,
+                       warnings: list, today=None) -> None:
+    """Warn on each draft older than DRAFT_EXPIRY_DAYS that no dogfood record names."""
+    today = today or datetime.date.today()
+    record = dogfood_text(repo_root)
+    for name in sorted(skill_texts):
+        text = skill_texts[name]
+        if not is_draft_text(text) or names_skill(record, name):
+            continue
+        when, source = drafted_date(skills_dir / name / "SKILL.md", text)
+        if when is None:
+            warnings.append(f"{name}/SKILL.md: a draft no file under {DOGFOOD_GLOB} names, "
+                            f"drafted {source}; the {DRAFT_EXPIRY_DAYS}-day expiry cannot "
+                            f"be checked")
+        elif (today - when).days > DRAFT_EXPIRY_DAYS:
+            warnings.append(f"{name}/SKILL.md: a draft for {(today - when).days} days "
+                            f"(since {when}, from {source}), over {DRAFT_EXPIRY_DAYS}, and "
+                            f"no file under {DOGFOOD_GLOB} names it; run it and record the "
+                            f"run, promote it, or drop it")
+
+
+def main(skills_dir: Path = SKILLS_DIR, repo_root: Path | None = None, today=None) -> int:
     if not skills_dir.is_dir():
         print(f"ERROR no skills directory at {skills_dir}")
         return 1
@@ -986,6 +1129,7 @@ def main(skills_dir: Path = SKILLS_DIR) -> int:
     # Everything install.py ships: the skills plus the sibling rules module.
     portable_root = skills_dir.parent.resolve()
     skill_texts: dict = {}
+    descriptions: dict = {}
     supporting = {"markdown": 0, "template": 0, "other": 0}
     forbids_em_dashes = house_style_forbids_em_dashes(portable_root / "rules")
 
@@ -1017,6 +1161,7 @@ def main(skills_dir: Path = SKILLS_DIR) -> int:
             continue
         name = fm.get("name", "")
         desc = fm.get("description", "")
+        descriptions[d.name] = desc
         if not name:
             errors.append(f"{rel}/SKILL.md: missing `name`")
         elif name != d.name:
@@ -1081,6 +1226,16 @@ def main(skills_dir: Path = SKILLS_DIR) -> int:
     # is correct for the lens rule and would silently drop `.agents/hooks/README.md` here.
     portable = check_portable_markdown(portable_root, skills_dir.resolve(),
                                        skill_names, errors)
+    # Three checks over the skills together (feat-0103): who composes whom (R-003),
+    # how a shipped skill may name a draft (R2-3), and how long a draft may sit unrun (D1).
+    check_composed_by(descriptions, skill_texts, errors)
+    check_draft_references(skill_texts, errors, warnings)
+    # The expiry needs the repository the skills sit in, for its dogfood records and its
+    # git history; a skills directory outside the `.agents/skills` layout has neither.
+    if repo_root is None and skills_dir.parent.name == ".agents":
+        repo_root = skills_dir.parent.parent
+    if repo_root is not None:
+        check_draft_expiry(skills_dir, skill_texts, Path(repo_root), warnings, today)
 
     for w in warnings:
         print(f"WARN  {w}")
