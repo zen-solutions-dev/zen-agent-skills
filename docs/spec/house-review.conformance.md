@@ -1,7 +1,7 @@
 ---
 title: house-review conformance
 spec: docs/spec/house-review.md
-audited: 2026-11-24
+audited: 2026-11-25
 ---
 
 # house-review conformance matrix
@@ -38,6 +38,14 @@ compression reworded was re-read against the skill at that date and its quote re
 status changed. Step 6 now points at the lens's evidence gate and states its branches in short
 rather than in full, so `S-007`, `S-014` and `S-015` rest on the skill and the lens together.
 
+**Re-audited 2026-11-25 (`feat-0108`)** after the skill gained the guard check (Step 4 collects the
+guards, Step 5 marks them) and the security axis (Step 4 names the door, Step 5 runs the axis, Step 7
+reports it). `S-026`, `S-027` and the Guards surface row are new and await the maintainer's
+re-approval; the Axes and Output rows were re-audited against their amended text; `S-022` was
+re-read because the closing line now says "across the axes", and its status holds. The audit was run
+by the agent that wrote the change, so it is the author's own reading (`A7`), not an independent
+verdict.
+
 ## What this audit can and cannot establish
 
 `house-review` is a prose skill, so evidence is a clause rather than a code path, and this
@@ -72,28 +80,31 @@ is a different artifact answering a different question. See the note at the end.
 | Scenarios | S-019 the spec axis reports missing, unasked-for, and wrong work | Conformed | Step 5 / "what it asked for that is missing or partial (`spec-missing`), what the change does that nobody asked for (`spec-extra`), and what looks built but wrong (`spec-wrong`)", and the lens's "Every spec finding quotes the contract line it rests on" | the gate obligation is met by the lens rule that the contract quote is resolved "against the contract file just as the code quote does against the code" |
 | Scenarios | S-020 with no contract, the spec axis says so and stops | Conformed | Step 4 / "the spec axis reports \"no contract available\" and is skipped. It never invents one from the diff", and the lens's "it never reconstructs intent from the diff" | |
 | Scenarios | S-021 the standards axis reads the repository's written standards | Conformed | Step 4 / "`CODING_STANDARDS.md` and `CONTRIBUTING.md` whenever they exist", Step 5 / "each finding cites the standard (file and rule)", and the lens's "**The repository overrides the rubric.**" and "**Cite the standard.**" | the judgement-call label is in both the skill ("is labelled as one") and the lens |
-| Scenarios | S-022 the two axes are independent and are not reranked | Conformed | Step 5 / "run the axes in sequence: finish the spec axis, through Step 6, and write its findings down before reading for the standards axis", and Step 7 / "Never name a single worst finding across both axes" | the subagent branch states a fresh context and the leaf rule, per the overhaul plan's subagent rule |
+| Scenarios | S-022 the two axes are independent and are not reranked | Conformed | Step 5 / "run the axes in sequence: finish the spec axis, through Step 6, and write its findings down before reading for the standards axis", and Step 7 / "Never name a single worst finding across the axes" | the subagent branch states a fresh context and the leaf rule, per the overhaul plan's subagent rule. Re-audited 2026-11-25 (`feat-0108`): the quote read "across both axes" until a third axis was added |
 | Scenarios | S-023 depth is chosen from stated signals, and an explicit depth wins | Conformed | Step 2 / "If the user named `quick`, `standard` or `deep`, that is the depth", the signal table, the R1 to R7 table with "First match wins", and Step 7's header `depth:` and `excluded:` lines | the disagreement report is Step 2 / "report `detected_depth` and the files that would have escalated" |
 | Scenarios | S-024 an unmeasurable change is reviewed at standard depth | Conformed | Step 2 / "When a signal cannot be computed, or the reviewable set is empty, select `standard` and say which signal failed" | re-audited 2026-11-24 (`feat-0093`) |
 | Scenarios | S-025 a re-check reads only the first review's findings, then stops | Conformed | Step 1 / "asks whether its findings were fixed is a **re-check**: skip to Step 8", and Step 8 / "re-check only what the first review asked for", each finding marked **fixed**, **open** or **disputed**, the fix range read "at `quick` depth for a blocker the fix introduced", then "Then stop. A finding still open after this goes to the person to decide, not into another round" | added 2026-11-24 (`feat-0093`); audits the skill against a scenario the maintainer has not yet approved. The lens's review protocol rule 8 states the same stopping rule for every reviewing skill |
+| Scenarios | S-026 the spec axis quotes and checks every guard of the contract | Conformed | Step 4 / "**The contract's guards**, from every spec source found: each line that forbids, limits or refuses something", "the guards of the contract as it stood before the amendment as well as after", "Quote each guard verbatim, with its file and section", and "A conformance matrix or verification record the change's own author updated is not a guard source and not evidence on this axis"; Step 5 / "mark it **held** ... **broken** (a `spec-wrong` finding ...), or **not reached**"; Step 7 / "The Spec section lists the guards after its verdict" | added 2026-11-25 (`feat-0108`), pending re-approval. Broken guards pass the gate because they are ordinary `spec-wrong` findings and Step 6 applies to every candidate |
+| Scenarios | S-027 a one-way door gets a security axis of its own | Conformed | Step 4 / "**The door**: one-way or two-way, by the one-way list of the sampled self-merge's two-way-door guard" and "read it now"; Step 5 / "**Security axis.** Required when Step 4 named the door one-way", "It is a pass of its own, with its own verdict and inspected list"; Step 7 / "A one-way door whose security axis was skipped opens the review with that line" and "Never name a single worst finding across the axes" | added 2026-11-25 (`feat-0108`), pending re-approval. The inspection list is the lens's security-axis paragraph in [`review-quality.md`](../../.agents/rules/review-quality.md); the door list is `A8` guard 2 in [`autonomy.md`](../../.agents/rules/autonomy.md), per the amended Constraint. Re-audited in the fix round of 2026-11-25 after the door was repointed |
 | Proposed Surface | Invocation | Conformed | Step 1 | |
 | Proposed Surface | Modes (four, enumerated, plus the re-check) | Conformed | Step 1's four branches, and its re-check branch into Step 8 | the re-check row added 2026-11-24 (`feat-0093`), pending approval |
 | Proposed Surface | Range resolution, and reporting supplied vs. resolved | Conformed | Step 1's numbered resolution and both the "supplied" and "resolved" statements | |
 | Proposed Surface | Severities `blocker`, `major`, `minor`, `nit` defined by the lens | Conformed | [`review-quality.md`](../../.agents/rules/review-quality.md) severity scheme, referenced from the preamble and Step 5 | |
 | Proposed Surface | Evidence: path, lines, symbol, quote, with an absence form | Conformed | The lens's two evidence tables, applied in Steps 5 and 6 | |
 | Proposed Surface | Signature: four fields, no line number | Conformed | The lens's signature section, emitted in Step 6 and shown in both Step 7 templates | |
-| Proposed Surface | Axes: spec and standards, independent, not reranked | Conformed | Step 5 and the lens's "Two axes" section | |
+| Proposed Surface | Axes: spec (with guards), standards (with the smell baseline) and security where required, independent, not reranked | Conformed | Step 5's three axis paragraphs, "Apply the lens's **smell baseline**", and the lens's "Two axes" section | re-audited 2026-11-25 (`feat-0108`) against the amended row |
+| Proposed Surface | Guards: numbered, quoted with file and section, each marked held, broken or not reached | Conformed | Step 4 / "into a numbered list", Step 5's three marks, Step 7's guard list | added 2026-11-25 (`feat-0108`), pending re-approval |
 | Proposed Surface | Depth: explicit or R1 to R7, anchors and capped remainder, unmeasurable selects standard | Conformed | Step 2's rule table, the R2 row's "capped at `standard`", and the fallback sentence | |
-| Proposed Surface | Output: header block, then a Spec and a Standards section with verdicts, inspected files and ordered findings | Conformed | Step 7's header block and "a `## Spec` section and a `## Standards` section, each opening with its own one-line verdict" | |
+| Proposed Surface | Output: header block with the door and the security axis's status, then a Spec section with its guards, a Standards section and a Security section when it ran, with verdicts, inspected files and ordered findings | Conformed | Step 7's header block (`door:` and `security axis:` lines) and "a `## Spec` section, a `## Standards` section and, when the axis ran, a `## Security` section, each opening with its own one-line verdict" | re-audited 2026-11-25 (`feat-0108`) against the amended row |
 | Proposed Surface | Re-check output: one line per signature with its mark, the counts, any new blocker, closed or what a person must decide | Conformed | Step 8 / "Report one line per signature with its mark, the count of each mark, and any new blocker", and its done-when / "the report says the review is closed or names what the person must decide" | added 2026-11-24 (`feat-0093`), pending approval |
 | Proposed Surface | Side effects: none | Conformed | the preamble / "**report-only**: it never edits or commits", Step 7 / "Edit and commit nothing", and Step 7's done-when / "nothing in the repository was edited or committed" | the gate, the depth signals and the re-check read files and run searches or a cited read-only command, and write nothing. Re-audited 2026-11-24 (`feat-0093`): this row cited Notes, which no longer restates it |
 | Open Questions | One, on whether gate-dropped findings should be recoverable on request | Conformed | spec's Open Questions section | the skill reports the count and not the content, and [`references/rationale.md`](../../.agents/skills/house-review/references/rationale.md) names the question as open |
 
 ## Coverage proof
 
-**Audited** (37 items): scenarios S-001 through S-025 (all twenty-five); the eleven Proposed
-Surface rows, with Re-check output added on 2026-11-24 (`feat-0093`); and the Open Questions
-section.
+**Audited** (40 items): scenarios S-001 through S-027 (all twenty-seven); the twelve Proposed
+Surface rows, with Re-check output added on 2026-11-24 (`feat-0093`) and Guards on 2026-11-25
+(`feat-0108`); and the Open Questions section.
 
 **Unreconciled**: none.
 

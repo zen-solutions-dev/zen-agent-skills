@@ -286,11 +286,17 @@ COUNT_RES = (
 # `count:drafts=10`) all stopped firing. A count key names its stale value, so a
 # different wrong count is a new finding rather than this one.
 #
-# Refilled 2026-11-25 by feat-0106, which adds the `triage` draft while ROADMAP.md belongs to
-# the round 2 integration (feat-0109): its Current state then counts and lists the new draft,
-# and these three keys fire "no longer needed" and are deleted there.
+# Refilled 2026-11-25 by feat-0108, whose five new drafts the roadmap cannot name yet: only the
+# integration quest feat-0109 edits ROADMAP.md. Each key fires until that edit lands, then is
+# deleted. The two count keys name the stale values the roadmap holds. feat-0106 added
+# `missing:triage` for its `triage` draft, on the same terms.
 ROADMAP_STATUS_EXCEPTIONS = frozenset({
+    "missing:prototype",
+    "missing:teach",
     "missing:triage",
+    "missing:vet-skill",
+    "missing:wait-what",
+    "missing:wayfinder",
     "count:skills=31",
     "count:drafts=6",
 })
@@ -605,8 +611,14 @@ def check_changelog_lines(repo_root=None, exceptions=None, limit=None):
 # here by name with the reason; an exception for a skill that is named, or gone, fails.
 SKILL_LISTINGS = (".agents/skills/zen/SKILL.md", "docs/CATALOG.md")
 UNLISTED_DRAFT_EXCEPTIONS = {
-    "triage": "a draft from feat-0106; the router and catalog lines are the integration's "
-              "(feat-0109), passed under Notes",
+    # feat-0108 drafts: `zen` is feat-0105's and the catalog feat-0109's; the integration
+    # owner lists them there, then deletes these lines.
+    "prototype": "feat-0108 draft; listed in zen and the catalog at integration (feat-0109)",
+    "teach": "feat-0108 draft; listed in zen and the catalog at integration (feat-0109)",
+    "triage": "feat-0106 draft; listed in zen and the catalog at integration (feat-0109)",
+    "vet-skill": "feat-0108 draft; listed in zen and the catalog at integration (feat-0109)",
+    "wait-what": "feat-0108 draft; listed in zen and the catalog at integration (feat-0109)",
+    "wayfinder": "feat-0108 draft; listed in zen and the catalog at integration (feat-0109)",
 }
 
 

@@ -72,10 +72,21 @@ describe.
 ### Step 2: draft the PR body
 
 Write a description grounded only in what the diff and commits support. Never invent a
-section the change does not justify. A typical shape, trimmed to fit the change:
+section the change does not justify. Write it in the **project's words**: when the repository keeps
+a glossary (the `glossary` key of `docs/agents/zen.md`, else a `GLOSSARY.md` at the root), read it
+and use its terms for the things the change touches, and use no term it lists under an avoid or
+alias entry. A term the change introduces that the glossary lacks is named in the body as new, not
+added to the glossary here. A typical shape, trimmed to fit the change:
 
 - **Title**: an imperative one-liner (from the branch name or the dominant commit).
-- **Summary**: one to three sentences on what this PR does.
+- **Summary**: the **smallest visual** that explains the change, beside a sentence or two that
+  says what it shows. Read [`references/visuals.md`](references/visuals.md) now and pick its
+  shape from what the change is: a table for a set of parallel changes, a before and after for a
+  behaviour change, a shallow file tree for a moved or restructured layout, a Mermaid diagram for a
+  flow between parts, or a code-shaped sketch (pseudocode, a call tree, a diff-shaped sketch) for
+  logic. One visual is usual and two is the most; a change too small to need one (a typo, a
+  one-line fix) gets the sentence alone. The visual is a sketch of the change's shape, never a
+  pasted hunk of the diff.
 - **Context / motivation**: why the change was made (from commit messages, a linked task,
   or the user).
 - **What changed**: the substantive changes grouped by area, not a file-by-file restatement
@@ -112,11 +123,10 @@ grounded in the diff rather than in how the change feels:
 **Look:** skim | read | scrutinise. <one line: where to spend the attention>
 ```
 
-- **Door.** A **two-way door** is undone by reverting the merge: nothing outside the repository
-  changed. A **one-way door** is not: a migration or any change to persisted data, a deleted or
-  renamed public surface others call, a published package or API version, a sent message, a
-  destroyed resource, a security or permission change already exercised. One irreversible part
-  makes the whole PR one-way; name that part.
+- **Door.** A **two-way door** is one revert of the merge undoes whole. The one-way list is the
+  two-way-door guard of the sampled self-merge in [`autonomy.md`](../../rules/autonomy.md)'s `A8`
+  (guard 2): read it now and apply it as written, so this skill and `house-review` call the same
+  change one-way. One part on that list makes the whole PR one-way; name that part.
 - **Blast radius.** The widest set of people or systems a defect here would reach: one function's
   callers, every consumer of a shared module, every user of a released artifact, every adopter of a
   template this repository ships. Use the diff's own reach (who imports or runs the changed files),
@@ -183,8 +193,10 @@ The contract behind this is `docs/spec/tracker-links.md` in the Zen Agent Skills
 Other trackers use the same shape with a different token, so the rule is the placement, not
 the vocabulary.
 
-Done when every section in the body rests on the diff, the commits or a quest file, Merge danger is
-last, and every issue a completed task names has its own closing line or a stated reason it has none.
+Done when every section in the body rests on the diff, the commits or a quest file, the Summary
+carries a visual from `references/visuals.md` or is a change too small for one, every term the
+glossary defines is used in its glossary form, Merge danger is last, and every issue a completed task
+names has its own closing line or a stated reason it has none.
 
 ### Step 3: draft the changelog entry (by inspection)
 
@@ -234,8 +246,10 @@ kit's formatting on another repo's changelog.
 
 ## Provenance
 
-The merge-danger section (one-way or two-way door, blast radius, evidence shown before and after) is
-adapted in this kit's own words from Matt Pocock's `pr` skill, which credits Dex Horthy's `show-me`.
+The merge-danger section (one-way or two-way door, blast radius, evidence shown before and after),
+the smallest-visual Summary and its menu of shapes in `references/visuals.md` (added 2026-11-25,
+`feat-0108`), and the instruction to write in the glossary's terms are adapted in this kit's own words
+from Matt Pocock's `pr` skill, which credits Dex Horthy's `show-me`.
 The stack offer is adapted from his aihero.dev post "Watch me ship a 21,000-line feature", section
 "Stacked diffs", a web page that carries no block below (`feat-0093`, 2026-11-24).
 

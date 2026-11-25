@@ -156,6 +156,7 @@ KIT_SKILL_NAMES = frozenset({
     "orchestrate",
     "pr-describe",
     "project-bootstrap",
+    "prototype",
     "quest-tracker",
     "reconcile-worktrees",
     "research",
@@ -167,10 +168,14 @@ KIT_SKILL_NAMES = frozenset({
     "spec-quality",
     "systematic-debugging",
     "tdd",
+    "teach",
     "test-author",
     "test-quality",
     "triage",
     "verifier-agent",
+    "vet-skill",
+    "wait-what",
+    "wayfinder",
     "zen",
 })
 

@@ -130,10 +130,15 @@ that to them as a question in the next round. When a term **collides** (the glos
 word for another concept, or the code names the same concept with a different word), the question
 offers a **rename** as its recommended option where one fits: a new word for the newcomer, or, when
 the code disagrees with the glossary, renaming the code to match, recorded as a decision to carry out
-as its own quest, never during the interview. When a term **settles** and the repository keeps a
-glossary, or the person wants one, read and follow
-[`domain-language`](../domain-language/SKILL.md) now for that one term, so the glossary is written
-as the term lands rather than in a batch at the end; then come back to this step. When a returned fact bears on a
+as its own quest, never during the interview. A term **settles** only when the person chose it or
+confirmed it, in an answer or a corrected playback; a term only you proposed, or one put to nobody
+because no person is present, has not settled: it is **deferred**, recorded under Deferred, and
+written nowhere. When a term settles and the repository keeps a glossary, or the person wants one,
+read and follow [`domain-language`](../domain-language/SKILL.md) now for that one term, so the
+glossary is written as the term lands rather than in a batch at the end; then come back to this
+step.
+
+When a returned fact bears on a
 decision already settled, put that to the person in the next round as its own question; never
 reconcile it silently inside another recommendation. Then go back to step 4, unless the new
 frontier is empty: then go to step 6.
@@ -149,7 +154,10 @@ silently assumed. Before closing, sort everything not decided into three kinds: 
 decision** (clear enough to decide, deliberately left for a named owner), **fog** (in scope, but not
 yet sharp enough to decide or to write a task for), and **out of scope** (will not be done here, and
 never graduates into a task). Then ask the person to confirm the shared understanding, in one sentence that
-restates the whole. Act on nothing until they confirm.
+restates the whole. Act on nothing until they confirm. The one exception is what step 5 already
+did: the glossary entries `domain-language` wrote for terms the person settled stand, since the
+person chose each of them; if the confirmation changes one, put the change through `domain-language`
+again.
 
 Done when they have confirmed and the decisions record below is written.
 

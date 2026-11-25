@@ -79,6 +79,38 @@ class EnvFile(Case):
         self.make().write_env("NAME", "v")
         self.assertEqual(self.env.stat().st_mode & 0o777, 0o600)
 
+    @unittest.skipUnless(os.name == "posix", "file modes are POSIX only")
+    def test_the_file_is_private_before_the_secret_reaches_it(self):
+        modes = []
+        real_write = Path.write_text
+
+        def spy(path, *args, **kwargs):
+            modes.append(path.stat().st_mode & 0o777)
+            return real_write(path, *args, **kwargs)
+
+        with mock.patch.object(Path, "write_text", spy):
+            self.make().write_env("TOKEN", "secret")
+        self.assertEqual(modes, [0o600])
+
+    def test_a_value_with_any_line_break_is_refused(self):
+        # Every separator str.splitlines splits on, since existing() reads the file back that way.
+        for sep in ["\n", "\r", "\r\n", "\v", "\f", "\x1c", "\x1d", "\x1e", "\x85",
+                    "\u2028", "\u2029"]:
+            with self.subTest(sep=repr(sep)):
+                self.make().write_env("FIRST", "ok")  # the second write is the injection
+                w = self.make()
+                code = w.run([("save", lambda w: w.write_env("NAME", f"a{sep}EVIL=1"))])
+                self.assertEqual(code, 1)
+                self.assertIn("holds a line break, so it was not saved", self.out.getvalue())
+                self.assertNotIn("EVIL", self.out.getvalue())
+                self.assertIsNone(self.make().existing("EVIL"))
+                self.assertEqual(self.env.read_text(encoding="utf-8"), "FIRST='ok'\n")
+
+    def test_an_empty_value_is_saved(self):
+        self.make().write_env("EMPTY", "")
+        self.assertEqual(self.env.read_text(encoding="utf-8"), "EMPTY=''\n")
+        self.assertEqual(self.make().existing("EMPTY"), "")
+
 
 class Prompts(Case):
     def test_enter_keeps_the_saved_answer(self):
@@ -135,6 +167,16 @@ class Once(Case):
         self.assertIn("already done: create the bucket", self.out.getvalue())
 
 
+class OnceState(Case):
+    def test_valid_json_that_is_not_an_object_counts_as_nothing_done(self):
+        self.state.write_text("[]\n", encoding="utf-8")
+        acted = []
+        w = self.make()
+        code = w.run([("create", lambda w: w.once("k", "make it", lambda: acted.append(1)))])
+        self.assertEqual((code, acted), (0, [1]))
+        self.assertIn("is not readable; treating every step as not done", self.out.getvalue())
+
+
 class DryWalk(Case):
     def test_nothing_is_opened_written_run_or_recorded(self):
         acted = []
@@ -171,6 +213,13 @@ class Command(Case):
         code = w.run([("run", lambda w: w.command([sys.executable, "-c", "raise SystemExit(3)"]))])
         self.assertEqual(code, 1)
         self.assertIn("exited 3", self.out.getvalue())
+
+    def test_a_missing_executable_stops_the_run_with_a_summary(self):
+        w = self.make()
+        code = w.run([("run", lambda w: w.command(["zen-no-such-program-0105"]))])
+        self.assertEqual(code, 1)
+        self.assertIn("stopped at stage 1 of 1: zen-no-such-program-0105 could not be run",
+                      self.out.getvalue())
 
     def test_a_secret_reaches_the_command_on_standard_input(self):
         out = self.tmp / "got.txt"

@@ -59,6 +59,23 @@ day. The fig-leaf smell and the optional second reviewer from another model fami
 procedure guidance, not contract, and add no scenario. The frontmatter stays at `approved` per the
 `feat-0040` precedent; S-025 is not approved until the maintainer says so.
 
+**Amended 2026-11-25 (`feat-0108`), pending the maintainer's re-approval.** Two scenarios, from the
+maintainer's decisions of 2026-11-25 (B9 and C3 in
+[`2026-11-25-marjana-decisions.md`](../reviews/2026-11-25-marjana-decisions.md)). S-026 adds the
+guard check: the spec axis quotes every guard of the contract (each Constraint, Non-Goal, "must not",
+limit and refusal) and marks each one held, broken or not reached, because three of five landing
+reviews in the 2026-11-24 round found a change contradicting its own contract's guard
+([`R-209`](../reviews/2026-11-24-retro-marjana.md)). S-027 adds the security axis: required when
+the change is a one-way door, optional otherwise, a pass of its own that is not reranked against the
+other two. Goal 9 gains the guards, a Constraint places the security axis's inspection list in the lens
+and its door list in `autonomy.md`'s `A8` (the two-way-door guard of the sampled self-merge, the
+list `pr-describe` applies too), and the Axes and Output rows of the Proposed Surface are amended, with a
+Guards row added. The smell baseline and the optional deep-module lens the standards axis now loads
+are lens guidance under S-021 and add no scenario. No existing scenario's obligation changes; S-022
+still speaks of two axes, and S-027 states the third axis's independence itself. The frontmatter
+stays at `approved` per the `feat-0040` precedent; **S-026 and S-027 are not approved until the
+maintainer says so, and this amendment is flagged for that re-approval.**
+
 Adding S-013 forced one further edit, recorded here rather than left to be noticed: S-002, S-003, and
 S-004 each opened on "a request naming no scope", which a bare range satisfies, so on its own S-013
 would have fired at the same time as S-002 with a different outcome. Their preconditions now read
@@ -92,8 +109,9 @@ only the diff it was given, or hardcode a severity scheme, and nothing would obj
    finding to the code without trusting the reviewer.
 8. Give every finding an identity that survives the code moving, so the same defect is countable
    across reviewers and runs.
-9. Judge whether a change did what its contract asked, no more and no less, separately from whether
-   it meets the repository's written standards, so neither judgement masks the other.
+9. Judge whether a change did what its contract asked, no more and no less, and whether it keeps
+   every guard the contract states, separately from whether it meets the repository's written
+   standards, so neither judgement masks the other.
 10. Spend review effort in proportion to a change's size and risk, from stated signals, so two runs
     over the same change reach the same depth for an inspectable reason.
 
@@ -115,8 +133,9 @@ only the diff it was given, or hardcode a severity scheme, and nothing would obj
   evidence gate's branches, and the signature format live in the swappable `review-quality` lens,
   not in the skill. The skill composes them by reference.
 - The spec-axis and standards-axis rules (categories, precedence of a repository standard over the
-  rubric, citing the standard) live in the same lens. The depth signals and selection rule live in
-  the skill.
+  rubric, citing the standard) live in the same lens, and so does what the security axis inspects.
+  The one-way-door list is guard 2 of `A8`'s sampled self-merge in the `autonomy` lens, shared with
+  `pr-describe`. The depth signals, the selection rule and the guard check live in the skill.
 - Counting how often a signature repeats across runs, and judging a repeated finding futile, are out
   of this contract. The skill emits signatures; the only place it reads them is a re-check (S-025),
   which looks up the first review's findings by signature.
@@ -327,6 +346,29 @@ only the diff it was given, or hardcode a severity scheme, and nothing would obj
   introduced, and stops: it does not run a new full review, and it hands every finding still open to
   a person rather than starting another round.
 
+### Scenario S-026: the spec axis quotes and checks every guard of the contract
+
+- **Given** a change with a contract that states guards: a Constraint, a Non-Goal, or a "must not",
+  limit or refusal in a scenario or a quest file's scope, including, for a change that amends the
+  contract, the guards it held before the amendment
+- **When** the spec axis runs
+- **Then** it quotes each guard verbatim with its file and section, marks each one held, broken or
+  not reached with the quote or reason behind the mark, reports every broken guard as a `spec-wrong`
+  finding through the same evidence gate as any other, and does not accept a conformance matrix or
+  verification record the change's own author updated as evidence for a mark.
+
+### Scenario S-027: a one-way door gets a security axis of its own
+
+- **Given** a change that holds a one-way door by guard 2 of `A8`'s sampled self-merge in the
+  `autonomy` lens (among others: persisted data, a removed or renamed public surface, a published
+  version, a sent message, a destroyed resource, a permission, secrets, CI or hook change, an
+  approved spec or the acceptance checks), or any change the person asks to have security-reviewed
+- **When** the skill runs
+- **Then** it runs a security axis as its own pass against the lens's security category, with its own
+  section, verdict, inspected list and worst finding, not reranked against the spec or standards
+  axis; and when the door is one-way and the axis did not run, the review says so as its first line
+  and is not reported as clean.
+
 ## Proposed Surface
 
 | Element | Detail |
@@ -337,16 +379,17 @@ only the diff it was given, or hardcode a severity scheme, and nothing would obj
 | Severities | `blocker`, `major`, `minor`, `nit`, defined by the `review-quality` lens |
 | Evidence | Per finding: path, line range, symbol where the file has one, and an exact quote, resolved against the revision under review. A finding about something absent carries an anchor quote, what is absent, and the search that established it |
 | Signature | Per finding: `severity`, evidence path, rubric category slug, and a summary slug, joined by `\|`, carrying no line number. Format defined by the `review-quality` lens |
-| Axes | Spec (against the contract: `spec-missing`, `spec-extra`, `spec-wrong`) and standards (against the repository's written standards plus the lens rubric), run as independent passes, never reranked against each other |
+| Axes | Spec (against the contract: `spec-missing`, `spec-extra`, `spec-wrong`, and every guard checked, S-026), standards (against the repository's written standards plus the lens rubric and its smell baseline), and security (required on a one-way door, optional otherwise, S-027), run as independent passes, never reranked against each other |
+| Guards | A numbered list of the contract's guards, each quoted with its file and section and marked `held`, `broken` or `not reached` with the quote or reason behind it (S-026) |
 | Depth | `quick`, `standard` or `deep`, from an explicit request or rules R1 to R7 over five signals; risk-flagged files are anchors at `deep` with a re-measured remainder capped at `standard`; unmeasurable selects `standard` |
-| Output | A header block (depth and rule, changeset and whether supplied or resolved, coverage, exclusions, sources per axis, gate drop count when anything was dropped), then a Spec section and a Standards section, each with its own verdict and inspected files and findings ordered by severity, each finding with `file:line`, its evidence, its signature, the issue, why, and fix |
+| Output | A header block (depth and rule, changeset and whether supplied or resolved, coverage, exclusions, sources per axis, the door and whether the security axis ran, gate drop count when anything was dropped), then a Spec section with its guard list, a Standards section, and a Security section when that axis ran, each with its own verdict and inspected files and findings ordered by severity, each finding with `file:line`, its evidence, its signature, the issue, why, and fix |
 | Re-check output | One line per first-review signature marked `fixed`, `open` or `disputed`, the count of each mark, any blocker the fix introduced, and whether the review is closed or what a person must decide (S-025) |
 | Side effects | None. No file is written, no commit is made |
 
 ## Open Questions
 
-One, opened by the `feat-0040` amendment and stated at the end of this section. The `feat-0078`
-and `feat-0093` amendments open none.
+One, opened by the `feat-0040` amendment and stated at the end of this section. The `feat-0078`,
+`feat-0093` and `feat-0108` amendments open none.
 
 Both questions this spec originally opened were resolved by `chore-0012` on 2026-07-27: a range supplied
 alongside a path scope narrows a change review to those paths (now `S-012`), and the name collision

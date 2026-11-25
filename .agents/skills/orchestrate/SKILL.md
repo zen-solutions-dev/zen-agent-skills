@@ -175,6 +175,7 @@ the child's report, not its transcript, is the evidence.
 - **Re-pitch once.** A relay the recipient cannot act on (its reply misreads it, or asks what you
   meant) is sent again once, shorter: one paragraph, plain words, the repository's glossary terms,
   the one action wanted. A second miss goes to the person with both versions.
+  If `wait-what` is installed, read and follow it now; otherwise write the re-pitch to that shape.
 
 Done when every child has reported or been found stopped, every relay has its acknowledgement or has
 gone to the person after one re-pitch, and every question the person raised has an answer or a

@@ -150,7 +150,15 @@ class Wizard:
         return None
 
     def write_env(self, key, value):
-        """Upsert KEY='VALUE' in the env file. Idempotent; never prints the value."""
+        """Upsert KEY='VALUE' in the env file. Idempotent; never prints the value.
+
+        A value holding a line break is refused: it would end its line and inject another key.
+        A line break is anything `str.splitlines` splits on, since `existing` reads the file
+        back that way: \r, \n, \v, \f, \x1c, \x1d, \x1e, \x85, \u2028 and \u2029.
+        A new env file is created private (0600 on POSIX) before any value is written to it.
+        """
+        if value and value.splitlines() != [value]:
+            raise WizardStopped(f"the value for {key} holds a line break, so it was not saved")
         if self.dry_run:
             self.note(f"would write {key} to {self.env_file}")
             return
@@ -164,10 +172,10 @@ class Wizard:
                 lines[i], replaced = new_line, True
         if not replaced:
             lines.append(new_line)
-        created = not self.env_file.exists()
+        if not self.env_file.exists():
+            flags = os.O_WRONLY | os.O_CREAT | os.O_EXCL
+            os.close(os.open(self.env_file, flags, 0o600))  # private before it holds anything
         self.env_file.write_text("\n".join(lines) + "\n", encoding="utf-8")
-        if created and os.name == "posix":
-            os.chmod(self.env_file, 0o600)
         self.note(f"{key} saved to {self.env_file}")
 
     def command(self, args, secret_input=None):
@@ -175,7 +183,10 @@ class Wizard:
         if self.dry_run:
             self.note("would run: " + " ".join(args))
             return 0
-        result = subprocess.run(args, input=secret_input, text=True)
+        try:
+            result = subprocess.run(args, input=secret_input, text=True)
+        except OSError as error:  # a missing or unrunnable executable
+            raise WizardStopped(f"{args[0]} could not be run: {error.strerror or error}") from None
         if result.returncode != 0:
             raise WizardStopped(f"{args[0]} exited {result.returncode}")
         return result.returncode
@@ -210,10 +221,13 @@ class Wizard:
         if not self.state_file.is_file():
             return {}
         try:
-            return json.loads(self.state_file.read_text(encoding="utf-8"))
+            state = json.loads(self.state_file.read_text(encoding="utf-8"))
         except ValueError:
+            state = None
+        if not isinstance(state, dict):
             self.warn(f"{self.state_file} is not readable; treating every step as not done")
             return {}
+        return state
 
     # The run ------------------------------------------------------------------------------
 

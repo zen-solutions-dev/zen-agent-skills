@@ -1,6 +1,6 @@
 # Declined ideas
 
-The register of ideas this kit chose not to adopt: skills, techniques and rules studied and turned down, each with the date, the reason, and where it was decided. Its readers are `zen`, before it recommends a new skill, and `retro` (from `feat-0108`), before it proposes one. Its purpose is that a settled argument is not reopened by someone who never saw it, and that a decline whose reason has gone stale is noticed.
+The register of ideas this kit chose not to adopt: skills, techniques and rules studied and turned down, each with the date, the reason, and where it was decided. It also keeps an upstream position the kit declined to follow, such as asking questions in plain prose rather than through a structured question tool, by the maintainer's decision of 2026-11-25. Its readers are `zen`, before it recommends a new skill, and `retro` (from `feat-0108`), before it proposes one. Its purpose is that a settled argument is not reopened by someone who never saw it, and that a decline whose reason has gone stale is noticed.
 
 Created on 2026-11-25 by `feat-0105` (decision E9 in the [Marjana decisions](reviews/2026-11-25-marjana-decisions.md)), seeded from three sources: the declines in the [2026-11 overhaul plan](reviews/2026-11-overhaul-plan.md) ("What we deliberately do not adopt"), the "Declined, with reasons" list of the [2026-11-24 sources delta](reviews/2026-11-24-sources-delta.md), and the Declined and "Do not adopt" verdicts of the [2026-11-25 skills coverage map](reviews/2026-11-25-skills-coverage-map.md).
 
