@@ -94,3 +94,21 @@ Measured before it was switched on, as `R-004` asked. 290 multi-word double-quot
 - **Codex and Copilot sessions.** No Codex CLI is installed here, and installing one was refused by the environment's permission check. `gh copilot` is present as a launcher and was not run, since it may download and needs an account. The Codex target's files are tested; no Codex or Copilot session has loaded them.
 - **The destructive-git gate in a live Claude Code session.** Its behaviour is tested by feeding payloads to `main()`; it was not registered in any harness here, by design.
 - **Windows and macOS.** Every run above is Linux, Python 3.13.
+
+## Review fix round (2026-11-25)
+
+An independent verifier returned `fail` on `0ef68e0`. The orchestrator relayed findings F1 to F7 and F9 (F8 was dismissed to `chore-0118`), and two maintainer decisions. Each fix was mutated in place, the named tests run, and the file restored by byte compare.
+
+| Finding | Change | Mutation, and the tests that failed |
+|---|---|---|
+| F1 | `metadata.extended` restarts the 90 days; the exact case, drafted 2026-01-01 and extended `"2026-11-01: still in use"`, is silent | ignoring `extended`: `test_a_recent_extension_silences_an_old_draft`, `test_an_extension_restarts_the_ninety_days`, `test_an_extension_without_a_date_is_reported` |
+| F2 | the guard line alone with no `; otherwise` warns | dropping that warning: `test_the_guard_line_alone_without_otherwise_warns`, `test_a_guard_with_no_otherwise_clause_warns` |
+| F3 | the unguarded-load warning covers any case and "read `x` (now) and follow it"; the guarded form stays exempt | case-sensitive again: three subtests of `test_every_unguarded_phrasing_warns` (a first attempt did not apply and is void); second phrasing removed: two subtests of the same test |
+| F4 | for a draft, the complete guarded sentence satisfies its "Composed by" claim | `test_a_guarded_load_satisfies_a_drafts_composed_by_claim` |
+| F5 (worker) | the gate's lexer: per-line fallback, `bash -c --`, per-ref leases, `pwsh`/`cmd`/`env -S`/`submodule foreach`/`rebase --exec`/`find -exec`, xargs long options; limits listed in the docstring and the hooks README | line fallback: 2 tests; `--`: 2 subtests; named lease treated as bare: 5 subtests; `find`: 3; `rebase`: 3 |
+| F6 | the gate's docstring no longer reads as wired anywhere; `install.py --with-hooks` prints the gate as a separate block, labelled as a gate | gate not separated: all three tests in `tests/test_install_gate_block.py` |
+| F7 | a future date is invalid; a shallow clone reads "unknown (shallow clone)"; a record is any file under `docs/reviews/` with `dogfood` in its path, naming the skill as a whole word (AGENTS.md section 7, after feat-0102 landed) | future date accepted: `test_a_drafted_date_in_the_future_is_invalid`; shallow check removed: `test_a_shallow_clone_says_unknown_rather_than_dating_its_boundary`; path rule narrowed: `test_a_record_nested_deeper_under_reviews_counts` (the first fixture could not fail; rerun with a deeper one); word boundary removed: `test_a_longer_hyphenated_name_does_not_count` |
+| F9 | the changelog heading is found in any case; stale exceptions are reported without it | case-sensitive: `test_the_heading_is_found_whatever_its_case`; no stale report: `test_without_the_heading_every_exception_is_reported_stale` (a first run's result did not match the mutation and is void) |
+| VERSION | `VERSION` committed at `0.2.0`; `PLUGIN_BASE_VERSION` reads it | hard-coded again: `test_the_plugin_base_version_is_the_version_file` |
+
+This checkout is a shallow clone (`git rev-parse --is-shallow-repository` prints `true`), so every draft here now dates as unknown unless it carries `metadata.drafted`; all six are named in a dogfood record, so none warns.

@@ -22,6 +22,7 @@ If you are adopting this kit for your own projects: keep this file, empty it, or
 
 - **Markdown links.** Link to files and code symbols with clickable relative links so they resolve inside the repository.
 - **Diagrams use Mermaid** fenced code blocks, never ASCII art. Keep labels concise and on one line where possible.
+- **A pull request summary may carry a code-shaped sketch.** Pseudocode, a call tree, a shallow file tree, or a diff-shaped sketch of the change's shape, in a fenced code block, is allowed and often the shortest summary. It is a sketch, not the diff: a handful of lines that show the shape and leave the detail to the diff itself, never a pasted hunk that restates it. A text tree in a code block is a sketch, not the ASCII art the rule above rules out; a flow or a graph of boxes and arrows is still Mermaid.
 
 ## Scope
 

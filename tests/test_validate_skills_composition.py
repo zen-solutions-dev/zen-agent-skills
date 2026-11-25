@@ -273,10 +273,20 @@ class DraftExpiryTests(Fixture):
         code, out = self.run_main()
         self.assertIn("0 warning(s)", out)
 
-    def test_a_bare_word_in_a_record_does_not_count_as_naming_it(self):
+    def test_the_name_as_a_whole_word_counts_as_naming_it(self):
+        # AGENTS.md section 7: "names the skill, by its name or as <name>/SKILL.md".
+        self.write("drafty", skill("drafty", meta=DRAFT_META + "  drafted: 2026-01-01\n"))
+        for text in ("Ran drafty on real work.\n", "See drafty/SKILL.md.\n"):
+            with self.subTest(text=text):
+                (self.repo / "docs" / "reviews" / "dogfood.md").write_text(
+                    text, encoding="utf-8")
+                code, out = self.run_main()
+                self.assertIn("0 warning(s)", out)
+
+    def test_a_longer_hyphenated_name_does_not_count(self):
         self.write("drafty", skill("drafty", meta=DRAFT_META + "  drafted: 2026-01-01\n"))
         (self.repo / "docs" / "reviews" / "dogfood.md").write_text(
-            "a drafty afternoon\n", encoding="utf-8")
+            "Ran drafty-two and undrafty.\n", encoding="utf-8")
         code, out = self.run_main()
         self.assertIn("a draft for", out)
 

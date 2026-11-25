@@ -36,7 +36,7 @@ No glossary or decision record (ADR) exists for `scripts/`. [`AGENTS.md`](../../
 
 ## Candidates
 
-Terms are those of [`vocabulary.md`](../../.agents/skills/improve-architecture/references/vocabulary.md). Dependency categories are its four: in-process, local stand-in, owned remote, third-party.
+Terms are those of [`vocabulary.md`](../../.agents/rules/deep-modules.md). Dependency categories are its four: in-process, local stand-in, owned remote, third-party.
 
 ### 1. Give the install manifest entry a module of its own (Strong, local stand-in)
 

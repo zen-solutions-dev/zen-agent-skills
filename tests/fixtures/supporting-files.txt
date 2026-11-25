@@ -11,7 +11,6 @@ markdown fix-batch/references/incidents.md
 markdown house-review/references/claude-code.md
 markdown house-review/references/rationale.md
 markdown improve-architecture/references/report.md
-markdown improve-architecture/references/vocabulary.md
 markdown init-worktracking/references/migrate-a-tracker.md
 markdown init-worktracking/references/tier-stripping.md
 template init-worktracking/templates/AGENTS.md.tmpl

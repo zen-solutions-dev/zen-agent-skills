@@ -4,19 +4,23 @@ Thanks for considering a contribution to Zen Agent Skills. Please read the first
 
 ## The bar: no skill ships cold
 
-**A skill earns a place in this kit only after it has been used on real work.**
+**A skill is promoted to shipped only after it has been used on real work.** Drafting is free; promotion is gated.
 
-The lifecycle is: draft it, use it on a real task in a real repository, iterate from what that use exposed, and only then bless it as shipped. A skill that has never been run is a guess about what an agent needs, and guesses are exactly what this kit exists to replace.
+The lifecycle is: draft it, use it on a real task in a real repository, iterate from what that use exposed, record that run, and only then promote it. A draft costs adopters nothing, because it reaches nobody who did not install with `--include-drafts`, so you may write one as soon as the problem is real. A skill that has never been run is a guess about what an agent needs, and guesses are exactly what this kit exists to replace, which is why a draft does not ship until it has been run.
 
-The practical consequence: **a well-written skill for a workflow you have not actually performed will be declined**, no matter how good the prose is. This is the most common way a contribution goes wrong here, and it is nobody's fault if it was never written down, which is why it is the first thing on this page.
+The practical consequence: **a well-written skill for a workflow nobody has actually performed stays a draft**, no matter how good the prose is. This is the most common way a contribution goes wrong here, and it is nobody's fault if it was never written down, which is why it is the first thing on this page.
+
+**Drafts expire.** A draft records the day it was drafted as `drafted: YYYY-MM-DD` under `metadata` in its frontmatter; when that is absent, its age counts from the first commit of its `SKILL.md`. A draft over **90 days** old with no dogfood record (a file under `docs/reviews/` whose path contains `dogfood` and that names the skill, by its name or as `<name>/SKILL.md`) must be promoted, extended, or removed. To extend one, add `extended: "YYYY-MM-DD: <reason>"` under `metadata`, in quotes because the value holds a colon; the 90 days then count from that date. An expired draft is not a failure, it is a question someone has to answer.
+
+**Scope: shareability is the only filter.** A skill belongs here when someone other than its author could pick it up and use it on their own work. It is not excluded for having started as one person's habit. What stays out is the hyper-specific personal pipeline: a skill wired to one person's content workflow, one client's process, or one machine.
 
 What this means for you:
 
-- **Proposing a new skill?** Open an issue first and describe the recurring problem, not the solution. If it is a real recurring problem, the next question is whether you have solved it by hand enough times to know what the procedure actually is.
+- **Proposing a new skill?** Open an issue first and describe the recurring problem, not the solution. You may then draft it; it is promoted once you have solved the problem with it on real work and recorded the run.
 - **Improving an existing skill?** Say what you ran, what happened, and what the skill should have done. Evidence from a real run outweighs any argument about how it reads.
 - **Fixing something broken?** Just send it. Bugs, dead links, wrong commands, and stale claims need no ceremony.
 
-Speculative skills are not thrown away, they are parked. See [`ROADMAP.md`](ROADMAP.md), where planned skills wait until there is a real use case. Two of them are explicitly held until they have been needed twice.
+Ideas not yet drafted wait in [`ROADMAP.md`](ROADMAP.md) until there is a real use case. Two of them are explicitly held until they have been needed twice.
 
 ## What this repository is
 

@@ -9,13 +9,16 @@ deletion, a `checkout` or `restore` that overwrites working-tree files, dropping
 the stash, expiring the reflog or pruning unreachable objects now, deleting a ref, and
 `filter-branch`. Every operation, with its reason and its way out, is one row of `RULES`.
 
-Opt-in, and not registered here
--------------------------------
-Like every hook in this module it is installed only when asked for (`install.py
---with-hooks` prints the Claude Code registration; Codex and opencode wire it repo-scoped).
-It is **not** registered in this repository's `.claude/settings.json`: that file carries one
-committed reminder by a recorded exception in `AGENTS.md`, and a second committed hook, or
-any gate there, is a new decision this file does not make.
+Opt-in, and registered by no committed wiring
+---------------------------------------------
+It is installed only when asked for: `install.py --with-hooks` places this file and prints
+a Claude Code `PreToolUse` registration, which the person adds to their settings by hand.
+No wiring this repository commits registers it. Not `.claude/settings.json`: that file
+carries one committed reminder by a recorded exception in `AGENTS.md`, and a second
+committed hook, or any gate there, is a new decision this file does not make. Not the
+Codex `.codex/hooks.json` or the opencode adapter either, since a session in this
+repository runs those without anyone choosing them; a person who wants it there adds the
+entry themselves (see `.agents/hooks/README.md`).
 
 The rule, and why it is decidable
 ---------------------------------
@@ -23,15 +26,20 @@ The rule, and why it is decidable
 (`.agents/rules/autonomy.md`). Whether a command does that is decidable from the command's
 argv alone, so this is a gate rather than a reminder. The command is **tokenised, never
 matched with a regular expression**: quoting is resolved as a POSIX shell would resolve it,
-the text is split at `;`, `&&`, `||`, `|`, `&`, newlines and parentheses, and the bodies of
-`$( ... )`, backticks, `bash -c '...'` (and `sh`, `zsh`, `dash`, `ksh`) and `eval` are
-examined recursively. Within one simple command, leading `NAME=value` assignments and the
-wrappers `sudo`, `env`, `command`, `time`, `nohup`, `nice`, `timeout`, `xargs` and `exec`
-are skipped; `git` is recognised by its basename (`/usr/bin/git`, `git.exe`); git's global
-options (`-C <path>`, `-c k=v`, `--git-dir`, `--work-tree`, `--no-pager`, ...) are skipped;
-and the subcommand's own options are parsed, short clusters (`-fdx`) and unambiguous long
-abbreviations (`--forc`) included. So `echo "git reset --hard"` is an `echo`, and a commit
-message reading `reset --hard` is a commit.
+the text is split at `;`, `&&`, `||`, `|`, `&`, newlines and parentheses, and these inner
+commands are examined recursively: the bodies of `$( ... )` and backticks; `bash -c '...'`
+(and `sh`, `zsh`, `dash`, `ksh`, with or without `--`) and `eval`; `pwsh` / `powershell`
+`-c` / `-Command`; `cmd /c`; `env -S` / `--split-string`; `git submodule foreach` and
+`git rebase --exec` / `-x`; and the argv after `find -exec` / `-execdir` up to `;` or `+`.
+Within one simple command, leading `NAME=value` assignments and the wrappers `sudo`, `env`,
+`command`, `time`, `nohup`, `nice`, `timeout`, `xargs` (with its options that take an
+argument) and `exec` are skipped; `git` is recognised by its basename (`/usr/bin/git`,
+`git.exe`); git's global options (`-C <path>`, `-c k=v`, `--git-dir`, `--work-tree`,
+`--no-pager`, ...) are skipped; and the subcommand's own options are parsed, short clusters
+(`-fdx`) and unambiguous long abbreviations (`--forc`) included. So `echo "git reset
+--hard"` is an `echo`, and a commit message reading `reset --hard` is a commit. A push lease
+is read per ref: `--force-with-lease=<ref>` covers that ref alone, so forcing another ref in
+the same push still blocks, while a bare `--force-with-lease` covers everything pushed.
 
 The escape
 ----------
@@ -43,13 +51,27 @@ Limits, stated rather than hidden
 ---------------------------------
 * It reads argv. A git alias (`git nuke` defined in git config, or `-c alias.x=...`), a
   script or Makefile target that calls git internally, and a variable holding the
-  subcommand (`git $OP`) are not seen.
+  subcommand (`git $OP`) are not seen, nor is a word made by substitution (`git
+  $(echo reset) --hard`): the body of `$( ... )` is examined, its output is not known.
+* Only the runners named above are opened. `watch`, `parallel`, `ssh`, `su -c`, `script
+  -c`, `make`, `npx` and every other program that runs a command it is given are not
+  modelled, nor are `pwsh -EncodedCommand`, `-File`, or `powershell.exe`'s bare positional
+  command.
+* Nesting is followed to a depth of 8 (`_MAX_DEPTH`). A `$( ... )` nested deeper makes the
+  line untokenisable, and a runner nested deeper is not opened.
 * The tokeniser is a POSIX shell's. For the `PowerShell` tool it swaps in PowerShell's
-  escape character (a backtick, with backslash literal) and otherwise reads POSIX rules;
-  `cmd.exe`, fish and PowerShell's own operators are not modelled, which is right for
-  plain commands and may miss an unusually quoted one.
-* A command that cannot be tokenised at all (an unbalanced quote, an unclosed `$(`) is
-  allowed: the gate fails open, as every hook here must, rather than block on a guess.
+  escape character (a backtick, with backslash literal) and otherwise reads POSIX rules.
+  `cmd /c` text is split by the same lexer in that mode; cmd.exe quoting (`^` escapes,
+  `%VAR%`), fish syntax and PowerShell's own operators are not modelled, which is right
+  for plain commands and may miss an unusually quoted one.
+* `$( ... )` content that cannot be parsed (an unclosed `$(`, an unbalanced quote inside)
+  makes its line untokenisable.
+* Text that cannot be tokenised whole is read line by line, because a shell runs the lines
+  before a syntax error. A single line that still cannot be tokenised (an unbalanced quote,
+  an unclosed `$(`) is allowed: the gate fails open, as every hook here must, rather than
+  block on a guess. The same holds for an inner `-c` body.
+* A forced push with a lease naming one ref and no refspec blocks, since what is pushed
+  then is not in argv.
 * It knows the operations in `RULES` and nothing else. `rebase`, `commit --amend` and the
   like are recoverable from the reflog and deliberately not blocked.
 
@@ -60,6 +82,7 @@ stdout  one JSON object, `{"decision": "block", "reason": ...}`, or nothing
 exit    always 0
 """
 import json
+import shlex
 import sys
 from pathlib import PureWindowsPath
 
@@ -414,14 +437,52 @@ class _Lexer:
 
 
 def split_commands(text, depth=0, powershell=False):
-    """Every simple command's argv in `text`, including nested and `-c` bodies."""
+    """Every simple command's argv in `text`, including nested and `-c` bodies.
+
+    Raises `_Untokenisable` when `text` itself cannot be tokenised. An inner body that
+    cannot be tokenised is read leniently instead (see `_split_lenient`), so it never
+    hides the commands around it.
+    """
     found = []
     for argv in _Lexer(text, depth, powershell).run():
-        found.append(argv)
-        inner = _inline_script(argv)
-        if inner is not None and depth < _MAX_DEPTH:
-            found.extend(split_commands(inner, depth + 1))
+        _expand(argv, depth, found)
     return found
+
+
+def _split_lenient(text, depth=0, powershell=False):
+    """`split_commands`, but text that cannot be tokenised whole is read line by line.
+
+    A shell runs a script one line at a time, so `git reset --hard` on the first line runs
+    before an unbalanced quote on the second is ever seen. Each line is classified on its
+    own; a single line that still cannot be tokenised contributes nothing (fail open).
+    """
+    try:
+        return split_commands(text, depth, powershell)
+    except _Untokenisable:
+        pass
+    found = []
+    lines = text.splitlines()
+    if len(lines) < 2:
+        return found
+    for line in lines:
+        try:
+            found.extend(split_commands(line, depth, powershell))
+        except _Untokenisable:
+            continue
+    return found
+
+
+def _expand(argv, depth, found):
+    """Add argv, then every command it runs inside itself, to `found`."""
+    found.append(argv)
+    if depth >= _MAX_DEPTH:
+        return
+    for inner in _inner_commands(argv):
+        if isinstance(inner, list):
+            _expand(inner, depth + 1, found)
+        else:
+            text, powershell = inner
+            found.extend(_split_lenient(text, depth + 1, powershell))
 
 
 # --------------------------------------------------------------------------------------
@@ -443,7 +504,8 @@ _WRAPPERS = {
     "nice": {"-n", "--adjustment"},
     "ionice": {"-c", "-n", "-p"},
     "stdbuf": {"-i", "-o", "-e"},
-    "xargs": {"-n", "-L", "-P", "-I", "-d", "-E", "-s", "-a"},
+    "xargs": {"-n", "-L", "-P", "-I", "-d", "-E", "-s", "-a", "--max-args", "--max-procs",
+              "--delimiter", "--max-chars", "--arg-file", "--process-slot-var"},
     "timeout": {"-s", "-k", "--signal", "--kill-after"},
 }
 # Wrappers that take one positional before the command they run.
@@ -461,8 +523,12 @@ def _is_assignment(token):
     return bool(eq) and name.replace("_", "a").isalnum() and not name[0].isdigit()
 
 
-def _command_words(argv):
-    """argv with leading assignments, keywords and wrappers removed."""
+def _command_words(argv, env_split=None):
+    """argv with leading assignments, keywords and wrappers removed.
+
+    When `env_split` is a list, the text of each `env -S` / `--split-string` is appended
+    to it: that text is itself a command line, which `_inner_commands` reads.
+    """
     i = 0
     while i < len(argv):
         token = argv[i]
@@ -478,6 +544,14 @@ def _command_words(argv):
                 if argv[i] == "--":
                     i += 1
                     break
+                if name == "env" and env_split is not None:
+                    token = argv[i]
+                    if token in ("-S", "--split-string") and i + 1 < len(argv):
+                        env_split.append(argv[i + 1])
+                    elif token.startswith("--split-string="):
+                        env_split.append(token.partition("=")[2])
+                    elif token.startswith("-S") and len(token) > 2:
+                        env_split.append(token[2:])
                 if argv[i] in takes_arg:
                     i += 1
                 i += 1
@@ -487,28 +561,126 @@ def _command_words(argv):
     return []
 
 
-def _inline_script(argv):
-    """The script text of `bash -c '...'` or `eval ...`, or None."""
-    words = _command_words(argv)
-    if not words:
-        return None
-    name = _basename(words[0])
-    if name == "eval":
-        return " ".join(words[1:]) or None
-    if name not in _SHELLS:
-        return None
-    rest = words[1:]
+def _shell_script(name, rest):
+    """The script text of `bash -c '...'` (and the other POSIX shells), or None."""
     if name == "busybox" and rest and _basename(rest[0]) in _SHELLS:
         rest = rest[1:]
+    saw_c = False
     k = 0
     while k < len(rest):
         token = rest[k]
-        if token == "--" or not token.startswith(("-", "+")):
-            return None
+        if token == "--":
+            k += 1
+            break
+        if not token.startswith(("-", "+")):
+            break
         if token.startswith("-") and not token.startswith("--") and "c" in token[1:]:
-            return rest[k + 1] if k + 1 < len(rest) else None
+            saw_c = True
         k += 2 if token in ("-o", "+o", "-O", "+O") else 1
+    if saw_c and k < len(rest):
+        return rest[k]
     return None
+
+
+def _powershell_script(rest):
+    """The text after `-c` / `-Command` (any unambiguous abbreviation), or None."""
+    for k, token in enumerate(rest):
+        flag = token.lower().lstrip("-/")
+        if token[:1] in "-/" and (flag in ("c", "cwa", "commandwithargs")
+                                  or (len(flag) >= 3 and "command".startswith(flag))):
+            return " ".join(rest[k + 1:]) or None
+    return None
+
+
+def _cmd_script(rest):
+    """The text after cmd.exe's `/c` or `/k`, or None. Its quoting is not modelled."""
+    for k, token in enumerate(rest):
+        if not token.startswith("/"):
+            return None
+        if token[:2].lower() in ("/c", "/k"):
+            return " ".join([token[2:]] + rest[k + 1:]).strip() or None
+    return None
+
+
+def _find_exec(rest):
+    """Each argv `find` runs through `-exec`, `-execdir`, `-ok` or `-okdir`."""
+    found = []
+    k = 0
+    while k < len(rest):
+        if rest[k] in ("-exec", "-execdir", "-ok", "-okdir"):
+            end = k + 1
+            while end < len(rest) and rest[end] not in (";", "+"):
+                end += 1
+            if end > k + 1:
+                found.append(rest[k + 1:end])
+            k = end
+        k += 1
+    return found
+
+
+def _git_scripts(subcommand, args):
+    """The shell text git itself runs: `submodule foreach` and `rebase --exec`."""
+    found = []
+    if subcommand == "submodule":
+        k = 0
+        while k < len(args) and args[k].startswith("-"):
+            k += 1
+        if k < len(args) and args[k] == "foreach":
+            rest = args[k + 1:]
+            while rest and rest[0] in ("--recursive", "-q", "--quiet", "--"):
+                rest = rest[1:]
+            if len(rest) == 1:
+                found.append(rest[0])
+            elif rest:
+                found.append(" ".join(shlex.quote(t) for t in rest))
+    elif subcommand == "rebase":
+        k = 0
+        while k < len(args):
+            token = args[k]
+            if token in ("-x", "--exec") and k + 1 < len(args):
+                found.append(args[k + 1])
+                k += 1
+            elif token.startswith("--exec="):
+                found.append(token.partition("=")[2])
+            elif token.startswith("-x") and len(token) > 2:
+                found.append(token[2:])
+            elif token == "--":
+                break
+            k += 1
+    return found
+
+
+def _inner_commands(argv):
+    """What argv runs inside itself: shell text as (text, powershell), or an argv list."""
+    env_split = []
+    words = _command_words(argv, env_split)
+    if env_split:
+        # `env -S 'git push' --force` runs the split text with the remaining words.
+        tail = " ".join(shlex.quote(w) for w in words)
+        return [((text + " " + tail).strip(), False) for text in env_split]
+    if not words:
+        return []
+    name = _basename(words[0])
+    rest = words[1:]
+    if name == "eval":
+        return [(" ".join(rest), False)] if rest else []
+    if name in _SHELLS:
+        script = _shell_script(name, rest)
+        return [(script, False)] if script is not None else []
+    if name in ("pwsh", "powershell"):
+        script = _powershell_script(rest)
+        return [(script, True)] if script is not None else []
+    if name == "cmd":
+        # The same lexer, in its PowerShell mode so `C:\Git\git.exe` keeps its
+        # backslashes; cmd.exe's own `^` escapes and `%VAR%` are not modelled.
+        script = _cmd_script(rest)
+        return [(script, True)] if script is not None else []
+    if name == "find":
+        return _find_exec(rest)
+    invocation = _git_invocation(argv)
+    if invocation is not None:
+        return [(text, False) for text in _git_scripts(*invocation)]
+    return []
 
 
 # Global options that consume the next word when not written with `=`.
@@ -626,17 +798,45 @@ def _push(args):
         return "push-delete"
     if o.has_long("prune"):
         return "push-prune"
-    lease = False
-    for name, _ in o.long:
+    # A bare --force-with-lease protects every ref pushed; --force-with-lease=<ref> (or
+    # <ref>:<expect>) protects that ref alone; --no-force-with-lease cancels all of them.
+    lease_all = False
+    leased = set()
+    for name, value in o.long:
         if name == "force-with-lease":
-            lease = True
+            ref = (value or "").partition(":")[0]
+            if ref:
+                leased.add(_short_ref(ref))
+            else:
+                lease_all = True
         elif name == "no-force-with-lease":
-            lease = False
-    forced = (o.has_short("f") or o.has_long("force", "force-if-includes")
-              or any(r.startswith("+") for r in refspecs))
-    if forced and not lease:
+            lease_all = False
+            leased = set()
+    force_all = o.has_short("f") or o.has_long("force", "force-if-includes")
+    forced = refspecs if force_all else [r for r in refspecs if r.startswith("+")]
+    if lease_all or not (forced or force_all):
+        return None
+    if force_all and not refspecs:
+        # What gets pushed is not in argv, so a named lease cannot be shown to cover it.
         return "push-force"
+    for refspec in forced:
+        if _short_ref(_destination(refspec)) not in leased:
+            return "push-force"
     return None
+
+
+def _destination(refspec):
+    """The remote ref a refspec updates: `+src:dst` -> dst, `+name` -> name."""
+    refspec = refspec[1:] if refspec.startswith("+") else refspec
+    src, colon, dst = refspec.partition(":")
+    return dst if colon else src
+
+
+def _short_ref(ref):
+    for prefix in ("refs/heads/", "heads/"):
+        if ref.startswith(prefix):
+            return ref[len(prefix):]
+    return ref
 
 
 def _reset(args):
@@ -805,20 +1005,16 @@ def classify(command, powershell=False):
     """The RULES key of the first destructive git operation in `command`, or None.
 
     `command` is shell text, or an argv list as some harnesses send it. Text that cannot be
-    tokenised is allowed: the gate fails open rather than block on a guess.
+    tokenised whole is read line by line; a single line that cannot be tokenised is
+    allowed: the gate fails open rather than block on a guess.
     """
-    try:
-        if isinstance(command, list):
-            if not all(isinstance(t, str) for t in command):
-                return None
-            argvs = [command]
-            inner = _inline_script(command)
-            if inner is not None:
-                argvs.extend(split_commands(inner, 1))
-        else:
-            argvs = split_commands(command, powershell=powershell)
-    except _Untokenisable:
-        return None
+    if isinstance(command, list):
+        if not all(isinstance(t, str) for t in command):
+            return None
+        argvs = []
+        _expand(command, 0, argvs)
+    else:
+        argvs = _split_lenient(command, powershell=powershell)
     for argv in argvs:
         invocation = _git_invocation(argv)
         if invocation is None:

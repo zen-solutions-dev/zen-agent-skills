@@ -1,9 +1,22 @@
-# Deep-module vocabulary
+---
+paths:
+  - "**/rules/deep-modules.md"
+---
 
-Use these words exactly in every candidate, card and design. Consistent words are the point: a
-report that says "component" in one card and "module" in the next makes the reader wonder whether
-they are different things. Ousterhout's *A Philosophy of Software Design* is the source of the
-deep-module idea; Michael Feathers' *Working Effectively with Legacy Code* is the source of "seam".
+# Zen deep-module lens (edit freely)
+
+This file is a **swappable module**, a topical lens beside [`review-quality.md`](review-quality.md).
+It holds the words and the tests this kit uses when it judges how code is shaped: whether a module
+earns its interface, where a seam belongs, and how a deepened module is tested. It is topical, so
+the `paths` frontmatter above keeps Claude Code from loading it into every session; a skill that
+designs, reviews or tests module shape reads it at the step that needs it. `improve-architecture`
+composes it today, and it moved here from that skill's `references/` on 2026-11-25 (`feat-0102`) so
+any other skill may load it as well.
+
+Use these words exactly. Consistent words are the point: a report that says "component" in one
+place and "module" in the next makes the reader wonder whether they are different things.
+Ousterhout's *A Philosophy of Software Design* is the source of the deep-module idea; Michael
+Feathers' *Working Effectively with Legacy Code* is the source of "seam".
 
 ## Terms
 
@@ -64,7 +77,8 @@ eight call sites"), never as "cleaner" or "easier to maintain", which say nothin
 
 The deletion test, the dependency categories and the reporting vocabulary are adapted, in this kit's
 own words, from Matt Pocock's `codebase-design` and `improve-codebase-architecture` skills. The same
-upstream files are recorded in [`../SKILL.md`](../SKILL.md); these blocks pin what this file adapts.
+upstream files are recorded in `improve-architecture`'s own provenance footer; these blocks pin
+what this file adapts.
 
 ```provenance
 source: https://raw.githubusercontent.com/mattpocock/skills/main/skills/engineering/codebase-design/SKILL.md

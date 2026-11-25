@@ -1158,9 +1158,13 @@ def dogfood_text(repo_root: Path) -> str:
 
 
 def names_skill(text: str, name: str) -> bool:
-    """A record names a skill as `` `name` `` or by its path, `name/SKILL.md`."""
-    return re.search(rf"`{re.escape(name)}`|(?<![\w-]){re.escape(name)}/SKILL\.md",
-                     text) is not None
+    """A record names a skill by its name, as a whole word, or as `name/SKILL.md`.
+
+    AGENTS.md section 7's wording. A whole word: not part of a longer hyphenated name,
+    so `orchestrate-lite` does not name `orchestrate`. The path form is covered by the
+    same match, since `name` is a whole word inside `name/SKILL.md`.
+    """
+    return re.search(rf"(?<![\w-]){re.escape(name)}(?![\w-])", text) is not None
 
 
 def check_draft_expiry(skills_dir: Path, skill_texts: dict, repo_root: Path,

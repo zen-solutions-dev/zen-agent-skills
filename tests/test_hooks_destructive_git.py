@@ -275,6 +275,113 @@ class SafeFormsTests(_GateCase):
         self.assertBlocks("git branch -D", "git branch -D")
 
 
+class UntokenisableLineTests(_GateCase):
+    """(a) A shell runs earlier lines before it reaches a syntax error on a later one."""
+
+    def test_a_destructive_line_before_an_unbalanced_quote_blocks(self):
+        self.assertBlocks('git reset --hard\necho "unterminated', "git reset --hard")
+
+    def test_a_destructive_line_after_an_unbalanced_quote_blocks(self):
+        self.assertBlocks("echo 'unterminated\ngit push --force", "git push --force")
+
+    def test_only_safe_lines_around_an_unbalanced_quote_stay_silent(self):
+        self.assertSilent('git status\necho "unterminated')
+
+    def test_an_unbalanced_quote_inside_a_c_body_does_not_hide_its_neighbours(self):
+        self.assertBlocks("git reset --hard; bash -c \"echo 'x\"", "git reset --hard")
+
+
+class InnerCommandTests(_GateCase):
+    """(b) and (d): programs that run a command they are given."""
+
+    CASES = [
+        # (b) `--` ends the shell's options; the next word is still the -c script.
+        ("bash -c -- 'git push --force'", "git push --force"),
+        ("sh -c -- 'git reset --hard'", "git reset --hard"),
+        # PowerShell and cmd.exe.
+        ("pwsh -c 'git push --force'", "git push --force"),
+        ("pwsh -NoProfile -Command 'git reset --hard'", "git reset --hard"),
+        ('powershell -Command "git clean -fdx"', "git clean --force"),
+        ("powershell.exe -c 'git stash clear'", "git stash clear"),
+        ("cmd /c 'git reset --hard'", "git reset --hard"),
+        ('cmd.exe /c "git branch -D topic"', "git branch -D"),
+        ("cmd /c 'C:\\Git\\bin\\git.exe reset --hard'", "git reset --hard"),
+        # env's split string.
+        ("env -S 'git push --force'", "git push --force"),
+        ("env --split-string='git reset --hard'", "git reset --hard"),
+        # Commands git itself runs.
+        ("git submodule foreach 'git reset --hard'", "git reset --hard"),
+        ("git submodule foreach --recursive 'git clean -fdx'", "git clean --force"),
+        ("git rebase --exec 'git reset --hard' main", "git reset --hard"),
+        ("git rebase -x 'git clean -fdx' main", "git clean --force"),
+        ("git rebase --exec='git stash clear' main", "git stash clear"),
+        # find's -exec argv, up to `;` or `+`.
+        ("find . -name x -exec git branch -D {} \\;", "git branch -D"),
+        ("find . -execdir git clean -fdx {} +", "git clean --force"),
+        # xargs options that take an argument are stepped over.
+        ("xargs -n 1 git branch -D", "git branch -D"),
+        ("xargs -r -L 1 -P 4 git branch -D", "git branch -D"),
+        ("xargs --max-args 1 git branch -D", "git branch -D"),
+    ]
+
+    def test_every_inner_destructive_command_blocks(self):
+        for command, operation in self.CASES:
+            with self.subTest(command=command):
+                self.assertBlocks(command, operation)
+
+    def test_an_argv_list_find_exec_is_read(self):
+        self.assertBlocks(["find", ".", "-exec", "git", "reset", "--hard", ";"],
+                          "git reset --hard", tool="exec_command")
+
+    SAFE = [
+        "bash -c -- 'git status'",
+        "bash -- script.sh",
+        "pwsh -c 'git status'",
+        "cmd /c 'git log'",
+        "env -S 'git fetch'",
+        "git submodule foreach 'git status'",
+        "git submodule foreach git pull",
+        "git rebase -x 'make test' main",
+        "git rebase --exec='git log -1' main",
+        "find . -name '*.orig' -exec rm {} \\;",
+        "find . -exec echo git reset --hard {} +",
+        "xargs -n 1 git branch -d",
+    ]
+
+    def test_safe_inner_commands_stay_silent(self):
+        for command in self.SAFE:
+            with self.subTest(command=command):
+                self.assertSilent(command)
+
+
+class LeaseScopeTests(_GateCase):
+    """(c) `--force-with-lease=<ref>` protects that ref alone."""
+
+    def test_forcing_a_ref_the_lease_does_not_name_blocks(self):
+        for command in ("git push --force-with-lease=main origin +other",
+                        "git push -f --force-with-lease=main origin other",
+                        "git push --force-with-lease=main:abc123 origin +other",
+                        "git push -f --force-with-lease=main origin main other",
+                        "git push -f --force-with-lease=main origin"):
+            with self.subTest(command=command):
+                self.assertBlocks(command, "git push --force")
+
+    def test_a_lease_on_the_forced_ref_is_silent(self):
+        for command in ("git push --force-with-lease=main origin +main",
+                        "git push -f --force-with-lease=main origin main",
+                        "git push -f --force-with-lease=main:abc123 origin main",
+                        "git push --force-with-lease=refs/heads/main origin +HEAD:main",
+                        "git push --force-with-lease=main origin +main other"):
+            with self.subTest(command=command):
+                self.assertSilent(command)
+
+    def test_a_bare_lease_covers_every_ref_pushed(self):
+        for command in ("git push --force-with-lease origin +other",
+                        "git push -f --force-with-lease origin main other"):
+            with self.subTest(command=command):
+                self.assertSilent(command)
+
+
 class FilteringTests(_GateCase):
     """Two-stage filtering: the hook re-checks the event and the tool itself."""
 
@@ -323,10 +430,11 @@ class RobustnessTests(unittest.TestCase):
             with self.subTest(command=command):
                 self.assertSilentRaw(json.dumps(payload(command)))
 
-    def test_an_unbalanced_quote_fails_open(self):
-        # The documented limit: a command that cannot be tokenised is allowed, because a
-        # gate that blocks on a guess is worse than none (see the module docstring). The
-        # shell would refuse these commands itself, so nothing destructive runs.
+    def test_a_single_untokenisable_line_fails_open(self):
+        # The documented limit: one line that cannot be tokenised is allowed, because a gate
+        # that blocks on a guess is worse than none (see the module docstring). The shell
+        # would refuse each of these one-line commands itself, so nothing destructive runs.
+        # A multi-line command is read line by line instead; see UntokenisableLineTests.
         for command in ("git reset --hard 'unterminated",
                         'git push --force "unterminated',
                         "echo $(git reset --hard"):

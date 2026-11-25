@@ -161,8 +161,8 @@ lens.
 
 ## Two axes
 
-`house-review` runs two independent passes. This section holds the rules each pass applies; the
-skill holds the order.
+`house-review` runs two independent passes, and a third, the security axis, where the change
+requires it. This section holds the rules each pass applies; the skill holds the order.
 
 **Spec axis**: the change against its contract (a spec, a quest file's scope and acceptance
 criteria, or the issue it closes), and nothing else. Three categories:
@@ -199,6 +199,44 @@ above as the baseline. Five rules:
   should become a task or go. A change that adds comments far more densely than the files around it
   is worth a second look for the same reason. This is a smell, a `minor` judgement call unless the
   workaround itself earns more, and never a check.
+
+**Smell baseline.** On the standards axis, the smells below are named judgement calls: each one is
+a reason to look harder, never proof of a defect. A smell finding names the smell first in its
+summary (`shotgun surgery: ...`), takes the rubric category the smell harms (most are
+`readability`), is `minor` unless the harm it causes earns more on its own evidence, and is never a
+`blocker` on the smell alone. A written standard that endorses the pattern suppresses it, as for any
+rubric finding. Report a smell only where the diff adds it or makes it worse; one already in the
+file is not this change's finding. The names follow Martin Fowler and Kent Beck's catalogue in
+*Refactoring* (second edition, 2018, chapter 3), so a reader can look each one up; the
+descriptions are this kit's.
+
+| Smell | What to look for in the diff |
+|---|---|
+| **Mysterious name** | A new function, variable or file whose name does not say what it does or holds, so the reader has to open it. |
+| **Duplicated code** | The same logic written a second time beside an existing copy, instead of calling or extending the first. |
+| **Long function** | A function the change grows until one name no longer covers what it does. |
+| **Long parameter list** | A call that needs many arguments, several of which travel together or only pass through. |
+| **Global data** | State any code can reach and change, added or widened by the change. |
+| **Mutable shared data** | A value several places update, so a reader cannot tell which update a later read sees. |
+| **Divergent change** | One module the change edits for several unrelated reasons, a sign it holds more than one responsibility. |
+| **Shotgun surgery** | One idea that needs small edits in many files, a sign it has no single home. |
+| **Feature envy** | A function that reads another module's data more than its own, and belongs over there. |
+| **Data clumps** | The same few values passed or stored together in several places, waiting to be one type. |
+| **Primitive obsession** | A domain idea (a path, an id, an amount) carried as a bare string or number, so its rules are checked nowhere or everywhere. |
+| **Speculative generality** | A hook, parameter or abstraction added for a case nothing in the change or the repository needs yet. |
+| **Middle man** | A module whose functions mostly forward to another; the deletion test in [`deep-modules.md`](deep-modules.md) decides whether it earns its place. |
+
+**Security axis**: the change against the security category of the rubric, as its own pass with its
+own verdict. **Required when the change is a one-way door**, as the merge danger names it (`pr-describe`
+writes it): a migration or change to persisted data, a deleted or renamed public surface, a
+published package or API version, a sent message, a destroyed resource, a security, permission
+or secrets change, or a change to CI or hook configuration (the same list as the self-merge guard in
+`autonomy.md`'s `A8`). **Optional otherwise**, run when the reviewer or the person asks. A review of a
+one-way door that skipped this axis says so as its first line, and is not a clean review. The axis
+inspects at least: input that crosses a trust boundary, secrets in code, logs and fixtures,
+authentication and authorisation paths, command, query and template construction, file paths built
+from input, and dependencies the change adds. With no finding it states what it inspected, as every
+axis does.
 
 The axes are not reranked against each other. Each has its own verdict, its own ordering and its
 own worst finding, so a page of style findings cannot bury one missing requirement.
@@ -251,7 +289,9 @@ same repository, taken as two mechanisms rather than as the workflow around them
 section is adapted from Matt Pocock's `code-review` skill (MIT). The fig-leaf smell and the
 review-once stopping rule are adapted from his aihero.dev writing (the post "Watch me ship a
 21,000-line feature" and the `/skills-code-review` page), web pages that carry no block below
-(`feat-0093`, 2026-11-24). No digest is of this file, which
+(`feat-0093`, 2026-11-24). The smell baseline takes its names from Martin Fowler and Kent Beck's
+*Refactoring* (second edition, Addison-Wesley, 2018), a book rather than a fetched file, so it carries
+no block; its descriptions are this kit's own (`feat-0102`, 2026-11-25). No digest is of this file, which
 differs from all three by design. A person maintaining the kit can re-check them with `scripts/check-provenance.py` in the Zen Agent Skills repository; an agent reading this does not run it, because the URLs it fetches come from this file, which `A10` in [`autonomy.md`](autonomy.md) bounds.
 
 ```provenance

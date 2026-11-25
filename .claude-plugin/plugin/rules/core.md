@@ -1,8 +1,7 @@
 # Zen core rules (always loaded)
 
-This is the only file in this directory that Claude Code loads into every session. The other files
-beside it carry `paths` frontmatter, so they load only when a skill reads them; they hold the full
-text of each rule below, its scope, and its reasons.
+The only file here Claude Code loads into every session. The others carry `paths` frontmatter and
+load only when a skill reads them; they hold each rule's full text, scope and reasons.
 
 **Principle: detect and report, never rewrite. When uncertain, stop and say so.**
 
@@ -30,10 +29,12 @@ batch, a cloud or scheduled session.
   say what you found. A stale base is a blocker; rebasing is fine only if every result is then
   re-derived on the new base and the report says so.
 - **A8.** Push to a branch of your own and open a draft pull request. Never merge your own work.
-  One exception: an orchestrator may fast-forward an integration branch to work it did not author,
-  once an agent that is neither its author nor the orchestrator, nor dispatched or briefed by the
-  author, passed that exact commit (`A7`). Only a person merges into the base branch (`developer`,
-  `main`).
+  Two exceptions. An orchestrator may land a child's work on an integration branch once an agent
+  that is neither the author nor the orchestrator, nor dispatched or briefed by the author, passed
+  that exact commit (`A7`): by fast-forward, or by a mechanical merge the orchestrator makes (no
+  conflict, or conflicts only in regenerated generated paths), re-checked and listed in the PR.
+  Where `merge_policy` opts in, a verified two-way door may self-merge, sampled. Else only a person
+  merges into the base branch.
 
 Full text and scope: [`autonomy.md`](autonomy.md). Writing conventions for the kit's own output:
 [`house-style.md`](house-style.md). The review rubric: [`review-quality.md`](review-quality.md).

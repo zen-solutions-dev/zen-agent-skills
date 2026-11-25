@@ -621,8 +621,8 @@ Added 2026-11-25 by `feat-0103`.
   restarts the 90 days), else `metadata.drafted` (YYYY-MM-DD), else the date of the first git commit
   adding its `SKILL.md`
 - **When** the drafted date is more than 90 days before today, and no file under the repository's
-  `docs/reviews/` whose path there contains `dogfood` names the skill (as \`<name>\` or
-  `<name>/SKILL.md`)
+  `docs/reviews/` whose path there contains `dogfood` names the skill (by its name as a
+  whole word, or as `<name>/SKILL.md`, the wording of section 7 of `AGENTS.md`)
 - **Then** the validator records a warning giving the age, the date and where the date came from,
   and the exit code is unaffected
 - **And** when there is no date (a malformed or future `metadata.drafted` or `metadata.extended`, a shallow clone, git unavailable or without such a
