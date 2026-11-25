@@ -36,6 +36,12 @@ Conventions: your answer follows [`house-style.md`](../../rules/house-style.md).
    any draft you recommend as a draft, and say it needs `install.py --include-drafts`.
    Done when every skill the reply will name has had its `SKILL.md` read or is said to be not
    installed, and every draft among them is marked as one.
+   **Before recommending a new skill**, one the kit does not have (the person asks for one, or the
+   honest answer is "nothing fits; write one"), read the repository's declined-ideas register when
+   it keeps one (in the Zen Agent Skills repository, `docs/declined-ideas.md`). When the idea is
+   there, say so: when and where it was declined, the reason, and whether a later decision reopened
+   it. A declined idea is recommended again only with a reason the register's entry did not weigh.
+   Done when the register was read, or its absence is said, before any new skill is suggested.
 4. **Reply with the hint.** The skill to start now, one line on why, the skill that usually
    follows it, and whether the work suits **AFK** (nobody watching: well specified, low risk, easy
    to verify) or **human in the loop** (a one-way door, a wide blast radius, or hard to review).
@@ -51,7 +57,7 @@ The full chain is something a change earns. Ask in this order; the first yes win
 2. **Are there decisions only the person can make, but no behaviour anyone else must agree?**
    `grill` on its own, then `new-quest` writes the quest files from its decisions record. No spec.
 3. **Does it span more than one sitting, or go to another agent?** Quest file: `new-quest` writes one
-   file with an acceptance command, and `verifier-agent` checks it before it lands. No spec.
+   file with an acceptance command, and the [one-quest flow](#the-flows) builds it. No spec.
 4. **Otherwise, direct.** Make the change, run the project's acceptance command, and ask for
    `house-review` if the change warrants one.
 
@@ -87,6 +93,13 @@ step is also useful on its own. *(draft)* marks a skill not yet promoted.
 
 **Build**:
 
+- **One quest**, the single-quest flow: read the quest file (with `AGENTS.md` and its
+  `touched_files`, nothing more), build it with `tdd` at the seams its plan agreed, run its
+  acceptance command, have `verifier-agent` check it (run by someone other than the builder), then
+  `house-review`, and close it as the repository's lifecycle says.
+- **A bug**: `systematic-debugging` *(draft)* first, then `tdd`. The diagnosis ends in a red command
+  and a named cause; that red command is `tdd`'s first failing test, and the fix is built from it.
+  Diagnosing never fixes, so the chain is the whole repair.
 - `tdd`: new code, test-first, one red-green slice at a time.
 - `orchestrate` *(draft)*: a piece of work too big for one context. One session holds the
   conversation; child sessions research and build on their own branches, landing on one
@@ -94,7 +107,7 @@ step is also useful on its own. *(draft)* marks a skill not yet promoted.
 - `fix-batch`: two or more independent quest files to parallel agents, each in its own worktree,
   each starting fresh. A person starts it.
 - `systematic-debugging` *(draft)*: something is broken and the cause is unknown. Builds a red
-  command first and diagnoses; it never fixes.
+  command first and diagnoses; it never fixes, so `tdd` follows it (the bug chain above).
 - `test-author`: tests from an approved spec, or tests that pin legacy behaviour, after the fact.
 - `test-quality`: the lens `tdd`, `test-author` and `fix-batch` use to judge a test.
 
@@ -153,7 +166,9 @@ step is also useful on its own. *(draft)* marks a skill not yet promoted.
 Adapted, in this kit's own words, from Matt Pocock's `ask-matt` router: a user-invoked map of every
 skill, the main flow with on-ramps, reading a skill before recommending it, and context hygiene at
 phase boundaries are his. The light paths, the stage-placement step and the kit's own flows are this
-repository's. The phase-boundary tree itself lives in `agent-handoff`.
+repository's. The one-quest flow is adapted from his `implement` (`feat-0105`, 2026-11-25), with
+verification by someone other than the builder added; reading a declined-ideas register before
+recommending a new skill echoes his `.out-of-scope/` directory, kept here as one dated file. The phase-boundary tree itself lives in `agent-handoff`.
 
 ```provenance
 source: https://raw.githubusercontent.com/mattpocock/skills/main/skills/engineering/ask-matt/SKILL.md
@@ -171,4 +186,13 @@ license: MIT
 retrieved: 2026-11-23
 sha256: a8aa20158609ef39e2b308b6ba0660c91066838d07a867202e63a7744a88a3ed
 note: fetched with urllib and digested with hashlib on the retrieved date, at 4,249 bytes. Read for the context-hygiene line; the tree itself is adapted in agent-handoff.
+```
+
+```provenance
+source: https://raw.githubusercontent.com/mattpocock/skills/main/skills/engineering/implement/SKILL.md
+author: Matt Pocock
+license: MIT
+retrieved: 2026-11-25
+sha256: 483bdc4ccf4ac31d86ac7beeaa0d0db80313e71e120bb8c59b3196ae5decd53d
+note: fetched with urllib and digested with hashlib on the retrieved date, at 622 bytes, upstream HEAD d653911. Source of the one-quest flow line; adapted, not copied.
 ```

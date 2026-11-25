@@ -20,8 +20,10 @@ The split of ownership is the point. **The person owns strategy, design and ever
 Agents iterate behind tests, CI, verification by another agent, and review. A reversible decision (a
 two-way door) proceeds and is recorded; an irreversible one waits for the person.
 
-This is a draft. Its first real run, and what it taught, is in
-[`references/first-run.md`](references/first-run.md).
+This is a draft. Its real runs, and what each taught, are in
+[`references/first-run.md`](references/first-run.md). This body runs past the kit's 250-line guide
+because the excess is steps and gates every run needs; the memory's layout and lint live in
+[`references/memory.md`](references/memory.md).
 
 ## When to use it, and when not
 
@@ -53,26 +55,49 @@ This is a draft. Its first real run, and what it taught, is in
 2. **The repository's setup file**, where it has one: the `zen-config` block in `docs/agents/zen.md`
    (keys `base_branch`, `integration_prefix`, `acceptance`, `tracker`, `default_mode`,
    `merge_policy`, `memory`). Absent file or key: discover the value and say once which you used.
-3. **The memory index**, at the `memory` path, or wherever the repository keeps dated notes.
+3. **The memory index**: the file the `memory` key names, with its entries beside it (in the Zen
+   Agent Skills repository, `docs/agents/memory/README.md`), or wherever the repository keeps dated
+   notes.
 
 ## Procedure
 
 ### Step 1: open the run and settle the one-way doors
 
-1. Read the memory index and the setup file. Check the base (`A9`): fetch, and compare your
-   commit with the target branch's tip.
+1. Read the memory index and the setup file, and the entries the goal touches. Check the base
+   (`A9`): fetch, and compare your commit with the target branch's tip.
 2. Cut the integration branch from the target tip and push it.
-3. Split the goal into children. Mark each **door**: whether, once shipped, it can be walked back
-   cheaply. Research comes first where design depends on facts nobody has checked.
-4. Ask the person only the one-way-door questions: **at most four per round**, each standing on its
-   own (it may be read without anything above it), the recommended option first. Record every
-   two-way decision you took instead of asking, with the revert that would undo it.
-5. Commit the plan (children, doors, decisions) to the integration branch and push. This commit, and
-   any other you make there, is your own work: list it in the pull request body as unverified, or
-   have it verified like a child's.
+3. **Probe the remote actions the run will need**, now rather than at the end: on a scratch ref,
+   push a branch, delete it, push a tag, delete it; for opening a pull request, confirm the tool or
+   token is there without opening one. Record each as allowed or refused, with the refusal's text.
+   An action the run needs and the environment refuses becomes a step for the person in the plan
+   and the pull request.
+4. **Explore before you plan unfamiliar code.** Where the goal touches code nobody in this
+   conversation has read, dispatch one **exploration child** (fresh, a leaf, read-only, medium
+   effort) to map it: the files, the seams, the terms the code uses. Wait for its report before you
+   split the goal or ask the person anything the code could answer.
+5. Split the goal into children. Mark each **door**: whether, once shipped, it can be walked back
+   cheaply. Research comes first where design depends on facts nobody has checked. Answer **the
+   five questions** for every child, and a child missing an answer is not ready to brief: what
+   starts it; what it does, and what it reads and writes; what it starts next; where a person
+   re-enters; and what stops two children doing the same work.
+6. Ask the person only the one-way-door questions: **at most four per round**, each standing on its
+   own (it may be read without anything above it), the recommended option first, through the
+   harness's structured question tool where it has one. Record every two-way decision you took
+   instead of asking, with the revert that would undo it.
+7. Commit the plan (children, doors, decisions, probe results) to the integration branch and push.
+   This commit, and any other you make there, is your own work: list it in the pull request body as
+   unverified, or have it verified like a child's. In the plan and every other shared planning
+   document, **name a child's quest by its id in backticks, and link its file only once it is
+   closed**: a link to a quest file that is about to move breaks when it moves. **While children
+   are in flight, hold every later commit of your own on a side branch**: a commit of yours on the
+   tip makes every running child merge again. After the wave lands, **cherry-pick or re-commit
+   each held commit onto the integration tip yourself**, as your own work, listed in the pull
+   request body as unverified under this item's rule. Never merge the side branch. The one
+   exception to holding is the quest-file close in Step 5 item 6, which travels with a landing.
 
-Done when the integration branch exists on the remote at the target tip plus the plan commit, and
-every one-way door in the plan carries the person's recorded answer.
+Done when the integration branch exists on the remote at the target tip plus the plan commit, every
+remote action the run needs is recorded as allowed or refused, every one-way door in the plan
+carries the person's recorded answer, and every child has an answer to all five questions.
 
 ### Step 2: brief every child
 
@@ -85,9 +110,19 @@ Step 3. Each brief carries:
 - **one owner for each shared ledger** (changelog, roadmap, index files); every other child passes
   its lines to that owner, or to you, under "Notes for integration";
 - context pointers (paths, commits, the plan) rather than retyped content;
+- **every term or key name two children share, fixed by you and pasted into both briefs word for
+  word**, so siblings cannot define one thing two ways;
 - its mode, its branch name, the base to start from, and the acceptance command;
+- for a **build** child: read and follow [`tdd`](../tdd/SKILL.md) for every behaviour it builds, so
+  each starts from a test watched failing;
 - "You are a leaf"; "push your branch, open no pull request"; "merge the integration tip into your
-  branch before you report", so landing is a fast-forward;
+  branch before you report", so landing is a fast-forward; "after you report, push nothing more
+  unless asked", so the verified commit stays the head;
+- "leave your quest file where it is, and in any shared document name another child's quest by
+  id in backticks": the orchestrator closes each quest file when that child lands (Step 5);
+- "acknowledge every relay in one line before acting on it";
+- "after a restart of your worker, fetch, check your branch against the remote, and re-read this
+  brief and the plan before anything else";
 - the report fields: branch, head commit, a short summary, the acceptance command and the verbatim
   tail of its output (`A4`), Notes for integration, and any question only the person can answer.
 
@@ -100,14 +135,17 @@ build half then goes out as an `afk` child with that decision in the brief, or i
 listed in the pull request as your own unverified work.
 
 Done when every child in the next wave has a brief that runs without this conversation, every pair
-of briefs has disjoint owned paths, and every research source has been probed.
+of briefs has disjoint owned paths and identical wording for every shared term, and every research
+source has been probed.
 
 ### Step 3: dispatch the frontier
 
 Compute the frontier after `git fetch`: a child has landed when its verified commit is in the
 remote integration branch (`git merge-base --is-ancestor <verified-sha> origin/<integration>`),
-never because a commit message mentions it. Start every frontier child at once, each with a
-**fresh context**, as a **leaf**. Medium effort for building; high for verifying and debugging.
+never because a commit message mentions it. **Start slow**: in a run's first wave, start one child,
+and start the rest only once it has landed, so a flaw in the briefs or the brakes (the acceptance
+command, the verifier, the person's review) costs one child, not a wave. After that, start every
+frontier child at once, each with a **fresh context**, as a **leaf**. Medium effort for building; high for verifying and debugging.
 Where children run as worktree agents, follow `fix-batch` Steps 2 and 3 for the dispatch sha and
 the cut, with one change to its prompt: the child **commits and pushes its own branch**, because
 what lands is the child's verified commit. Committing a child's uncommitted work yourself makes it
@@ -121,8 +159,8 @@ person, never wait on it.
 Set a **fallback check-in** for about forty minutes out, so a child that finishes without reporting
 is noticed.
 
-Done when every frontier child is running with its brief and a check-in is scheduled, or a deadlock
-is with the person.
+Done when every frontier child is running with its brief (in the first wave, one child until it has
+landed) and a check-in is scheduled, or a deadlock is with the person.
 
 ### Step 4: hold the conversation
 
@@ -131,8 +169,16 @@ a `hitl` item's build half that Step 2 kept here. Its
 context stays free for the person, the decisions and the memory. Check progress cheaply and rarely;
 the child's report, not its transcript, is the evidence.
 
-Done when every child has reported or been found stopped, and every question the person raised has
-an answer or a named owner.
+- **Every relay is acknowledged.** A relay to a child (the person's answer, a correction) asks for a
+  one-line acknowledgement. A report that predates the acknowledgement is stale: ask the child to
+  confirm the relay is applied before you verify it.
+- **Re-pitch once.** A relay the recipient cannot act on (its reply misreads it, or asks what you
+  meant) is sent again once, shorter: one paragraph, plain words, the repository's glossary terms,
+  the one action wanted. A second miss goes to the person with both versions.
+
+Done when every child has reported or been found stopped, every relay has its acknowledgement or has
+gone to the person after one re-pitch, and every question the person raised has an answer or a
+named owner.
 
 ### Step 5: on each report, relay, verify, land
 
@@ -143,21 +189,35 @@ an answer or a named owner.
 4. **Verify**: read and follow [`verifier-agent`](../verifier-agent/SKILL.md) through a verifier
    you dispatch with a fresh context, as a leaf, at high effort: neither the child nor you, and not
    briefed by the child (`A7`), on the exact head commit reported. Carry the verified sha from the
-   verdict's `verified_by` field into item 5.
+   verdict's `verified_by` field into item 5. **If the child's head moves while the verifier runs**
+   (a relay applied after the report), tell the verifier the new sha and have it re-run there; a
+   verdict on the old sha lands only the old sha.
 5. **Land** a `pass` on the integration branch by reading and following
-   [`reconcile-worktrees`](../reconcile-worktrees/SKILL.md): **fast-forward only, to the verified
-   sha**. A child whose branch has moved past that sha, or has not merged the tip, or whose
-   landing would need a conflict resolution, goes back to merge the tip and be verified again.
-   This is the one merge an orchestrator may make, under every guard of `A8`'s exception: work
-   you did not author, verified by someone else, the integration branch only.
-6. **Push after every landing.** After any restart of this session, check the remote state
-   (`git status -sb`, `git log origin/<integration>..<integration>`) before anything else.
+   [`reconcile-worktrees`](../reconcile-worktrees/SKILL.md) Step 5: a **fast-forward to the verified
+   sha**, or, for a verified child that is behind the tip, a **mechanical merge** exactly as `A8`'s
+   exception defines it in [`autonomy.md`](../../rules/autonomy.md) (read it now; this step does not
+   restate it), re-checked and listed in the pull request. A child whose branch has moved past the
+   verified sha goes back to be verified again. **A conflict that is not mechanical is never
+   resolved by guess**: it goes back to the child with both sides named, under the conflict rule in
+   `reconcile-worktrees` Step 5. These are the only merges an orchestrator may make.
+6. **Close the child's quest file at landing, in the same push**: move it to `done/` with
+   `status: done`, re-anchor its relative links for the extra directory level, and turn any
+   backticked mention of its id in the plan into a link. This is a commit of your own, listed in
+   the pull request as unverified. It touches only that child's quest file and the plan, which no
+   running child owns, so it adds no conflict to the merge the landing already asks of them.
+   **Push after every landing.** After any restart of this session, check the remote state
+   (`git fetch`, `git status -sb`, `git log origin/<integration>..<integration>`) and **re-read the
+   plan** before anything else: the plan and the remote, not memory, say what has landed.
 7. **A `fail` or `blocked`** goes back to a fresh child with the verdict's reasons. **Cap: two
-   re-dispatches per child**, then it goes to the person with both verdicts.
+   re-dispatches per child**, then it goes to the person with both verdicts. Re-check a fix round
+   with a focused verification of what it changed, because a fix tends to bring one small blocker
+   of its own.
 8. Recompute the frontier and return to Step 3 for any child it newly admits.
 
-Done when every child is landed and pushed, or is with the person after the cap, and the frontier is
-empty.
+Done when every child is landed and pushed with its quest file closed in the same push, or is with
+the person after the cap; every mechanical merge is listed for the pull request; every held commit
+of your own is cherry-picked or re-committed onto the tip after its wave and listed as unverified,
+with no side branch merged; and the frontier is empty.
 
 ### Step 6: close with one review, one fix, then stop
 
@@ -169,25 +229,38 @@ empty.
    [`house-review`](../house-review/SKILL.md) Step 8 and rule 8 of the
    [`review-quality`](../../rules/review-quality.md) protocol define it. A second broad review does
    not converge; do not run one.
-3. Read and follow [`doc-sync`](../doc-sync/SKILL.md) over the reader-facing documents, then run the
-   acceptance command on the tip.
+3. **Check that every landed child's quest file was closed at its landing** (Step 5 item 6), and
+   add the ledger lines (changelog, roadmap) in one commit of your own, listed like the plan
+   commit. Read and follow [`doc-sync`](../doc-sync/SKILL.md) over the reader-facing documents, then run the acceptance
+   command on the tip.
 4. Write the body with [`pr-describe`](../pr-describe/SKILL.md), offering a stacked split when the
    branch is large and holds a one-way door, and open **one draft pull request** into the base
    branch. Never merge it: that is the person's.
 
-Done when one draft pull request is open with the acceptance command's verbatim tail in it, and
-every review finding is fixed, dismissed with a reason, or listed for the person.
+Done when one draft pull request is open with the acceptance command's verbatim tail in it, every
+landed child's quest file is in `done/`, every refused remote action is a step for the person in
+its body, and every review finding is fixed, dismissed with a reason, or listed for the person.
 
 ### Step 7: remember and learn
 
-1. **Append to the memory**, dated and commit-cited (rules below).
-2. **After friction**, where a child hit a workaround, a retry or a blocked step, ask what would have
+1. **Append to the memory**, dated and commit-cited (rules below), updating every entry the new one
+   touches and the index.
+2. **Lint the memory**, as [`references/memory.md`](references/memory.md) describes, through a
+   fresh leaf child or yourself: contradictions, orphan entries, claims a newer entry overtook
+   without marking them superseded. A finding is fixed by a new superseding entry, never by
+   rewriting the old one.
+3. **Offer a recurring job** when a task plainly recurs (a weekly audit, a daily improvement pass):
+   name what it would run, how often, in which repositories, and what it opens for review. Offer it
+   and stop: never schedule it yourself, and never pick its repositories; the person names them.
+4. **After friction**, where a child hit a workaround, a retry or a blocked step, ask what would have
    made it easier, and **offer** the environment change to the person; apply nothing unasked. Route
    accepted offers to [`retro`](../retro/SKILL.md).
-3. **Queue a `retro`** over about one child session in five, failures first.
+5. **Queue a `retro`** over about one child session in five, failures first.
 
-Done when every decision, problem or preference the run produced has a dated entry in the index,
-every friction point has an offer or a reason there was none, and the sampled sessions are named.
+Done when every decision, problem or preference the run produced has a dated entry in the index, the
+lint has run and each finding has a superseding entry or a reason, every recurring task has an offer
+or none was seen, every friction point has an offer or a reason there was none, and the sampled
+sessions are named.
 
 ## The relay format
 
@@ -211,7 +284,8 @@ the present"; read it before the first entry. For this memory it means:
 - One entry per decision, problem or preference, linked from an index. Before a decision or a brief,
   read the index for the entries it touches.
 - Keep memory where the repository keeps such notes, in its conventions; a shared location the
-  person already uses comes first.
+  person already uses comes first. The layout, the index format and the lint are in
+  [`references/memory.md`](references/memory.md).
 
 ## Optional: Claude Code cloud sessions
 
@@ -232,7 +306,11 @@ The role (delegate the work, keep the conversation), the relay order, frontier w
 merges, one review then one fix, "write history, not the present", offering environment changes and
 sampling sessions for retro are adapted, in this kit's own words, from Matt Pocock's `chief-of-staff`
 and `implement-spec` skills, as studied in the 2026-11-24 sources delta in this repository's
-`docs/reviews/`. The procedure, the `A8` guards and the cloud section are this kit's.
+`docs/reviews/`; the memory lint and the recurring-job offer are from `chief-of-staff` too, added at
+`feat-0107` on 2026-11-25. Starting slow, the three brakes, capping loops and the five questions per
+child are adapted from his `software-factory` skill at the same quest, where they are asked of a
+factory's tasks. The procedure, the `A8` guards, the remote-action probe, the conflict and relay
+rules, and the cloud section are this kit's.
 
 ```provenance
 source: https://raw.githubusercontent.com/mattpocock/skills/d653911/skills/in-progress/chief-of-staff/SKILL.md
@@ -250,4 +328,13 @@ license: MIT
 retrieved: 2026-11-24
 sha256: 1993a473cec40ac85d081c112cdffdc63ec3267c2e412055ad09e013a2f623d1
 note: fetched with urllib and digested with hashlib on the retrieved date, at 2,835 bytes. Source of frontier waves, the integration branch, and one review then one fix.
+```
+
+```provenance
+source: https://raw.githubusercontent.com/mattpocock/skills/main/skills/in-progress/software-factory/SKILL.md
+author: Matt Pocock
+license: MIT
+retrieved: 2026-11-25
+sha256: 567326e926d5bab0548aad11effaa6aef3d4dfa1ed385af22413628f49a48285
+note: fetched with urllib and digested with hashlib on the retrieved date, at 6,110 bytes. Source of starting slow, the brakes, capped loops and the five questions; adapted, not copied.
 ```

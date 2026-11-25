@@ -2,7 +2,7 @@
 title: spec-author conformance
 spec: docs/spec/spec-author.md
 audited: 2026-11-23
-revised: 2026-11-23 (feat-0076, re-audited in full against the rewritten skill body after the interview amendment; S-005 retired, S-008 and S-009 added); 2026-11-23 (feat-0083, the approval digest: S-010, S-011, a Constraint and two Proposed Surface rows added); 2026-11-24 (feat-0084, grill promoted and linked: S-008 and S-009 re-derived against the composed skill); 2026-11-24 (feat-0091, grill gained an opening step, so its steps renumbered: S-008 and S-009 re-derived, verdicts unchanged; S-006 and the Output file row re-derived against the zen-config amendment)
+revised: 2026-11-23 (feat-0076, re-audited in full against the rewritten skill body after the interview amendment; S-005 retired, S-008 and S-009 added); 2026-11-23 (feat-0083, the approval digest: S-010, S-011, a Constraint and two Proposed Surface rows added); 2026-11-24 (feat-0084, grill promoted and linked: S-008 and S-009 re-derived against the composed skill); 2026-11-24 (feat-0091, grill gained an opening step, so its steps renumbered: S-008 and S-009 re-derived, verdicts unchanged; S-006 and the Output file row re-derived against the zen-config amendment); 2026-11-25 (feat-0105, the synthesise-only mode: S-012 and a Proposed Surface row added, Goal 4 re-derived; S-008 and S-009 re-derived against grill's new exploration and terms rules, verdicts unchanged)
 ---
 
 # spec-author conformance matrix
@@ -42,19 +42,21 @@ produced this matrix, so per `A7` this verdict is that agent's, not an independe
 | Scenarios | S-009 facts are looked up, not asked | Conformed | [`grill`](../../.agents/skills/grill/SKILL.md) step 3 / "Never ask the person a fact. Find it.", and its decisions record's "Facts found" section, "<fact> (source: <file, command, or lookup>)", composed by Procedure step 1 / "Then compose `grill`" | re-derived by `feat-0084`: the fallback that carried this rule inline is deleted, and the behavior is now carried by the composed skill alone |
 | Scenarios | S-010 approved text edited after its approval is not decomposed | Conformed | `new-quest` "Decomposing an approved spec" / "`not-approved`, `changed`, `malformed`, or `unreadable`: stop and say which" | added by `feat-0083`, pending the maintainer's re-approval. Like S-003, the behaviour lives in `new-quest`, and this contract records it because `spec-author` owns the approval record |
 | Scenarios | S-011 an amendment leaves the approval record alone | Conformed | "Amending an approved spec" / "leave `status: approved` and `approved_digest` exactly as they are", with step 5's "when the spec carried a digest, that it now reads `changed` until the person re-approves" | added by `feat-0083` |
+| Scenarios | S-012 a confirmed decisions record skips the interview | Conformed | Procedure step 1, "**Synthesise only.**" / "skip the interview and draft from that record: say which record you drafted from, and ask nothing it already settled. Its Deferred lines become Open Questions." | added by `feat-0105`, pending the maintainer's re-approval. The record must be in this conversation and confirmed; a summary from an earlier conversation does not count, which keeps S-008 the default |
 | Proposed Surface | Output file: existing spec location, `docs/spec/<slug>.md` as fallback | Conformed | "Where the spec goes" | same clauses as S-006 and S-007 |
 | Proposed Surface | Frontmatter `status`: `draft` author-set, `approved` human-set only | Conformed | "The spec format" / "**This skill only ever writes `status: draft`.**" | restated in step 5 |
 | Proposed Surface | Body sections (seven, named) | Conformed | "The spec format" template / "these sections in this order, no others" | |
 | Proposed Surface | Scenario ids stable `S-NNN`, never renumbered; a retired id stays in place | Conformed | "The spec format" / "never renumbered or reused" | the retired-id half is a property of the spec document, and `spec-author.md` itself is the instance: S-005 keeps its heading, marked retired |
 | Proposed Surface | Interview round | Conformed | same clauses as S-008 | |
+| Proposed Surface | Synthesise-only mode | Conformed | same clauses as S-012, with "A decision the contract needs that the record never settled still goes to the person before any file is written, as a `grill` round over that branch alone" | added by `feat-0105` |
 | Proposed Surface | Frontmatter `approved_digest`: human-set only, never written or changed by the skill | Conformed | "The spec format" / "writing either key is the person's act, never this skill's or any agent's" | added by `feat-0083` |
 | Proposed Surface | `scripts/spec_digest.py`: read-only, six verdicts, `--queue` | Conformed | [`spec_digest.py`](../../.agents/skills/spec-author/scripts/spec_digest.py) docstring and `main`, with "The script only reads and prints" in "The spec format" | added by `feat-0083`; exercised by `tests/test_spec_digest.py` |
 | Goals | 1. Draft a persistent spec with all seven parts | Conformed | Procedure steps 2 and 4 | covered by S-001 |
 | Goals | 2. Compose `spec-quality` to reach a `ready` verdict | Conformed | Procedure step 3, and the preamble / "composes two others rather than restating them" | |
 | Goals | 3. Represent an explicit human approval state | Conformed | "The spec format" `status` rule and step 5 | |
-| Goals | 4. Align with the person before drafting | Conformed | Procedure step 1, "Align before drafting" | covered by S-008 and S-009 |
+| Goals | 4. Align with the person before drafting, or draft from a record they confirmed | Conformed | Procedure step 1, "Align before drafting", and its "Done when" / "in this run or earlier in this conversation, and every decision the contract needs is in it" | covered by S-008, S-009 and S-012; reworded by `feat-0105` |
 | Constraints | Composes `spec-quality` rather than restating it | Conformed | the preamble | |
-| Constraints | The interview follows `grill`, with an inline fallback | Conformed | Procedure step 1 / "Fallback while `grill` is a draft" | |
+| Constraints | The interview follows `grill`, with an inline fallback | Conformed | Procedure step 1 / "Then compose `grill`", with the relative link to [`grill`](../../.agents/skills/grill/SKILL.md) in the preamble | re-derived by `feat-0105`: the phrase this row quoted, "Fallback while `grill` is a draft", was deleted by `feat-0084` and resolved nowhere. The inline-fallback half of the Constraint has no text in the skill since then; it is unreachable through `install.py`, which places `grill` with `spec-author` because of the link, and is reachable only by a hand copy. Flagged for the maintainer: retire that half, or restore a fallback |
 | Constraints | Read-only for implementation surfaces | Conformed | Procedure step 4 | same evidence as S-004 |
 | Constraints | `status` is one of `draft` or `approved`; never self-approves | Conformed | "The spec format" | |
 | Constraints | An approval is tied to the text approved through `approved_digest`, which the skill never writes | Conformed | "The spec format" / "**Approval is bound to the text a person read.**" | added by `feat-0083` |
@@ -65,7 +67,7 @@ produced this matrix, so per `A7` this verdict is that agent's, not an independe
 
 ## Coverage proof
 
-**Audited** (31 items): scenarios S-001 to S-011, of which S-005 is retired; seven Proposed Surface
+**Audited** (33 items): scenarios S-001 to S-012, of which S-005 is retired; eight Proposed Surface
 rows; Goals 1 to 4; six Constraints; two Non-Goals; the Open Questions section.
 
 **Unreconciled** (0 items): none.

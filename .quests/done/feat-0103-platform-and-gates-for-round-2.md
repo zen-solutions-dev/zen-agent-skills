@@ -2,7 +2,7 @@
 id: feat-0103
 title: Build the round 2 platform and gate changes the maintainer approved on 2026-11-25
 type: feat
-status: in_progress
+status: done
 priority: P1
 parent: "Marjana round 2, Wave 1: Platform and gates (docs/reviews/2026-11-25-marjana-r2-plan.md)"
 depends_on: []
@@ -58,7 +58,7 @@ created: 2026-11-25
 
 ## Problem
 
-The 2026-11-25 decisions ([decisions record](../docs/reviews/2026-11-25-marjana-decisions.md), [round 2 plan](../docs/reviews/2026-11-25-marjana-r2-plan.md)) approved eleven platform and gate items that need code rather than prose: B3 (`R-203`, a per-file list instead of one shared count), B4 (`R-204`, a changelog line warning as a ratchet), B11 (`R-003` composed-by check, `R-004` quoted-phrase audit), D3 (an opt-in destructive-git gate), D5 (a release script), E7 (the Codex `agents/openai.yaml` sidecar), E9 (zen and catalog completeness, a name-clash install note, issue templates), R2-3 (guarded load-by-name for drafts), D1's draft expiry warning, R2-10 (warnings on the old tracker names) and N1 (the both-directories warning firing on a stray `.tasks/__pycache__/`).
+The 2026-11-25 decisions ([decisions record](../../docs/reviews/2026-11-25-marjana-decisions.md), [round 2 plan](../../docs/reviews/2026-11-25-marjana-r2-plan.md)) approved eleven platform and gate items that need code rather than prose: B3 (`R-203`, a per-file list instead of one shared count), B4 (`R-204`, a changelog line warning as a ratchet), B11 (`R-003` composed-by check, `R-004` quoted-phrase audit), D3 (an opt-in destructive-git gate), D5 (a release script), E7 (the Codex `agents/openai.yaml` sidecar), E9 (zen and catalog completeness, a name-clash install note, issue templates), R2-3 (guarded load-by-name for drafts), D1's draft expiry warning, R2-10 (warnings on the old tracker names) and N1 (the both-directories warning firing on a stray `.tasks/__pycache__/`).
 
 ## Scope
 
@@ -83,7 +83,7 @@ Touches several modules and the gate set (two new gates, `changelog lines` and `
 
     ZEN_CHECKS_SCOPE=full python3 scripts/run-checks.py
 
-- [ ] Every new check was run on an empty or degenerate input and each new test fails with its feature removed, recorded in [the dogfood record](../docs/reviews/2026-11-25-dogfood/platform.md).
+- [ ] Every new check was run on an empty or degenerate input and each new test fails with its feature removed, recorded in [the dogfood record](../../docs/reviews/2026-11-25-dogfood/platform.md).
 - [ ] Approved specs changed carry a dated amendment naming `feat-0103`, flagged for re-approval.
 
 ## Definition of done

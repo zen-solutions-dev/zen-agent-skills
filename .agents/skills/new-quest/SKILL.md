@@ -45,6 +45,8 @@ An agent that reads only `AGENTS.md`, the quest file, and its `touched_files` ca
 - **`spec` and `scenarios`** when the work comes from an approved spec; omitted otherwise.
 - **A literal acceptance command** that passes only when the work is done, usually the repository's
   test command scoped to the change. Never "tests pass" in prose.
+- **Cites its plan's test seams.** Every quest of one plan tests at the seams the plan agreed once
+  (step 4), and says so with a link; a quest never picks its own.
 - **Risks and rollback notes when the rule fires**: the quest touches more than one module, changes a
   persisted data format or protocol, or cannot be safely reversed by reverting one commit. Omit the
   section when none hold. This is the same rule `spec-plan-readiness` applies, so a quest that fires
@@ -137,17 +139,30 @@ Done when every path and every claim in the draft has been checked.
 
 ### 4. Decompose and name the parent
 
+- **Prefactor first.** Look for a change to the existing code that would make the work easy: a seam
+  to extract, a tangle to separate, a name to bring in line with the glossary. Make the change easy,
+  then make the easy change. Each such change is its own quest that preserves behaviour, takes the
+  existing tests as its acceptance, and comes first; the quests it eases list it in `depends_on`.
+  When nothing would ease the work, say so in one line.
 - Size each quest to one fresh context window; prefer tracer bullets; sequence wide refactors as
   expand, migrate, contract. Put ordering in `depends_on`, and put the riskiest slice first: the
   one most likely to change the plan, so the plan changes before work is built on it.
+- **Agree the test seams once, for the whole plan.** Read
+  [`deep-modules.md`](../../rules/deep-modules.md) now, then list the seams every quest of this
+  plan will test at: existing seams before new ones, each at the **highest** point that can observe
+  the behaviour (where the callers stand), as few as will do, ideally one. Give each seam one line on
+  what it catches and what it misses. Record the list once, in the plan: the Quest chain's entry or
+  the plan document the chain links, or, with neither, a **Test seams** paragraph in the first quest
+  of the split. Every other quest's Implementation notes cites that record and restates none of it.
 - Parent: with `ROADMAP.md`, the Quest chain served (if none fits, propose a one-line Quest chain for the
   forward plan and add it only with assent); without one, one line of free text in the form the
   repository's template seeds.
-- Present the split (titles, ids, dependencies, and what each slice delivers end to end) and ask
-  whether the granularity and the dependency edges are right. This is the last cheap moment to
-  catch a wrong split.
+- Present the split (titles, ids, dependencies, what each slice delivers end to end, the prefactor
+  quests, and the test-seams list) and ask whether the granularity, the dependency edges and the
+  seams are right. This is the last cheap moment to catch a wrong split.
 
-Done when the person confirms the split and every quest in it has a parent.
+Done when the person confirms the split and its seams, every quest in it has a parent, and the
+seams list is recorded in exactly one place.
 
 ### 5. Write the quest files
 
@@ -155,7 +170,8 @@ Copy `.quests/_TEMPLATE.md` per quest, filename `<type>-<NNNN>-<slug>.md`, `id` 
 and fill every section: frontmatter (`id`, `type`, `status: open`, `priority`, `parent`,
 `depends_on`, `touched_files`, `created`, plus `spec` and `scenarios` when they apply); **Problem**
 with relative links to the exact code; **Scope**, in and out, naming every file to be created;
-**Implementation notes** when Problem and Scope leave room; **Risks and rollback** only when the rule
+**Implementation notes** when Problem and Scope leave room, always carrying the test-seams record
+or the link to it; **Risks and rollback** only when the rule
 fires, checked against the `touched_files` you wrote; `mode` set or deliberately left empty; **Acceptance criteria** with the literal
 command; **Definition of done** from the template.
 
@@ -197,9 +213,12 @@ instruction.
 
 ## Provenance
 
-Slice sizing by context window, tracer-bullet vertical slices, and the expand, migrate, contract
-sequence are adapted, in this kit's own words, from Matt Pocock's `to-tickets` skill. Everything else
-here is this kit's.
+Slice sizing by context window, tracer-bullet vertical slices, the expand, migrate, contract
+sequence, and prefactoring first ("make the change easy, then make the easy change", which he
+quotes; `feat-0105`, 2026-11-25) are adapted, in this kit's own words, from Matt Pocock's
+`to-tickets` skill. Seams at the highest point, ideally one, are adapted from his `to-spec`, which
+agrees them per spec; agreeing them once per plan and citing one record from every quest is this
+kit's. Everything else here is this kit's.
 
 ```provenance
 source: https://raw.githubusercontent.com/mattpocock/skills/main/skills/engineering/to-tickets/SKILL.md
@@ -207,5 +226,14 @@ author: Matt Pocock
 license: MIT
 retrieved: 2026-11-23
 sha256: 56ec23c5b2782785d4e65bff9e315b6d3aeb4ef977c174a219e99489fada1995
-note: fetched with urllib and digested with hashlib on the retrieved date, at 5,812 bytes. Adapted, not copied; tracker publishing is deliberately not adopted.
+note: fetched with urllib and digested with hashlib on the retrieved date, at 5,812 bytes. Adapted, not copied; tracker publishing is deliberately not adopted. Re-fetched on 2026-11-25 for feat-0105 with the same digest.
+```
+
+```provenance
+source: https://raw.githubusercontent.com/mattpocock/skills/main/skills/engineering/to-spec/SKILL.md
+author: Matt Pocock
+license: MIT
+retrieved: 2026-11-25
+sha256: 43ad9cf318e5e7d3d1fa360253a37021796dc87a0c2e595ad262661a10f85088
+note: fetched with urllib and digested with hashlib on the retrieved date, at 3,043 bytes, upstream HEAD d653911. Source of the highest-seam rule only.
 ```

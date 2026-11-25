@@ -1,6 +1,6 @@
 # Dogfood record: platform and gates (2026-11-25)
 
-What [`feat-0103`](../../../.quests/feat-0103-platform-and-gates-for-round-2.md) built, run on degenerate input and against its own tests with each feature removed, per the [round 2 plan](../2026-11-25-marjana-r2-plan.md). Every run below happened in this session; a run done by a delegated worker says so.
+What [`feat-0103`](../../../.quests/done/feat-0103-platform-and-gates-for-round-2.md) built, run on degenerate input and against its own tests with each feature removed, per the [round 2 plan](../2026-11-25-marjana-r2-plan.md). Every run below happened in this session; a run done by a delegated worker says so.
 
 The kit was installed with `python3 scripts/install.py --include-drafts` before the work, and the kit's skills were then listed as reachable in the session. The quest file was written from `.quests/_TEMPLATE.md` and checked with `python3 .quests/validate.py --strict`, which is `new-quest`'s check; `new-quest`'s `SKILL.md` was not read step by step. Two parts were built by delegated workers in this session and checked here afterwards: the destructive-git gate and the release script. A third delegation, for the Codex sidecar, was refused by the environment's permission check (it asked to install a Codex CLI), and the work was done here without installing anything.
 

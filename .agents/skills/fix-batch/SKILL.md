@@ -173,7 +173,11 @@ it is. It returns:
 - **`fail`**: the item is not done. Do not reconcile it. Carry its reasons into your report.
 - **`blocked`**: the question could not be answered (an unapproved spec, a missing or unrunnable
   command). Treat it as unverified: do not reconcile, fix what made verification unrunnable, and
-  give the verdict extra scrutiny.
+  give the verdict extra scrutiny. For an unapproved spec, establish which kind before you report
+  it: run `python <spec-author's directory>/scripts/spec_digest.py <spec>` (the script ships with
+  `spec-author`, installed beside the verifier) and quote its verdict line. `not-approved` waits on
+  a person's approval; `changed` waits on their re-approval of edited text; `malformed` or
+  `unreadable` is a defect in the spec file itself.
 
 Then the checks that only a batch needs, on top of the verdict:
 
@@ -198,8 +202,16 @@ contract status (conforming, or which field was missing and which remedy closed 
 you found and corrected. Commit and merge nothing. Landing is a separate, deliberate step:
 `reconcile-worktrees`.
 
+**Propose a landing order** for the items that passed, **cheapest to revert first**: an item that one
+revert undoes, touching few files and no shared or generated path, before one that touches a
+contract, a persisted format, or files another item's region sits beside (Step 4 of
+`reconcile-worktrees` decides that last case). Give each its one-line reason. The order is a
+proposal: the person, or the agent landing the batch, decides, and landing then follows it one item
+at a time, so a red result stops the batch at the cheapest point to back out.
+
 Done when every dispatched item has an entry with all four parts, including a `fail` or `blocked`
-item, and no agent branch has been committed to or merged by you.
+item, every passing item has a place in the proposed landing order with its reason, and no agent
+branch has been committed to or merged by you.
 
 ## The delegate report contract
 
