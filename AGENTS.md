@@ -90,7 +90,7 @@ Material adapted from elsewhere carries a provenance block. The convention (fiel
 
 ## 7. Contribution bar
 
-**The bar gates promotion, not drafting.** A draft may be written freely: it reaches no adopter without `--include-drafts`. Promotion to shipped needs real use on real work and iteration from what that use exposed, recorded as a dogfood record (a dated record of a real run under `docs/reviews/`). No speculative skill is promoted.
+**The bar gates promotion, not drafting.** A draft may be written freely: it reaches no adopter without `--include-drafts`. Promotion to shipped needs real use on real work and iteration from what that use exposed, recorded as a **dogfood record**: a file under `docs/reviews/` whose path contains `dogfood` and that names the skill, by its name or as `<name>/SKILL.md`. No speculative skill is promoted.
 
 **A draft expires.** Its age counts from `metadata.drafted` (YYYY-MM-DD), or, when that is absent, from the first commit of its `SKILL.md`. A draft over **90 days** old with no dogfood record is promoted, extended, or removed. An extension is `extended: "YYYY-MM-DD: <reason>"` under `metadata`, quoted because the value holds a colon, and the 90 days then count from that date.
 
