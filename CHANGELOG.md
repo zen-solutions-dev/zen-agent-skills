@@ -70,6 +70,8 @@ Contents, derived from the task log (2026-07-23 to 2026-07-29, now in [`docs/his
 
 ## Task log
 
+- [x] (2026-11-25) Released v0.2.0 (pull request #119, `main` e694817) and ran Campaign G's first slice in the Zen product app: its build plan moved onto quests, and one quest ran end to end, both independently verified. [Run record](docs/reviews/2026-11-25-rollout-first-adopter.md).
+
 - [x] (2026-11-25) Closed [`feat-0109`](.quests/done/feat-0109-integrate-the-round-2-ledgers-and-listings.md): round 2's changelog lines, roadmap section and Current state, the six drafts listed in `zen` and the catalog, the gate bridges removed, `doc-sync`, and the close round's one fix round.
 
 - [x] (2026-11-25) Closed [`feat-0108`](.quests/done/feat-0108-ship-and-learn-for-round-2.md): `house-review` checks guards and adds a security axis (`S-026`, `S-027`, pending approval), `pr-describe` opens on a visual, `retro` reads the declined register; drafts `teach`, `vet-skill`, `prototype`, `wayfinder`, `wait-what`.
