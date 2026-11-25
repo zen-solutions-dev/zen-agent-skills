@@ -37,6 +37,21 @@ Integration branch: **`zen/marjana-r2-2026-11-25`**, cut from `developer` at `ba
 - Contextual emojis in chat messages. Repository files keep the house style.
 - Every question with choices or free-form input goes through the clickable picker, never a wall of text to scroll. This supersedes the handoff's section 7 suggestion of a plain-conversation round.
 
+## The orchestrator's own Wave 1 items (`chore-0104`)
+
+**B5, done 2026-11-25.** A personal cloud environment `zen-agent-skills` (`env_011PpDpVBLXkHjUyyytf9Sdb`), approved by the maintainer in its prompt, saved for this repository. Its setup script installs the kit with drafts (`python3 scripts/install.py --include-drafts`), run first by hand from the checkout's parent and seen to place every skill. Network: limited to `github.com`, `raw.githubusercontent.com`, `codeload.github.com`, `api.github.com`, package registries and MCP servers. The Default environment is unchanged. Wave 2 children start on it.
+
+**B13, triaged 2026-11-25.** WS-D's `retro` run of 2026-11-24 was report-only, and its proposals survive only as the summary in [`2026-11-24-dogfood/ws-d.md`](2026-11-24-dogfood/ws-d.md); no branch holds their full text (`git grep` over every remote ref, 2026-11-25).
+
+| Id | What survives | Triage |
+|---|---|---|
+| `R-101` | CI on the integration prefix | **Dismissed.** Its premise was wrong (`ws-d.md` says so), and B10 put CI on integration branches at Later. |
+| `R-102` | The plan's skill limits as `validate-skills.py` errors, a ratchet | **Accepted**, not built this round: reserved as `chore-0116`. |
+| `R-103` | A closed quest with no changelog line, a ratchet | **Accepted**, not built this round: reserved as `chore-0117`, with `R-105`. |
+| `R-104` | Nothing beyond its id | **Lost.** Not reconstructed. |
+| `R-105` | A `parent` that resolves nowhere, a ratchet | **Accepted**, with `R-103` in `chore-0117`. |
+| `R-106` | Nothing beyond its id | **Lost.** Not reconstructed. |
+
 ## Waves and workstreams
 
 Each workstream is one child session with disjoint owned paths. Quest ids are reserved here. Every id below is written in the old `.tasks/` form until Wave 0 lands, and in the `.quests/` form after.
