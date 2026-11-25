@@ -18,6 +18,8 @@ fix, the third run is the maintainer's reading at approval. Both runs are record
 [`ws-b.md`](../reviews/2026-11-24-dogfood/ws-b.md). **Pending the maintainer's approval in the
 Marjana pull request.**
 
+**Note 2026-11-25:** the maintainer approved this contract's round 1 text on the 2026-11-25 decision sheet (decision `A1`); the approval digest is not yet recorded, and the round 2 amendments below await re-approval.
+
 Six format decisions were put to the maintainer as `grill` round 1, relayed by the orchestrator,
 and the maintainer accepted each recommended answer in person on 2026-11-24: one dotted key per role
 label; `config_version` required whenever the file exists; `session_logs` may name an unchecked

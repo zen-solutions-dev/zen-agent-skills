@@ -32,14 +32,17 @@ The decisions the maintainer took on 2026-11-25, built in three waves and planne
 - **Wave 2, tracker publishing** ([`feat-0106`](.quests/done/feat-0106-tracker-publishing.md)), **shipped 2026-11-25** as a draft: one-way, opt-in publishing of the tracker to GitHub issues, in the issue shape the maintainer approved, and the `triage` draft, which holds the publishing since the round 2 close; `new-quest` loads it by name, guarded.
 - **Wave 2, orchestrate and build** ([`feat-0107`](.quests/done/feat-0107-orchestrate-and-build-for-round-2.md)), **shipped 2026-11-25**: `orchestrate`'s memory, lint and mechanical merge, `systematic-debugging`'s missing rungs, and one rarity ladder for `research` and `sitrep`.
 - **Wave 2, ship and learn** ([`feat-0108`](.quests/done/feat-0108-ship-and-learn-for-round-2.md)), **shipped 2026-11-25**: `house-review`'s guards and security axis, `pr-describe`'s smallest-visual summary, `retro`'s lens and register reads, and five new drafts.
-- **Integration** (`feat-0109`, in progress): the ledgers and listings, the gate bridges removed, `doc-sync`, verification and one pull request.
+- **Integration** ([`feat-0109`](.quests/done/feat-0109-integrate-the-round-2-ledgers-and-listings.md)), **closed 2026-11-25**: the ledgers and listings, the gate bridges removed, `doc-sync`, the close round's one fix round, verification and one pull request.
 
 **Owed after this round**:
 
 - A live `--apply` of tracker publishing on a throwaway repository, run by the maintainer, before any adopter turns publishing on. Publishing and `triage` stay drafts until then.
 - `systematic-debugging`'s second independent run ([`feat-0063`](.quests/feat-0063-a-second-independent-run-of-systematic-debugging-before-it-ships.md)) before it ships.
 - `research`'s promotion, after one run outside this repository.
-- The maintainer's re-approval of the amended specs: `zen-config`, `sitrep`, `install`, `validate-skills`, `build-adapters`, `systematic-debugging`, `spec-author` and `house-review`.
+- The maintainer's re-approval of the amended specs: `zen-config`, `sitrep`, `install`, `validate-skills`, `build-adapters`, `systematic-debugging`, `spec-author` and `house-review`; and recording, as an approval digest, the round 1 approvals the decision sheet gave on 2026-11-25 (A1 `zen-config`, A3 `verifier-agent`, A7 `cloud-executable`), which the spec files still mark as pending. Six further specs carry rename-only edits from the quest rename: `tracker-links`, `cloud-executable`, `agent-observatory`, `verifier-agent`, `test-author`, `doc-sync`.
+- F7, the people the maintainer named to learn from: recorded in the [decision record](docs/reviews/2026-11-25-marjana-decisions.md) as the source list for later research rounds; nothing was built from it this round.
+- G2 (branch clean-up) and G3 (the brain-dump PR in the ops repository): "Not yet" on the decision sheet; B10 (CI on integration branches): "Later". Each waits on the maintainer.
+- A nit from the close round's re-check: the guard-sentence check still lets an ATX heading directly under a guard line, with no blank line between, borrow a later "; otherwise". No quest reserved yet.
 - Reserved quests, not yet written: `chore-0116` (retro `R-102`, the plan's skill limits as validator errors), `chore-0117` (`R-103` and `R-105`, a closed quest with no changelog line and a `parent` that resolves nowhere), and `chore-0118` (the 24 quoted phrases `R-004` found unresolved, after which the audit fails).
 - `quest-tracker`'s own use of "quest" and "quest chain" for a run of steps on its page (decision `R2-8`), in a later round.
 - E7's verified installs: the Codex sidecar and the Copilot target are tested, but no Codex or Copilot session has run them ([`chore-0083`](.quests/chore-0083-no-codex-session-has-ever-exercised-the-codex-wiring.md), and the [platform dogfood record](docs/reviews/2026-11-25-dogfood/platform.md)); a verified install of each is owed.

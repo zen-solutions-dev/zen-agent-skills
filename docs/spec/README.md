@@ -83,6 +83,8 @@ digest cannot say: it tells you that the text moved, not where.
 
 ### The author's re-approval queue
 
+**Note 2026-11-25:** the table below predates the two Marjana rounds. The current queue, including every amendment of 2026-11-24 and 2026-11-25 and the round 1 approvals still to be recorded as digests, is in `ROADMAP.md`, "Owed after this round"; `spec_digest.py --queue` stays the mechanical check.
+
 Every spec listed below is approved and carries an amendment the author has not re-read. Some carry
 more than one: `install` carries two, `build-adapters` four, since `chore-0043`, again since
 `chore-0062`, and again since `chore-0087`, `cloud-executable` four, since `chore-0061`, again
