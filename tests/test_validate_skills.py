@@ -1408,7 +1408,9 @@ class TestSupportingFileLinkChecks(unittest.TestCase):
         # tier-stripping.md` and `migrate-a-tracker.md`, and two templates, `zen.md.tmpl`
         # and `agent-skills.md.tmpl`.
         # feat-0094 added `quest-tracker/references/why-claims.md`, the body's notes moved out.
-        self.assertEqual(counts, {"markdown": 20, "template": 10, "other": 9})
+        # feat-0102 moved `improve-architecture/references/vocabulary.md` out of the skill, to
+        # the rules lens `.agents/rules/deep-modules.md`.
+        self.assertEqual(counts, {"markdown": 19, "template": 10, "other": 9})
 
     def test_a_byte_cache_is_not_counted_as_a_supporting_file(self):
         # The count has to be a fact about the kit and not about whether the tests have

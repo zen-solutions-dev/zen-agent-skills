@@ -356,3 +356,13 @@ The reason is mechanical: the `main protection` ruleset demands an extra approvi
 ### Contribution bar
 
 A skill earns a place in this kit only if it is something the author actually uses and has iterated on. Do not add speculative skills. A freshly drafted skill stays `in_progress` (or is marked as a draft in `ROADMAP.md`) until it has been used and refined; only then is it "shipped." Hyper-specific personal skills stay out of the shared kit (see `docs/CATALOG.md` tiers).
+
+## Why the contribution bar gates promotion, and why drafts expire
+
+Recorded 2026-11-25 by `feat-0102`, from the maintainer's decisions `D1` and `D2` in the [decision sheet](../reviews/2026-11-25-marjana-decisions.md). The [coverage map](../reviews/2026-11-25-skills-coverage-map.md) (section 4, rules 1 and 2) found the bar being read as a bar on writing a draft at all: it had kept `prototype`, `wait-what` and `wayfinder` unwritten, although a draft reaches no adopter without `--include-drafts`. The bar's value is that the catalog is honest about what has run, and that is a property of promotion, so the gate moved there. Free drafting has its own failure, a drafts folder that only grows, so a draft now expires after 90 days without a dogfood record and someone has to decide: promote, extend with a dated reason, or remove. `feat-0103` builds the warning; the key names (`metadata.drafted`, `metadata.extended`) and the number are fixed here so both sides agree.
+
+The personal-tier exclusion had been applied to `teach`, a general skill, because its first use was personal. The maintainer made shareability the only filter: could someone else use it on their own work. The hyper-specific personal pipelines the tier was written for stay out under that test anyway.
+
+## Why a shipped skill may load a draft by name
+
+Recorded 2026-11-25 by `feat-0102`, from decision `R2-3` of the [round 2 plan](../reviews/2026-11-25-marjana-r2-plan.md) (coverage map, section 4, rule 9). Two rules collided: a relative link to a sibling is an install edge, so a shipped skill cannot link a draft; and "composition must load" says a backticked name is only a mention, which an agent reads as background. A shipped skill could therefore never use a draft it would benefit from (`tdd` with `systematic-debugging`, `zen` with `research`). The guarded form keeps both rules: the name stays in backticks, so nothing is installed, and the sentence is an explicit load with a fallback, so the step works with or without the draft. The exact wording is fixed so `validate-skills.py` can recognise it rather than guess at intent.

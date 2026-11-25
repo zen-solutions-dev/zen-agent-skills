@@ -225,3 +225,14 @@ The rename from tasks to quests (maintainer decision R2-4) amended the contract:
 | Scenarios | S-008 a value outside a closed set fails, as amended | Conformed | `ZEN_CHOICES["tracker"]` is `quests`, `tasks`, `github`, `gitlab`, `other` | `test_s008_a_tracker_outside_the_set_fails` (unchanged); the allowed list it names now includes `quests` |
 | Scenarios | S-033 a tracker without labels gets no label command, as amended | Conformed | `init-worktracking` step 6 names `quests` (or its alias `tasks`) and `other` | Not exercised: no configure run happened after the amendment |
 | Scenarios | S-043 the old tracker name is accepted | Conformed | `ZEN_CHOICES["tracker"]` keeps `tasks`; `TASKS_DIR` is the validator's own directory, so it reads `.tasks/` or `.quests/` alike | `test_s043_the_old_tracker_name_is_accepted`, both values by both directories by both copies; removing `tasks` from the set fails it (mutation run 2026-11-25). A scratch repository with `.tasks/` and `tracker: tasks` validated clean: [`quests.md`](../reviews/2026-11-25-dogfood/quests.md) |
+
+## Amended by feat-0102, 2026-11-25, by the implementer, not re-audited
+
+Maintainer decision C1 added the `self-merge-sampled` opt-in to `merge_policy` (S-044 to S-046). The reader is prose, the autonomy lens's rule `A8`, so its rows are audited for presence and wording only; no skill acts on the opt-in yet (`orchestrate` and `pr-describe` are later children's), and no repository has turned it on. Like the rows above these are the implementer's, and wait on a fresh audit (`A7`) and the maintainer's re-approval of the amendment.
+
+| Section | Element | Status | Implementation | Evidence |
+|---|---|---|---|---|
+| Scenarios | S-044 a self-merge opt-in is read with its rate | Conformed (prose) | [`autonomy.md`](../../.agents/rules/autonomy.md) `A8`, "Second exception, opt-in": "whose `merge_policy` value then begins with the word `self-merge-sampled`, optionally followed by a rate `1/N` ... `1/5` when absent" | No run: no repository sets the value, and no skill reads it yet |
+| Scenarios | S-045 anything else leaves self-merge off | Conformed (prose) | `A8`: "Any other value, an absent key, an unreadable file, or a rate outside that range means off, and `A8` applies unchanged" | No run. The lens does not restate the `1/05` and digit-token cases; it points at this contract for the format |
+| Scenarios | S-046 the validator does not judge the opt-in | Conformed | Unchanged `zen_config_findings()`: `merge_policy` is in the free-text set S-027 covers | `test_zen_config.py`'s S-027 test covers any non-empty value; no test names `self-merge-sampled`, owed to `feat-0103` if wanted |
+| Proposed Surface | `merge_policy` row and the Readers row for the lens | Conformed (prose) | The two table rows in [`zen-config.md`](zen-config.md) | Read against `A8` on 2026-11-25: the word, the rate range and the default agree |

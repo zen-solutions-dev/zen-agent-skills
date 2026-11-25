@@ -33,6 +33,14 @@ validator now sits in `.quests/validate.py`, or in `.tasks/validate.py` in a rep
 the old directory. **This amendment needs the maintainer's re-approval in the round 2 pull
 request.**
 
+**Amended 2026-11-25 by `feat-0102`** (maintainer decision C1 in the
+[decision sheet](../reviews/2026-11-25-marjana-decisions.md): verified two-way-door pull requests
+may merge themselves, per repository, opt-in, with sampling): `merge_policy` stays free text, and a
+value that begins with the word `self-merge-sampled` now also turns that opt-in on, read by the
+autonomy lens's rule `A8` (new S-044 to S-046, the `merge_policy` row and the Readers table below).
+Off stays the default: every other value, and an absent key, means no self-merge. The validator does
+not change. **This amendment needs the maintainer's re-approval in the round 2 pull request.**
+
 The path and the block format become a one-way door once an adopter
 configures a repository against them, which is why this contract exists before anyone outside this
 repository reads the file.
@@ -411,6 +419,39 @@ Added 2026-11-25 by `feat-0101`.
 - **When** the shipped `validate.py` runs, from `.tasks/` or from `.quests/`
 - **Then** it reports nothing about `tracker` and exits as it would for `tracker: quests`.
 
+### Scenario S-044: a self-merge opt-in is read with its rate
+
+Added 2026-11-25 by `feat-0102`.
+
+- **Given** a configuration whose `merge_policy` is `self-merge-sampled 1/4; a person merges
+  developer into main`, or `self-merge-sampled`, or `self-merge-sampled; a person reviews samples`
+- **When** an agent applying the autonomy lens's `A8` reads it to decide whether it may merge a
+  verified two-way-door pull request into `base_branch`
+- **Then** it treats sampled self-merge as on, with a sampling rate of one in 4 for the first value
+  and one in 5 for the other two, and still applies every guard `A8` lists.
+
+### Scenario S-045: anything else leaves self-merge off
+
+Added 2026-11-25 by `feat-0102`.
+
+- **Given** a configuration with no `merge_policy`, or `merge_policy: none`, or a value that does
+  not begin with the exact lower-case word `self-merge-sampled` (such as `Self-merge-sampled`,
+  `allow self-merge-sampled`, `self-merge-sampled-ish`), or that begins with it followed by a token
+  starting with a digit that is not `1/N` with N a whole number from 1 to 20 written without a
+  leading zero (such as `1/0`, `1/21`, `2/5`, `1/05`), or a file the reader cannot parse
+- **When** an agent applying `A8` reads it
+- **Then** it treats sampled self-merge as off and merges nothing into `base_branch`, and names
+  the value it read, when there is one, in its report.
+
+### Scenario S-046: the validator does not judge the opt-in
+
+Added 2026-11-25 by `feat-0102`.
+
+- **Given** any non-empty `merge_policy`, including `self-merge-sampled 1/0`
+- **When** the shipped `validate.py` runs
+- **Then** it reports no error for that key, as S-027 says; a malformed opt-in fails safe at the
+  reader (S-045) rather than at the validator.
+
 ## Proposed Surface
 
 **File**: `docs/agents/zen.md`, from the repository root. Prose for people, then one block:
@@ -458,7 +499,7 @@ leading `./`. Each segment must match the name on disk in letter case.
 | `standards` | The documents a review judges written standards against: comma-separated files, each trimmed of surrounding spaces, or `none` alone |
 | `acceptance` | The one command that decides whether a change is acceptable |
 | `base_branch`, `integration_prefix` | Where work lands, and the prefix integration branches carry |
-| `merge_policy` | One line of prose: who merges what into where |
+| `merge_policy` | One line of prose: who merges what into where. A value whose first word is exactly `self-merge-sampled` (followed by the end of the value, a space or `;`) opts the repository into sampled self-merge of verified two-way doors (S-044); a token after it that starts with a digit is the sampling rate and must be `1/N`, N from 1 to 20 with no leading zero, else the opt-in is off (S-045); with no such token the rate is `1/5`. Any other value leaves it off |
 | `session_logs` | The directory where the harness keeps session transcripts for this repository: one of the outside spellings defined under Paths (not checked), a repository path (checked), or `none` |
 | `default_mode` | `afk` (runs with nobody watching) or `hitl` (a person stays in the loop), for a task whose `mode` is empty; `hitl` when this key is absent |
 
@@ -467,11 +508,12 @@ leading `./`. Each segment must match the name on disk in letter case.
 finding at once, except that a newer `config_version` is reported alone. `--links` does not check
 the file.
 
-**Readers**: this contract binds the skills below. Each reads its keys from a parseable file of a
+**Readers**: this contract binds the skills below, and one lens. Each reads its keys from a parseable file of a
 known version without running the validator; a key it does not know is ignored, and a key whose
 value falls outside its closed set or names a missing path is treated as absent. A fact whose key is
 absent it discovers as it does without this file (asking the person when discovery finds several
-candidates). Its reply names the source of each fact once. Other skills may become readers later by
+candidates). Its reply names the source of each fact once. The self-merge opt-in is the exception to
+discovery: absent means off, and nothing is asked or inferred (S-045). Other skills may become readers later by
 amendment.
 
 | Skill | Keys it reads |
@@ -480,6 +522,7 @@ amendment.
 | `grill` | `glossary`, `adr_dir` |
 | `spec-author` | `spec_dir` |
 | `new-quest` | `acceptance`, `glossary`, `default_mode` |
+| The autonomy lens (`.agents/rules/autonomy.md`, rule `A8`), from `feat-0102` | `merge_policy` (the `self-merge-sampled` opt-in only), `base_branch` |
 
 **Pointer block** in `AGENTS.md`: exactly this text, a heading and one line; the section ends at
 the next heading of level two or higher:

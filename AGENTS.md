@@ -46,7 +46,7 @@ Lifecycle `open -> in_progress -> done`. On completion:
 
 - `.agents/skills/<name>/SKILL.md`: frontmatter `name` and `description`, then a harness-agnostic body. The description says what the skill does and when to use it, third person, key use case first (`validate-skills.py` warns over 700 characters). Aim under about 500 lines; supporting files (`templates/`, `references/`) one level deep. Lint with `python scripts/validate-skills.py`.
 - **Model-invoked by default.** A skill a person starts by name (orchestrator, scaffold, router) declares `invocation: user` under `metadata`, never as a top-level key: claude.ai and the Skills API accept only six frontmatter keys.
-- **A new skill is a draft**, `status: draft` under `metadata`, placed only with `--include-drafts`. A shipped skill names a draft sibling in backticks, never as a relative link.
+- **A new skill is a draft**, `status: draft` and `drafted: YYYY-MM-DD` under `metadata`, placed only with `--include-drafts`. Drafting is free; promotion is gated (section 7), and a draft expires. A shipped skill names a draft sibling in backticks, never as a relative link; to compose one, it loads it by name with the guarded form in section 5.
 - **Two body shapes, both valid.** A workflow carries ordered steps; a lens, composed into another skill, carries `Intent`, `Workflow` and `Output`, and says "This skill is a lens" in its body. Neither is retrofitted onto the other. The skill declares its shape; the validator enforces it.
 - **Every skill points at every universal lens**, each lens that says `**Scope: universal.**` in its opening (today [`house-style.md`](.agents/rules/house-style.md) and [`autonomy.md`](.agents/rules/autonomy.md)). A topical lens such as [`review-quality.md`](.agents/rules/review-quality.md) is composed only by skills that use it.
 - **Whose conventions.** A skill producing its own output follows this kit's house style; a skill writing into a target repository follows that repository's conventions, with this kit's only as the fallback here. A skill that does both says which applies where.
@@ -58,6 +58,7 @@ Lifecycle `open -> in_progress -> done`. On completion:
 - **No tool lock-in in skill bodies.** Gate a single-harness capability behind a clearly labelled optional section.
 - **Links resolve where the skill is used.** A skill's link may reach its own files, a sibling skill, or `.agents/rules/`, nothing above. Name any other file in prose. `validate-skills.py` fails on an escape.
 - **A relative link to a sibling `SKILL.md` is a profile edge**: [`install.py`](scripts/install.py) pulls that sibling, and everything it links, into the profile. Link only a sibling the skill composes and is broken without; merely naming one is backticks.
+- **A draft is loaded by name, guarded.** A shipped skill composes a draft sibling with exactly this form: a sentence that starts ``If `<name>` is installed, read and follow it``, then, in the same sentence, a fallback clause starting `; otherwise`, as in ``If `research` is installed, read and follow it now; otherwise answer from the sources already in hand.`` The name stays in backticks, never a relative link, so it draws no install edge, and the run is whole without the draft.
 
 ## 6. Conventions
 
@@ -89,7 +90,11 @@ Material adapted from elsewhere carries a provenance block. The convention (fiel
 
 ## 7. Contribution bar
 
-A skill earns a place only if its author actually uses it and has iterated on it. No speculative skills. A drafted skill stays a draft until used and refined; hyper-specific personal skills stay out of the shared kit.
+**The bar gates promotion, not drafting.** A draft may be written freely: it reaches no adopter without `--include-drafts`. Promotion to shipped needs real use on real work and iteration from what that use exposed, recorded as a dogfood record (a dated record of a real run under `docs/reviews/`). No speculative skill is promoted.
+
+**A draft expires.** Its age counts from `metadata.drafted` (YYYY-MM-DD), or, when that is absent, from the first commit of its `SKILL.md`. A draft over **90 days** old with no dogfood record is promoted, extended, or removed. An extension is `metadata.extended: YYYY-MM-DD: <reason>`, and the 90 days then count from that date.
+
+**Shareability is the only scope filter.** A skill belongs in the kit when someone other than its author could use it on their own work. A general skill is not excluded for having started as one person's habit; a hyper-specific personal pipeline (one person's content workflow, one client's process) stays out.
 
 ## Agent skills
 

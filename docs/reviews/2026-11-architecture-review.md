@@ -25,7 +25,7 @@ The top of the list is ledgers (`CHANGELOG.md` 68 changes, `ROADMAP.md` 23), whi
 
 ## Candidates
 
-Terms are those of [`vocabulary.md`](../../.agents/skills/improve-architecture/references/vocabulary.md). Dependency categories are its four: in-process, local stand-in, owned remote, third-party.
+Terms are those of [`vocabulary.md`](../../.agents/rules/deep-modules.md). Dependency categories are its four: in-process, local stand-in, owned remote, third-party.
 
 ### 1. One owner for skill frontmatter (Strong, in-process)
 

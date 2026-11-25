@@ -19,7 +19,7 @@ is harder to explore, and an agent pays for that on every task in it.
 It reports and proposes. It refactors nothing. A candidate the person picks becomes a spec
 (`spec-author`) or a task (`new-quest`).
 
-Every suggestion uses the vocabulary in [`references/vocabulary.md`](references/vocabulary.md)
+Every suggestion uses the vocabulary in the deep-module lens, [`deep-modules.md`](../../rules/deep-modules.md),
 exactly: **module**, **interface**, **implementation**, **depth**, **seam**, **adapter**,
 **leverage**, **locality**, and the **deletion test**. Read it before Step 2.
 
