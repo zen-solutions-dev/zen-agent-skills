@@ -21,6 +21,9 @@ Integration branch: **`zen/marjana-r2-2026-11-25`**, cut from `developer` at `ba
 | R2-5 | The hierarchy's names | **Campaign** (was Epic), **Quest chain** (was Feature), **Quest** (was Task). A quest in no chain is a **Side quest**. |
 | R2-6 | What the rarity colours mean | **Source reliability**, for research and citations: white unverified, green secondary, blue checked against the source, purple primary source cited, gold primary and independently confirmed. |
 | R2-7 | When the rename happens | **First, alone**, as Wave 0 before any other child starts, so every later child writes quests. |
+| R2-8 | `quest-tracker` already says "quest" and "quest chain" for a run of steps on its page | **Fix in a later round** (show real quests on the page, or rename its term). Round 2 keeps the one clarifying sentence Wave 0 added. |
+| R2-9 | `sitrep`'s white-to-gold evidence tiers against the new rarity ladder | **One ladder** for sources and figures alike. Built in Wave 2 with R2-6 in `research` (`feat-0107`), reconciling `sitrep`'s tiers. |
+| R2-10 | Do the old names (`.tasks/`, `tracker: tasks`, `new-task`) ever expire? | **Warn, then remove.** The validator, `sitrep` and `install.py` warn on an old name from this round (`feat-0103`, which also owns `.quests/validate.py` for this change); the aliases are removed at the **second tagged release**, so the first release carries the warning. |
 
 ### Two-way decisions this session took, each with its revert
 
