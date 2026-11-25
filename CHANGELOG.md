@@ -6,7 +6,9 @@ Completed work for Zen Agent Skills, newest first. This is the append-only ledge
 
 ## Releases
 
-### Unreleased: the 2026-11-24 Marjana overhaul and the 2026-11-25 round 2
+### Unreleased
+
+### v0.2.0 (2026-11-25): the 2026-11-24 Marjana overhaul and the 2026-11-25 round 2
 
 Not yet a version: `VERSION` holds `0.1.0`, the last tag, and the next release is cut only on the maintainer's go ([`docs/RELEASING.md`](docs/RELEASING.md)). It carries both Marjana rounds.
 
