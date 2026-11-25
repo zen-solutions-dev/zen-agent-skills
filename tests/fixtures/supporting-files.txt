@@ -27,11 +27,14 @@ template init-worktracking/templates/zen.md.tmpl
 markdown new-quest/references/why-these-rules.md
 markdown orchestrate/references/claude-code.md
 markdown orchestrate/references/first-run.md
+markdown pr-describe/references/visuals.md
 other project-bootstrap/templates/editorconfig
 other project-bootstrap/templates/eslint.config.mjs
 markdown project-bootstrap/templates/house-code-style.md
 other project-bootstrap/templates/prettierrc.json
 other project-bootstrap/templates/ruff.toml
+markdown prototype/references/logic.md
+markdown prototype/references/ui.md
 markdown quest-tracker/references/authoring-guide.md
 markdown quest-tracker/references/why-claims.md
 other quest-tracker/scripts/tracker.py
@@ -41,3 +44,4 @@ other sitrep/scripts/sitrep.py
 other spec-author/scripts/spec_digest.py
 markdown systematic-debugging/references/red-flags.md
 markdown tdd/references/examples.md
+markdown wayfinder/references/map-format.md
