@@ -2,7 +2,7 @@
 id: feat-0108
 title: Sharpen the ship-and-learn skills and draft teach, vet-skill, prototype, wayfinder and wait-what
 type: feat
-status: in_progress
+status: done
 priority: P1
 parent: "Marjana round 2, Wave 2: Ship and learn (docs/reviews/2026-11-25-marjana-r2-plan.md)"
 depends_on: []
@@ -32,22 +32,22 @@ created: 2026-11-25
 ## Problem
 
 Five items from the maintainer's decisions of 2026-11-25
-([`2026-11-25-marjana-decisions.md`](../docs/reviews/2026-11-25-marjana-decisions.md)) fall to the
+([`2026-11-25-marjana-decisions.md`](../../docs/reviews/2026-11-25-marjana-decisions.md)) fall to the
 skills that ship and learn from work:
 
-- **E8.** [`pr-describe`](../.agents/skills/pr-describe/SKILL.md) asks for a Summary of "one to three
+- **E8.** [`pr-describe`](../../.agents/skills/pr-describe/SKILL.md) asks for a Summary of "one to three
   sentences", and the coverage map's `pr` row found the smallest-visual summary missing. D4 allowed
   code-shaped sketches in `house-style.md` (`feat-0102`), and nothing tells the skill to use the
   glossary's terms.
-- **B9.** [`house-review`](../.agents/skills/house-review/SKILL.md)'s spec axis reads the contract's
+- **B9.** [`house-review`](../../.agents/skills/house-review/SKILL.md)'s spec axis reads the contract's
   requirements and not its guards. `R-209` in
-  [`2026-11-24-retro-marjana.md`](../docs/reviews/2026-11-24-retro-marjana.md) counts three of five
+  [`2026-11-24-retro-marjana.md`](../../docs/reviews/2026-11-24-retro-marjana.md) counts three of five
   landing reviews where a change contradicted its own contract's guard.
 - **C3.** `review-quality.md` gained a security axis and a smell baseline in `feat-0102`, and
   `deep-modules.md` became a lens; `house-review` loads none of them at the step that uses them. The
-  approved contract [`docs/spec/house-review.md`](../docs/spec/house-review.md) has no scenario for
+  approved contract [`docs/spec/house-review.md`](../../docs/spec/house-review.md) has no scenario for
   either the guards or the security axis.
-- **E4, E9.** [`retro`](../.agents/skills/retro/SKILL.md) reads `writing-for-agents.md` only when
+- **E4, E9.** [`retro`](../../.agents/skills/retro/SKILL.md) reads `writing-for-agents.md` only when
   it writes a proposal, not while it classifies a no-op or misplaced instruction, and it reads no
   register of declined ideas, so it can re-propose what the maintainer already declined.
 - **C2, C4, E5, `wait-what`.** No skill teaches a concept to the person, vets another author's skill

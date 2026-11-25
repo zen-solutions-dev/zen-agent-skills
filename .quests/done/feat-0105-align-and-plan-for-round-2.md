@@ -2,7 +2,7 @@
 id: feat-0105
 title: Build the round 2 align and plan items in grill, spec-author, new-quest, zen, domain-language and doc-author
 type: feat
-status: in_progress
+status: done
 priority: P1
 parent: "Marjana round 2, Wave 2: Align and plan (docs/reviews/2026-11-25-marjana-r2-plan.md)"
 depends_on: []
@@ -31,14 +31,14 @@ created: 2026-11-25
 
 ## Problem
 
-The maintainer answered E1, E4 and E9 "Do it" ([decisions record](../docs/reviews/2026-11-25-marjana-decisions.md)), and the [round 2 plan](../docs/reviews/2026-11-25-marjana-r2-plan.md) gives them to this workstream with three items from the [coverage map](../docs/reviews/2026-11-25-skills-coverage-map.md) (rows `grill-with-docs`, `to-spec`, `to-tickets`, `implement`, `wizard`, rule 14) and the [podcast notes](../docs/reviews/2026-11-25-podcast-extraction.md) (section 5, items 3, 4, 20, 28, 29):
+The maintainer answered E1, E4 and E9 "Do it" ([decisions record](../../docs/reviews/2026-11-25-marjana-decisions.md)), and the [round 2 plan](../../docs/reviews/2026-11-25-marjana-r2-plan.md) gives them to this workstream with three items from the [coverage map](../../docs/reviews/2026-11-25-skills-coverage-map.md) (rows `grill-with-docs`, `to-spec`, `to-tickets`, `implement`, `wizard`, rule 14) and the [podcast notes](../../docs/reviews/2026-11-25-podcast-extraction.md) (section 5, items 3, 4, 20, 28, 29):
 
-1. E4 in [`grill`](../.agents/skills/grill/SKILL.md): settled terms go to the glossary as they land, through `domain-language`; exploration finishes before the first question; a rename is offered when a term collides; a dictated brain dump is accepted whole; one question on module shape, in the terms of [`deep-modules.md`](../.agents/rules/deep-modules.md).
-2. [`spec-author`](../.agents/skills/spec-author/SKILL.md): a synthesise-only mode for a decisions record already confirmed in the conversation. Amends the approved [`spec-author.md`](../docs/spec/spec-author.md).
-3. [`new-quest`](../.agents/skills/new-quest/SKILL.md): prefactor first, and E1, one test-seams list per plan.
-4. [`zen`](../.agents/skills/zen/SKILL.md): a one-quest flow line, and the bug chain `systematic-debugging` then `tdd`.
+1. E4 in [`grill`](../../.agents/skills/grill/SKILL.md): settled terms go to the glossary as they land, through `domain-language`; exploration finishes before the first question; a rename is offered when a term collides; a dictated brain dump is accepted whole; one question on module shape, in the terms of [`deep-modules.md`](../../.agents/rules/deep-modules.md).
+2. [`spec-author`](../../.agents/skills/spec-author/SKILL.md): a synthesise-only mode for a decisions record already confirmed in the conversation. Amends the approved [`spec-author.md`](../../docs/spec/spec-author.md).
+3. [`new-quest`](../../.agents/skills/new-quest/SKILL.md): prefactor first, and E1, one test-seams list per plan.
+4. [`zen`](../../.agents/skills/zen/SKILL.md): a one-quest flow line, and the bug chain `systematic-debugging` then `tdd`.
 5. E9: a declined-ideas register that `zen` reads before recommending a new skill.
-6. E9: a standard-library wizard library in [`doc-author`](../.agents/skills/doc-author/SKILL.md).
+6. E9: a standard-library wizard library in [`doc-author`](../../.agents/skills/doc-author/SKILL.md).
 
 ## Scope
 
@@ -69,7 +69,7 @@ Touches six skills and an approved contract. Each item is its own edit to one sk
 
     ZEN_CHECKS_SCOPE=full python3 scripts/run-checks.py
 
-- [ ] Every changed skill was dogfooded or recorded as not exercised, with the reason, in [the dogfood record](../docs/reviews/2026-11-25-dogfood/align.md).
+- [ ] Every changed skill was dogfooded or recorded as not exercised, with the reason, in [the dogfood record](../../docs/reviews/2026-11-25-dogfood/align.md).
 - [ ] `docs/spec/spec-author.md` carries a dated amendment naming `feat-0105`, flagged for re-approval, and its conformance matrix covers `S-012`.
 
 ## Definition of done

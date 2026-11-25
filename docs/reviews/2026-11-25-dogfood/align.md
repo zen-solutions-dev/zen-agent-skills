@@ -29,7 +29,7 @@ Before any work, `ZEN_CHECKS_SCOPE=full python3 scripts/run-checks.py` passed on
 
 ## `new-quest`: prefactor and the test-seams record
 
-**Ran on.** This quest's own file, [`feat-0105`](../../../.quests/feat-0105-align-and-plan-for-round-2.md), id reserved by the round 2 plan.
+**Ran on.** This quest's own file, [`feat-0105`](../../../.quests/done/feat-0105-align-and-plan-for-round-2.md), id reserved by the round 2 plan.
 
 **Evidence.** Step 4's prefactor bullet was answered in one line ("none", with the reason); the test-seams bullet produced two seams at the highest points (`run-checks.py`, and the wizard library at `Wizard.run`), each with what it catches and misses, recorded once in the quest's Implementation notes, as the step says for a plan with no Quest chain entry. `python3 .quests/validate.py --strict` then reported two errors: `id_high_water['feat'] is 103 but feat-0105 already exists`, and an unresolved link to this record before it existed. Step 6's manifest raise (to 105) and this file cleared both.
 
