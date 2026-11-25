@@ -86,7 +86,7 @@ The maintainer's answers to the "Marjana Decision Sheet" (private artifact https
 |---|---|---|
 | G1 | `developer` brought up to `main` | Do it for me |
 | G2 | Branch clean-up | Not yet |
-| G3 | The brain-dump PR in `zen-solutions-ops` | Not yet |
+| G3 | The brain-dump PR in the ops repository | Not yet |
 | G4 | A scheduled research refresh | Yes, every two weeks |
 | G5 | Archive the finished child sessions | Archive them |
 | G6 | Keep the meta-analysis | Commit it to docs/reviews |

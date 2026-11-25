@@ -6,7 +6,7 @@ Status: **plan only, nothing built.** Written 2026-11-25 for quest [`chore-0114`
 
 A way to **run** code the maintainer did not write (a third-party skill's scripts, the reproduction steps in an issue, a contributor's tests) where it cannot read secrets, reach the network, or change the real checkout, and to get back only a report. Today the kit's answer is never to run it at all; that is safe and leaves questions unanswered ("does this skill's script do what it says?", "does this issue reproduce?").
 
-The source is thin: Matt Pocock's Sandcastle, "his open-source TypeScript agent orchestrator: 'drop in any agent and run them in sandboxes,' Docker, Podman, Vercel" ([extraction](2026-11-25-podcast-extraction.md), section 2, "Tools and stack", ~1:27:30 to ~1:27:40). The extraction notes "Sandboxes appear only through Sandcastle" and nothing on vetting third-party skills (section 4, "Security"). The rest of this plan rests on the kit's own lessons.
+The source is thin: Matt Pocock's Sandcastle, "his open-source TypeScript agent orchestrator: 'drop in any agent and run them in sandboxes,' Docker, Podman, Vercel" ([extraction](2026-11-25-podcast-extraction.md), section 2, "Tools and stack", ~1:27:30 to ~1:27:40). In the extraction, Sandcastle is the only place sandboxes come up (its row in section 2, "Tools and stack"), and the podcast says nothing on vetting third-party skills (section 4, "Security"). The rest of this plan rests on the kit's own lessons.
 
 ## What exists to build on
 

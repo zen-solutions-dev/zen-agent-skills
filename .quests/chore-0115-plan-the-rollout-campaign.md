@@ -18,7 +18,7 @@ created: 2026-11-25
 
 ## Problem
 
-Phase 3 of the [round 2 handoff](../docs/reviews/2026-11-25-round-2-handoff.md) (section 6) asks for one short plan per wider goal, ending in the questions only the maintainer can answer, and says to stop and check in before building any of them. This quest is the plan for the rollout campaign: install and run the kit in each repository the maintainer keeps, the Zen product app first, as a `wayfinder` map. The round 2 plan reserves this quest for the rollout; the maintainer wants his own setup squared away so he can show others how it is done. Only he can name the repositories.
+Phase 3 of the [round 2 handoff](../docs/reviews/2026-11-25-round-2-handoff.md) (section 6) asks for one short plan per wider goal, ending in the questions only the maintainer can answer, and says to stop and check in before building any of them. This quest is the plan for the rollout campaign: install and run the kit in each repository the maintainer keeps, the Zen product app first, as a `wayfinder` map. The round 2 plan reserves this quest for the rollout; the maintainer wants the kit's own setup squared away in their repositories, to show others how it is done. Only he can name the repositories.
 
 ## Scope
 

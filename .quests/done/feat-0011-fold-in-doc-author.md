@@ -13,11 +13,11 @@ created: 2026-07-24
 
 ## Problem
 
-ROADMAP Epic A item 6 folds in `doc-author` / `doc-revise` from `zen-solutions-studio` once
+ROADMAP Epic A item 6 folds in `doc-author` / `doc-revise` from the private content repository once
 confirmed portable. `doc-author` writes new, code-grounded Markdown documentation (READMEs,
 architecture docs with Mermaid, setup/deploy guides, ADRs) matched to a reader, and can
 bootstrap a fresh repo's baseline doc set. It already exists at
-`~/.claude/skills/doc-author/SKILL.md` (byte-identical to the `zen-solutions-studio` copy,
+`~/.claude/skills/doc-author/SKILL.md` (byte-identical to the private content repository's copy,
 verified 2026-07-24), already defers to `init-worktracking` for tracking, and is pure prose
 with no harness-specific tool machinery. It is not yet a first-class kit skill.
 
@@ -35,7 +35,7 @@ use (authoring `docs/ARCHITECTURE.md`) plus user sign-off.
 **Out of scope:** blessing the skill; any portability gating or "Running this in Claude Code"
 section (this skill has no tool machinery); porting `doc-revise` (`feat-0012`) or the handoff
 skills (`feat-0009`/`feat-0010`); changing the source skill in `~/.claude/skills` or anything
-in `D:\zen-solutions-studio`.
+in `D:\<private content repository>`.
 
 ## Implementation notes
 

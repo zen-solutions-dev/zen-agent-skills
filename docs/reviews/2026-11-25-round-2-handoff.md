@@ -15,7 +15,7 @@ You start with a fresh context and no memory of the session that wrote this. The
 - **Never merge into `developer` or `main`.** The maintainer merges. Rule `A8` and its exception in `.agents/rules/autonomy.md` bind you; decision B1 loosens that exception (mechanical-only orchestrator merges, re-checked and listed in the PR), but the loosened text is a round 2 deliverable, so until it lands, land children by fast-forward only.
 - **No `Co-Authored-By` trailer** on any commit (`AGENTS.md` section 6).
 - **Do not copy Matt Pocock's files.** Write in this kit's words, with a provenance block per `CONTRIBUTING.md`, fetched with `urllib` and digested with `hashlib`.
-- **Do not touch `zen-solutions-ops` or `zen-solutions-site`.** F2 (the knowledge wiki) and G9 (the website) are separate efforts; plan them, do not build them here.
+- **Do not touch the ops repository or the website repository.** F2 (the knowledge wiki) and G9 (the website) are separate efforts; plan them, do not build them here.
 - **Do not cut a release tag** (D5) without the maintainer's go: the first tag is outward-facing.
 - **Do not schedule recurring jobs on any repository** (F1) without the maintainer naming the repository.
 - **Do not delete branches or push tags**: the session proxy refuses both (retro `R-207`). Hand those to the maintainer as commands.
@@ -66,7 +66,7 @@ You start with a fresh context and no memory of the session that wrote this. The
 
 **Phase 3: the wider goals, as plans only.** For F1 (daily improvement loop), F2 (knowledge wiki fed by channels), F3 (one shared vocabulary, the seed of the website's knowledge graph), F4 (issue-to-PR loop) and F5 (sandboxed runs): one short plan each in `docs/reviews/`, ending in the questions only the maintainer can answer. **Stop and check in** before building any of them.
 
-**Out of scope**: the website overhaul (G9: its own session, after this round); Discord and the newsletter; anything in `zen-solutions-ops`.
+**Out of scope**: the website overhaul (G9: its own session, after this round); Discord and the newsletter; anything in the ops repository.
 
 ## 7. Suggested skills
 

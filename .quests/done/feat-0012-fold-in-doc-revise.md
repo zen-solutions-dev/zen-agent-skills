@@ -13,17 +13,17 @@ created: 2026-07-24
 
 ## Problem
 
-ROADMAP Epic A item 6 folds in `doc-author` / `doc-revise` from `zen-solutions-studio` once
+ROADMAP Epic A item 6 folds in `doc-author` / `doc-revise` from the private content repository once
 confirmed portable. `doc-revise` edits existing Markdown docs surgically: reconciling a doc
 with current code, fixing cross-document links after a move, keeping a doc set consistent, and
 targeted additions, all without flattening the author's voice. It already exists at
-`D:\zen-solutions-studio\agents\skills\doc-revise\SKILL.md` (pure prose, no harness-specific
+`D:\<private content repository>\agents\skills\doc-revise\SKILL.md` (pure prose, no harness-specific
 tool machinery) and is the counterpart to `doc-author` (`feat-0011`). It is not yet a
 first-class kit skill.
 
 ## Scope
 
-**In scope:** copy `D:\zen-solutions-studio\agents\skills\doc-revise\SKILL.md` into
+**In scope:** copy `D:\<private content repository>\agents\skills\doc-revise\SKILL.md` into
 `.agents/skills/doc-revise/SKILL.md`, adapted with light kit-reference tightening only: point
 the inline "no em-dashes" convention default at the kit's swappable module
 [`.agents/rules/house-style.md`](../../.agents/rules/house-style.md) while keeping the portable intent,
@@ -33,7 +33,7 @@ user sign-off.
 
 **Out of scope:** blessing the skill; any portability gating or "Running this in Claude Code"
 section (this skill has no tool machinery); porting `doc-author` (`feat-0011`) or the handoff
-skills (`feat-0009`/`feat-0010`); changing anything in `D:\zen-solutions-studio`.
+skills (`feat-0009`/`feat-0010`); changing anything in `D:\<private content repository>`.
 
 ## Implementation notes
 

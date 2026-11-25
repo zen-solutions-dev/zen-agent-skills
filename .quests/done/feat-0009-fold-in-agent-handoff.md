@@ -16,7 +16,7 @@ created: 2026-07-24
 ROADMAP Epic A item 7 folds in `agent-handoff` / `human-handoff`, already portable by design.
 `agent-handoff` turns the current session's context into a self-contained, execution-ready
 brief a fresh session or subagent can run cold. It already exists and is battle-tested at
-`~/.claude/skills/agent-handoff/SKILL.md` (byte-identical to the `zen-solutions-studio` copy,
+`~/.claude/skills/agent-handoff/SKILL.md` (byte-identical to the private content repository's copy,
 verified 2026-07-24), and it produced the very handoff brief that scoped this fold-in work. It
 is not yet a first-class kit skill. Unlike `fix-batch`, it is pure prose with no
 harness-specific tool machinery, so this is the lightest possible port.
@@ -35,7 +35,7 @@ sign-off.
 **Out of scope:** blessing the skill; any portability gating or "Running this in Claude Code"
 section (this skill has no tool machinery); porting `human-handoff` (`feat-0010`) or the
 doc skills (`feat-0011`/`feat-0012`); changing the source skill in `~/.claude/skills` or
-anything in `D:\zen-solutions-studio`.
+anything in `D:\<private content repository>`.
 
 ## Implementation notes
 

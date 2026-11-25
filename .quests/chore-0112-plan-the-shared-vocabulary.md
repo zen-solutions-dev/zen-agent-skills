@@ -24,7 +24,7 @@ Phase 3 of the [round 2 handoff](../docs/reviews/2026-11-25-round-2-handoff.md) 
 
 **In scope:** the plan [`docs/reviews/2026-11-25-plan-f3-shared-vocabulary.md`](../docs/reviews/2026-11-25-plan-f3-shared-vocabulary.md): goal, what exists to build on (with paths), the smallest first slice, risks and one-way doors, a rough size, and the questions for the maintainer, each standing on its own with the recommended option first. Its row in [`docs/reviews/README.md`](../docs/reviews/README.md).
 
-**Out of scope:** Editing `GLOSSARY.md`, writing an export script, or touching `zen-solutions-site`. Building any slice the plan proposes: that waits on the maintainer's answers and becomes its own quests.
+**Out of scope:** Editing `GLOSSARY.md`, writing an export script, or touching the website repository. Building any slice the plan proposes: that waits on the maintainer's answers and becomes its own quests.
 
 ## Acceptance criteria (mechanically verifiable)
 

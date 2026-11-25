@@ -16,13 +16,13 @@ created: 2026-07-24
 ROADMAP Epic A item 7 folds in `agent-handoff` / `human-handoff`, already portable by design.
 `human-handoff` packages project state for a person (partner, client, or teammate) as a tuned
 document or message, with client-facing redaction. It already exists and is battle-tested at
-`D:\zen-solutions-studio\agents\skills\human-handoff\SKILL.md` (pure prose, no
+`D:\<private content repository>\agents\skills\human-handoff\SKILL.md` (pure prose, no
 harness-specific tool machinery), and is the human-reader counterpart to `agent-handoff`
 (`feat-0009`). It is not yet a first-class kit skill.
 
 ## Scope
 
-**In scope:** copy `D:\zen-solutions-studio\agents\skills\human-handoff\SKILL.md` into
+**In scope:** copy `D:\<private content repository>\agents\skills\human-handoff\SKILL.md` into
 `.agents/skills/human-handoff/SKILL.md`, adapted with light kit-reference tightening only:
 point the inline "no em-dashes" convention default at the kit's swappable module
 [`.agents/rules/house-style.md`](../../.agents/rules/house-style.md) while keeping the portable intent,
@@ -32,7 +32,7 @@ user sign-off.
 
 **Out of scope:** blessing the skill; any portability gating or "Running this in Claude Code"
 section (this skill has no tool machinery); porting `agent-handoff` (`feat-0009`) or the doc
-skills (`feat-0011`/`feat-0012`); changing anything in `D:\zen-solutions-studio`.
+skills (`feat-0011`/`feat-0012`); changing anything in `D:\<private content repository>`.
 
 ## Implementation notes
 

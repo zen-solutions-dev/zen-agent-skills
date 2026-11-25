@@ -1,6 +1,6 @@
 # Plan F3: one shared vocabulary across kit, website and courses
 
-Status: **plan only, nothing built.** Written 2026-11-25 for quest [`chore-0112`](../../.quests/chore-0112-plan-the-shared-vocabulary.md), Phase 3 of the [round 2 plan](2026-11-25-marjana-r2-plan.md). Decision F3 in [the decision record](2026-11-25-marjana-decisions.md): yes. The website (`zen-solutions-site`) is out of scope this round ([handoff](2026-11-25-round-2-handoff.md), section 3, and G9: "After the skills round"); this plan touches only what this repository would export.
+Status: **plan only, nothing built.** Written 2026-11-25 for quest [`chore-0112`](../../.quests/chore-0112-plan-the-shared-vocabulary.md), Phase 3 of the [round 2 plan](2026-11-25-marjana-r2-plan.md). Decision F3 in [the decision record](2026-11-25-marjana-decisions.md): yes. The website repository is out of scope this round ([handoff](2026-11-25-round-2-handoff.md), section 3, and G9: "After the skills round"); this plan touches only what this repository would export.
 
 ## Goal
 

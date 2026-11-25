@@ -88,7 +88,7 @@ Ordered by effort-to-value. Each item is one skill (a Quest chain). Strike throu
 3. ~~**`house-review`.** House-style review with an explicit rubric and severities, composing the swappable [`review-quality`](.agents/rules/review-quality.md) lens (moonray's quality-lens pattern).~~ **Shipped**; full entry [archived](docs/history/roadmap-2026.md#epic-a-broadly-shareable-the-public-kit-shipped-items).
 4. **`ci-scaffold`** (hold until used twice). Generate CI (lint + test + build + release) matched to the detected stack.
 5. **`release-cut`** (hold until used twice). Version bump, changelog roll-up, tag, notes.
-6. ~~**Fold in `doc-author` / `doc-revise`** from `zen-solutions-studio`.~~ **Shipped**; full entry [archived](docs/history/roadmap-2026.md#epic-a-broadly-shareable-the-public-kit-shipped-items).
+6. ~~**Fold in `doc-author` / `doc-revise`** from the private content repository.~~ **Shipped**; full entry [archived](docs/history/roadmap-2026.md#epic-a-broadly-shareable-the-public-kit-shipped-items).
 7. ~~**Fold in `agent-handoff` / `human-handoff`** (already portable by design).~~ **Shipped**; full entry [archived](docs/history/roadmap-2026.md#epic-a-broadly-shareable-the-public-kit-shipped-items).
 8. **Kit-wide skill evaluation** (recurring). Systematically exercise and evaluate every shipped skill rather than trusting the one dogfood that blessed it, then refine from what the pass finds. Each skill was blessed on a single real use, which proves it works once and leaves other branches unexercised. The three named at the outset, `verifier-agent`'s `blocked` verdict, `test-author`'s characterization mode, and `spec-plan-readiness`'s blocking paths, were all exercised on real triggers on 2026-07-27 (`feat-0024`, `feat-0027`, `feat-0028`) and each run is recorded. The recurring question is what to exercise next. Define what "evaluated" means (which behaviors must be observed, and what evidence counts), run the pass, and record per-skill findings as tasks. Decide as part of the work whether the result is a written evaluation protocol, a reusable `skill-eval` skill, or a fixture-based regression suite under `tests/`; do not presuppose the artifact. This is the natural consumer of the spine itself: specify it with `spec-author`, verify each skill with `verifier-agent`. A first read-only pass ran on 2026-07-25 and its findings are filed under [Kit hardening](#kit-hardening-from-the-2026-07-25-review-pass); that pass covered structure, status claims, and cross-references and deliberately did not exercise any skill's behavior. A second pass on 2026-07-27 did exactly that, going at what each procedure does when run, and found two blockers no reading pass had; its findings are filed under [Kit mechanics hardening](#kit-mechanics-hardening-from-the-2026-07-27-review-pass). **Absorbed 2026-08-07 by [Campaign E](#campaign-e-delegated-execution-cloud-and-unattended-work) item 6**, which answers the artifact question this item deliberately left open: a fixture-based regression suite under `tests/`, rather than a written protocol or a `skill-eval` skill. The reason it can be answered now is that the consumer arrived. An unattended batch has no human reading each run, so "exercise a skill and judge the result" stops being available and the only evaluation that survives delegation is one a command can run. The recurring question of what to exercise next stays live here; the mechanism moves there.
 
@@ -147,7 +147,7 @@ Recorded so the question is not reopened every time someone reads [`repoprompt-w
 
 ### Campaign D: personal (stays OUT of the shared kit)
 
-The Content OS pipeline (`produce`, `clip-machine`, `repurpose`, `video-editing`, `video-cutting`, `episode-brief`, `youtube-transcript`, `idea-discovery`) stays in `zen-solutions-studio` as portfolio demos, not plug-and-play kit skills.
+The Content OS pipeline (`produce`, `clip-machine`, `repurpose`, `video-editing`, `video-cutting`, `episode-brief`, `youtube-transcript`, `idea-discovery`) stays in the private content repository as portfolio demos, not plug-and-play kit skills.
 
 ### Campaign E: delegated execution (cloud and unattended work)
 
@@ -302,17 +302,17 @@ cold, and a governance feature nobody has governed anything with is exactly the 
 
 ### Campaign G: rollout (the kit in the maintainer's own repositories)
 
-Added 2026-11-25 (round 2, Phase 3). Install the kit and run it in each repository the maintainer keeps, the Zen product app first; the rest are named later by the maintainer (`wayfinder` ticket `W-01`). It is where the drafts get the real use outside this repository that promotes them. Plan: `docs/reviews/2026-11-25-plan-rollout-campaign.md`, being written; not decomposed into quest files until it is about to be built.
+Added 2026-11-25 (round 2, Phase 3). Install the kit and run it in each repository the maintainer keeps, the Zen product app first; the rest are named later by the maintainer (`wayfinder` ticket `W-01`). It is where the drafts get the real use outside this repository that promotes them. Plan: [`2026-11-25-plan-rollout-campaign.md`](docs/reviews/2026-11-25-plan-rollout-campaign.md); not decomposed into quest files until it is about to be built.
 
 ### Round 2 Phase 3: the wider goals, plans only
 
-Approved as goals by the maintainer on 2026-11-25 ([the decisions record](docs/reviews/2026-11-25-marjana-decisions.md), F1 to F5). Each has one short plan, being written; none is decomposed into quest files yet.
+Approved as goals by the maintainer on 2026-11-25 ([the decisions record](docs/reviews/2026-11-25-marjana-decisions.md), F1 to F5). Each has one short plan; none is decomposed into quest files yet.
 
-1. **F1, a daily improvement loop**: a scheduled `improve-architecture` pass that opens one pull request. No repository is named yet, and no recurring job is scheduled until the maintainer names one. Plan: `docs/reviews/2026-11-25-plan-f1-improvement-loop.md`.
-2. **F2, a knowledge wiki** fed by the maintainer's channels, a separate effort outside this repository. Plan: `docs/reviews/2026-11-25-plan-f2-knowledge-wiki.md`.
-3. **F3, one shared vocabulary** across the kit, the website and the courses. Plan: `docs/reviews/2026-11-25-plan-f3-shared-vocabulary.md`.
-4. **F4, an issue-to-PR loop** for public repositories. Plan: `docs/reviews/2026-11-25-plan-f4-issue-to-pr.md`.
-5. **F5, sandboxed runs** for untrusted code and skills. Plan: `docs/reviews/2026-11-25-plan-f5-sandboxed-runs.md`.
+1. **F1, a daily improvement loop**: a scheduled `improve-architecture` pass that opens one pull request. No repository is named yet, and no recurring job is scheduled until the maintainer names one. Plan: [`2026-11-25-plan-f1-improvement-loop.md`](docs/reviews/2026-11-25-plan-f1-improvement-loop.md).
+2. **F2, a knowledge wiki** fed by the maintainer's channels, a separate effort outside this repository. Plan: [`2026-11-25-plan-f2-knowledge-wiki.md`](docs/reviews/2026-11-25-plan-f2-knowledge-wiki.md).
+3. **F3, one shared vocabulary** across the kit, the website and the courses. Plan: [`2026-11-25-plan-f3-shared-vocabulary.md`](docs/reviews/2026-11-25-plan-f3-shared-vocabulary.md).
+4. **F4, an issue-to-PR loop** for public repositories. Plan: [`2026-11-25-plan-f4-issue-to-pr.md`](docs/reviews/2026-11-25-plan-f4-issue-to-pr.md).
+5. **F5, sandboxed runs** for untrusted code and skills. Plan: [`2026-11-25-plan-f5-sandboxed-runs.md`](docs/reviews/2026-11-25-plan-f5-sandboxed-runs.md).
 
 ---
 
