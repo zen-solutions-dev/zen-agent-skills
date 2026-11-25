@@ -3,6 +3,7 @@
 # One line per file, sorted by path, so two branches that each add a file merge as two lines
 # instead of colliding on one total (retro R-203, feat-0103). Kinds: markdown (link-checked in
 # place), template (written somewhere else), other (not markdown).
+other doc-author/scripts/wizard.py
 markdown doc-sync/references/notes.md
 markdown domain-language/references/adr-format.md
 markdown domain-language/references/glossary-format.md

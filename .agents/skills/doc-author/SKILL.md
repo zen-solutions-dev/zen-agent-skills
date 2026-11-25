@@ -41,14 +41,15 @@ Done when the type and the reader are named.
 When a runbook's steps are a fixed sequence a person performs by hand, and the same sequence will be walked again, it may ship as a small interactive script instead of prose, so the next person runs it instead of asking an agent to re-explain it. Draft it; never run it against the real service, because it acts on a person's behalf.
 
 - **Python, standard library only, never a shell script.** It runs on Windows, macOS and Linux alike, with no install step. In a repository that keeps the runbook kind (in this kit, `<spec>.runbook.md`), the script sits beside it and the Markdown file points at it.
+- **Built on the wizard library, never by hand.** Read [`scripts/wizard.py`](scripts/wizard.py) now, copy it unchanged beside the script, and write only the stages: one function per stage, run in order by its `Wizard.run`. The library carries every rule below (stages and progress, `open_url`, `ask` remembering earlier answers, `ask_secret`, `write_env`, `confirm`, `irreversible`, `once`, `command`, `--dry-run`, the closing summary), so every wizard behaves alike and a fix reaches all of them. A behaviour the library lacks is added to the library, not to one script.
 - **One stage per step, numbered with how many are left.** Each stage opens the URL it needs (`webbrowser`), says exactly what to click and what to copy, and waits for the person.
 - **Secrets by hidden entry.** Read every secret with `getpass`, write it straight to where it belongs (an ignored `.env`, a secret store's own command), and never print it or pass it back. The agent that wrote the script never sees the value.
 - **Confirm before anything irreversible.** A stage that deletes, migrates, publishes or sends asks for an explicit yes first, and a no stops the run with what has and has not happened.
 - **Idempotent where it can be.** Re-running after a stop should skip or overwrite what already landed, not duplicate it.
 
-Check it before handing it over: it compiles (`python -m py_compile <script>`); a dry walk with answers piped to standard input and the `BROWSER` environment variable set to a command that does nothing shows every stage in order and the declined path of each confirmation; every value a stage captures is written where the runbook says; and every secret goes through `getpass`.
+Check it before handing it over: it compiles (`python -m py_compile <script>`); a dry walk (`--dry-run`) with answers piped to standard input and the `BROWSER` environment variable set to a command that does nothing shows every stage in order and the declined path of each confirmation; every value a stage captures is written where the runbook says; and every secret goes through `getpass`.
 
-Done when the script compiles, each stage traces to a step a stranger could follow, and the person has been told how to run it.
+Done when the script compiles, imports an unedited copy of the wizard library, each stage traces to a step a stranger could follow, and the person has been told how to run it.
 
 ## Bootstrap mode (new repo)
 
@@ -77,7 +78,7 @@ Done when the reread changed nothing, or every problem it found is fixed and the
 
 ## Provenance
 
-The runbook script is adapted, in this kit's own words, from Matt Pocock's `wizard` skill (`feat-0093`, 2026-11-24), which generates the same walk as a bash script; this kit writes it in standard-library Python for its cross-platform rule.
+The runbook script is adapted, in this kit's own words, from Matt Pocock's `wizard` skill (`feat-0093`, 2026-11-24), which generates the same walk as a bash script; this kit writes it in standard-library Python for its cross-platform rule. The wizard library in `scripts/wizard.py` is adapted from the same skill's `template.sh` (`feat-0105`, 2026-11-25): one shared library that every wizard carries unedited is his; the `irreversible`, `once` and dry-walk helpers, and Python instead of bash, are this kit's.
 
 ```provenance
 source: https://raw.githubusercontent.com/mattpocock/skills/main/skills/engineering/wizard/SKILL.md
@@ -86,4 +87,13 @@ license: MIT
 retrieved: 2026-11-24
 sha256: bdf31d48211ea559878f95a4f344aeabf8d85897488ba564382bab0b000daac1
 note: fetched with urllib and digested with hashlib on the retrieved date, at 4,123 bytes. Adapted, not copied; the upstream ships a bash template, which this kit does not.
+```
+
+```provenance
+source: https://raw.githubusercontent.com/mattpocock/skills/main/skills/engineering/wizard/template.sh
+author: Matt Pocock
+license: MIT
+retrieved: 2026-11-25
+sha256: 6566f147299bc6f1d941e64591ed04385416d543e11f96f564c7228f5018d0ed
+note: fetched with urllib and digested with hashlib on the retrieved date, at 9,498 bytes, upstream HEAD d653911. Studied, not copied or translated line by line; scripts/wizard.py is written fresh in standard-library Python.
 ```
