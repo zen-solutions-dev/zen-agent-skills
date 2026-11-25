@@ -38,7 +38,8 @@ request.**
 may merge themselves, per repository, opt-in, with sampling): `merge_policy` stays free text, and a
 value that begins with the word `self-merge-sampled` now also turns that opt-in on, read by the
 autonomy lens's rule `A8` (new S-044 to S-046, the `merge_policy` row and the Readers table below).
-Off stays the default: every other value, and an absent key, means no self-merge. The validator does
+Off stays the default: every other value, and an absent key, means no self-merge. Sampling is random, by the merge commit's sha (the maintainer's change at the check-in gate,
+2026-11-25). The validator does
 not change. **This amendment needs the maintainer's re-approval in the round 2 pull request.**
 
 The path and the block format become a one-way door once an adopter
@@ -427,8 +428,11 @@ Added 2026-11-25 by `feat-0102`.
   developer into main`, or `self-merge-sampled`, or `self-merge-sampled; a person reviews samples`
 - **When** an agent applying the autonomy lens's `A8` reads it to decide whether it may merge a
   verified two-way-door pull request into `base_branch`
-- **Then** it treats sampled self-merge as on, with a sampling rate of one in 4 for the first value
-  and one in 5 for the other two, and still applies every guard `A8` lists.
+- **Then** it treats sampled self-merge as on, with N = 4 for the first value and N = 5 for the other
+  two, and still applies every guard `A8` lists; a pull request it merges is sampled for a person's
+  review exactly when the merge commit's full sha, read as a hexadecimal integer, is divisible by N
+  (`int(sha, 16) % N == 0`), so the sample cannot be predicted before the merge and can be checked
+  after it.
 
 ### Scenario S-045: anything else leaves self-merge off
 
@@ -499,7 +503,7 @@ leading `./`. Each segment must match the name on disk in letter case.
 | `standards` | The documents a review judges written standards against: comma-separated files, each trimmed of surrounding spaces, or `none` alone |
 | `acceptance` | The one command that decides whether a change is acceptable |
 | `base_branch`, `integration_prefix` | Where work lands, and the prefix integration branches carry |
-| `merge_policy` | One line of prose: who merges what into where. A value whose first word is exactly `self-merge-sampled` (followed by the end of the value, a space or `;`) opts the repository into sampled self-merge of verified two-way doors (S-044); a token after it that starts with a digit is the sampling rate and must be `1/N`, N from 1 to 20 with no leading zero, else the opt-in is off (S-045); with no such token the rate is `1/5`. Any other value leaves it off |
+| `merge_policy` | One line of prose: who merges what into where. A value whose first word is exactly `self-merge-sampled` (followed by the end of the value, a space or `;`) opts the repository into sampled self-merge of verified two-way doors (S-044); a token after it that starts with a digit is the sampling rate and must be `1/N`, N from 1 to 20 with no leading zero, else the opt-in is off (S-045); with no such token the rate is `1/5`. A merged pull request is sampled when its merge commit's full sha, as a hexadecimal integer, is divisible by N. Any other value leaves it off |
 | `session_logs` | The directory where the harness keeps session transcripts for this repository: one of the outside spellings defined under Paths (not checked), a repository path (checked), or `none` |
 | `default_mode` | `afk` (runs with nobody watching) or `hitl` (a person stays in the loop), for a task whose `mode` is empty; `hitl` when this key is absent |
 

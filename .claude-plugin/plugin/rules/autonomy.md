@@ -212,10 +212,13 @@ an agent may merge a pull request into the repository's `base_branch` only when 
    declared `mode: hitl`. Any doubt makes it a one-way door, which a person merges.
 3. **Through the front door.** The platform's normal merge, never an administrator override, a
    bypassed branch protection, or a skipped required check.
-4. **Sampled and recorded.** The agent records the merge on the pull request (verdict, commit, why it
-   is two-way). A pull request whose number is a multiple of N is sampled: the agent files one item
-   for a person to review it after the fact, in the repository's tracker, and a defect that review
-   finds is fixed by reverting the merge first.
+4. **Sampled at random, and recorded.** The agent records the merge on the pull request (verdict,
+   commit, why it is two-way). The sample is decided by the merge commit the platform creates, so
+   nobody can predict it before the merge and anyone can check it after: the pull request is sampled
+   when that commit's full sha, read as a hexadecimal integer, is divisible by N
+   (`int(sha, 16) % N == 0`). The agent never re-creates or amends a merge to change the result. A
+   sampled pull request gets one item for a person to review it after the fact, in the repository's
+   tracker, and a defect that review finds is fixed by reverting the merge first.
 
 This is the one case in which an agent may merge work it authored: the passing verdict of an agent
 that is not its author stands in for the person, and `A7` still decides who that may be. The sample

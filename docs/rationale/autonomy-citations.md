@@ -270,8 +270,12 @@ child; [the orchestrator's dogfood record](../reviews/2026-11-24-dogfood/orchest
   is the per-repository fact the skills already read. Default off, and off on any value a reader
   cannot parse, so a typo fails toward a person. The two-way-door list follows `pr-describe`'s merge
   danger, widened by the kit's own one-way surfaces (approved specs, the acceptance command, CI and
-  hook configuration). Sampling by pull request number is deterministic, so the agent does not
-  choose which of its merges a person sees. Not yet run anywhere: a decision, not a consolidation.
+  hook configuration). Sampling was first written as "pull request number divisible by N"; at the
+  check-in gate on 2026-11-25 the maintainer approved the wording and changed that one point:
+  sampling must be random. It is now the merge commit's full sha, read as a hexadecimal integer,
+  divisible by N: unpredictable before the merge, because the platform creates the commit, and
+  checkable by anyone after it. A pull request number is known in advance, so an agent could have
+  steered which of its merges a person sees. Not yet run anywhere: a decision, not a consolidation.
 
 ## Considered for v1 and held, for want of a citation
 
