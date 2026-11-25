@@ -16,6 +16,7 @@ base_branch: developer
 integration_prefix: zen/
 merge_policy: an orchestrator merges verified work it did not author into a zen/ integration branch; a person merges into developer and main
 session_logs: ~/.claude/projects
+memory: docs/agents/memory/README.md
 default_mode: hitl
 ```
 
@@ -24,5 +25,5 @@ default_mode: hitl
 - **Tracker.** Work is tracked in [`.quests/`](../../.quests/), which was `.tasks/` until the rename to quests on 2026-11-25 (`feat-0101`); a quest links its GitHub issue with `external`. No role labels are mapped, because the `quests` tracker has none.
 - **Decision records.** `none`: this repository records a decision in the Decisions section of the quest that carries the work, and the reasons behind its rules in [`docs/rationale/`](../rationale/).
 - **Base branch.** Work lands on `developer`; a person promotes `developer` to `main`. The 2026-11-24 Marjana round's pull request into `main` (decision `D4`) is a one-off, and `developer` is fast-forwarded afterwards.
-- **Memory** is left out until `orchestrate` (a draft in this round) settles where its dated log lives.
+- **Memory.** Set on 2026-11-25 (`feat-0107`) to [`docs/agents/memory/README.md`](memory/README.md), the dated index of `orchestrate`'s memory, one file per entry beside it; until then the key was left out while `orchestrate` settled where its log lives. The key names the index file rather than the directory because the approved `zen-config` contract defines `memory` as a file.
 - **Confirmed.** The tracker, base branch, standards, default mode and decision-record directory were each a choice between candidates. No person was in the session that wrote this file, so the recommended answers were written first and routed to the maintainer, who confirmed all five in person on 2026-11-24.

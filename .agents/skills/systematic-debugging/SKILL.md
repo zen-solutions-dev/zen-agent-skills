@@ -63,6 +63,19 @@ Exactly one per run. There is no fourth, and a run that ends without one of thes
 | `not_reproducible` | The reported behavior could not be produced. A result, not a failure of the run. |
 | `architectural` | The bound was reached with no confirmed cause. The shape of the system, rather than any single defect, is the subject. |
 
+## Redact every secret first
+
+The record shows commands, outputs and captured artifacts, and a record travels: into a quest file,
+a report, a pull request. **Before any of them goes into the record, replace every secret with
+`<REDACTED>`**: tokens, passwords, keys, cookies, session ids, and personal data the defect does not
+need. Build the red command to read credentials from the environment, so the secret stays out of the
+command line you record. A captured request or log carries headers: quote only the lines that carry
+the signal. When the redacted evidence is not enough to establish the cause, say so in
+`missing_input` rather than quoting the secret.
+
+Done when no command, output or artifact in the record carries a secret, and every redaction reads
+`<REDACTED>`.
+
 ## Procedure
 
 ### 1. Restate the symptom as an observable
@@ -88,6 +101,10 @@ A **red command** is one command that you have **already run at least once**, an
 - is **deterministic**, or, for an intermittent defect, has a **pinned, recorded reproduction rate**;
 - is **fast**, seconds rather than minutes, and **runs without a person**.
 
+The one exception to the last property is the final rung below: when a person is present and no
+unattended route reaches the defect, a scripted human-in-the-loop command stands in, and
+`reproduction` says so. An unattended run has no such exception.
+
 **A cause inferred from reading code alone is a guess**, however good it looks. The red command
 replaces it: steps 4 and 5 consume it, and every trial is a run of it.
 
@@ -100,7 +117,24 @@ construct one, cheapest first:
 3. A CLI call with a fixture input, compared against the expected output.
 4. A captured input, payload, or log replayed through the code path in isolation.
 5. A throwaway harness that calls the code path directly with its neighbours stubbed.
-6. A differential run: the same input through two versions or two configurations, outputs compared.
+6. A headless browser script that drives the interface and asserts on what the page, its console
+   or its network traffic shows, for a defect only a browser reaches.
+7. A property or fuzz loop: many generated inputs, the seed recorded, for output that is wrong only
+   sometimes. The failing seed, pinned, is the red command.
+8. A differential run: the same input through two versions or two configurations, outputs compared.
+9. A bisection harness, when the defect appeared between two known states: a script that exits 0 on
+   good and 1 on bad, run by `git bisect run` **in a separate clone or worktree**, because bisect
+   checks out other commits and the checkout under investigation stays as it was.
+10. Last, and only with a person present: [`scripts/hitl_loop.py`](scripts/hitl_loop.py), a
+    standard-library script copied to the scratch location. It walks the person through fixed
+    numbered steps, asks one yes-or-no question about the symptom, and exits 1 when they saw it,
+    so the loop stays structured and the answers are recorded. `reproduction` names it as a
+    person-in-the-loop command and records each answer.
+
+**A performance regression gets a measured red command.** Logging is usually the wrong probe for a
+slow path. Measure a baseline first, on the known-good state and the bad one, with the same harness,
+repeated, and record the median and the spread of each; the red command then asserts a threshold
+between the two. Bisect on that command. Measure first, explain second.
 
 Then **tighten** it: faster (narrow the scope, skip unrelated setup), sharper (assert on the exact
 symptom rather than "did not crash"), more deterministic (pin the clock, seed the randomness, isolate
@@ -183,6 +217,14 @@ Done when `hypotheses` names the boundary and the observation that placed it.
 
 **No red command, no hypothesis.** This step starts only when step 2 produced a red command; a run
 without one has already returned.
+
+**Rank before you test.** Write **three to five** candidate causes into `hypotheses`, ranked most
+likely first, each falsifiable: "if X is the cause, changing Y makes the symptom go away". A
+candidate with no prediction is discarded or sharpened. One candidate anchors the run on the first
+plausible idea. **Show the ranked list to the person before the first trial**: they often know which
+one a recent change touched, or which one is already ruled out. Do not wait on an answer; with nobody
+present, record that the list was not seen and test in your own order. A ranked candidate is not
+disproved until its trial is run, so untested candidates do not count toward the bound.
 
 State the hypothesis before the trial, as "X is the cause, because Y", specifically enough that a
 result could contradict it, and write it into `hypotheses` first. **Vary one thing.** A trial that
@@ -271,6 +313,9 @@ A field whose condition is not met is **omitted**, not filled with a placeholder
 
 ## Notes
 
+- [`scripts/hitl_loop.py`](scripts/hitl_loop.py) is the step 2 human-in-the-loop template. It reads
+  its steps from a file and records every answer; run it with `--help` for its arguments.
+
 - **This skill's three verdicts are the classification vocabulary.** A skill here that classifies
   what an investigation concluded calls this one and reports its verdict.
 - When you catch yourself guessing, read [`references/red-flags.md`](references/red-flags.md).
@@ -296,7 +341,10 @@ departures: upstream's fourth phase implements the fix, and this skill ends at t
 refuses to repair; upstream is a gate, and this returns a deterministic verdict instead.
 
 From Matt Pocock's `diagnosing-bugs`: the feedback loop built before any hypothesis, here the red
-command, with its construction ladder, tightening, and minimising. His fix, regression-test, and
+command, with its construction ladder, tightening, and minimising; and, added at `feat-0107` on
+2026-11-25, redaction, the browser, fuzz, bisection and human-in-the-loop rungs, the performance
+branch, and three to five ranked hypotheses shown before testing. His human-in-the-loop template is
+a shell script; this one is standard-library Python, so it runs on Windows too. His fix, regression-test, and
 cleanup phases are not taken, for the same reason.
 
 ```provenance

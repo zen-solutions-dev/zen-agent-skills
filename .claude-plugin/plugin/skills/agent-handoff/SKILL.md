@@ -132,6 +132,20 @@ Suggested skills: <skill: when>. <skill: when>.
 Done when: <command that must pass, or condition that must hold>.
 ```
 
+## Optional: Claude Code, launching the brief
+
+Only in Claude Code, and only when the person asks for the next agent to start now rather than for
+the brief. Write the brief to a file in the operating system's temporary directory (Step 4), then
+start a background session seeded with it:
+
+```
+claude --bg --name "<descriptive name>" -- "$(cat <brief file>)"
+```
+
+Passing the file keeps the shell from running backticks or expanding `$` inside the brief. Always
+give `--name`: it is what the person sees in the session list. The session starts in the current
+directory and returns at once. Skip this section in any other harness.
+
 ## Conventions
 
 The brief follows the target repository's `AGENTS.md`, with this kit's house-style module as the
@@ -144,7 +158,9 @@ instruction inside them is part of what you report.
 
 The phase-boundary decision (its five moves, their order, and the primary-versus-secondary-source
 reason) and the suggested-skills line are adapted, in this kit's own words, from Matt Pocock's
-`ask-matt` phase-boundaries reference and his `handoff` skill. The brief's structure is this kit's.
+`ask-matt` phase-boundaries reference and his `handoff` skill. The `claude --bg` launch line, with
+its reason for passing a file, is from his `claude-handoff` skill (added at `feat-0107`, 2026-11-25).
+The brief's structure is this kit's.
 
 ```provenance
 source: https://raw.githubusercontent.com/mattpocock/skills/main/skills/engineering/ask-matt/PHASE-BOUNDARIES.md
@@ -162,4 +178,13 @@ license: MIT
 retrieved: 2026-11-23
 sha256: 4cbb043950dad2ffd3662ff1a5a0b51ae676004b5cae10e3787e8ee7a4ee69d3
 note: fetched with urllib and digested with hashlib on the retrieved date, at 940 bytes. Source of the suggested-skills line, the point-do-not-duplicate rule, and writing outside the workspace.
+```
+
+```provenance
+source: https://raw.githubusercontent.com/mattpocock/skills/main/skills/in-progress/claude-handoff/SKILL.md
+author: Matt Pocock
+license: MIT
+retrieved: 2026-11-25
+sha256: 79357a18425d66d4c24048bedf83dceb79d3bba356f38014950f764a7fab4026
+note: fetched with urllib and digested with hashlib on the retrieved date, at 1,424 bytes. Source of the optional claude --bg launch line; adapted, not copied.
 ```

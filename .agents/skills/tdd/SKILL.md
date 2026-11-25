@@ -19,9 +19,9 @@ it on every cycle; this skill supplies the loop around it.
 
 - A feature or behaviour change is about to be written, and its interface can be stated before its
   implementation.
-- A bug is about to be fixed: the first red test is the bug's reproduction. If the cause is still
-  unknown, find it with `systematic-debugging` first, which ends on a red command; that command
-  becomes this skill's first test.
+- A bug is about to be fixed: the first red test is the bug's reproduction. When the cause is still
+  unknown, find it before writing any fix.
+  If `systematic-debugging` is installed, read and follow it now, and its red command becomes this skill's first test; otherwise build that red command yourself as step 3's first test, and change no code until it fails on the reported symptom.
 - A person asks for red-green-refactor or test-first work.
 
 ## When not to use

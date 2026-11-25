@@ -42,8 +42,44 @@ The rule this run needed before the skill could exist was `A8`'s integration-bra
 by the maintainer as decision `D1` and written into the autonomy lens by the same workstream that
 wrote this skill.
 
+## 2026-11-25: round 2
+
+The second real run, again on the Zen Agent Skills kit, by an orchestrating Claude Code cloud
+session that did not write this skill. It cut `zen/marjana-r2-2026-11-25` from `developer` at
+`ba0209f`, ran a rename alone as Wave 0, two children in Wave 1 and four planned for Wave 2, and its
+plan is in the Zen Agent Skills repository at `docs/reviews/2026-11-25-marjana-r2-plan.md`. This
+section records what the orchestrator reported learning as of the Wave 2 briefs (integration tip
+`d906b20`), passed to the child (`feat-0107`) that folded it into the procedure.
+
+1. **The orchestrator's own commits to the integration branch while children were in flight forced
+   extra merges twice.** It then held them on a side branch until the wave landed (Step 1, item 7).
+2. **A child applied a relay after reporting**, moving its head while its verifier ran on the old
+   sha. Verifiers are re-pointed at the new head, and children push nothing after reporting unless
+   asked (Step 2, Step 5 item 4).
+3. **Two siblings defined one term two ways** (a "dogfood record"). A key name or definition shared
+   across children is fixed by the orchestrator in both briefs, verbatim (Step 2).
+4. **Most fix rounds introduced one more small blocker of their own**: a stale conformance quote, a
+   `VERSION` value that broke the release path. A focused re-check of each fix round is worth its
+   cost (Step 5 item 7).
+5. **Verifiers found real defects in every first report**: an untested alias table, invalid YAML,
+   self-merge reaching `main`, a fail-open hook. Verification by another agent is not ceremony
+   (Step 5 item 4).
+6. **The maintainer prefers the clickable question picker** for every question with choices, and
+   contextual emojis in chat (Step 1 item 6 keeps the first as "the harness's structured question
+   tool"; both are recorded as preferences in the repository's memory, `docs/agents/memory/`).
+
+Round 1's retro proposals `R-202` (children leave their quest files), `R-206` (restart notes),
+`R-207` (probe remote actions early) and `R-208` (relays acknowledged), approved as `B2`, `B6`, `B7`
+and `B8` on 2026-11-25, are folded into Steps 1, 2, 4, 5 and 6 and the cloud reference by the same
+quest, with `A8`'s mechanical-merge landing (`B1`) and the conflict rule (`E2`).
+
 ## Owed
 
-- A second run on a different project, by a session that did not write this skill, before promotion.
-- The `zen-config` keys this skill reads are being specified in parallel (2026-11-24); re-check the
-  key names in Inputs once that spec is approved.
+- A run on a project other than this kit, by a session that did not write this skill, before
+  promotion. Round 2 (2026-11-25) was a second run by a session that did not write it, but on the
+  same project.
+- Recorded 2026-11-24, settled 2026-11-25: the `zen-config` keys in Inputs were re-checked against
+  the approved `docs/spec/zen-config.md` when `memory` was set (`feat-0107`).
+- The start-slow brake, the five questions, the exploration child, the memory lint and the
+  recurring-job offer were written in round 2 and are not yet exercised by a run that started with
+  them.
