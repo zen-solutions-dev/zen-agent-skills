@@ -73,6 +73,9 @@ step is also useful on its own. *(draft)* marks a skill not yet promoted.
 - `init-worktracking`: an existing repository gets `AGENTS.md`, `.quests/`, and by tier a roadmap and
   changelog. Every task-based skill below needs it. Its configure step writes `docs/agents/zen.md`,
   the facts the skills read; run it alone on a repository already tracked.
+- `vet-skill` *(draft)*: another author's skill you are about to install. Pins the revision,
+  checks provenance and license, and hunts for injection and exfiltration; report only. A person
+  starts it.
 
 **Align**, before anything is written down:
 
@@ -80,6 +83,11 @@ step is also useful on its own. *(draft)* marks a skill not yet promoted.
   Facts are looked up; only decisions go to the person. Start here for any real change.
 - `domain-language`: a term is settled or contested, or a decision is hard to reverse.
   Keeps the glossary and writes an ADR only when one is earned.
+- `wayfinder` *(draft)*: an effort too big and too foggy for one session. Charts it as a decision
+  map and resolves one decision per session until a spec or quests can be written. A person starts
+  it.
+- `prototype` *(draft)*: a design question talk cannot settle. Throwaway code on a throwaway
+  branch, with the verdict recorded on the quest.
 
 **Plan**:
 
@@ -90,6 +98,8 @@ step is also useful on its own. *(draft)* marks a skill not yet promoted.
 - `new-quest`: an approved spec, or a change that needs a quest file, becomes tasks each sized to one
   fresh context window.
 - `spec-plan-readiness`: the go/no-go gate over a spec plus its tasks, before any code.
+- `triage` *(draft)*: a GitHub repository's open issues to sort into the role labels
+  `docs/agents/zen.md` names. Recommends; labels only on the person's go. A person starts it.
 
 **Build**:
 
@@ -134,6 +144,8 @@ step is also useful on its own. *(draft)* marks a skill not yet promoted.
 - `improve-architecture`: a spare moment, or a bug with no good seam to test it at. Finds
   deepening refactors in the hot spots; a chosen one goes back to `grill` or `new-quest`. A person
   starts it.
+- `teach` *(draft)*: a concept the person wants to understand. One small piece at their level,
+  then a check that it stuck. A person starts it.
 
 **Handoffs and context**:
 
@@ -141,6 +153,8 @@ step is also useful on its own. *(draft)* marks a skill not yet promoted.
   or compact, and the brief when it is a handoff. Keep align and plan in one unbroken session where
   they fit; each build task can start fresh from its quest file.
 - `human-handoff`: an update for a partner, client, or teammate.
+- `wait-what` *(draft)*: the last message did not land. Re-pitches it with the context the person
+  lacks. A person starts it.
 
 **Documents**:
 

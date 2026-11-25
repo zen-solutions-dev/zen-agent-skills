@@ -10,15 +10,45 @@ Seeded 2026-07-23 from `docs/CATALOG.md`. Quest chains here stay at the 10,000-f
 
 ## Current state
 
-Measured 2026-11-24 at `zen/marjana-2026-11-24` `6162d00` (WS-A to WS-D landed) merged with WS-E's branch, which carries `main` at `220282a` (pull requests #109 to #116 merged). Counts are derived, not kept: `python3 scripts/install.py --dry-run` prints the draft list and every profile, and `ls .agents/skills` the total.
+Measured 2026-11-25 at `zen/marjana-r2-2026-11-25` `7dbad71`, with every round 2 workstream (`feat-0101` to `feat-0108`) landed, plus this integration's listing edits. Counts are derived, not kept: `python3 scripts/install.py --dry-run` prints the draft list and every profile, and `ls .agents/skills` the total.
 
-- **31 skills, 25 shipped and 6 drafts** (`metadata.status: draft`, placed only with `--include-drafts`): `agent-observatory`, `orchestrate`, `quest-tracker`, `research`, `sitrep` and `systematic-debugging`. The Marjana round added `orchestrate`, which a person starts by name, and `research` (`feat-0092`). Pull request #113 promoted `domain-language`, `grill`, `improve-architecture`, `retro`, `tdd` and `zen` (`feat-0084` to `feat-0089`).
-- **The shipped skills**: `project-bootstrap` and `init-worktracking` set a repository up; `zen` routes; `grill` and `domain-language` align before planning; `new-quest` and the spec chain (`spec-author`, `spec-quality`, `spec-plan-readiness`, `spec-conformance`) turn decisions into contracts and tasks; `fix-batch` and `reconcile-worktrees` dispatch and land parallel work; `tdd`, `test-author`, `test-quality`, `verifier-agent` and `house-review` build and check it; `doc-author`, `doc-revise` and `doc-sync` keep the documents true; `pr-describe`, `agent-handoff` and `human-handoff` close and hand over; `retro` and `improve-architecture` learn from it.
-- **Four swappable lenses** under `.agents/rules/` (`house-style`, `autonomy` with `A1` to `A11`, `review-quality`, `writing-for-agents`), plus the always-loaded `core.md`, and **seven opt-in hooks** under `.agents/hooks/`.
-- **Distribution**: `install.py` (profiles `core`, `spine`, `all`; the default `spine` places 20 skills), `build-adapters.py` for Cursor and VS Code or Copilot, and the committed Claude Code marketplace under `.claude-plugin/`. `run-checks.py` is the acceptance command, and CI calls it.
-- **13 approved behavioural contracts** under `docs/spec/`, several with amendments pending the author's re-approval.
+- **37 skills, 25 shipped and 12 drafts** (`metadata.status: draft`, placed only with `--include-drafts`): `agent-observatory`, `orchestrate`, `prototype`, `quest-tracker`, `research`, `sitrep`, `systematic-debugging`, `teach`, `triage`, `vet-skill`, `wait-what` and `wayfinder`. Round 2 added the six drafts `teach`, `vet-skill`, `prototype`, `wayfinder` and `wait-what` (`feat-0108`) and `triage` (`feat-0106`). The first Marjana round added `orchestrate` and `research` (`feat-0092`); pull request #113 promoted `domain-language`, `grill`, `improve-architecture`, `retro`, `tdd` and `zen` (`feat-0084` to `feat-0089`).
+- **The shipped skills** (`new-quest` was `new-task` until `feat-0101`): `project-bootstrap` and `init-worktracking` set a repository up; `zen` routes; `grill` and `domain-language` align before planning; `new-quest` and the spec chain (`spec-author`, `spec-quality`, `spec-plan-readiness`, `spec-conformance`) turn decisions into contracts and quests; `fix-batch` and `reconcile-worktrees` dispatch and land parallel work; `tdd`, `test-author`, `test-quality`, `verifier-agent` and `house-review` build and check it; `doc-author`, `doc-revise` and `doc-sync` keep the documents true; `pr-describe`, `agent-handoff` and `human-handoff` close and hand over; `retro` and `improve-architecture` learn from it.
+- **Five swappable lenses** under `.agents/rules/` (`house-style`, `autonomy` with `A1` to `A11`, `review-quality`, `writing-for-agents`, and `deep-modules`, moved there from `improve-architecture` by `feat-0102`), plus the always-loaded `core.md`, and **eight opt-in hooks** under `.agents/hooks/`, the newest the destructive-git gate (`feat-0103`).
+- **Distribution**: `install.py` (profiles `core`, `spine`, `all`; the default `spine` places 20 skills), `build-adapters.py` for Cursor, VS Code or Copilot, and Codex, and the committed Claude Code marketplace under `.claude-plugin/`. A `VERSION` file holds `0.1.0`, the last tag, and `release.py` cuts the next release on the maintainer's go. `run-checks.py` is the acceptance command, and CI calls it.
+- **13 approved behavioural contracts** under `docs/spec/`, several with amendments pending the maintainer's re-approval, plus the draft `zen-config` contract.
 
 This section says only what was true on its date; the next change to the kit makes it a record of that date.
+
+## 2026-11-25 Marjana round 2
+
+The decisions the maintainer took on 2026-11-25, built in three waves and planned in [the round 2 plan](docs/reviews/2026-11-25-marjana-r2-plan.md) from [the decisions record](docs/reviews/2026-11-25-marjana-decisions.md). Integration branch `zen/marjana-r2-2026-11-25`, one draft pull request into `developer`.
+
+- **Wave 0, the quest rename** ([`feat-0101`](.quests/done/feat-0101-rename-tasks-to-quests.md)), **shipped 2026-11-25**: `.tasks/` to `.quests/`, `new-task` to `new-quest`, `tracker: quests`, and Campaign, Quest chain, Quest and Side quest, with the old names kept as aliases.
+- **Wave 1, rules and lenses** ([`feat-0102`](.quests/done/feat-0102-rules-and-lenses-for-round-2.md)), **shipped 2026-11-25**: `A8`'s mechanical merge and sampled self-merge, the contribution bar on promotion with expiring drafts, the security axis and smell baseline, the `deep-modules.md` lens, and the guarded load of a draft.
+- **Wave 1, platform and gates** ([`feat-0103`](.quests/done/feat-0103-platform-and-gates-for-round-2.md)), **shipped 2026-11-25**: the changelog-line and skill-listing gates, the composed-by check and quoted-phrase audit (retro `R-003` and `R-004`, owed since round 1), the destructive-git gate, `release.py` and `VERSION`, the Codex sidecar, issue templates, and old-name warnings.
+- **Wave 1, the orchestrator's own items** (`chore-0104`, recorded in the plan), **done 2026-11-25**: the cloud environment `zen-agent-skills` (B5), and the triage of WS-D's lost retro proposals (B13).
+- **Wave 2, align and plan** ([`feat-0105`](.quests/done/feat-0105-align-and-plan-for-round-2.md)), **shipped 2026-11-25**: `grill` writes terms as they settle, `spec-author`'s synthesise-only mode, prefactor and test seams in `new-quest`, the one-quest flow and bug chain in `zen`, `doc-author`'s wizard library, and the declined-ideas register.
+- **Wave 2, tracker publishing** ([`feat-0106`](.quests/done/feat-0106-tracker-publishing.md)), **shipped 2026-11-25** as a draft: one-way, opt-in publishing of the tracker to GitHub issues in `new-quest`, in the issue shape the maintainer approved, and the `triage` draft.
+- **Wave 2, orchestrate and build** ([`feat-0107`](.quests/done/feat-0107-orchestrate-and-build-for-round-2.md)), **shipped 2026-11-25**: `orchestrate`'s memory, lint and mechanical merge, `systematic-debugging`'s missing rungs, and one rarity ladder for `research` and `sitrep`.
+- **Wave 2, ship and learn** ([`feat-0108`](.quests/done/feat-0108-ship-and-learn-for-round-2.md)), **shipped 2026-11-25**: `house-review`'s guards and security axis, `pr-describe`'s smallest-visual summary, `retro`'s lens and register reads, and five new drafts.
+- **Integration** (`feat-0109`, in progress): the ledgers and listings, the gate bridges removed, `doc-sync`, verification and one pull request.
+
+**Owed after this round**:
+
+- A live `--apply` of tracker publishing on a throwaway repository, run by the maintainer, before any adopter turns publishing on. Publishing and `triage` stay drafts until then.
+- `systematic-debugging`'s second independent run ([`feat-0063`](.quests/feat-0063-a-second-independent-run-of-systematic-debugging-before-it-ships.md)) before it ships.
+- `research`'s promotion, after one run outside this repository.
+- The maintainer's re-approval of the amended specs: `zen-config`, `sitrep`, `install`, `validate-skills`, `build-adapters`, `systematic-debugging`, `spec-author` and `house-review`.
+- Reserved quests, not yet written: `chore-0116` (retro `R-102`, the plan's skill limits as validator errors), `chore-0117` (`R-103` and `R-105`, a closed quest with no changelog line and a `parent` that resolves nowhere), and `chore-0118` (the 24 quoted phrases `R-004` found unresolved, after which the audit fails).
+- `quest-tracker`'s own use of "quest" and "quest chain" for a run of steps on its page (decision `R2-8`), in a later round.
+- The old names' aliases (`.tasks/`, `tracker: tasks`, `new-task`) are removed at the second tagged release (decision `R2-10`).
+
+**Drafts round 2 added, and what promotes each** (the contribution bar: a dogfood record of real use and iteration from it):
+
+- `wayfinder`: its first run charted the rollout campaign below and exercised charting mode only, with the destination unconfirmed; working mode waits on ticket `W-01` (which repositories), which only the maintainer answers. Promotes after a working-mode run resolves tickets on a real effort, the rollout campaign first.
+- `prototype`, `teach`, `vet-skill` and `wait-what`: each ran once in [the ship-and-learn dogfood record](docs/reviews/2026-11-25-dogfood/ship.md); each promotes after use on real work outside its own round.
+- `triage`: promotes with tracker publishing, after the live apply above.
 
 ## 2026-11-24 Marjana overhaul
 
@@ -269,6 +299,20 @@ overturns it, and doing so by accident is the failure mode worth naming now.
 **Design bar, inherited from Campaign E and restated because it binds harder here:** this maintainer's real
 workflow first, generalize after. The contribution bar applies unchanged. No item here ships to the kit
 cold, and a governance feature nobody has governed anything with is exactly the cold ship it forbids.
+
+### Campaign G: rollout (the kit in the maintainer's own repositories)
+
+Added 2026-11-25 (round 2, Phase 3). Install the kit and run it in each repository the maintainer keeps, the Zen product app first; the rest are named later by the maintainer (`wayfinder` ticket `W-01`). It is where the drafts get the real use outside this repository that promotes them. Plan: `docs/reviews/2026-11-25-plan-rollout-campaign.md`, being written; not decomposed into quest files until it is about to be built.
+
+### Round 2 Phase 3: the wider goals, plans only
+
+Approved as goals by the maintainer on 2026-11-25 ([the decisions record](docs/reviews/2026-11-25-marjana-decisions.md), F1 to F5). Each has one short plan, being written; none is decomposed into quest files yet.
+
+1. **F1, a daily improvement loop**: a scheduled `improve-architecture` pass that opens one pull request. No repository is named yet, and no recurring job is scheduled until the maintainer names one. Plan: `docs/reviews/2026-11-25-plan-f1-improvement-loop.md`.
+2. **F2, a knowledge wiki** fed by the maintainer's channels, a separate effort outside this repository. Plan: `docs/reviews/2026-11-25-plan-f2-knowledge-wiki.md`.
+3. **F3, one shared vocabulary** across the kit, the website and the courses. Plan: `docs/reviews/2026-11-25-plan-f3-shared-vocabulary.md`.
+4. **F4, an issue-to-PR loop** for public repositories. Plan: `docs/reviews/2026-11-25-plan-f4-issue-to-pr.md`.
+5. **F5, sandboxed runs** for untrusted code and skills. Plan: `docs/reviews/2026-11-25-plan-f5-sandboxed-runs.md`.
 
 ---
 

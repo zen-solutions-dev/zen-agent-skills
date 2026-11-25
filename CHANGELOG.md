@@ -1,14 +1,18 @@
 # Changelog
 
-Completed work for Zen Agent Skills, newest first. This is the append-only ledger for the spec-driven task workflow: when a task in [`.tasks/`](.quests/) is finished, its file moves to `.tasks/done/` and one dated line is added here, at most about 300 characters, linking the task file, which carries the detail. Entries older than the previous month are archived by month under [`docs/history/`](docs/history/README.md), unchanged.
+Completed work for Zen Agent Skills, newest first. This is the append-only ledger for the spec-driven quest workflow: when a quest in [`.quests/`](.quests/) (`.tasks/` before 2026-11-25) is finished, its file moves to `.quests/done/` and one dated line is added here, at most about 300 characters, linking the quest file, which carries the detail. Entries older than the previous month are archived by month under [`docs/history/`](docs/history/README.md), unchanged.
 
 ---
 
 ## Releases
 
-### Unreleased: the 2026-11-24 Marjana overhaul
+### Unreleased: the 2026-11-24 Marjana overhaul and the 2026-11-25 round 2
 
-Planned in [the Marjana plan](docs/reviews/2026-11-24-marjana-plan.md) (`chore-0099` to `feat-0095`) and reaching `main` as one pull request. New drafts: `orchestrate` and `research`. New per-repository setup: `init-worktracking`'s configure step and `docs/agents/zen.md`. Always-loaded `AGENTS.md` cut from about 28 KB to about 9 KB. New gates: the "Done when" warning and the roadmap status check. The task log below has one line per task; [the dogfood records](docs/reviews/2026-11-24-dogfood/README.md) show each skill run on the round's own work.
+Not yet a version: `VERSION` holds `0.1.0`, the last tag, and the next release is cut only on the maintainer's go ([`docs/RELEASING.md`](docs/RELEASING.md)). It carries both Marjana rounds.
+
+**Round 2** (2026-11-25), planned in [the round 2 plan](docs/reviews/2026-11-25-marjana-r2-plan.md) (`feat-0101` to `feat-0109`, with `chore-0104`) and reaching `developer` as one draft pull request: tasks renamed to quests, with the old names kept as aliases until the second tagged release; six new drafts, `teach`, `vet-skill`, `prototype`, `wayfinder`, `wait-what` and `triage`, and opt-in tracker publishing in `new-quest`; `A8`'s mechanical merge and sampled self-merge; `house-review`'s guards and security axis; new gates for changelog lines, skill listings, composed-by and quoted phrases; an opt-in destructive-git gate; `VERSION` and `release.py`. Spec amendments to `zen-config`, `sitrep`, `install`, `validate-skills`, `build-adapters`, `systematic-debugging`, `spec-author` and `house-review` wait on the maintainer's re-approval. Dogfood records: [`docs/reviews/2026-11-25-dogfood/`](docs/reviews/2026-11-25-dogfood/).
+
+**Round 1** (2026-11-24, pull request #117), planned in [the Marjana plan](docs/reviews/2026-11-24-marjana-plan.md) (`chore-0099` to `feat-0095`) and reaching `main` as one pull request. New drafts: `orchestrate` and `research`. New per-repository setup: `init-worktracking`'s configure step and `docs/agents/zen.md`. Always-loaded `AGENTS.md` cut from about 28 KB to about 9 KB. New gates: the "Done when" warning and the roadmap status check. The task log below has one line per task; [the dogfood records](docs/reviews/2026-11-24-dogfood/README.md) show each skill run on the round's own work.
 
 ### The 2026-11 release (pull request 109, merged 2026-11-23)
 
@@ -63,6 +67,24 @@ Contents, derived from the task log (2026-07-23 to 2026-07-29, now in [`docs/his
 `0.1.0` rather than `1.0.0`, deliberately: this is one maintainer's working library, two catalog skills are held unbuilt until they have been used twice, and the install story has an open portability question, since `npx skills` copies only each skill's `SKILL.md` and leaves its lens reference resolving to nothing (`chore-0020`, `feat-0034`).
 
 ## Task log
+
+- [ ] (2026-11-25) Opened [`feat-0109`](.quests/feat-0109-integrate-the-round-2-ledgers-and-listings.md): round 2's changelog lines, roadmap section and Current state, the six drafts listed in `zen` and the catalog, the gate bridges removed, and `doc-sync` over the reader documents.
+
+- [x] (2026-11-25) Closed [`feat-0108`](.quests/done/feat-0108-ship-and-learn-for-round-2.md): `house-review` checks guards and adds a security axis (`S-026`, `S-027`, pending approval), `pr-describe` opens on a visual, `retro` reads the declined register; drafts `teach`, `vet-skill`, `prototype`, `wayfinder`, `wait-what`.
+
+- [x] (2026-11-25) Closed [`feat-0107`](.quests/done/feat-0107-orchestrate-and-build-for-round-2.md): `orchestrate` memory, lint and mechanical merge, `systematic-debugging` redaction, ranked hypotheses and four rungs (`S-017` to `S-020`, pending approval), and one rarity ladder for `research` and `sitrep`.
+
+- [x] (2026-11-25) Closed [`feat-0106`](.quests/done/feat-0106-tracker-publishing.md): opt-in, one-way publishing of the tracker to GitHub issues in `new-quest` (`publish.py`, the approved issue shape, `S-047` to `S-059` pending approval), the `private` field, and the `triage` draft. A live apply is owed.
+
+- [x] (2026-11-25) Closed [`feat-0105`](.quests/done/feat-0105-align-and-plan-for-round-2.md): `grill` writes terms as they settle, `spec-author` synthesises from a decisions record (`S-012`, pending approval), `new-quest` prefactors and lists test seams, `zen`'s one-quest flow, a wizard library, `docs/declined-ideas.md`.
+
+- [x] (2026-11-25) Done `chore-0104`, the orchestrator's own Wave 1 items, recorded in [the round 2 plan](docs/reviews/2026-11-25-marjana-r2-plan.md): the `zen-agent-skills` cloud environment (B5), and WS-D's retro proposals triaged, `R-102`, `R-103` and `R-105` reserved as quests (B13).
+
+- [x] (2026-11-25) Closed [`feat-0103`](.quests/done/feat-0103-platform-and-gates-for-round-2.md): changelog-line and skill-listing gates, composed-by and quoted-phrase checks, a destructive-git gate, `release.py` and `VERSION`, a Codex sidecar, issue templates, guarded draft loads, old-name warnings.
+
+- [x] (2026-11-25) Closed [`feat-0102`](.quests/done/feat-0102-rules-and-lenses-for-round-2.md): `A8`'s mechanical merge and sampled self-merge, promotion-gated drafts that expire, the security axis and smell baseline, the `deep-modules.md` lens, and the guarded load of a draft (`S-044` to `S-046`, pending approval).
+
+- [x] (2026-11-25) Closed [`feat-0101`](.quests/done/feat-0101-rename-tasks-to-quests.md): `.tasks/` to `.quests/`, `new-task` to `new-quest`, `tracker: quests`, and Campaign, Quest chain, Quest and Side quest, with the old names kept as aliases by the validator, `sitrep` and `install.py`.
 
 - [x] (2026-11-24) Closed [`feat-0095`](.quests/done/feat-0095-marjana-integrate-verify-and-ship.md): five workstreams landed after one review and one re-check each, an independent verification (`pass`), a retro (`R-201` to `R-210`), and one pull request into `main`.
 

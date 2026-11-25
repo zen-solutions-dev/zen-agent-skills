@@ -286,20 +286,10 @@ COUNT_RES = (
 # `count:drafts=10`) all stopped firing. A count key names its stale value, so a
 # different wrong count is a new finding rather than this one.
 #
-# Refilled 2026-11-25 by feat-0108, whose five new drafts the roadmap cannot name yet: only the
-# integration quest feat-0109 edits ROADMAP.md. Each key fires until that edit lands, then is
-# deleted. The two count keys name the stale values the roadmap holds. feat-0106 added
-# `missing:triage` for its `triage` draft, on the same terms.
-ROADMAP_STATUS_EXCEPTIONS = frozenset({
-    "missing:prototype",
-    "missing:teach",
-    "missing:triage",
-    "missing:vet-skill",
-    "missing:wait-what",
-    "missing:wayfinder",
-    "count:skills=31",
-    "count:drafts=6",
-})
+# Refilled 2026-11-25 by feat-0108 and feat-0106 with six `missing:<draft>` keys and the
+# two stale counts the roadmap held, as a bridge until the integration quest feat-0109
+# rewrote "Current state"; emptied by feat-0109 the same day, when every one stopped firing.
+ROADMAP_STATUS_EXCEPTIONS = frozenset()
 
 
 # The changelog's task-log line limit (retro R-204, feat-0103). AGENTS.md says "at most
@@ -610,16 +600,9 @@ def check_changelog_lines(repo_root=None, exceptions=None, limit=None):
 # reachable only by someone who already knows it exists. A draft is named too, or excepted
 # here by name with the reason; an exception for a skill that is named, or gone, fails.
 SKILL_LISTINGS = (".agents/skills/zen/SKILL.md", "docs/CATALOG.md")
-UNLISTED_DRAFT_EXCEPTIONS = {
-    # feat-0108 drafts: `zen` is feat-0105's and the catalog feat-0109's; the integration
-    # owner lists them there, then deletes these lines.
-    "prototype": "feat-0108 draft; listed in zen and the catalog at integration (feat-0109)",
-    "teach": "feat-0108 draft; listed in zen and the catalog at integration (feat-0109)",
-    "triage": "feat-0106 draft; listed in zen and the catalog at integration (feat-0109)",
-    "vet-skill": "feat-0108 draft; listed in zen and the catalog at integration (feat-0109)",
-    "wait-what": "feat-0108 draft; listed in zen and the catalog at integration (feat-0109)",
-    "wayfinder": "feat-0108 draft; listed in zen and the catalog at integration (feat-0109)",
-}
+# Emptied 2026-11-25 by feat-0109, which listed the six round 2 drafts (`prototype`, `teach`,
+# `triage`, `vet-skill`, `wait-what`, `wayfinder`) in `zen` and the catalog.
+UNLISTED_DRAFT_EXCEPTIONS = {}
 
 
 def _names(text, name):

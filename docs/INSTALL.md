@@ -1,6 +1,6 @@
 # Installation and integration
 
-The complete installation reference, in the order to reach for it: the Claude Code plugin, then the Python installer (every profile, single skills, drafts, hooks, `--check`), then project-level adapters for Cursor and VS Code, then validation, uninstall, and troubleshooting. For the five-minute path, see the quick start in [`README.md`](../README.md).
+The complete installation reference, in the order to reach for it: the Claude Code plugin, then the Python installer (every profile, single skills, drafts, hooks, `--check`), then project-level adapters for Cursor, VS Code and Codex, then validation, uninstall, and troubleshooting. For the five-minute path, see the quick start in [`README.md`](../README.md).
 
 ## Prerequisites
 
