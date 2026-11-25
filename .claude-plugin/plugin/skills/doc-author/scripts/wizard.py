@@ -153,9 +153,11 @@ class Wizard:
         """Upsert KEY='VALUE' in the env file. Idempotent; never prints the value.
 
         A value holding a line break is refused: it would end its line and inject another key.
+        A line break is anything `str.splitlines` splits on, since `existing` reads the file
+        back that way: \r, \n, \v, \f, \x1c, \x1d, \x1e, \x85, \u2028 and \u2029.
         A new env file is created private (0600 on POSIX) before any value is written to it.
         """
-        if "\n" in value or "\r" in value:
+        if value and value.splitlines() != [value]:
             raise WizardStopped(f"the value for {key} holds a line break, so it was not saved")
         if self.dry_run:
             self.note(f"would write {key} to {self.env_file}")

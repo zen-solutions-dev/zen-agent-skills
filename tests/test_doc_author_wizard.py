@@ -92,13 +92,24 @@ class EnvFile(Case):
             self.make().write_env("TOKEN", "secret")
         self.assertEqual(modes, [0o600])
 
-    def test_a_value_with_a_line_break_is_refused(self):
-        w = self.make()
-        code = w.run([("save", lambda w: w.write_env("NAME", "a\nEVIL=1"))])
-        self.assertEqual(code, 1)
-        self.assertFalse(self.env.exists())
-        self.assertIn("holds a line break, so it was not saved", self.out.getvalue())
-        self.assertNotIn("EVIL", self.out.getvalue())
+    def test_a_value_with_any_line_break_is_refused(self):
+        # Every separator str.splitlines splits on, since existing() reads the file back that way.
+        for sep in ["\n", "\r", "\r\n", "\v", "\f", "\x1c", "\x1d", "\x1e", "\x85",
+                    "\u2028", "\u2029"]:
+            with self.subTest(sep=repr(sep)):
+                self.make().write_env("FIRST", "ok")  # the second write is the injection
+                w = self.make()
+                code = w.run([("save", lambda w: w.write_env("NAME", f"a{sep}EVIL=1"))])
+                self.assertEqual(code, 1)
+                self.assertIn("holds a line break, so it was not saved", self.out.getvalue())
+                self.assertNotIn("EVIL", self.out.getvalue())
+                self.assertIsNone(self.make().existing("EVIL"))
+                self.assertEqual(self.env.read_text(encoding="utf-8"), "FIRST='ok'\n")
+
+    def test_an_empty_value_is_saved(self):
+        self.make().write_env("EMPTY", "")
+        self.assertEqual(self.env.read_text(encoding="utf-8"), "EMPTY=''\n")
+        self.assertEqual(self.make().existing("EMPTY"), "")
 
 
 class Prompts(Case):
