@@ -161,8 +161,24 @@ LAYOUTS = {
 # leaving it out (which versions by commit) fails `claude plugin validate --strict`.
 # `plugin_version()` appends a digest of the emitted tree to PLUGIN_BASE_VERSION as
 # semver build metadata, so the string changes exactly when the plugin's content does.
-# Bump the base only to say something to a human reader.
-PLUGIN_BASE_VERSION = "0.1.0"
+# The base is the kit's release version, read from the top-level VERSION file that
+# scripts/release.py bumps (maintainer decision, 2026-11-25, feat-0103), so the plugin and
+# a tagged release cannot name different versions.
+VERSION_FILE = REPO_ROOT / "VERSION"
+
+
+def kit_version(path: Path = VERSION_FILE) -> str:
+    """The kit's MAJOR.MINOR.PATCH from VERSION; a missing or malformed file is an error."""
+    try:
+        value = path.read_text(encoding="utf-8").strip()
+    except OSError as exc:
+        raise SystemExit(f"Cannot read the kit version from {path}: {exc}")
+    if not re.fullmatch(r"(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)", value):
+        raise SystemExit(f"{path} holds {value!r}, not a MAJOR.MINOR.PATCH version")
+    return value
+
+
+PLUGIN_BASE_VERSION = kit_version()
 REPO_URL = "https://github.com/zen-solutions-dev/zen-agent-skills"
 PLUGIN = {
     "name": "zen-agent-skills",

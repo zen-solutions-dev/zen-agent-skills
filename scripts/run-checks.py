@@ -552,10 +552,17 @@ def check_changelog_lines(repo_root=None, exceptions=None, limit=None):
     if not path.is_file():
         return True, f"{CHANGELOG}: absent, so 0 task-log lines were measured."
     lines = path.read_text(encoding="utf-8").splitlines()
-    try:
-        start = lines.index("## Task log") + 1
-    except ValueError:
-        return True, f"{CHANGELOG}: no `## Task log` heading, so 0 task-log lines were measured."
+    # Found without regard to case or trailing space: a heading retyped as "## Task Log"
+    # must not switch the gate off while it reports a clean pass.
+    start = next((n + 1 for n, line in enumerate(lines)
+                  if line.strip().lower() == "## task log"), None)
+    if start is None:
+        report = [f"WARN  {CHANGELOG}: exception {key!r} matches no line over the limit; "
+                  f"delete it from CHANGELOG_LONG_LINE_EXCEPTIONS in scripts/run-checks.py"
+                  for key in sorted(exceptions)]
+        report.append(f"{CHANGELOG}: no `## Task log` heading, so 0 task-log lines were "
+                      f"measured; {len(exceptions)} stale exception(s).")
+        return True, "\n".join(report)
     entries = [(n, line) for n, line in enumerate(lines[start:], start + 1)
                if line.startswith("- ")]
     report, new, excepted, seen = [], [], 0, set()

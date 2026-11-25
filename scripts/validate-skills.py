@@ -995,10 +995,16 @@ def check_composed_by(descriptions: dict, skill_texts: dict, errors: list) -> No
             if composer not in skill_texts:
                 errors.append(f"{name}: description says it is composed by {composer!r}, "
                               f"and no skill has that name")
-            elif name not in sibling_edges(skill_texts[composer]):
+            elif (name not in sibling_edges(skill_texts[composer])
+                  and not (is_draft_text(skill_texts[name])
+                           and guards_load_of(skill_texts[composer], name))):
                 errors.append(f"{name}: description says it is composed by {composer!r}, "
                               f"but {composer}/SKILL.md has no relative link to "
-                              f"../{name}/SKILL.md; add the link or drop the claim")
+                              f"../{name}/SKILL.md; add the link or drop the claim"
+                              + (" (for a draft, the guarded sentence 'If "
+                                 f"`{name}` is installed, read and follow it; otherwise "
+                                 "...' also satisfies it)"
+                                 if is_draft_text(skill_texts[name]) else ""))
 
 
 # The one way a shipped skill may load a draft (maintainer decision R2-3, feat-0103): the
@@ -1006,12 +1012,29 @@ def check_composed_by(descriptions: dict, skill_texts: dict, errors: list) -> No
 # to do when it is absent. A relative link to a draft is an install edge, and fails. The
 # guarded sentence needs no pattern of its own: it says "read and follow it", which the
 # unguarded pattern below cannot match, and its backticks are no link.
-# An instruction to load a backticked skill with no guard around it.
-UNGUARDED_LOAD_RE = re.compile(r"\bread and follow `([a-z0-9][a-z0-9-]*)`")
+# An instruction to load a backticked skill with no guard around it, in either of the
+# kit's phrasings: "read and follow `x`", or "read `x` (now) and follow it". Matched
+# without regard to case, so one at the start of a sentence is caught too. The guarded
+# sentence matches neither: it names the skill before "read" and follows "it".
+UNGUARDED_LOAD_RE = re.compile(
+    r"\bread\s+(?:and\s+follow\s+`([a-z0-9][a-z0-9-]*)`"
+    r"|`([a-z0-9][a-z0-9-]*)`[^.;\n]*?\bfollow\s+it\b)", re.IGNORECASE)
 # The guard's opening, and the rest of its sentence: words such as "now" may follow "it",
 # and the sentence must go on with a clause starting "; otherwise".
 GUARD_OPEN_RE = re.compile(
     r"\bIf `([a-z0-9][a-z0-9-]*)` is installed, read and follow it\b([^.;\n]*)(;\s*otherwise\b)?")
+
+
+def guards_load_of(text: str, name: str) -> bool:
+    """Whether `text` loads `name` with the complete guarded sentence, outside a literal.
+
+    The one way a shipped skill may compose a draft (R2-3), so it also satisfies a
+    draft's "Composed by" claim, which would otherwise demand the link S-030 forbids.
+    """
+    ranges = literal_ranges(text)
+    return any(m.group(1) == name and m.group(3) is not None
+               and not any(a <= m.start() < b for a, b in ranges)
+               for m in GUARD_OPEN_RE.finditer(text))
 
 
 def check_draft_references(skill_texts: dict, errors: list, warnings: list) -> None:
@@ -1041,7 +1064,7 @@ def check_draft_references(skill_texts: dict, errors: list, warnings: list) -> N
                                 f"'; otherwise' clause in the same sentence; say what to do "
                                 f"when it is not installed")
         for m in UNGUARDED_LOAD_RE.finditer(text):
-            ref = m.group(1)
+            ref = m.group(1) or m.group(2)
             if ref in drafts and not any(a <= m.start() < b for a, b in ranges):
                 warnings.append(f"{name}/SKILL.md: tells the agent to read and follow the "
                                 f"draft {ref!r} with no guard; write 'If `{ref}` is "
@@ -1052,14 +1075,27 @@ def check_draft_references(skill_texts: dict, errors: list, warnings: list) -> N
 # many days with no dogfood record naming it, the validator says so. A warning, never an
 # error: whether to promote, keep or drop it is a person's call.
 DRAFT_EXPIRY_DAYS = 90
-DOGFOOD_GLOB = "docs/reviews/*dogfood*"
+# Where a dogfood record lives, as the messages say it; dogfood_text() applies it.
+DOGFOOD_GLOB = "docs/reviews/ with 'dogfood' in its path"
 DRAFTED_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 
 
-def drafted_date(skill_md: Path, text: str):
-    """`(date or None, source)`: `metadata.drafted`, else git's first commit of the file.
+def _iso_date(value: str, today):
+    """`value` as a date when it is YYYY-MM-DD and not after `today`; else ValueError."""
+    if not DRAFTED_RE.match(value):
+        raise ValueError(value)
+    when = datetime.date.fromisoformat(value)
+    if today is not None and when > today:
+        raise ValueError(value)
+    return when
 
-    `source` says where the date came from, or why there is none, for the message.
+
+def drafted_date(skill_md: Path, text: str, today=None):
+    """`(date or None, source)`: `metadata.extended`, else `metadata.drafted`, else git.
+
+    `source` says where the date came from, or why there is none, for the message. The
+    two fields read the same quoted or unquoted, since `metadata_fields()` strips the
+    quotes; a date after `today` is invalid, not a reason to stay silent for years.
     """
     fields = metadata_fields(text)
     extended = fields.get("extended", "")
@@ -1069,20 +1105,25 @@ def drafted_date(skill_md: Path, text: str):
         # reported, never silently honoured.
         head = extended.split(":", 1)[0].strip()
         try:
-            if not DRAFTED_RE.match(head):
-                raise ValueError(head)
-            return datetime.date.fromisoformat(head), "metadata.extended"
+            return _iso_date(head, today), "metadata.extended"
         except ValueError:
-            return None, f"metadata.extended {extended!r} does not start with YYYY-MM-DD"
+            return None, (f"metadata.extended {extended!r} does not start with a "
+                          f"YYYY-MM-DD date that is not in the future")
     value = fields.get("drafted", "")
     if value:
         try:
-            if not DRAFTED_RE.match(value):
-                raise ValueError(value)
-            return datetime.date.fromisoformat(value), "metadata.drafted"
+            return _iso_date(value, today), "metadata.drafted"
         except ValueError:
-            return None, f"metadata.drafted {value!r} is not YYYY-MM-DD"
+            return None, (f"metadata.drafted {value!r} is not a YYYY-MM-DD date that is "
+                          f"not in the future")
     try:
+        # A shallow clone's oldest commit is its boundary, which "adds" every file: its
+        # date says when the clone was cut, not when the skill was drafted.
+        shallow = subprocess.run(
+            ["git", "rev-parse", "--is-shallow-repository"],
+            cwd=skill_md.parent, capture_output=True, text=True, timeout=30)
+        if shallow.returncode == 0 and shallow.stdout.strip() == "true":
+            return None, "unknown (no metadata.drafted, and this is a shallow clone)"
         out = subprocess.run(
             ["git", "log", "--diff-filter=A", "--format=%as", "--", skill_md.name],
             cwd=skill_md.parent, capture_output=True, text=True, timeout=30)
@@ -1098,15 +1139,21 @@ def drafted_date(skill_md: Path, text: str):
 
 
 def dogfood_text(repo_root: Path) -> str:
-    """Every text file under a `docs/reviews/*dogfood*` path, joined."""
+    """Every file under `docs/reviews/` whose path below it contains `dogfood`, joined.
+
+    The rule as AGENTS.md defines a dogfood record: no date is required in the path.
+    """
     chunks = []
-    for top in sorted(repo_root.glob(DOGFOOD_GLOB)):
-        files = [top] if top.is_file() else sorted(p for p in top.rglob("*") if p.is_file())
-        for f in files:
-            try:
-                chunks.append(f.read_text(encoding="utf-8", errors="replace"))
-            except OSError:
-                continue
+    reviews = repo_root / "docs" / "reviews"
+    if not reviews.is_dir():
+        return ""
+    for f in sorted(p for p in reviews.rglob("*") if p.is_file()):
+        if "dogfood" not in f.relative_to(reviews).as_posix().lower():
+            continue
+        try:
+            chunks.append(f.read_text(encoding="utf-8", errors="replace"))
+        except OSError:
+            continue
     return "\n".join(chunks)
 
 
@@ -1125,7 +1172,7 @@ def check_draft_expiry(skills_dir: Path, skill_texts: dict, repo_root: Path,
         text = skill_texts[name]
         if not is_draft_text(text) or names_skill(record, name):
             continue
-        when, source = drafted_date(skills_dir / name / "SKILL.md", text)
+        when, source = drafted_date(skills_dir / name / "SKILL.md", text, today)
         if when is None:
             warnings.append(f"{name}/SKILL.md: a draft no file under {DOGFOOD_GLOB} names, "
                             f"drafted {source}; the {DRAFT_EXPIRY_DAYS}-day expiry cannot "

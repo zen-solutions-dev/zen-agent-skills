@@ -4,7 +4,7 @@ How a maintainer cuts a tagged release of the kit with [`release.py`](../scripts
 
 ## Where the version lives
 
-A top-level `VERSION` file holds the kit's one version, `MAJOR.MINOR.PATCH`. While it is absent the script takes the current version as `0.0.0` and says so, and it also refuses any version not above the highest `### vX.Y.Z` heading under `## Releases` in [`CHANGELOG.md`](../CHANGELOG.md), so a release is never numbered twice.
+A top-level `VERSION` file holds the kit's one version, `MAJOR.MINOR.PATCH`; it was committed at `0.2.0` on 2026-11-25, and the Claude Code plugin's version is built from it by `build-adapters.py`. Were it absent the script takes the current version as `0.0.0` and says so, and it also refuses any version not above the highest `### vX.Y.Z` heading under `## Releases` in [`CHANGELOG.md`](../CHANGELOG.md), so a release is never numbered twice.
 
 ## Cutting a release
 

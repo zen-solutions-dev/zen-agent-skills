@@ -73,9 +73,19 @@ class ChangelogLinesTests(unittest.TestCase):
         self.assertEqual(shown, "CHANGELOG.md: absent, so 0 task-log lines were measured.")
         _, shown = self.check("")
         self.assertEqual(shown, "CHANGELOG.md: no `## Task log` heading, so 0 task-log "
-                                "lines were measured.")
+                                "lines were measured; 0 stale exception(s).")
         _, shown = self.check("# Changelog\n\n## Task log\n")
         self.assertIn("Measured 0 task-log line(s)", shown)
+
+    def test_the_heading_is_found_whatever_its_case(self):
+        # Review F9: a retyped heading must not switch the gate off.
+        report, shown = self.check(HEAD.replace("## Task log", "## Task Log  ") + LONG)
+        self.assertIn("WARN 1 new line(s)", shown)
+
+    def test_without_the_heading_every_exception_is_reported_stale(self):
+        report, shown = self.check("# Changelog\n\n" + LONG, {"0123456789abcdef"})
+        self.assertIn("WARN  CHANGELOG.md: exception '0123456789abcdef' matches no line", report)
+        self.assertIn("1 stale exception(s).", shown)
 
     def test_the_real_changelog_is_measured_and_never_fails(self):
         # Deliberately not asserting the absence of a warning: that would turn the gate's

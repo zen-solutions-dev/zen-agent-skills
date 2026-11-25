@@ -185,6 +185,61 @@ class GuardedLoadTests(Fixture):
         self.assertEqual(code, 0, out)
         self.assertIn("guards the draft 'drafty' with no '; otherwise' clause", out)
 
+    def test_the_guard_line_alone_without_otherwise_warns(self):
+        # Review F1/F2: the guard on its own, with no second load anywhere in the body.
+        self.write("shipped", skill("shipped", body=(
+            "If `drafty` is installed, read and follow it.\n")))
+        code, out = self.run_main()
+        self.assertEqual(code, 0, out)
+        self.assertIn("guards the draft 'drafty' with no '; otherwise' clause", out)
+        self.assertNotIn("with no guard;", out)
+
+    def test_every_unguarded_phrasing_warns(self):
+        # Review F3: case, and the kit's other idiom, "read `x` (now) and follow it".
+        for body in ("Read and follow `drafty` first.\n",
+                     "Read `drafty` now and follow it.\n",
+                     "Then read `drafty` and follow it.\n",
+                     "READ AND FOLLOW `drafty`.\n"):
+            with self.subTest(body=body):
+                self.write("shipped", skill("shipped", body=body))
+                code, out = self.run_main()
+                self.assertEqual(code, 0, out)
+                self.assertIn("tells the agent to read and follow the draft 'drafty' with "
+                              "no guard", out)
+
+    def test_the_guarded_form_stays_exempt_in_every_case(self):
+        for body in ("If `drafty` is installed, read and follow it; otherwise go on.\n",
+                     "If `drafty` is installed, read and follow it now; otherwise skip.\n"):
+            with self.subTest(body=body):
+                self.write("shipped", skill("shipped", body=body))
+                code, out = self.run_main()
+                self.assertIn("0 error(s), 0 warning(s)", out)
+
+    def test_a_guarded_load_satisfies_a_drafts_composed_by_claim(self):
+        # Review F4: the link the claim used to demand is the one S-030 forbids.
+        self.write("drafty", skill("drafty", DESC + " Composed by shipped.", meta=DRAFT_META))
+        self.write("shipped", skill("shipped", body=GUARDED))
+        code, out = self.run_main()
+        self.assertEqual(code, 0, out)
+        self.assertIn("0 error(s), 0 warning(s)", out)
+
+    def test_a_guard_without_otherwise_does_not_satisfy_the_claim(self):
+        self.write("drafty", skill("drafty", DESC + " Composed by shipped.", meta=DRAFT_META))
+        self.write("shipped", skill("shipped",
+                                    body="If `drafty` is installed, read and follow it.\n"))
+        code, out = self.run_main()
+        self.assertEqual(code, 1, out)
+        self.assertIn("composed by 'shipped', but shipped/SKILL.md has no relative link", out)
+        self.assertIn("also satisfies it", out)
+
+    def test_a_guarded_load_does_not_satisfy_a_shipped_skills_claim(self):
+        self.write("lens", skill("lens", DESC + " Composed by shipped."))
+        self.write("shipped", skill("shipped", body=(
+            "If `lens` is installed, read and follow it; otherwise go on.\n")))
+        code, out = self.run_main()
+        self.assertEqual(code, 1, out)
+        self.assertNotIn("also satisfies it", out)
+
     def test_a_guard_missing_its_otherwise_clause_is_unguarded(self):
         self.write("shipped", skill("shipped", body=(
             "If `drafty` is installed, read and follow it.\nThen read and follow `drafty`.\n")))
@@ -202,8 +257,8 @@ class DraftExpiryTests(Fixture):
         code, out = self.run_main()
         self.assertEqual(code, 0, out)
         self.assertIn("WARN  drafty/SKILL.md: a draft for 116 days (since 2026-08-01, from "
-                      "metadata.drafted), over 90, and no file under docs/reviews/*dogfood* "
-                      "names it", out)
+                      "metadata.drafted), over 90, and no file under docs/reviews/ with 'dogfood' in its "
+                      "path names it", out)
 
     def test_exactly_ninety_days_is_not_over(self):
         self.write("drafty", skill("drafty", meta=DRAFT_META + "  drafted: 2026-08-27\n"))
@@ -247,16 +302,63 @@ class DraftExpiryTests(Fixture):
         code, out = self.run_main()
         self.assertIn("(since 2026-08-01, from metadata.extended)", out)
 
+    def test_a_recent_extension_silences_an_old_draft(self):
+        # Review F1, the exact case.
+        self.write("drafty", skill("drafty", meta=DRAFT_META + "  drafted: 2026-01-01\n"
+                                   + '  extended: "2026-11-01: still in use"\n'))
+        code, out = self.run_main()
+        self.assertEqual(code, 0, out)
+        self.assertIn("0 warning(s)", out)
+
+    def test_quoted_and_unquoted_dates_read_the_same(self):
+        for line in ("  drafted: 2026-08-01\n", '  drafted: "2026-08-01"\n',
+                     "  drafted: '2026-08-01'\n"):
+            with self.subTest(line=line):
+                self.write("drafty", skill("drafty", meta=DRAFT_META + line))
+                code, out = self.run_main()
+                self.assertIn("(since 2026-08-01, from metadata.drafted)", out)
+
+    def test_a_drafted_date_in_the_future_is_invalid(self):
+        # Review F7: a future date would otherwise keep the warning quiet for years.
+        self.write("drafty", skill("drafty", meta=DRAFT_META + "  drafted: 2027-06-01\n"))
+        code, out = self.run_main()
+        self.assertIn("metadata.drafted '2027-06-01' is not a YYYY-MM-DD date that is not "
+                      "in the future", out)
+
+    def test_a_shallow_clone_says_unknown_rather_than_dating_its_boundary(self):
+        self.write("drafty", skill("drafty", meta=DRAFT_META))
+        calls = []
+
+        def fake(argv, **_kw):
+            calls.append(argv)
+            if "--is-shallow-repository" in argv:
+                return subprocess.CompletedProcess(argv, 0, stdout="true\n", stderr="")
+            return subprocess.CompletedProcess(argv, 0, stdout="2026-01-01\n", stderr="")
+        with mock.patch.object(vs.subprocess, "run", side_effect=fake):
+            code, out = self.run_main()
+        self.assertIn("unknown (no metadata.drafted, and this is a shallow clone)", out)
+        self.assertNotIn("2026-01-01", out)
+
+    def test_a_record_nested_deeper_under_reviews_counts(self):
+        # The path rule as AGENTS.md defines it: `dogfood` anywhere in the path below
+        # docs/reviews/, no date required.
+        self.write("drafty", skill("drafty", meta=DRAFT_META + "  drafted: 2026-01-01\n"))
+        d = self.repo / "docs" / "reviews" / "round-2-dogfood" / "ws-a"
+        d.mkdir(parents=True)
+        (d / "notes.md").write_text("`drafty` ran here.\n", encoding="utf-8")
+        code, out = self.run_main()
+        self.assertIn("0 warning(s)", out)
+
     def test_an_extension_without_a_date_is_reported(self):
         self.write("drafty", skill("drafty", meta=DRAFT_META + '  extended: "soon"\n'))
         code, out = self.run_main()
-        self.assertIn("metadata.extended 'soon' does not start with YYYY-MM-DD", out)
+        self.assertIn("metadata.extended 'soon' does not start with a YYYY-MM-DD date", out)
 
     def test_a_malformed_drafted_value_is_reported_as_unknown(self):
         self.write("drafty", skill("drafty", meta=DRAFT_META + "  drafted: last spring\n"))
         code, out = self.run_main()
-        self.assertIn("drafted metadata.drafted 'last spring' is not YYYY-MM-DD; the 90-day "
-                      "expiry cannot be checked", out)
+        self.assertIn("drafted metadata.drafted 'last spring' is not a YYYY-MM-DD date that "
+                      "is not in the future; the 90-day expiry cannot be checked", out)
 
     def test_without_drafted_and_without_git_the_date_is_unknown(self):
         self.write("drafty", skill("drafty", meta=DRAFT_META))

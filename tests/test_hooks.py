@@ -247,8 +247,12 @@ class WiringConsistencyTests(unittest.TestCase):
             "install_mod", REPO_ROOT / "scripts" / "install.py")
         install_mod = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(install_mod)
+        # The reminders' block and the gates' block together: a gate is printed apart
+        # from the reminders (feat-0103, review F6), and both are this wiring.
         block = json.loads(install_mod.claude_registration(Path("/tmp/home")))
-        yield "install.py claude_registration", self._flatten(block)
+        gates = json.loads(install_mod.claude_registration(Path("/tmp/home"), gates=True))
+        yield ("install.py claude_registration",
+               self._flatten(block) + self._flatten(gates))
 
     def matcher_sources(self):
         """Each wiring's matcher for the delegation hook, found by script name not index.

@@ -591,8 +591,16 @@ def hook_interpreter() -> str:
     return "python" if os.name == "nt" else "python3"
 
 
-def claude_registration(home: Path) -> str:
+# Gates registered apart from the reminders (feat-0103, review F6): a gate blocks work, so
+# opting into it is its own step. Pasting the reminders' block never opts into a gate.
+OPT_IN_GATES = frozenset({"destructive-git-gate.py"})
+
+
+def claude_registration(home: Path, gates: bool = False) -> str:
     """The settings.json block a user pastes to activate the hooks.
+
+    `gates=False` gives the reminders' block, every hook outside OPT_IN_GATES; `gates=True`
+    gives the gates' block alone, printed separately and labelled as a gate.
 
     Printed rather than merged. Editing someone's settings file is the one step of this
     install the uninstall manifest cannot cleanly reverse, and a hook is the only thing
@@ -615,6 +623,8 @@ def claude_registration(home: Path) -> str:
     by_event = {}
     for script_name, event, matcher in HOOK_REGISTRATIONS:
         if not (HOOKS_DIR / script_name).is_file():
+            continue
+        if (script_name in OPT_IN_GATES) != gates:
             continue
         command = f"{hook_interpreter()} \"{hooks_home / script_name}\""
         by_event.setdefault(event, []).append({
@@ -954,6 +964,13 @@ def install(tools, mode, home: Path, dry: bool, profile: str = DEFAULT_PROFILE,
                   f"~/.claude/settings.json:\n")
             print(claude_registration(home))
             print(f"\nRemove that block to deactivate; `--uninstall` removes the files.")
+            gate_names = sorted(n for n in OPT_IN_GATES if (HOOKS_DIR / n).is_file())
+            if gate_names:
+                print(f"\n{tag}Separately, an opt-in GATE was placed and is not in the "
+                      f"block above: {', '.join(gate_names)}. A gate BLOCKS commands it "
+                      f"judges destructive rather than reminding. To opt in, also merge "
+                      f"this second block; leave it out to keep the gate inactive:\n")
+                print(claude_registration(home, gates=True))
         elif placed_tool == "opencode":
             print(f"\n{tag}{opencode_activation_note(home, placed_target)}")
         else:
