@@ -67,8 +67,9 @@ limit and refusal) and marks each one held, broken or not reached, because three
 reviews in the 2026-11-24 round found a change contradicting its own contract's guard
 ([`R-209`](../reviews/2026-11-24-retro-marjana.md)). S-027 adds the security axis: required when
 the change is a one-way door, optional otherwise, a pass of its own that is not reranked against the
-other two. Goal 9 gains the guards, a Constraint places the security axis's inspection list and its
-door list in the lens, and the Axes and Output rows of the Proposed Surface are amended, with a
+other two. Goal 9 gains the guards, a Constraint places the security axis's inspection list in the lens
+and its door list in `autonomy.md`'s `A8` (the two-way-door guard of the sampled self-merge, the
+list `pr-describe` applies too), and the Axes and Output rows of the Proposed Surface are amended, with a
 Guards row added. The smell baseline and the optional deep-module lens the standards axis now loads
 are lens guidance under S-021 and add no scenario. No existing scenario's obligation changes; S-022
 still speaks of two axes, and S-027 states the third axis's independence itself. The frontmatter
@@ -132,8 +133,9 @@ only the diff it was given, or hardcode a severity scheme, and nothing would obj
   evidence gate's branches, and the signature format live in the swappable `review-quality` lens,
   not in the skill. The skill composes them by reference.
 - The spec-axis and standards-axis rules (categories, precedence of a repository standard over the
-  rubric, citing the standard) live in the same lens, and so do the security axis's door list and
-  what it inspects. The depth signals, the selection rule and the guard check live in the skill.
+  rubric, citing the standard) live in the same lens, and so does what the security axis inspects.
+  The one-way-door list is guard 2 of `A8`'s sampled self-merge in the `autonomy` lens, shared with
+  `pr-describe`. The depth signals, the selection rule and the guard check live in the skill.
 - Counting how often a signature repeats across runs, and judging a repeated finding futile, are out
   of this contract. The skill emits signatures; the only place it reads them is a re-check (S-025),
   which looks up the first review's findings by signature.
@@ -357,10 +359,10 @@ only the diff it was given, or hardcode a severity scheme, and nothing would obj
 
 ### Scenario S-027: a one-way door gets a security axis of its own
 
-- **Given** a change that holds a one-way door by the lens's list (persisted data, a removed or
-  renamed public surface, a published version, a sent message, a destroyed resource, a security,
-  permission or secrets change, CI or hook configuration), or any change the person asks to have
-  security-reviewed
+- **Given** a change that holds a one-way door by guard 2 of `A8`'s sampled self-merge in the
+  `autonomy` lens (among others: persisted data, a removed or renamed public surface, a published
+  version, a sent message, a destroyed resource, a permission, secrets, CI or hook change, an
+  approved spec or the acceptance checks), or any change the person asks to have security-reviewed
 - **When** the skill runs
 - **Then** it runs a security axis as its own pass against the lens's security category, with its own
   section, verdict, inspected list and worst finding, not reranked against the spec or standards

@@ -107,8 +107,10 @@ entries revert with the drafts. Nothing persisted or published changes.
     ZEN_CHECKS_SCOPE=full python3 scripts/run-checks.py
 
 - [ ] The command exits 0 after `origin/zen/marjana-r2-2026-11-25` is merged in.
-- [ ] `python3 scripts/validate-skills.py --include-drafts` names each of the five drafts and reports
-      0 errors.
+- [ ] `python3 scripts/validate-skills.py --include-drafts` prints
+      `Checked 36 skill(s): 0 error(s), 0 warning(s).`, and
+      `python3 scripts/install.py --dry-run --include-drafts` lists `prototype`, `teach`,
+      `vet-skill`, `wait-what` and `wayfinder` among its 11 draft skills.
 - [ ] `docs/spec/house-review.md` carries S-026 and S-027 and a dated `feat-0108` amendment flagged
       for re-approval; `house-review.conformance.md` has a row for each.
 - [ ] `docs/reviews/2026-11-25-dogfood/ship.md` has one entry per changed or new skill: what it ran

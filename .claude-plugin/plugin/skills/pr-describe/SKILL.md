@@ -123,11 +123,10 @@ grounded in the diff rather than in how the change feels:
 **Look:** skim | read | scrutinise. <one line: where to spend the attention>
 ```
 
-- **Door.** A **two-way door** is undone by reverting the merge: nothing outside the repository
-  changed. A **one-way door** is not: a migration or any change to persisted data, a deleted or
-  renamed public surface others call, a published package or API version, a sent message, a
-  destroyed resource, a security or permission change already exercised. One irreversible part
-  makes the whole PR one-way; name that part.
+- **Door.** A **two-way door** is one revert of the merge undoes whole. The one-way list is the
+  two-way-door guard of the sampled self-merge in [`autonomy.md`](../../rules/autonomy.md)'s `A8`
+  (guard 2): read it now and apply it as written, so this skill and `house-review` call the same
+  change one-way. One part on that list makes the whole PR one-way; name that part.
 - **Blast radius.** The widest set of people or systems a defect here would reach: one function's
   callers, every consumer of a shared module, every user of a released artifact, every adopter of a
   template this repository ships. Use the diff's own reach (who imports or runs the changed files),
