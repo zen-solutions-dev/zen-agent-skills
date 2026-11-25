@@ -50,7 +50,7 @@ The maintainer approved the A8/B1 and C1 wording with these answers: a **mechani
 
 ## The orchestrator's own Wave 1 items (`chore-0104`)
 
-**B5, done 2026-11-25.** A personal cloud environment `zen-agent-skills` (`env_011PpDpVBLXkHjUyyytf9Sdb`), approved by the maintainer in its prompt, saved for this repository. Its setup script installs the kit with drafts (`python3 scripts/install.py --include-drafts`), run first by hand from the checkout's parent and seen to place every skill. Network: limited to `github.com`, `raw.githubusercontent.com`, `codeload.github.com`, `api.github.com`, package registries and MCP servers. The Default environment is unchanged. Wave 2 children start on it.
+**B5, done 2026-11-25.** A personal cloud environment `zen-agent-skills`, approved by the maintainer in its prompt, saved for this repository. Its setup script installs the kit with drafts (`python3 scripts/install.py --include-drafts`), run first by hand from the checkout's parent and seen to place every skill. Network: limited to `github.com`, `raw.githubusercontent.com`, `codeload.github.com`, `api.github.com`, package registries and MCP servers. The Default environment is unchanged. Wave 2 children start on it.
 
 **B13, triaged 2026-11-25.** WS-D's `retro` run of 2026-11-24 was report-only, and its proposals survive only as the summary in [`2026-11-24-dogfood/ws-d.md`](2026-11-24-dogfood/ws-d.md); no branch holds their full text (`git grep` over every remote ref, 2026-11-25).
 

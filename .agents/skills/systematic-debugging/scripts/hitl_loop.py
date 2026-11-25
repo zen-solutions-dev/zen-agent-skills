@@ -14,8 +14,7 @@ a step or answer that carries a secret is written as given.
 
 Exit status: 1 when the person saw the symptom (red), 0 when they did not (green), and 2 when the
 run could not complete (no steps, an unreadable steps file, a log that cannot be written, or nobody
-answering). Two means unanswered,
-never green. Standard library only.
+answering). Two means unanswered, never green. Standard library only.
 """
 import argparse
 import json

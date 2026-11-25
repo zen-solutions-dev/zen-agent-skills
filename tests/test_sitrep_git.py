@@ -229,7 +229,7 @@ class OldTrackerNameTests(unittest.TestCase):
         repo.commit()
         notices = sitrep.load_tasks(repo.dir)[1]
         self.assertEqual(notices, [sitrep.NOTICE_OLD_TRACKER])
-        self.assertIn("second tagged release", notices[0])
+        self.assertIn("v0.2.0 warns; v0.3.0 removes the old names", notices[0])
 
     def test_moving_the_tracker_to_its_new_name_closes_nothing(self):
         """A done file that only moved from `.tasks/done/` to `.quests/done/` was closed before."""

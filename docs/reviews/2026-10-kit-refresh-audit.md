@@ -678,7 +678,7 @@ Found on the way and not part of the brief, disclosed per `A5` rather than fixed
 - **Inside a worktree, the currency hook and the command it recommends disagree.** At the start of this
   session the install-currency reminder reported three stale installed copies and said to run
   `python scripts/install.py --check`. Run from this worktree, that command printed "Nothing recorded as
-  installed beneath C:\Users\hamsa". The hook walks upward for `scripts/.install-manifest.json`
+  installed beneath C:\Users\<name>". The hook walks upward for `scripts/.install-manifest.json`
   ([`install-currency-reminder.py`](../../.agents/hooks/install-currency-reminder.py), `find_manifest()`
   at line 237) and finds the main checkout's copy; `install.py` reads only its own tree's
   ([`install.py`](../../scripts/install.py), line 98). That file is gitignored, so a worktree starts

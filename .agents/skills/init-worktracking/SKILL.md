@@ -154,7 +154,12 @@ fresh scaffold; the person may decline it.
    only); documents (`glossary`, `adr_dir`, `spec_dir`, `standards`); how work lands (`acceptance`,
    `base_branch`, `integration_prefix`, `merge_policy`); agent work (`default_mode`, `session_logs`,
    `memory`). Lead each with the recommended answer, so one word accepts it. Recommend `hitl` as the
-   default mode unless the person says agents here run unattended. A fact the repository does not
+   default mode unless the person says agents here run unattended. For `merge_policy`, recommend
+   `none`, and mention the `self-merge-sampled` opt-in only as an option the person chooses: it is
+   off unless the value parses exactly and `base_branch` is set explicitly (`A8` in
+   [`autonomy.md`](../../rules/autonomy.md)). With a `quests` tracker on GitHub, mention the
+   `publish` and `publish_repo` keys as a draft feature (opt-in publishing to GitHub issues, in the
+   `triage` draft), recommend leaving them out, and write them only when the person asks. A fact the repository does not
    have is `none`, and a fact nobody knows yet is left out. For `tracker: other`, ask for a paragraph
    saying how to create, read, label and close an item, and put it below the block.
 3. **On a re-run**, first run `python .quests/validate.py`; when the block does not parse, write

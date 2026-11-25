@@ -41,6 +41,10 @@ the second tagged release): a board reading files tracked under `.tasks/` carrie
 alias expires (new S-042). **This amendment needs the maintainer's re-approval in the round 2 pull
 request.**
 
+**Noted 2026-11-25, round 2 close** (the maintainer's answer to the whole-branch review's S3): the
+expiry is named by version, "v0.2.0 warns; v0.3.0 removes the old names", in place of "the kit's
+second tagged release", in S-042 and the notice. **For re-approval with the amendment above.**
+
 **Note 2026-11-25:** example repository names in this contract were neutralised (to `sample-app`), at the maintainer's decision; no behaviour changed.
 
 ## Problem
@@ -439,8 +443,8 @@ Added 2026-11-25 by `feat-0103`.
 
 - **Given** a repository with task files tracked under `.tasks/`, alone or beside `.quests/`
 - **When** the board is generated
-- **Then** the board carries a notice that `.tasks/` is the old name, read as an alias until the
-  kit's second tagged release, naming the fix: `git mv .tasks .quests`
+- **Then** the board carries a notice that `.tasks/` is the old name, read as an alias (v0.2.0
+  warns; v0.3.0 removes the old names), naming the fix: `git mv .tasks .quests`
 - **And** a repository tracking files only under `.quests/` carries no such notice
 ## Proposed Surface
 

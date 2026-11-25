@@ -1,6 +1,6 @@
 # Marjana decisions, 2026-11-25
 
-The maintainer's answers to the "Marjana Decision Sheet" (private artifact https://claude.ai/artifact/EPjXNFsqeNLwQWkPetcvYU), read from the sheet's own store on 2026-11-25 at about 02:50 UTC and transcribed here verbatim, choice and note, so a session that cannot open the artifact still has them. The sheet covered the open items of [the Marjana round](2026-11-24-marjana-plan.md), [its retro](2026-11-24-retro-marjana.md), and [the coverage map](2026-11-25-skills-coverage-map.md). Where an answer approves a change to a contract or a rule, the change itself is still to be made; this file records the decision, not the work.
+The maintainer's answers to the "Marjana Decision Sheet" (a private decision sheet), read from the sheet's own store on 2026-11-25 at about 02:50 UTC and transcribed here verbatim, choice and note, so a session that cannot open the artifact still has them. The sheet covered the open items of [the Marjana round](2026-11-24-marjana-plan.md), [its retro](2026-11-24-retro-marjana.md), and [the coverage map](2026-11-25-skills-coverage-map.md). Where an answer approves a change to a contract or a rule, the change itself is still to be made; this file records the decision, not the work.
 
 ## A. Contracts
 

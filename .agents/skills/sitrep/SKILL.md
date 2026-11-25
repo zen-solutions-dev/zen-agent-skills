@@ -95,7 +95,7 @@ Checked against the source: a secondary claim someone confirmed by reading the s
 Primary source cited: the claim names the primary source itself (the specification, the code, the author's own statement).
 
 **Gold**:
-Primary and independently confirmed: a blue or purple claim that an independent check agrees with: a second primary source, a run, a measurement, or a test that pins it.
+Independently confirmed: a blue or purple claim that an independent check agrees with: a second primary source, a run, a measurement, or a test that pins it.
 
 The board gives each tier to:
 

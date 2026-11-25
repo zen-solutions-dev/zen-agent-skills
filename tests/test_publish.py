@@ -1,4 +1,4 @@
-"""Tests for .agents/skills/new-quest/scripts/publish.py and the publishing keys (feat-0106).
+"""Tests for .agents/skills/triage/scripts/publish.py and the publishing keys (feat-0106).
 
 Derived from the publishing scenarios of docs/spec/zen-config.md (S-047 to S-058); each test
 names the scenario it covers. The script's seam is its command line, `main()`, with the `gh`
@@ -29,7 +29,7 @@ import unittest
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
-SCRIPT = REPO_ROOT / ".agents" / "skills" / "new-quest" / "scripts" / "publish.py"
+SCRIPT = REPO_ROOT / ".agents" / "skills" / "triage" / "scripts" / "publish.py"
 COPIES = {
     "repository": REPO_ROOT / ".quests" / "validate.py",
     "template": (REPO_ROOT / ".agents" / "skills" / "init-worktracking" / "templates"

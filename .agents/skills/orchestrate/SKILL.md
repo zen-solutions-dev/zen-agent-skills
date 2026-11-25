@@ -55,6 +55,9 @@ because the excess is steps and gates every run needs; the memory's layout and l
 2. **The repository's setup file**, where it has one: the `zen-config` block in `docs/agents/zen.md`
    (keys `base_branch`, `integration_prefix`, `acceptance`, `tracker`, `default_mode`,
    `merge_policy`, `memory`). Absent file or key: discover the value and say once which you used.
+   Two are never discovered: `merge_policy`'s `self-merge-sampled` opt-in, and the `base_branch`
+   it targets. Absent or unreadable means off, as the Readers rule of `zen-config` and `A8` in
+   [`autonomy.md`](../../rules/autonomy.md) say; nothing is asked or inferred.
 3. **The memory index**: the file the `memory` key names, with its entries beside it (in the Zen
    Agent Skills repository, `docs/agents/memory/README.md`), or wherever the repository keeps dated
    notes.
@@ -224,7 +227,7 @@ with no side branch merged; and the frontier is empty.
 
 1. Run **one** review of the whole integration branch: a reviewer with a fresh context, as a leaf,
    that wrote none of it, reads and follows [`house-review`](../house-review/SKILL.md) on both axes
-   (the plan, then the written standards).
+   (the plan, then the written standards), and its security axis when the door is one-way.
 2. Dispatch **one** fix child, fresh and a leaf, for the findings you accept. Its branch is verified
    and landed like any child's (Step 5), and the re-check covers **only the fixed findings**, as
    [`house-review`](../house-review/SKILL.md) Step 8 and rule 8 of the
@@ -236,9 +239,11 @@ with no side branch merged; and the frontier is empty.
    command on the tip.
 4. Write the body with [`pr-describe`](../pr-describe/SKILL.md), offering a stacked split when the
    branch is large and holds a one-way door, and open **one draft pull request** into the base
-   branch. Never merge it: that is the person's.
+   branch. The body carries the two lists Step 5 kept: every mechanical merge, and every commit of
+   your own landed unverified. Never merge it: that is the person's.
 
-Done when one draft pull request is open with the acceptance command's verbatim tail in it, every
+Done when one draft pull request is open with the acceptance command's verbatim tail in it and
+Step 5's mechanical-merge and unverified own-commit lists in its body, every
 landed child's quest file is in `done/`, every refused remote action is a step for the person in
 its body, and every review finding is fixed, dismissed with a reason, or listed for the person.
 

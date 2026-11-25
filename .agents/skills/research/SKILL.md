@@ -47,7 +47,7 @@ Checked against the source: a secondary claim someone confirmed by reading the s
 Primary source cited: the claim names the primary source itself (the specification, the code, the author's own statement).
 
 **Gold**:
-Primary and independently confirmed: a blue or purple claim that an independent check agrees with: a second primary source, a run, a measurement, or a test that pins it.
+Independently confirmed: a blue or purple claim that an independent check agrees with: a second primary source, a run, a measurement, or a test that pins it.
 
 A finding takes the rarity of the weakest source it rests on. A rarity is earned by what was read in
 this run, never asserted: a primary source the researcher could not reach is not Purple, it is

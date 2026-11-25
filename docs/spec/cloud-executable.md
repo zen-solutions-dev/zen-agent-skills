@@ -63,6 +63,8 @@ that. A forward spec can specify something unbuildable, and nothing finds that u
 `spec-plan-readiness` over this spec plus its task decomposition is the gate for that, and it runs
 before any implementation begins rather than after.
 
+**Noted 2026-11-25: rename-only edit, `feat-0101`, no behaviour change.** The rename from tasks to quests changed words and paths here; no scenario, surface element or guard changed.
+
 ## Problem
 
 This repository cannot be worked on from a cloud agent session, for two independent reasons. Both

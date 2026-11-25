@@ -1,6 +1,9 @@
 # Publishing the tracker to GitHub
 
-Read this only when the repository's `docs/agents/zen.md` sets `publish: github`. Publishing
+Read this only when the repository's `docs/agents/zen.md` sets `publish: github`. It belongs
+to the `triage` draft, and `new-quest` loads it by name, guarded, at its step 8; until the
+maintainer's live `--apply` on a throwaway repository passes, it reaches an adopter only with
+`--include-drafts`. Publishing
 mirrors the local tracker to GitHub issues, one way: specs as issues, quests as their
 sub-issues, `depends_on` as GitHub's native "blocked by" links. The quest files stay the source
 of truth. Nothing on GitHub ever changes a file here, and the publisher writes no file at all.
@@ -43,9 +46,9 @@ repository (S-047 to S-058, `feat-0106`). The script is
 
 ## The issue shape
 
-Approved by the maintainer on 2026-11-25 at the `feat-0106` check-in gate, relayed by the round
-2 orchestrator (session `session_017QLseoWFoRQDJMZM5nR9DQ`): "the issue shape is APPROVED as you
-proposed, with every recommended answer". The shape is a one-way door: adopters' repositories
+Approved by the maintainer on 2026-11-25 at the `feat-0106` check-in gate, recorded in the Zen
+Agent Skills repository's round 2 plan: "the issue shape is APPROVED as you proposed, with every recommended
+answer". The shape is a one-way door: adopters' repositories
 hold issues in it, so it changes only by amending the contract. The approved proposal, as sent:
 
 **Titles.** A spec issue is `Spec: <spec frontmatter title>`, such as `Spec: zen-config`. A
@@ -81,7 +84,7 @@ quest updates its issue's title.
   keeps its id, so only its source path updates.
 
 **Amendments, decided by the maintainer on 2026-11-25** after the `feat-0106` re-check,
-relayed by the round 2 orchestrator (session `session_017QLseoWFoRQDJMZM5nR9DQ`):
+recorded in the Zen Agent Skills repository's round 2 plan:
 
 - **(a)** Breaking `<!-- zen-publish` as `&lt;!-- zen-publish` in file text is the one
   exception to "Nothing else is rewritten" above.

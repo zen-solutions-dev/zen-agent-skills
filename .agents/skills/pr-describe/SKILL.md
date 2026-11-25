@@ -133,6 +133,8 @@ grounded in the diff rather than in how the change feels:
   not a guess.
 - **Look.** The verdict the first two earn. Two-way and narrow: skim. Two-way and wide, or one-way
   and narrow: read. One-way and wide: scrutinise, and name the files that deserve it.
+- **On an integration branch**, carry the orchestrator's mechanical-merge list and its list of
+  unverified own commits under Merge danger, after the three fields.
 
 Done when all three fields are filled and each names the part of the diff that set it.
 

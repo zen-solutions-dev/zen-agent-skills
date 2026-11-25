@@ -3045,13 +3045,13 @@ class RenamedSkillTests(_FixtureKit):
         code, out = self._main("--skills", "new-task", "--tools", "claude")
         self.assertEqual(code, 0, out)
         self.assertIn("warning: 'new-task' was renamed 'new-quest'", out)
-        self.assertIn("accepted until the kit's second tagged release", out)
+        self.assertIn("v0.2.0 warns; v0.3.0 removes the old names", out)
         self.assertIn("Use --skills new-quest.", out)
 
     def test_the_new_name_carries_no_alias_warning(self):
         code, out = self._main("--skills", "new-quest", "--tools", "claude")
         self.assertEqual(code, 0, out)
-        self.assertNotIn("second tagged release", out)
+        self.assertNotIn("v0.3.0 removes the old names", out)
 
     def test_a_recorded_placement_under_the_old_name_is_retired(self):
         modes = ["copy"] + (["symlink"] if SYMLINKS_WORK else [])

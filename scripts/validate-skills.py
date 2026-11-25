@@ -63,6 +63,7 @@ from scripts._textio import NotUTF8, read_text_utf8   # noqa: E402
 from scripts._skillmeta import (   # noqa: E402
     INVOCATION_VALUES, RENDERED_KEY, fenced_block_ranges, is_draft_text, link_targets,
     literal_ranges, metadata_fields, sibling_edges)
+from scripts._skillmeta import names_skill as _names_skill   # noqa: E402
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 SKILLS_DIR = REPO_ROOT / ".agents" / "skills"
@@ -1016,13 +1017,18 @@ def check_composed_by(descriptions: dict, skill_texts: dict, errors: list) -> No
 # kit's phrasings: "read and follow `x`", or "read `x` (now) and follow it". Matched
 # without regard to case, so one at the start of a sentence is caught too. The guarded
 # sentence matches neither: it names the skill before "read" and follows "it".
+# "the" may stand before the name ("read and follow the `x` skill", review N1).
 UNGUARDED_LOAD_RE = re.compile(
-    r"\bread\s+(?:and\s+follow\s+`([a-z0-9][a-z0-9-]*)`"
-    r"|`([a-z0-9][a-z0-9-]*)`[^.;\n]*?\bfollow\s+it\b)", re.IGNORECASE)
+    r"\bread\s+(?:and\s+follow\s+(?:the\s+)?`([a-z0-9][a-z0-9-]*)`"
+    r"|(?:the\s+)?`([a-z0-9][a-z0-9-]*)`[^.;\n]*?\bfollow\s+it\b)", re.IGNORECASE)
 # The guard's opening, and the rest of its sentence: words such as "now" may follow "it",
-# and the sentence must go on with a clause starting "; otherwise".
+# "its" may name a file of the draft ("read and follow its publishing reference", the
+# maintainer's wording for `new-quest`, round 2 close), and the sentence must go on with a
+# clause starting "; otherwise". The sentence may wrap across lines (plan item (c), retro
+# R-301): only a full stop or a semicolon ends it, and the words between are any but those.
 GUARD_OPEN_RE = re.compile(
-    r"\bIf `([a-z0-9][a-z0-9-]*)` is installed, read and follow it\b([^.;\n]*)(;\s*otherwise\b)?")
+    r"\bIf\s+`([a-z0-9][a-z0-9-]*)`\s+is\s+installed,\s+read\s+and\s+follow\s+its?\b"
+    r"([^.;]*)(;\s*otherwise\b)?")
 
 
 def guards_load_of(text: str, name: str) -> bool:
@@ -1044,6 +1050,10 @@ def check_draft_references(skill_texts: dict, errors: list, warnings: list) -> N
     accepted and draws no install edge, since `install.py` and `build-adapters.py` follow
     relative links only. An unguarded "read and follow `x`" of a draft warns: it reads
     as a load that cannot fail, and fails wherever the draft was not installed.
+
+    A draft's own loads are not checked, by decision at the round 2 close (plan item (m)):
+    a draft reaches an adopter only with `--include-drafts`, and this check applies to it
+    from the day it is promoted (AGENTS.md section 5).
     """
     drafts = {n for n, text in skill_texts.items() if is_draft_text(text)}
     for name in sorted(skill_texts):
@@ -1158,13 +1168,14 @@ def dogfood_text(repo_root: Path) -> str:
 
 
 def names_skill(text: str, name: str) -> bool:
-    """A record names a skill by its name, as a whole word, or as `name/SKILL.md`.
+    """A record names a skill as `` `name` ``, `[name]`, or `name/SKILL.md`.
 
-    AGENTS.md section 7's wording. A whole word: not part of a longer hyphenated name,
-    so `orchestrate-lite` does not name `orchestrate`. The path form is covered by the
-    same match, since `name` is a whole word inside `name/SKILL.md`.
+    AGENTS.md section 7's wording, and the same rule as `run-checks.py`'s listing gate
+    (`_skillmeta.names_skill`). Not a bare word: a draft called `plan` is not named by
+    every record that uses the word "plan". Nor part of a longer name, so
+    `orchestrate-lite/SKILL.md` does not name `orchestrate`.
     """
-    return re.search(rf"(?<![\w-]){re.escape(name)}(?![\w-])", text) is not None
+    return _names_skill(text, name)
 
 
 def check_draft_expiry(skills_dir: Path, skill_texts: dict, repo_root: Path,

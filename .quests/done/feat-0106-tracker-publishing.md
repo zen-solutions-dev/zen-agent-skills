@@ -37,14 +37,14 @@ created: 2026-11-25
 
 Coverage map rule 12 ([`2026-11-25-skills-coverage-map.md`](../../docs/reviews/2026-11-25-skills-coverage-map.md), section 4) found the kit inconsistent: [`zen-config`](../../docs/spec/zen-config.md) accepts `tracker: github` and five `role.*` labels, `init-worktracking` asks for them, and no skill reads a `role.*` key or publishes to a tracker. The maintainer decided R2-2 in the [round 2 plan](../../docs/reviews/2026-11-25-marjana-r2-plan.md): opt-in publishing, as a draft. `.quests/` stays the source of truth and mirrors one way out, specs as issues, quests as sub-issues, `depends_on` as native blocking, and a `triage` draft consumes the role labels.
 
-The shape of a published issue is a one-way door. It was proposed at a check-in gate before any build and approved by the maintainer on 2026-11-25, relayed by the orchestrator, with every recommended answer (Q1 to Q5). The approved text is in [`publishing.md`](../../.agents/skills/new-quest/references/publishing.md).
+The shape of a published issue is a one-way door. It was proposed at a check-in gate before any build and approved by the maintainer on 2026-11-25, relayed by the orchestrator, with every recommended answer (Q1 to Q5). The approved text is in [`publishing.md`](../../.agents/skills/triage/references/publishing.md).
 
 ## Scope
 
 **In scope:**
 
-- [`publish.py`](../../.agents/skills/new-quest/scripts/publish.py), stdlib only: dry run by default, `--offline`, `--apply` through `gh api` only, idempotent by a hidden marker, one way, never deleting.
-- [`publishing.md`](../../.agents/skills/new-quest/references/publishing.md), the procedure and the approved shape, and step 8 of [`new-quest`](../../.agents/skills/new-quest/SKILL.md), which loads it only when the setup file opts in.
+- [`publish.py`](../../.agents/skills/triage/scripts/publish.py), stdlib only: dry run by default, `--offline`, `--apply` through `gh api` only, idempotent by a hidden marker, one way, never deleting.
+- [`publishing.md`](../../.agents/skills/triage/references/publishing.md), the procedure and the approved shape, and step 8 of [`new-quest`](../../.agents/skills/new-quest/SKILL.md), which loads it only when the setup file opts in.
 - The `publish` and `publish_repo` keys and the quest field `private` in both copies of `validate.py`.
 - The `zen-config` amendment (S-047 to S-059, dated, flagged for re-approval) and its conformance rows.
 - The draft [`triage`](../../.agents/skills/triage/SKILL.md), user-invoked, report-first.

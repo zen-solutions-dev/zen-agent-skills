@@ -9,6 +9,8 @@ Behavioral contract for the agent observatory (ROADMAP Campaign E, the reporting
 Drafted 2026-08-28 by the `spec-author` skill and self-checked to `ready` with the `spec-quality`
 lens.
 
+**Noted 2026-11-25: rename-only edit, `feat-0101`, no behaviour change.** The rename from tasks to quests changed words and paths here; no scenario, surface element or guard changed.
+
 ## Problem
 
 This kit asks one question of every skill it ships, in the contribution-bar section of

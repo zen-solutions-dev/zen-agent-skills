@@ -606,10 +606,13 @@ UNLISTED_DRAFT_EXCEPTIONS = {}
 
 
 def _names(text, name):
-    """A listing names a skill as `` `name` ``, `[name]`, or by the path `name/SKILL.md`."""
-    escaped = re.escape(name)
-    return re.search(rf"`{escaped}`|\[{escaped}\]|(?<![\w-]){escaped}/SKILL\.md",
-                     text) is not None
+    """A listing names a skill as `` `name` ``, `[name]`, or by the path `name/SKILL.md`.
+
+    Any backticked mention counts, even one in a sentence that says the skill is absent:
+    the gate checks that a listing names each skill, not what it says about it. The rule
+    lives in `_skillmeta.names_skill`, shared with `validate-skills.py`'s dogfood match.
+    """
+    return _skillmeta.names_skill(text, name)
 
 
 def check_skill_listings(repo_root=None, exceptions=None):

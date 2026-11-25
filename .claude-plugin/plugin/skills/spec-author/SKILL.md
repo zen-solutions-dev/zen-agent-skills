@@ -114,7 +114,8 @@ them). Use the glossary's terms throughout.
 
 Then read and follow [`grill`](../grill/SKILL.md) now: interview the person over the decision tree
 until its frontier is empty and they confirm the shared understanding. Scale it to the change: a
-narrow bug may settle in one round, a new capability may take several. Write no file until the interview has closed.
+narrow bug may settle in one round, a new capability may take several. Write no file until the
+interview has closed.
 
 **Synthesise only.** When this conversation already holds a `grill` decisions record for this
 request and the person confirmed it, skip the interview and draft from that record: say which record

@@ -39,7 +39,7 @@ A session an orchestrator starts with a fresh context and a written brief, which
 _Avoid_: subagent (a leaf dispatched inside one session), worker, fork
 
 **Integration branch**:
-The branch every child session's work lands on before it reaches the person as one pull request. Only an orchestrator merges into it, and only work it did not author and someone else verified.
+The branch every child session's work lands on before it reaches the person as one pull request. Only an orchestrator merges into it, and only work it did not author and someone else verified, by a fast-forward or a mechanical merge: guard 3 of `A8`'s first exception, and its definition of a mechanical merge, in [`autonomy.md`](.agents/rules/autonomy.md).
 _Avoid_: staging branch, release branch
 
 **Frontier**:
@@ -55,7 +55,7 @@ Said of work a person stays present for while it runs, because it holds a one-wa
 _Avoid_: supervised, interactive, HITL in prose
 
 **One-way door**:
-A decision that is expensive or impossible to reverse once others depend on it, such as a file format adopters configure against. It gets a spec and a person's approval before it is built.
+A decision that is expensive or impossible to reverse once others depend on it, such as a file format adopters configure against. It gets a spec and a person's approval before it is built. Which changes count is listed once, in guard 2 ("A two-way door") of `A8`'s sampled self-merge in [`autonomy.md`](.agents/rules/autonomy.md); `pr-describe`, `house-review` and `review-quality.md` read it there.
 _Avoid_: irreversible change, breaking change
 
 **Two-way door**:
@@ -99,11 +99,11 @@ Checked against the source: a secondary claim someone confirmed by reading the s
 Primary source cited: the claim names the primary source itself (the specification, the code, the author's own statement).
 
 **Gold**:
-Primary and independently confirmed: a blue or purple claim that an independent check agrees with: a second primary source, a run, a measurement, or a test that pins it.
+Independently confirmed: a blue or purple claim that an independent check agrees with: a second primary source, a run, a measurement, or a test that pins it.
 
 To avoid: for White, unknown or unsourced; for Green, weak or second-hand; for Blue, verified (it says nothing about which source); for Purple, authoritative or official; for Gold, certain or proven. The ladder above is copied word for word into the `research` and `sitrep` skills, so a change is made in all three.
 
-The evidence tiers `sitrep` prints are the same ladder read for figures: a hand-entered value is White, a quest entry Green, a value read from a tracked file Blue, a count over a tracked file or git's state Purple, and a figure pinned to a test Gold. Until 2026-11-25 this entry called them a separate scale (R2-9 made them one).
+The evidence tiers `sitrep` prints are the same ladder read for figures: a hand-entered value is White, a quest entry Green, a value read from a tracked file Blue, a count over a tracked file or git's state Purple, and a figure pinned to a test Gold. Until 2026-11-25 this entry called them a separate scale (R2-9 made them one). Gold's label was "Primary and independently confirmed" until the round 2 close (2026-11-25), when the maintainer relabelled it "Independently confirmed", its meaning unchanged: a figure pinned to a test can be Gold without a primary source.
 
 ## Setup
 

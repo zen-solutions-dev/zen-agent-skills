@@ -16,6 +16,8 @@ defines it with `approved_digest`. The skill refuses a spec the digest script re
 so. No scenario, input, or output changes; if the maintainer reads the refusal as a contract term,
 it becomes a scenario and this note records where it came from.
 
+**Noted 2026-11-25: rename-only edit, `feat-0101`, no behaviour change.** The rename from tasks to quests changed words and paths here; no scenario, surface element or guard changed.
+
 ## Problem
 
 The spine has [`test-quality`](../../.agents/skills/test-quality/SKILL.md), a lens for judging whether

@@ -150,7 +150,7 @@ class Wizard:
         return None
 
     def write_env(self, key, value):
-        """Upsert KEY='VALUE' in the env file. Idempotent; never prints the value.
+        r"""Upsert KEY='VALUE' in the env file. Idempotent; never prints the value.
 
         A value holding a line break is refused: it would end its line and inject another key.
         A line break is anything `str.splitlines` splits on, since `existing` reads the file

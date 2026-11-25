@@ -58,7 +58,7 @@ Lifecycle `open -> in_progress -> done`. On completion:
 - **No tool lock-in in skill bodies.** Gate a single-harness capability behind a clearly labelled optional section.
 - **Links resolve where the skill is used.** A skill's link may reach its own files, a sibling skill, or `.agents/rules/`, nothing above. Name any other file in prose. `validate-skills.py` fails on an escape.
 - **A relative link to a sibling `SKILL.md` is a profile edge**: [`install.py`](scripts/install.py) pulls that sibling, and everything it links, into the profile. Link only a sibling the skill composes and is broken without; merely naming one is backticks.
-- **A draft is loaded by name, guarded.** A shipped skill composes a draft sibling with exactly this form: a sentence that starts ``If `<name>` is installed, read and follow it``, then, in the same sentence, a fallback clause starting `; otherwise`, as in ``If `research` is installed, read and follow it now; otherwise answer from the sources already in hand.`` The name stays in backticks, never a relative link, so it draws no install edge, and the run is whole without the draft.
+- **A draft is loaded by name, guarded.** A shipped skill composes a draft sibling with exactly this form: a sentence that starts ``If `<name>` is installed, read and follow it``, then, in the same sentence, a fallback clause starting `; otherwise`, as in ``If `research` is installed, read and follow it now; otherwise answer from the sources already in hand.`` The name stays in backticks, never a relative link, so it draws no install edge, and the run is whole without the draft. "Follow it" may name a file of the draft ("read and follow its publishing reference"), and the sentence may wrap across lines. A draft loading a draft is not checked: both reach an adopter only with `--include-drafts`, and the rule applies to the loader once it is promoted.
 
 ## 6. Conventions
 
@@ -90,7 +90,7 @@ Material adapted from elsewhere carries a provenance block. The convention (fiel
 
 ## 7. Contribution bar
 
-**The bar gates promotion, not drafting.** A draft may be written freely: it reaches no adopter without `--include-drafts`. Promotion to shipped needs real use on real work and iteration from what that use exposed, recorded as a **dogfood record**: a file under `docs/reviews/` whose path contains `dogfood` and that names the skill, by its name or as `<name>/SKILL.md`. No speculative skill is promoted.
+**The bar gates promotion, not drafting.** A draft may be written freely: it reaches no adopter without `--include-drafts`. Promotion to shipped needs real use on real work and iteration from what that use exposed, recorded as a **dogfood record**: a file under `docs/reviews/` whose path contains `dogfood` and that names the skill as `` `<name>` ``, `[<name>]` or `<name>/SKILL.md` (a bare word does not count). No speculative skill is promoted.
 
 **A draft expires.** Its age counts from `metadata.drafted` (YYYY-MM-DD), or, when that is absent, from the first commit of its `SKILL.md`. A draft over **90 days** old with no dogfood record is promoted, extended, or removed. An extension is `extended: "YYYY-MM-DD: <reason>"` under `metadata`, quoted because the value holds a colon, and the 90 days then count from that date.
 

@@ -45,16 +45,28 @@ not change. **This amendment needs the maintainer's re-approval in the round 2 p
 **Amended 2026-11-25 by `feat-0106`** (maintainer decision R2-2 in the
 [round 2 plan](../reviews/2026-11-25-marjana-r2-plan.md): opt-in publishing of the local tracker to
 GitHub, as a draft): two new keys, `publish` and `publish_repo`, turn on a one-way mirror of
-`.quests/` to GitHub issues, run by `new-quest`'s `scripts/publish.py`; a quest or spec may set
+`.quests/` to GitHub issues, run by `scripts/publish.py` (in the `triage` draft since the round 2
+close; see the note below); a quest or spec may set
 `private: true` to stay off it; and the new `triage` draft becomes the first reader of the `role.*`
 keys (new S-047 to S-059, the key and Readers tables, and the Publishing section below). Off stays
 the default: an absent key, `none`, or anything malformed publishes nothing. The shape of a
 published issue is a one-way door, and the maintainer approved it at the `feat-0106` check-in gate
-on 2026-11-25, relayed by the round 2 orchestrator; it is recorded verbatim in `new-quest`'s
-`references/publishing.md` and summarised under Publishing. The approved
+on 2026-11-25, relayed by the round 2 orchestrator; it is recorded verbatim in
+`references/publishing.md` (the `triage` draft's since the round 2 close) and summarised under
+Publishing. The approved
 [tracker-links](tracker-links.md) contract still lists mirroring and issue hierarchy among its
 Non-Goals: that contract is `pr-describe`'s, which still touches no issue, and it is not changed.
 **This amendment needs the maintainer's re-approval in the round 2 pull request.**
+
+**Noted 2026-11-25, round 2 close** (maintainer decision on the whole-branch review's M1, in the
+[round 2 plan](../reviews/2026-11-25-marjana-r2-plan.md)): publishing moved to a draft.
+`scripts/publish.py` and `references/publishing.md` moved from `new-quest` into the `triage` draft,
+and `new-quest`'s step 8 loads them by name, guarded, so publishing reaches an adopter only with
+`--include-drafts` until the maintainer's live `--apply` passes. **No behaviour change**: the
+script, its scenarios and the issue shape are the same; only where they live and which skill
+holds them moved, in the key, Readers and Publishing text below. The same note adds `orchestrate`
+(a draft) to the Readers table, for the `merge_policy` and `base_branch` it already read through
+rule `A8` (review S11). **For re-approval with the amendments above.**
 
 The path and the block format become a one-way door once an adopter
 configures a repository against them, which is why this contract exists before anyone outside this
@@ -680,11 +692,14 @@ amendment.
 | `domain-language` | `glossary`, `adr_dir` |
 | `grill` | `glossary`, `adr_dir` |
 | `spec-author` | `spec_dir` |
-| `new-quest` | `acceptance`, `glossary`, `default_mode`; and from `feat-0106`, through its `scripts/publish.py`, `publish`, `publish_repo`, `spec_dir`, `base_branch` |
-| `triage` (a draft), from `feat-0106` | every `role.*` key, `publish_repo` |
+| `new-quest` | `acceptance`, `glossary`, `default_mode`; and `publish`, to decide whether to load the `triage` draft's publishing (round 2 close) |
+| `triage` (a draft), from `feat-0106` | every `role.*` key, `publish_repo`; and, through its `scripts/publish.py` (moved from `new-quest` at the round 2 close), `publish`, `publish_repo`, `spec_dir`, `base_branch` |
+| `orchestrate` (a draft), noted at the round 2 close | `merge_policy` (the `self-merge-sampled` opt-in only), `base_branch`, as rule `A8` reads them: absent means off, never discovered |
 | The autonomy lens (`.agents/rules/autonomy.md`, rule `A8`), from `feat-0102` | `merge_policy` (the `self-merge-sampled` opt-in only), `base_branch` |
 
-**Publishing**, from `feat-0106`: `new-quest`'s `scripts/publish.py` mirrors the tracker one way.
+**Publishing**, from `feat-0106`: `scripts/publish.py` mirrors the tracker one way. Since the
+round 2 close it lives in the `triage` draft, which `new-quest` loads, guarded, when `publish` is
+`github`.
 It reads the configuration through the repository's own `validate.py` and publishes nothing unless
 that validator finds the publishing keys valid (S-049). A dry run is the default; `--apply` acts
 through `gh` only, with gh's own sign-in (S-051). Candidates are the quest files git tracks in the
@@ -696,7 +711,7 @@ carries the `zen:published` label and ends in its marker, and the publisher acts
 carrying both (S-053, S-055); since anyone who can apply that label can therefore have an issue
 edited, `references/publishing.md` names the label as the trust boundary to protect. The labels are `zen:published`, `zen:spec`, `zen:quest` and
 `zen:in-progress`, fixed names; the publisher never applies or removes a `role.*` label. The full
-approved shape, titles, body, labels and status, is in `new-quest`'s `references/publishing.md`;
+approved shape, titles, body, labels and status, is in the `triage` draft's `references/publishing.md`;
 S-052 to S-056 are its observable part. The quest frontmatter field `private` is `true` or
 `false`, checked by `validate.py` (S-057).
 

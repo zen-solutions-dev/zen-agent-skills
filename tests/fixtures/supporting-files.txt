@@ -25,9 +25,7 @@ template init-worktracking/templates/cursor-rule.mdc.tmpl
 template init-worktracking/templates/quests-README.md.tmpl
 other init-worktracking/templates/validate.py
 template init-worktracking/templates/zen.md.tmpl
-markdown new-quest/references/publishing.md
 markdown new-quest/references/why-these-rules.md
-other new-quest/scripts/publish.py
 markdown orchestrate/references/claude-code.md
 markdown orchestrate/references/first-run.md
 markdown orchestrate/references/memory.md
@@ -49,4 +47,6 @@ other spec-author/scripts/spec_digest.py
 markdown systematic-debugging/references/red-flags.md
 other systematic-debugging/scripts/hitl_loop.py
 markdown tdd/references/examples.md
+markdown triage/references/publishing.md
+other triage/scripts/publish.py
 markdown wayfinder/references/map-format.md

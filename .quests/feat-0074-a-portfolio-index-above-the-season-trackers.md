@@ -84,7 +84,7 @@ which project needs me this week, and for what.
 
 ## Decision
 
-Answered by Hamsa on 2026-10-22:
+Answered by the maintainer on 2026-10-22:
 
 1. **Yes: the index belongs in `quest-tracker`, separate from Campaign E #7d's planned cross-repository
    view in `agent-observatory`.** Each row links to the repository's board where one exists. ROADMAP

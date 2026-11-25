@@ -178,6 +178,22 @@ class GuardedLoadTests(Fixture):
         code, out = self.run_main()
         self.assertIn("0 error(s), 0 warning(s)", out)
 
+    def test_a_guard_wrapped_across_lines_is_accepted(self):
+        # Plan item (c), retro R-301: a guard wrapped at the line width is still one sentence.
+        self.write("shipped", skill("shipped", body=(
+            "If `drafty` is installed, read and follow it now, before the\nnext step; "
+            "otherwise skip it.\n")))
+        code, out = self.run_main()
+        self.assertIn("0 error(s), 0 warning(s)", out)
+
+    def test_a_guard_naming_a_file_of_the_draft_is_accepted(self):
+        # The maintainer's wording for new-quest's step 8: "read and follow its <file>".
+        self.write("shipped", skill("shipped", body=(
+            "If `drafty` is installed, read and follow its publishing reference now; "
+            "otherwise say it is unavailable.\n")))
+        code, out = self.run_main()
+        self.assertIn("0 error(s), 0 warning(s)", out)
+
     def test_a_guard_with_no_otherwise_clause_warns(self):
         self.write("shipped", skill("shipped", body=(
             "If `drafty` is installed, read and follow it. Then carry on.\n")))
@@ -199,7 +215,10 @@ class GuardedLoadTests(Fixture):
         for body in ("Read and follow `drafty` first.\n",
                      "Read `drafty` now and follow it.\n",
                      "Then read `drafty` and follow it.\n",
-                     "READ AND FOLLOW `drafty`.\n"):
+                     "READ AND FOLLOW `drafty`.\n",
+                     # Review N1: "the" before the name.
+                     "Read and follow the `drafty` skill.\n",
+                     "Read the `drafty` skill and follow it.\n"):
             with self.subTest(body=body):
                 self.write("shipped", skill("shipped", body=body))
                 code, out = self.run_main()
@@ -273,20 +292,34 @@ class DraftExpiryTests(Fixture):
         code, out = self.run_main()
         self.assertIn("0 warning(s)", out)
 
-    def test_the_name_as_a_whole_word_counts_as_naming_it(self):
-        # AGENTS.md section 7: "names the skill, by its name or as <name>/SKILL.md".
+    def test_the_three_listing_forms_count_as_naming_it(self):
+        # AGENTS.md section 7 (review S2, round 2 close): a record names a skill as
+        # `name`, [name] or name/SKILL.md, the same rule as run-checks' listing gate.
         self.write("drafty", skill("drafty", meta=DRAFT_META + "  drafted: 2026-01-01\n"))
-        for text in ("Ran drafty on real work.\n", "See drafty/SKILL.md.\n"):
+        for text in ("Ran `drafty` on real work.\n", "Ran [drafty](x) on real work.\n",
+                     "See drafty/SKILL.md.\n"):
             with self.subTest(text=text):
                 (self.repo / "docs" / "reviews" / "dogfood.md").write_text(
                     text, encoding="utf-8")
                 code, out = self.run_main()
                 self.assertIn("0 warning(s)", out)
 
+    def test_a_bare_word_equal_to_the_name_does_not_count(self):
+        # Review S2: a draft named `plan` was silenced by every record using the word.
+        self.write("plan", skill("plan", meta=DRAFT_META + "  drafted: 2026-01-01\n"))
+        (self.repo / "docs" / "reviews" / "dogfood.md").write_text(
+            "The plan held; we ran the plan twice.\n", encoding="utf-8")
+        code, out = self.run_main()
+        self.assertIn("WARN  plan/SKILL.md: a draft for", out)
+        (self.repo / "docs" / "reviews" / "dogfood.md").write_text(
+            "Ran `plan` on real work.\n", encoding="utf-8")
+        code, out = self.run_main()
+        self.assertIn("0 warning(s)", out)
+
     def test_a_longer_hyphenated_name_does_not_count(self):
         self.write("drafty", skill("drafty", meta=DRAFT_META + "  drafted: 2026-01-01\n"))
         (self.repo / "docs" / "reviews" / "dogfood.md").write_text(
-            "Ran drafty-two and undrafty.\n", encoding="utf-8")
+            "Ran `drafty-two`, undrafty and drafty-two/SKILL.md.\n", encoding="utf-8")
         code, out = self.run_main()
         self.assertIn("a draft for", out)
 

@@ -45,8 +45,8 @@ Nothing is tagged since `v0.1.0`; the next release is cut on the maintainer's go
 
 The 2026-11-25 Marjana round 2, planned in [the round 2 plan](docs/reviews/2026-11-25-marjana-r2-plan.md):
 
-- **Tasks are now quests.** `.tasks/` is `.quests/`, `new-task` is `new-quest`, and the hierarchy is Campaign, Quest chain, Quest and Side quest ([`GLOSSARY.md`](GLOSSARY.md)). An adopter's `.tasks/`, `tracker: tasks` and `new-task` keep working, with a warning, until the second tagged release.
-- **Six new drafts**: `teach`, `vet-skill`, `prototype`, `wayfinder`, `wait-what`, and `triage`, which sorts GitHub issues into role labels. Opt-in tracker publishing in `new-quest` mirrors the local tracker one way to GitHub issues; it and `triage` stay drafts until a live run.
+- **Tasks are now quests.** `.tasks/` is `.quests/`, `new-task` is `new-quest`, and the hierarchy is Campaign, Quest chain, Quest and Side quest ([`GLOSSARY.md`](GLOSSARY.md)). An adopter's `.tasks/`, `tracker: tasks` and `new-task` keep working, with a warning: v0.2.0 warns; v0.3.0 removes the old names.
+- **Six new drafts**: `teach`, `vet-skill`, `prototype`, `wayfinder`, `wait-what`, and `triage`, which sorts GitHub issues into role labels. Opt-in tracker publishing, in the `triage` draft and loaded by `new-quest` when installed, mirrors the local tracker one way to GitHub issues; it and `triage` stay drafts until a live run.
 - **Sharper review and landing.** `house-review` checks every guard of a contract and adds a security axis on a one-way door; an orchestrator may land by a mechanical merge, and a repository may opt into a sampled self-merge of a two-way door (`A8`).
 - **New gates**: a changelog line-length warning, a check that `zen` and the catalog name every skill, a composed-by check, a quoted-phrase audit, an opt-in destructive-git hook, and a `VERSION` file with [`release.py`](scripts/release.py).
 

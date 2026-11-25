@@ -108,9 +108,9 @@ NOTICE_NO_INTEGRATION = "no integration branch"
 NOTICE_RESET = "watermark reset"
 NOTICE_BOTH_TRACKERS = ("both .quests/ and .tasks/ are tracked: the board reads them together, so "
                         "finish the move with git mv of what is left in .tasks/ into .quests/")
-# The old name is an alias until the kit's second tagged release (R2-10, feat-0103).
-NOTICE_OLD_TRACKER = (".tasks/ is the tracker's old name, read as an alias until the kit's second "
-                      "tagged release: move it with git mv .tasks .quests")
+# The old name is an alias (R2-10, feat-0103); the versions were named at the round 2 close.
+NOTICE_OLD_TRACKER = (".tasks/ is the tracker's old name, read as an alias (v0.2.0 warns; v0.3.0 "
+                      "removes the old names): move it with git mv .tasks .quests")
 REASON_OPEN_QUESTION = "open question"
 REASON_HUMAN_EYE = "needs a human eye"
 LABEL_UNTRACKED = "untracked"

@@ -20,7 +20,7 @@ change the installed copy, and nothing reports the divergence. On POSIX the syml
 the problem rather than solving it, since a copy-mode install there has the same property.
 
 **Measured on this machine, 2026-08-06.** The globally installed `fix-batch` at
-`C:\Users\hamsa\.claude\skills\fix-batch\SKILL.md` was missing Step 3 items 7 and 8 and the entire
+`C:\Users\<name>\.claude\skills\fix-batch\SKILL.md` was missing Step 3 items 7 and 8 and the entire
 **delegate report contract** section, all of which are present in this repository's
 [`fix-batch`](../../.agents/skills/fix-batch/SKILL.md). The installed copy was a wave-2-era snapshot; the
 report contract shipped in `feat-0041` and the decision-log item in `feat-0037`, both merged in

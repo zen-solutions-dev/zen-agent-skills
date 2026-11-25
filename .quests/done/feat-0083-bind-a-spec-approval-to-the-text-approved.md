@@ -73,7 +73,7 @@ rewriting the draft voids it.
 
 ## Decisions
 
-Answered by Hamsa during the session that built this task:
+Answered by the maintainer during the session that built this task:
 
 1. **A spec whose text no longer matches its `approved_digest` blocks** verification,
    decomposition, and the readiness gate until re-approved, rather than proceeding with a warning.

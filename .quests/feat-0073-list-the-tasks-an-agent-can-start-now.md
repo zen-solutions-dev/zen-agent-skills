@@ -99,7 +99,7 @@ Prior art, read 2026-10-20:
 
 ## Decision
 
-Answered by Hamsa on 2026-10-22:
+Answered by the maintainer on 2026-10-22:
 
 1. **The listing lives in `validate.py`, as a `--ready` flag, in both copies.** `fix-batch` calls it
    when choosing a batch.

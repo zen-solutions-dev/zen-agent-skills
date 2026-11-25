@@ -330,7 +330,7 @@ state and wrong for the second, and the hook cannot separate them because `--che
 
 ```text
 source autonomy.md digest   : 4eb075628d33 (17247 bytes)
-  tool=claude  target=C:\Users\hamsa\.claude\rules
+  tool=claude  target=C:\Users\<name>\.claude\rules
     recorded baseline : 6d10f09b71f2
     installed on disk : 6d10f09b71f2  (12553 bytes)
     -> installed MATCHES the baseline: untouched by the adopter

@@ -101,6 +101,7 @@ step is also useful on its own. *(draft)* marks a skill not yet promoted.
 - `spec-plan-readiness`: the go/no-go gate over a spec plus its tasks, before any code.
 - `triage` *(draft)*: a GitHub repository's open issues to sort into the role labels
   `docs/agents/zen.md` names. Recommends; labels only on the person's go. A person starts it.
+  It also holds the opt-in tracker publishing that `new-quest` loads.
 
 **Build**:
 

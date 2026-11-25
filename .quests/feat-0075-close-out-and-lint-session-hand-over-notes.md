@@ -85,11 +85,11 @@ Prior art: Andrej Karpathy's LLM wiki pattern keeps an `index.md` catalogue and 
    facts into docs, and the tracker's `facts` is one of the two destinations. The alternatives are
    `agent-handoff`, which writes briefs but does not close sessions, or a small skill of its own.
 2. **What age makes an unclosed note worth reporting?** A week is a starting suggestion, not a
-   measured value, so the value needs Hamsa's answer rather than a guess.
+   measured value, so the value needs the maintainer's answer rather than a guess.
 
 ## Decision
 
-Answered by Hamsa on 2026-10-22:
+Answered by the maintainer on 2026-10-22:
 
 1. **`quest-tracker` owns the close-out rule and the lint.** `agent-handoff` gets the one-line
    pointer already in scope.

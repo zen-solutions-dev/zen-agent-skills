@@ -1,6 +1,6 @@
 # Dogfood: tracker publishing (`feat-0106`)
 
-Run on 2026-11-25 by the agent that built [`publish.py`](../../../.agents/skills/new-quest/scripts/publish.py) and the `triage` draft, on branch `zen/marjana-r2-publish`. **Not an independent run (`A7`)**: the author ran it. The brief allowed the dry run only, on this repository's own `.quests/`; no real repository was written to, and no `gh` call reached GitHub.
+Run on 2026-11-25 by the agent that built [`publish.py`](../../../.agents/skills/triage/scripts/publish.py) and the `triage` draft, on branch `zen/marjana-r2-publish`. **Not an independent run (`A7`)**: the author ran it. The brief allowed the dry run only, on this repository's own `.quests/`; no real repository was written to, and no `gh` call reached GitHub.
 
 ## What was run
 

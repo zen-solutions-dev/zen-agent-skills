@@ -201,14 +201,18 @@ and nothing is committed unless the person asked.
 
 ### 8. Publish, only when the repository opts in
 
-Skip this step unless `docs/agents/zen.md` sets `publish: github`. When it does, read
-[references/publishing.md](references/publishing.md) now and follow it: run the dry run, show
-the person the plan, and run `--apply` only on their explicit go. The quest files stay the
-source of truth; publishing mirrors them to GitHub one way and never changes them.
+Skip this step unless `docs/agents/zen.md` sets `publish: github`. Publishing lives in the
+`triage` draft, as its `references/publishing.md` and `scripts/publish.py`.
 
-Done when the step was skipped because the repository does not opt in, or the dry run's plan
-was shown and applied only on the person's go, with the command and its output's last lines
-reported.
+If `triage` is installed, read and follow its publishing reference now; otherwise say that publishing is unavailable because the `triage` draft is not installed, and publish nothing.
+
+Following it means: run the dry run, show the person the plan, and run `--apply` only on their
+explicit go. The quest files stay the source of truth; publishing mirrors them to GitHub one way
+and never changes them.
+
+Done when the step was skipped because the repository does not opt in, or `triage` is not
+installed and the person was told publishing is unavailable, or the dry run's plan was shown and
+applied only on the person's go, with the command and its output's last lines reported.
 
 Why several of these rules exist, with the incidents behind them:
 [references/why-these-rules.md](references/why-these-rules.md).
@@ -237,7 +241,7 @@ author: Matt Pocock
 license: MIT
 retrieved: 2026-11-23
 sha256: 56ec23c5b2782785d4e65bff9e315b6d3aeb4ef977c174a219e99489fada1995
-note: fetched with urllib and digested with hashlib on the retrieved date, at 5,812 bytes. Adapted, not copied; tracker publishing is deliberately not adopted. Re-fetched on 2026-11-25 for feat-0105 with the same digest.
+note: fetched with urllib and digested with hashlib on the retrieved date, at 5,812 bytes. Adapted, not copied; its tracker publishing is not adopted (the kit's own opt-in publishing is in the `triage` draft, not here). Re-fetched on 2026-11-25 for feat-0105 with the same digest.
 ```
 
 ```provenance

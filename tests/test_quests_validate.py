@@ -1315,7 +1315,7 @@ class OldNameTests(TasksRootTestCase):
     """R2-10 (feat-0103): an old tracker name warns, and says when the alias goes.
 
     Always a warning, never an error, even under --strict: the alias is a promise that an
-    adopter's repository keeps working until the kit's second tagged release.
+    adopter's repository keeps working until v0.3.0 removes the old names.
     """
 
     def _config(self, tracker):
@@ -1329,7 +1329,7 @@ class OldNameTests(TasksRootTestCase):
         code, out = self._run()
         self.assertEqual(code, 0, out)
         self.assertIn("`tracker: tasks` is the old name of `tracker: quests`", out)
-        self.assertIn("second tagged release", out)
+        self.assertIn("v0.2.0 warns; v0.3.0 removes the old names", out)
         self.assertIn("0 error(s), 1 warning(s)", out)
 
     def test_tracker_quests_is_silent(self):

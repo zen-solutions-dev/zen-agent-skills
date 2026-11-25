@@ -183,6 +183,7 @@ first, without touching the branch, whether it qualifies:
 git merge-tree --write-tree origin/<integration> <verified-sha>   # lists conflicted paths, if any
 git merge --no-ff --no-commit <verified-sha>                         # only when none, or only generated paths
 <rebuild each conflicted generated path with its named command>     # never choose a side by hand
+git add <rebuilt paths>                                              # mark each rebuilt path resolved
 git commit                                                           # the result, unedited
 <acceptance command>                                                 # the re-check, on the merge commit
 git push origin <integration>                                        # only when green; then list it

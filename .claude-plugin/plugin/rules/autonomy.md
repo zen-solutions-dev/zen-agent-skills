@@ -213,7 +213,8 @@ parse alone. Split the `merge_policy` value on spaces, tabs and `;`, and drop em
   A repository that merges by fast-forward only cannot opt in, because guard 4 needs a commit the
   platform creates at the merge.
 
-An absent key, an unreadable file, or any failed step means off, and `A8` applies unchanged. The
+An absent key, an unreadable file, or any failed step means off, and `A8` applies unchanged; the
+agent then merges nothing itself and names the value it read, when there is one, in its report. The
 same format is specified in `docs/spec/zen-config.md` in the Zen Agent Skills repository. When it is
 on, an agent may merge a pull request into that `base_branch` only when every guard holds:
 

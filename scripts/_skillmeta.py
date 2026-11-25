@@ -167,6 +167,19 @@ def sibling_edges(text):
     return {m.group(1) for m in SIBLING_LINK_RE.finditer(text) if _outside(m.start(), ranges)}
 
 
+def names_skill(text: str, name: str) -> bool:
+    """Whether `text` names the skill `name`: as `` `name` ``, `[name]`, or `name/SKILL.md`.
+
+    The one answer, shared since the round 2 close by `run-checks.py`'s listing gate and
+    `validate-skills.py`'s dogfood-record match, so a bare word that happens to equal a
+    skill's name (a draft called `plan`, and the word "plan" in prose) names nothing. Any
+    backticked mention counts, whatever the sentence around it says: the match is lexical.
+    """
+    escaped = re.escape(name)
+    return re.search(rf"`{escaped}`|\[{escaped}\]|(?<![\w-]){escaped}/SKILL\.md",
+                     text) is not None
+
+
 def _frontmatter_lines(text: str):
     """(lines, closing_index) for a frontmatter block, or (lines, None) when there is none."""
     lines = text.splitlines(keepends=True)

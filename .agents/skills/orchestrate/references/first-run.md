@@ -73,6 +73,12 @@ Round 1's retro proposals `R-202` (children leave their quest files), `R-206` (r
 and `B8` on 2026-11-25, are folded into Steps 1, 2, 4, 5 and 6 and the cloud reference by the same
 quest, with `A8`'s mechanical-merge landing (`B1`) and the conflict rule (`E2`).
 
+Recorded at the round 2 close (2026-11-25): **this run closed quest files in batches, not at each
+landing** as Step 5 item 6 asks. `feat-0101`, `feat-0102`, `feat-0103` and `feat-0107` were moved
+to `done/` together in one commit (`03e4862`), and `feat-0105` and `feat-0108` together in another
+(`f579655`); only `feat-0106` was closed at its own landing (`854b91a`). Each batch was listed as
+the orchestrator's own unverified work. The rule stands; the run did not keep it.
+
 ## Owed
 
 - A run on a project other than this kit, by a session that did not write this skill, before

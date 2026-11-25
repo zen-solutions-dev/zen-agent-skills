@@ -131,9 +131,9 @@ MANIFEST = REPO_ROOT / "scripts" / ".install-manifest.json"
 # otherwise point at a source that no longer exists. `new-task` became `new-quest` in the
 # rename from tasks to quests (feat-0101).
 RENAMED_SKILLS = {"new-task": "new-quest"}
-# When an old name stops being accepted (maintainer decision R2-10): the first tagged
-# release carries the warning, the second removes the aliases.
-ALIAS_EXPIRY = "The old name is accepted until the kit's second tagged release."
+# When an old name stops being accepted (maintainer decision R2-10, the versions named at
+# the round 2 close): v0.2.0 carries the warning, v0.3.0 removes the aliases.
+ALIAS_EXPIRY = "The old name is an alias: v0.2.0 warns; v0.3.0 removes the old names."
 
 TOOL_SUBPATHS = {
     "claude": Path(".claude") / "skills",

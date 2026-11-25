@@ -758,9 +758,10 @@ def both_tracker_dirs(repo_root):
             ".tasks/ into .quests/, then remove .tasks/"]
 
 
-# The rename to quests (feat-0101) kept the old names as aliases, and they are removed at
-# the kit's second tagged release (R2-10). Until then a run that meets one says so.
-ALIAS_REMOVAL = "the old names are accepted until the kit's second tagged release"
+# The rename to quests (feat-0101) kept the old names as aliases (R2-10); the maintainer
+# named the expiry at the round 2 close: v0.2.0 warns, v0.3.0 removes them. Until then a run
+# that meets one says so.
+ALIAS_REMOVAL = "the old names are aliases: v0.2.0 warns; v0.3.0 removes the old names"
 
 
 def old_name_findings(repo_root):
@@ -1073,7 +1074,7 @@ def main(argv=None) -> int:
         warn(TASKS_DIR.name + "/", msg)
 
     # An old name (R2-10). Always a warning, even under --strict: the alias is a promise
-    # that an adopter's repository keeps working until the second tagged release, and a
+    # that an adopter's repository keeps working until v0.3.0 removes the old names, and a
     # strict gate failing on the day the kit is updated would break that promise early.
     for msg in old_name_findings(REPO_ROOT):
         warnings.append((TASKS_DIR.name + "/", msg))

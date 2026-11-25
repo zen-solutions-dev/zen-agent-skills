@@ -12,6 +12,8 @@ Drafted 2026-07-28 by `spec-author`, whose `spec-quality` self-check returned `n
 the first draft and was revised to `ready`. Approved by the author on 2026-07-28, together with the
 decision recorded in S-009.
 
+**Noted 2026-11-25: rename-only edit, `feat-0101`, no behaviour change.** The rename from tasks to quests changed words and paths here; no scenario, surface element or guard changed.
+
 ## Problem
 
 The kit's work tracking is entirely local. A task file in [`.quests/`](../../.quests/) has an id, a

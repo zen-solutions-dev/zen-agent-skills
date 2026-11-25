@@ -39,6 +39,8 @@ where the harness lets the dispatcher choose the verifier's model, a different m
 implementer's is a stronger independent check. That line is guidance on dispatch, like the
 `feat-0077` note above, and adds no scenario.
 
+**Noted 2026-11-25: rename-only edit, `feat-0101`, no behaviour change.** The rename from tasks to quests changed words and paths here; no scenario, surface element or guard changed.
+
 ## Problem
 
 The spine can now write a contract, gate it, decompose it, implement it, derive tests from it, and

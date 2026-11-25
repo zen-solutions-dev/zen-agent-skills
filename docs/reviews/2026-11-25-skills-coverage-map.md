@@ -1,6 +1,6 @@
 # Skills coverage map: Matt Pocock's skills against Zen Agent Skills
 
-**Provenance of this file.** Written on 2026-11-25 by a research subagent of the Marjana orchestrating session, read-only, against `zen-agent-skills` at `d72b064` and `mattpocock/skills` at `d653911`. Committed unchanged apart from this note, per the maintainer's decision G6. The visual version, with a recommendation per row, is the private artifact "Pocock coverage map" (https://claude.ai/artifact/JChkRUPKs4sz8yhmAL5x7v). Decisions taken on it are in [the decision record](2026-11-25-marjana-decisions.md).
+**Provenance of this file.** Written on 2026-11-25 by a research subagent of the Marjana orchestrating session, read-only, against `zen-agent-skills` at `d72b064` and `mattpocock/skills` at `d653911`. Committed unchanged apart from this note, per the maintainer's decision G6. The visual version, with a recommendation per row, is the private artifact "Pocock coverage map". Decisions taken on it are in [the decision record](2026-11-25-marjana-decisions.md).
 
 **Date:** 2026-11-25. **Kind:** research report, read-only. Nothing in either repository was changed.
 
