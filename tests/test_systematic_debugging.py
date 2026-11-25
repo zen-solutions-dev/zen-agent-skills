@@ -908,5 +908,138 @@ class TestTheHouseConventions(SkillTestCase):
                                  "repository and dangles everywhere the skill actually runs")
 
 
+class TestTheE6Amendment(SkillTestCase):
+    """S-017 to S-020, added by `feat-0107` on 2026-11-25 (pending the author's re-approval).
+    Structural, with the same bound as every scenario test above."""
+
+    def test_s017_every_secret_is_redacted_before_it_enters_the_record(self):
+        part = section(self.body, "## Redact every secret first")
+        self.assertContains(part, "replace every secret with `<REDACTED>`",
+                            "nothing tells the run to redact what it records")
+        self.assertContains(part, "read credentials from the environment",
+                            "the red command may carry a secret on its command line")
+        self.assertContains(part, "redact the steps file before you run it",
+                            "the human-in-the-loop log would record an unredacted step")
+        self.assertContains(part, "say so in `missing_input` rather than quoting the secret",
+                            "a run whose redacted evidence falls short has no stated exit")
+        self.assertLess(self.body.index("## Redact every secret first"),
+                        self.body.index("## Procedure"),
+                        "redaction comes after the steps that record evidence")
+
+    def test_s018_three_to_five_ranked_hypotheses_are_shown_before_the_first_trial(self):
+        step = section(self.body, "### 5. One hypothesis at a time")
+        for phrase, why in (
+            ("Write **three to five** candidate causes into `hypotheses`, ranked most likely first",
+             "the run may test the first idea it had"),
+            ("**Show the ranked list to the person before the first trial**",
+             "the person never sees the list, so their knowledge cannot re-rank it"),
+            ("Do not wait on an answer; with nobody present, record that the list was not seen",
+             "an unattended run could block on a person who is not there"),
+            ("untested candidates do not count toward the bound",
+             "ranking five candidates could exhaust the bound before any trial"),
+        ):
+            with self.subTest(phrase=phrase[:40]):
+                self.assertContains(step, phrase, why)
+
+    def test_s019_a_person_in_the_loop_command_needs_a_person_present_and_is_recorded(self):
+        step = section(self.body, "### 2. Build a red command before you explain")
+        self.assertContains(step, "An unattended run has no such exception:",
+                            "the human-in-the-loop rung could be used with nobody there")
+        self.assertContains(step, "with nobody present, return `verdict: not_reproducible` with "
+                                  "`missing_input` naming the person's step the reproduction needs",
+                            "the unattended branch of S-019 has no stated verdict")
+        self.assertContains(step, "`reproduction` names it as a person-in-the-loop command and "
+                                  "records each answer",
+                            "a red command that needed a person reads as an unattended one")
+        self.assertTrue(HITL.is_file(), "the human-in-the-loop template is not shipped")
+
+    def test_s020_a_performance_regression_gets_a_measured_baseline_first(self):
+        step = section(self.body, "### 2. Build a red command before you explain")
+        self.assertContains(step, "**A performance regression gets a measured red command.**",
+                            "the performance branch is missing")
+        self.assertContains(step, "record the median and the spread of each",
+                            "a single timing is taken as a measurement")
+        self.assertContains(step, "the red command then asserts a threshold between the two",
+                            "the measured baseline is recorded but nothing goes red on it")
+
+    def test_bisection_runs_outside_the_checkout_under_investigation(self):
+        step = section(self.body, "### 2. Build a red command before you explain")
+        self.assertContains(step, "run by `git bisect run` **in a separate clone or worktree**",
+                            "bisect would check other commits out in the tracked tree")
+
+
+HITL = REPO_ROOT / ".agents" / "skills" / "systematic-debugging" / "scripts" / "hitl_loop.py"
+
+
+class TestTheHumanInTheLoopScript(unittest.TestCase):
+    """Runs the shipped template as a person would, with stdin standing in for the person."""
+
+    def run_hitl(self, steps, answers, *extra):
+        import subprocess
+        with tempfile.TemporaryDirectory() as tmp:
+            steps_file = Path(tmp) / "steps.txt"
+            steps_file.write_text(steps, encoding="utf-8")
+            log = Path(tmp) / "log.jsonl"
+            done = subprocess.run(
+                [sys.executable, "-I", str(HITL), str(steps_file),
+                 "--question", "Did the error banner appear?", "--log", str(log), *extra],
+                input=answers, capture_output=True, text=True, timeout=30)
+            records = log.read_text(encoding="utf-8").splitlines() if log.exists() else []
+        return done, records
+
+    def test_seeing_the_symptom_is_red(self):
+        done, records = self.run_hitl("Open the page\nClick save\n", "\n\ny\n")
+        self.assertEqual(done.returncode, 1, done.stdout + done.stderr)
+        self.assertIn("1. Open the page", done.stdout)
+        self.assertIn("2. Click save", done.stdout)
+        self.assertEqual(len(records), 1)
+        self.assertIn('"symptom_seen": true', records[0])
+
+    def test_not_seeing_it_is_green(self):
+        done, records = self.run_hitl("Open the page\n", "\nno\n")
+        self.assertEqual(done.returncode, 0, done.stdout + done.stderr)
+        self.assertIn('"symptom_seen": false', records[0])
+
+    def test_an_unclear_answer_is_asked_again(self):
+        done, _ = self.run_hitl("Open the page\n", "\nmaybe\ny\n")
+        self.assertEqual(done.returncode, 1)
+        self.assertIn("Answer y or n", done.stdout)
+
+    def test_no_person_answering_is_a_run_that_could_not_complete(self):
+        done, records = self.run_hitl("Open the page\n", "")
+        self.assertEqual(done.returncode, 2)
+        self.assertEqual(records, [])
+
+    def test_an_empty_steps_file_is_refused(self):
+        done, _ = self.run_hitl("\n  \n", "y\n")
+        self.assertEqual(done.returncode, 2)
+        self.assertIn("no steps", done.stderr)
+
+    def test_an_unwritable_log_is_a_run_that_could_not_complete(self):
+        """Found by the feat-0107 verifier: an unwritable log raised and exited 1, which reads
+        as red even after the person answered no. Either answer must come back as 2."""
+        import subprocess
+        for answer in ("y", "n"):
+            with self.subTest(answer=answer), tempfile.TemporaryDirectory() as tmp:
+                steps_file = Path(tmp) / "steps.txt"
+                steps_file.write_text("Open the page\n", encoding="utf-8")
+                log = Path(tmp) / "missing-directory" / "log.jsonl"
+                done = subprocess.run(
+                    [sys.executable, "-I", str(HITL), str(steps_file), "--question", "Seen?",
+                     "--log", str(log)], input=f"\n{answer}\n", capture_output=True,
+                    text=True, timeout=30)
+                self.assertEqual(done.returncode, 2, done.stdout + done.stderr)
+                self.assertIn("cannot write the log", done.stderr)
+                self.assertNotIn("Traceback", done.stderr)
+
+    def test_a_missing_steps_file_is_refused(self):
+        import subprocess
+        done = subprocess.run([sys.executable, "-I", str(HITL), "/nonexistent/steps.txt",
+                               "--question", "Seen?"], input="", capture_output=True,
+                              text=True, timeout=30)
+        self.assertEqual(done.returncode, 2)
+        self.assertIn("cannot read the steps file", done.stderr)
+
+
 if __name__ == "__main__":
     unittest.main()

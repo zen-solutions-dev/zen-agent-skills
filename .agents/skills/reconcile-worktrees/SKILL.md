@@ -33,12 +33,14 @@ combined result. Offer it in Step 7 even when the diff looks internal.
 - **The main checkout**, the default: the result is an uncommitted diff for a person to decide on.
 - **An integration branch**: one branch that many children's work lands on before one pull request
   reaches a person. Each child is a pushed branch rather than a local worktree, and landing is a
-  fast-forward and a push (Step 5). You land there only work you did not author and that someone else
-  verified, per the integration-branch exception to `A8` in [`core.md`](../../rules/core.md); a
-  person merges the integration branch into the base branch (`developer` or `main`).
+  fast-forward, or a mechanical merge, and a push (Step 5). You land there only work you did not
+  author and that someone else verified, per the integration-branch exception to `A8` in
+  [`core.md`](../../rules/core.md); a person merges the integration branch into the base branch
+  (`developer` or `main`).
 
-**After any restart of the session**, check remote state before landing more: `git status -sb` and
-`git log origin/<integration>..`. A restart can drop upstream tracking and leave a landing unpushed.
+**After any restart of the session**, check remote state before landing more: `git fetch origin`,
+`git status -sb` and `git log origin/<integration>..`, then re-read the run's plan. A restart can
+drop upstream tracking and leave a landing unpushed, and the plan, not memory, says what was landed.
 
 ## Procedure
 
@@ -150,11 +152,14 @@ git -C <worktree> ls-files --others --exclude-standard
 - **The untracked copy is not optional** and has no patch equivalent. Skip it and the agent's new
   files never land, `git apply` reports success, and Step 8 deletes the only copy.
 
-**On an integration branch, only a fast-forward lands**, per the integration-branch exception to
-`A8` in [`core.md`](../../rules/core.md). A child that has merged the current integration tip into
-its pushed branch lands with `--ff-only`. One that has not, often because another child landed
-since, goes back to its author to merge the tip and be re-verified on the new commit; never merge it
-yourself. **What lands is the verified commit**, the sha in the verdict's `verified_by`, never the
+**On an integration branch, a fast-forward or a mechanical merge lands**, per the integration-branch
+exception to `A8`. Read its guard 3 and its definition of **a mechanical merge** in
+[`autonomy.md`](../../rules/autonomy.md) now and follow them as written there; this step adds only the
+order of commands. A child that has merged the current integration tip into its pushed branch lands
+with `--ff-only`. One that has not, often because another child landed since, may land by a
+mechanical merge of its verified commit, re-checked and listed in the pull request as that
+definition requires; any other landing goes back to its author under the conflict rule below.
+**What lands is the verified commit**, the sha in the verdict's `verified_by`, never the
 branch as it stands at fetch time: a child that pushed after verification has unverified work on
 top. Land, test, then push, one child at a time:
 
@@ -170,6 +175,29 @@ git push origin <integration>
 
 A mismatch sends the child back to be verified on its current head; it does not land.
 
+When the child is behind and you take the mechanical path instead of the fast-forward, find out
+first, without touching the branch, whether it qualifies:
+
+```
+git merge-tree --write-tree origin/<integration> <verified-sha>   # lists conflicted paths, if any
+git merge --no-ff --no-commit <verified-sha>                         # only when none, or only generated paths
+<rebuild each conflicted generated path with its named command>     # never choose a side by hand
+git commit                                                           # the result, unedited
+<acceptance command>                                                 # the re-check, on the merge commit
+git push origin <integration>                                        # only when green; then list it
+```
+
+A red re-check is undone before anything is pushed (`git reset --keep ORIG_HEAD`), and the landing
+goes back to the child with the failing output.
+
+**The conflict rule.** A conflict that is not mechanical is **never resolved by guess**, by you or by
+anyone landing on the child's behalf. Abort the merge (`git merge --abort`), and send the landing
+back to the child with **both sides named**: each conflicted path, the integration commit that
+changed it and what it changed there, and the child commit and what it changed there. The child
+merges the tip itself, keeps both intents or asks which one wins, and is verified again on its new
+head. When both sides are other children's work and neither intent can be kept, the question goes
+to the person, never to a coin toss in the merge.
+
 A red run is undone locally and never pushed: with a fast-forward and a clean tree,
 `git reset --keep ORIG_HEAD` returns the branch to its previous tip. Never `git reset --hard` while
 uncommitted work is present. Report that child as not landed, with the failing output.
@@ -178,13 +206,17 @@ After each landing on the main checkout, re-run the affected tests (the combinat
 untested state) and re-check `git status` before the next one.
 
 Done when every eligible worktree is applied with its untracked files and followed by a green test
-run, or every eligible child is fast-forwarded, green on the landed tip, and only then pushed; every
-child sent back or undone is named with its reason, and every skipped one is named.
+run, or every eligible child is fast-forwarded or mechanically merged, green on the landed tip, and
+only then pushed; every mechanical merge is listed for the pull request; every child sent back or
+undone is named with its reason (for a conflict, with both sides), and every skipped one is named.
 
 ### Step 6: normalize split bookkeeping
 
 If quest files or the changelog ended up inconsistent across worktrees, resolve them into one correct
-state in the main checkout. In this kit: one `.quests/` (or, under its old name, `.tasks/`) file per item in its final location with
+state in the main checkout. On an integration branch, children leave their quest files where they
+are, and the orchestrator closes each child's quest file when that child lands, in the same push:
+moved to `done/` with `status: done` and its relative links re-anchored. Shared planning documents
+name a quest by id in backticks until it is closed, and link it only after. In this kit: one `.quests/` (or, under its old name, `.tasks/`) file per item in its final location with
 `status: done`, every checkbox honest, and one dated `CHANGELOG.md` line per quest id. Re-run each
 task's acceptance criteria and `python .quests/validate.py` on the consolidated result before marking
 anything done.

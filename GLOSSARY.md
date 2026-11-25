@@ -84,29 +84,26 @@ _Avoid_: chore (a kind prefix, which says what the work is, not where it hangs),
 
 ## Rarity
 
-How far a source can be trusted, marked on research notes and citations (maintainer decision R2-6, 2026-11-25). Defined here by `feat-0101`; no skill applies it yet. Lowest first.
+How far a source or a figure can be trusted: one ladder for both (maintainer decisions R2-6 and R2-9, 2026-11-25). Defined here by `feat-0101`; applied on 2026-11-25 by `feat-0107` in `research`, which tags every cited source and finding with it, and in `sitrep`, whose evidence tiers are this ladder. Lowest first.
 
 **White**:
 Unverified: a claim nobody has checked against any source.
-_Avoid_: unknown, unsourced
 
 **Green**:
 Secondary: taken from a source that reports on the primary one, such as an article, a summary or a forum answer.
-_Avoid_: weak, second-hand
 
 **Blue**:
 Checked against the source: a secondary claim someone confirmed by reading the source it reports on.
-_Avoid_: verified (says nothing about which source)
 
 **Purple**:
 Primary source cited: the claim names the primary source itself (the specification, the code, the author's own statement).
-_Avoid_: authoritative, official
 
 **Gold**:
-Primary and independently confirmed: a purple claim that a second, independent check (another primary source, a run, a measurement) agrees with.
-_Avoid_: certain, proven
+Primary and independently confirmed: a blue or purple claim that an independent check agrees with: a second primary source, a run, a measurement, or a test that pins it.
 
-Not the same scale as the evidence tiers `sitrep` prints, which share the five colour names but rank how a figure on the board was derived (a hand-entered value up to a count pinned to a test), not how far a source can be trusted.
+To avoid: for White, unknown or unsourced; for Green, weak or second-hand; for Blue, verified (it says nothing about which source); for Purple, authoritative or official; for Gold, certain or proven. The ladder above is copied word for word into the `research` and `sitrep` skills, so a change is made in all three.
+
+The evidence tiers `sitrep` prints are the same ladder read for figures: a hand-entered value is White, a quest entry Green, a value read from a tracked file Blue, a count over a tracked file or git's state Purple, and a figure pinned to a test Gold. Until 2026-11-25 this entry called them a separate scale (R2-9 made them one).
 
 ## Setup
 

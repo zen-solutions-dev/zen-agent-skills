@@ -30,6 +30,7 @@ markdown new-quest/references/why-these-rules.md
 other new-quest/scripts/publish.py
 markdown orchestrate/references/claude-code.md
 markdown orchestrate/references/first-run.md
+markdown orchestrate/references/memory.md
 other project-bootstrap/templates/editorconfig
 other project-bootstrap/templates/eslint.config.mjs
 markdown project-bootstrap/templates/house-code-style.md
@@ -43,4 +44,5 @@ markdown reconcile-worktrees/references/lessons.md
 other sitrep/scripts/sitrep.py
 other spec-author/scripts/spec_digest.py
 markdown systematic-debugging/references/red-flags.md
+other systematic-debugging/scripts/hitl_loop.py
 markdown tdd/references/examples.md
