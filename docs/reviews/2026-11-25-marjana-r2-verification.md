@@ -1,19 +1,92 @@
 # 2026-11-25 Marjana round 2: independent verification
 
-Verification of the integration branch `zen/marjana-r2-2026-11-25` at
-`fcb5419b12029c554f187c1445fd99963b5dadc9` against its base `ba0209f` (`developer`), as the
-[round 2 handoff](2026-11-25-round-2-handoff.md) section 8 asks ("an independent verification report
-under `docs/reviews/` says `pass`", and "every item in the decision record is either landed with its
-task closed, or listed as deferred with the reason"). Written by following
-[`verifier-agent`](../../.agents/skills/verifier-agent/SKILL.md) at high effort. The contract is
-[the decisions record](2026-11-25-marjana-decisions.md) (every A to G item, and T1 to T4) and every
-decision in [the round 2 plan](2026-11-25-marjana-r2-plan.md) (`R2-1` to `R2-10` and every later
-dated decision, the close round's included). Report only: this file is the one change on its branch.
+Verification of the integration branch `zen/marjana-r2-2026-11-25` against its base `ba0209f`
+(`developer`), as the [round 2 handoff](2026-11-25-round-2-handoff.md) section 8 asks ("an
+independent verification report under `docs/reviews/` says `pass`", and "every item in the decision
+record is either landed with its task closed, or listed as deferred with the reason"). Written by
+following [`verifier-agent`](../../.agents/skills/verifier-agent/SKILL.md) at high effort. The
+contract is [the decisions record](2026-11-25-marjana-decisions.md) (every A to G item, and T1 to
+T4) and every decision in [the round 2 plan](2026-11-25-marjana-r2-plan.md) (`R2-1` to `R2-10` and
+every later dated decision, the close round's included). Report only: this file is the one change
+on its branch.
+
+Two passes. The first verified `fcb5419b12029c554f187c1445fd99963b5dadc9` and returned `fail` on one
+decision with no disposition. The orchestrator answered the findings in one commit,
+`12af0368fc807ac7d0a977511f5a424c3a0ae466` (three files: `ROADMAP.md`, `docs/spec/README.md`,
+`docs/spec/zen-config.md`), and the second pass re-checked that commit. The verdict below is for
+`12af036`; the `fcb5419` verdict and its findings are kept further down as history, and every line
+number outside the decision table refers to `fcb5419`.
 
 ## Verdict
 
 ```text
-verdict: fail
+verdict: pass
+blocking_reasons: []
+conformance:
+  audited: not assessed as a matrix. No single spec is the contract; the contract is the
+    decisions record and the plan. Eight approved specs and the draft zen-config carry
+    round 2 amendments, each flagged for re-approval (listed below). All 13 approved specs
+    read "unbound" from spec_digest.py --queue, and zen-config reads "not-approved"
+    (status draft; the maintainer's A1 approval is owed as a digest, ROADMAP.md:42).
+  unreconciled: []
+criteria: 10 of 10 met (below)
+findings: at 12af036, 3 open (all nit or information: findings 7 and 8 below, and R1 in
+  the re-check); findings 1 to 6 of the fcb5419 pass are resolved
+verified_by: a fresh Claude Code cloud session, session_017QLsenP2h73FgguebCoXZL, high
+  effort, a leaf that dispatched nothing. It authored none of the round's work and was
+  briefed by the orchestrator (session_017QLseoWFoRQDJMZM5nR9DQ), not by any child that
+  wrote the work, so it is independent of every child's commits and NOT independent of
+  the orchestrator's brief, nor of the orchestrator's fix commit 12af036, which it
+  re-checked but did not write. The model identifier is withheld from repository files
+  by this harness's rule. Commit verified:
+  12af0368fc807ac7d0a977511f5a424c3a0ae466.
+```
+
+## Re-check at `12af036`
+
+`git rev-parse origin/zen/marjana-r2-2026-11-25` printed `12af0368fc807ac7d0a977511f5a424c3a0ae466`;
+`git log --oneline fcb5419..12af036` shows that one commit, and `git diff --stat fcb5419 12af036`
+prints `3 files changed, 9 insertions(+), 2 deletions(-)`. Each finding of the first pass, against
+the new text:
+
+| Finding at `fcb5419` | Status at `12af036` | Evidence |
+|---|---|---|
+| 1, F7 has no disposition | resolved | `ROADMAP.md:43` "F7, the people the maintainer named to learn from: recorded in the decision record as the source list for later research rounds; nothing was built from it this round." |
+| 2, A3 and A7 missing from the owed list | resolved | `ROADMAP.md:42` "recording, as an approval digest, the round 1 approvals the decision sheet gave on 2026-11-25 (A1 `zen-config`, A3 `verifier-agent`, A7 `cloud-executable`)" |
+| 3, A1's approval recorded nowhere near the contract | resolved | `docs/spec/zen-config.md:21` "**Note 2026-11-25:** the maintainer approved this contract's round 1 text on the 2026-11-25 decision sheet (decision `A1`); the approval digest is not yet recorded"; `status` left `draft`, as rule 4 of `docs/spec/README.md` requires |
+| 4, the re-approval queue table is stale | resolved by pointer | `docs/spec/README.md:86` "the table below predates the two Marjana rounds. The current queue ... is in `ROADMAP.md`, "Owed after this round"" |
+| 5, `ROADMAP.md:36` says `feat-0109` is in progress | resolved | `ROADMAP.md:36` "**closed 2026-11-25**" with a link to `.quests/done/feat-0109-...md` |
+| 6, G2, G3, B10 and L20 not in the owed list | resolved | `ROADMAP.md:44` (G2, G3, B10) and `:45` (the guard-sentence heading nit, "No quest reserved yet.") |
+| 7, the old username in pre-existing lines | open, information | unchanged; outside the scrub's scope |
+| 8, unticked acceptance boxes on closed quests | open, information | unchanged |
+
+One new nit, **R1**: `ROADMAP.md:43` says F7 is "recorded in the decision record as the source list
+for later research rounds", but the decision record itself lists the names with no stated use; the
+purpose is the orchestrator's reading, not the maintainer's words. The disposition ("nothing was
+built from it this round") stands either way. Also, `ROADMAP.md:42` lists specs, not each
+amendment, so `docs/spec/README.md:86`'s "including every amendment of 2026-11-24 and 2026-11-25"
+overstates what the ROADMAP line holds; the per-spec headers carry the amendments.
+
+Commands re-run on a detached worktree at `12af036`:
+
+- `ZEN_CHECKS_SCOPE=full python3 scripts/run-checks.py`, exit 0. Tail:
+
+  ```text
+  13 passed, 0 failed, 0 could not run.
+  Ran on Linux, Python 3.13.18. CI runs 3 operating systems x 2 Python versions, so this is one of six cells: passing here is necessary but not sufficient.
+  ```
+
+- `python3 scripts/validate-skills.py`, exit 0: `Checked 37 skill(s): 0 error(s), 0 warning(s).`
+- `python3 .quests/validate.py --strict`, exit 0: `Checked 274 quest files: 0 error(s), 0 warning(s).`
+- `git log fcb5419..12af036 --format=%B | grep -ci co-authored-by`: `0`.
+
+The fix commit touches no script, skill, test or generated file, so the install, merge and
+private-data results of the first pass carry over unchanged; I did not re-run them.
+
+## The first pass, at `fcb5419` (history)
+
+```text
+verdict: fail   (at fcb5419; superseded by the pass above)
 blocking_reasons:
   - reason: a decision in the record has no disposition
     detail: F7 ("Who else to learn from", a list of names) is neither landed nor listed as
@@ -41,7 +114,7 @@ verified_by: a fresh Claude Code cloud session, session_017QLsenP2h73FgguebCoXZL
 **What turns this into `pass`.** One line that records F7's disposition (for example in
 `ROADMAP.md`'s "Owed after this round", or the plan: what the list is for, or that it is an input
 with no action this round), then a re-check of that one commit. Every mechanical check below passed;
-the should-fix findings do not block on their own.
+the should-fix findings do not block on their own. (Done at `12af036`; see the re-check above.)
 
 ## Base and branch (`A9`)
 
@@ -53,14 +126,16 @@ the should-fix findings do not block on their own.
 - `git log --oneline ba0209f..fcb5419 | wc -l` printed `60`; `git diff --stat` printed
   `530 files changed, 16322 insertions(+), 2003 deletions(-)`.
 
-Every check ran on a detached checkout of `fcb5419`, on Linux, Python 3.13.18, git 2.43.0: one of
+At `12af036`, `origin/developer` is still `ba0209f` and `12af036` is one commit on `fcb5419`.
+
+Every first-pass check ran on a detached checkout of `fcb5419`, on Linux, Python 3.13.18, git 2.43.0: one of
 CI's six cells.
 
 ## Criteria
 
 | # | Criterion (from the brief) | Status | Evidence |
 |---|---|---|---|
-| 1 | Every decision landed, deferred with a recorded reason, or missing (table below) | **unmet** | 73 landed, 17 deferred, **1 missing (F7)** |
+| 1 | Every decision landed, or deferred with a recorded reason (table below) | met at `12af036` (unmet at `fcb5419`) | 73 landed, 18 deferred, 0 missing; at `fcb5419` 1 was missing (F7) |
 | 2 | `feat-0101` to `feat-0109` in `.quests/done/` with `status: done` | met | `grep -m1 "^status:"` on each of the eight files printed `status: done` (there is no `feat-0104`; `chore-0104` has no quest file and is recorded in the plan, as `feat-0109`'s Decisions say) |
 | 3 | `chore-0110` to `chore-0115` open | met | each is in `.quests/` and prints `status: open` |
 | 4 | The full gate passes | met | command 1 below, exit 0 |
@@ -83,13 +158,13 @@ is in the tree and the recording is owed.
 
 | Id | Status | Quest | Evidence or where the reason is recorded |
 |---|---|---|---|
-| A1 | landed; recording owed | `feat-0091` | `docs/spec/zen-config.md` exists (`status: draft`); re-approval owed in `ROADMAP.md:42`. See finding 3 |
+| A1 | landed; recording owed | `feat-0091` | `docs/spec/zen-config.md:21` "**Note 2026-11-25:** the maintainer approved this contract's round 1 text" (`status: draft` left for the maintainer); owed in `ROADMAP.md:42` "A1 `zen-config`" (finding 3, fixed at `12af036`) |
 | A2 | landed; recording owed | `feat-0093` | `docs/spec/house-review.md:48` "S-025 adds the re-check"; `house-review` in `ROADMAP.md:42` |
-| A3 | landed; recording owed, **not listed** | `feat-0092` | `.agents/skills/verifier-agent/SKILL.md:202` "the full sha of the exact commit the verdict covers"; `verifier-agent` is absent from `ROADMAP.md:42` (finding 2) |
+| A3 | landed; recording owed | `feat-0092` | `.agents/skills/verifier-agent/SKILL.md:202` "the full sha of the exact commit the verdict covers"; recording owed in `ROADMAP.md:42` "A3 `verifier-agent`" (finding 2, fixed at `12af036`) |
 | A4 | landed; recording owed | `feat-0094` | `docs/spec/install.md:14` "S-014 add a profile axis"; `install` in `ROADMAP.md:42` |
-| A5 | landed; recording owed | `feat-0094` | `docs/spec/validate-skills.md:574` "Scenario S-028: a workflow step with no \"Done when\" line warns"; in `ROADMAP.md:42` |
+| A5 | landed; recording owed | `feat-0094` | `docs/spec/validate-skills.md:574` `Scenario S-028: a workflow step with no "Done when" line warns`; in `ROADMAP.md:42` |
 | A6 | landed; recording owed | `feat-0091` | `.agents/skills/spec-author/SKILL.md:35` "When the repository has `docs/agents/zen.md` and it sets `spec_dir`"; in `ROADMAP.md:42` |
-| A7 | landed; recording owed, **not listed** | `chore-0098` | `docs/spec/cloud-executable.md:53` "`S-021` (a documentation-only change runs the documentation gates"; `cloud-executable` absent from `ROADMAP.md:42` (finding 2) |
+| A7 | landed; recording owed | `chore-0098` | `docs/spec/cloud-executable.md:53` "`S-021` (a documentation-only change runs the documentation gates"; recording owed in `ROADMAP.md:42` "A7 `cloud-executable`" (finding 2, fixed at `12af036`) |
 | A8 | landed | `feat-0102` | `.agents/rules/autonomy.md:171` "**A mechanical merge.**" |
 | A9 | landed | `feat-0103` | `scripts/run-checks.py:305` `CHANGELOG_LONG_LINE_EXCEPTIONS = frozenset({` (a ratchet keyed by line digest) |
 
@@ -106,10 +181,10 @@ is in the tree and the recording is owed.
 | B7 | landed | `feat-0107` | `.agents/skills/orchestrate/SKILL.md:72` "**Probe the remote actions the run will need**" |
 | B8 | landed | `feat-0107` | `.agents/skills/orchestrate/SKILL.md:126` "acknowledge every relay in one line" |
 | B9 | landed | `feat-0108` | `.agents/skills/house-review/SKILL.md:119` "**The contract's guards**" |
-| B10 | deferred | none | the maintainer's answer "Later" (decisions record); the plan's B13 table, `R-101` row; `.github/workflows` still triggers on `push` to `main` and on `pull_request` only |
+| B10 | deferred | none | `ROADMAP.md:44` "B10 (CI on integration branches)", "Each waits on the maintainer."; `.github/workflows` still triggers on `push` to `main` and on `pull_request` only |
 | B11 | landed | `feat-0103` | `scripts/validate-skills.py:977` "Composed by A, B and C"; `scripts/check-citations.py:57` "Quoted phrase" |
-| B12 | deferred | none | `ROADMAP.md:46` "B12 (`R-002`) ... not yet checked" |
-| B13 | landed | `chore-0104` | the plan's B13 triage table; `chore-0116` and `chore-0117` reserved in `ROADMAP.md:43` |
+| B12 | deferred | none | `ROADMAP.md:49` "B12 (`R-002`) ... not yet checked" |
+| B13 | landed | `chore-0104` | the plan's B13 triage table; `chore-0116` and `chore-0117` reserved in `ROADMAP.md:46` |
 
 ### C, D. The big questions and the rules
 
@@ -134,9 +209,9 @@ is in the tree and the recording is owed.
 | E2 | landed | `feat-0107` | `.agents/skills/reconcile-worktrees/SKILL.md:128` "Confirm they are separate, non-conflicting regions" |
 | E3 | landed | `feat-0107` | `docs/agents/zen.md:19` `memory: docs/agents/memory/README.md`; `.agents/skills/orchestrate/SKILL.md:78` "**exploration child**", `:258` "**Offer a recurring job**" |
 | E4 | landed | `feat-0105`, `feat-0108`, `feat-0102` | `grill/SKILL.md:6` "writes each settled term to the glossary as it lands"; `retro/SKILL.md:26` reads `writing-for-agents.md`; `.agents/rules/deep-modules.md` |
-| E5 | landed as drafts | `feat-0108` | `wayfinder` and `prototype`, `status: draft`; `ROADMAP.md:52` the `wayfinder` entry |
+| E5 | landed as drafts | `feat-0108` | `wayfinder` and `prototype`, `status: draft`; `ROADMAP.md:55` the `wayfinder` entry |
 | E6 | landed; two parts deferred | `feat-0107` | `docs/spec/systematic-debugging.md:42` "`S-017` to `S-020` are new"; deferred: the second independent run (`ROADMAP.md:40`) and `research`'s promotion (`ROADMAP.md:41`) |
-| E7 | landed; one part deferred | `feat-0103` | `scripts/build-adapters.py:670` "The Codex sidecar (E7, feat-0103)"; deferred: verified Codex and Copilot installs (`ROADMAP.md:45`) |
+| E7 | landed; one part deferred | `feat-0103` | `scripts/build-adapters.py:670` "The Codex sidecar (E7, feat-0103)"; deferred: verified Codex and Copilot installs (`ROADMAP.md:48`) |
 | E8 | landed | `feat-0102`, `feat-0108` | `.agents/rules/review-quality.md:203` "**Smell baseline.**"; `pr-describe/SKILL.md:76` reads the glossary |
 | E9 | landed | `feat-0103`, `feat-0105`, `feat-0107` | `docs/declined-ideas.md`; gate "skill listings" ran; `docs/INSTALL.md:273` "Skill names shared with Matt Pocock's skills"; `.github/ISSUE_TEMPLATE/bug_report.yml:55` "Effort or reasoning level"; `orchestrate/SKILL.md:178` "**Re-pitch once.**"; `doc-author/scripts/wizard.py` |
 
@@ -144,14 +219,14 @@ is in the tree and the recording is owed.
 
 | Id | Status | Where |
 |---|---|---|
-| F1 to F5 | deferred (plans only, by the handoff's Phase 3) | `docs/reviews/2026-11-25-plan-f1-improvement-loop.md` to `...-plan-f5-sandboxed-runs.md`; `chore-0110` to `chore-0114` open; F1's repositories owed in `ROADMAP.md:46` |
-| F6 | deferred | `ROADMAP.md:46` "F6, the maintainer's own notes on the podcast, not answered" |
-| **F7** | **missing** | no disposition outside the decisions record (blocking reason above) |
+| F1 to F5 | deferred (plans only, by the handoff's Phase 3) | `docs/reviews/2026-11-25-plan-f1-improvement-loop.md` to `...-plan-f5-sandboxed-runs.md`; `chore-0110` to `chore-0114` open; F1's repositories owed in `ROADMAP.md:49` |
+| F6 | deferred | `ROADMAP.md:49` "F6, the maintainer's own notes on the podcast, not answered" |
+| F7 | deferred | `ROADMAP.md:43` "F7, the people the maintainer named to learn from ... nothing was built from it this round" (missing at `fcb5419`, recorded at `12af036`; see the re-check) |
 | G1 | landed | the plan's "Phase 0 facts": `origin/developer` already at `ba0209f`; confirmed above |
-| G2 | deferred | the maintainer's own answer "Not yet", recorded only in the decisions record (finding 6) |
-| G3 | deferred | the same, "Not yet" (finding 6) |
-| G4 | deferred | `ROADMAP.md:46` "G4, a research refresh every two weeks, approved but not scheduled" |
-| G5 | landed | `ROADMAP.md:47` "G5, archiving round 1's finished child sessions, was done" (not independently checked) |
+| G2 | deferred | `ROADMAP.md:44` "G2 (branch clean-up)", "Each waits on the maintainer." |
+| G3 | deferred | `ROADMAP.md:44` "G3 (the brain-dump PR in the ops repository)" |
+| G4 | deferred | `ROADMAP.md:49` "G4, a research refresh every two weeks, approved but not scheduled" |
+| G5 | landed | `ROADMAP.md:50` "G5, archiving round 1's finished child sessions, was done" (not independently checked) |
 | G6 | landed | `docs/reviews/2026-11-25-skills-coverage-map.md`, committed in `bfae134` |
 | G7 | landed | `R2-1` |
 | G8 | landed in the plan | the plan names one draft PR into `developer`; the PR is not open yet and was not checked |
@@ -170,9 +245,9 @@ is in the tree and the recording is owed.
 | R2-5 | landed | `feat-0101` | `GLOSSARY.md:69` "**Campaign**", `:73` "**Quest chain**" |
 | R2-6 | landed | `feat-0101`, `feat-0107` | `.agents/skills/research/SKILL.md:50` the ladder, identical to `GLOSSARY.md:102` and `sitrep/SKILL.md:98` |
 | R2-7 | landed | `feat-0101` | as R2-1 |
-| R2-8 | deferred | none | `ROADMAP.md:44` "(decision `R2-8`), in a later round" |
+| R2-8 | deferred | none | `ROADMAP.md:47` "(decision `R2-8`), in a later round" |
 | R2-9 | landed | `feat-0107` | `.agents/skills/sitrep/SKILL.md:81` "the one rarity ladder this kit uses for sources and figures alike" |
-| R2-10 | landed; removal deferred | `feat-0103` | `.quests/validate.py:769` `ALIAS_REMOVAL = "the old names are aliases: v0.2.0 warns; v0.3.0 removes the old names"`; `ROADMAP.md:48` |
+| R2-10 | landed; removal deferred | `feat-0103` | `.quests/validate.py:769` `ALIAS_REMOVAL = "the old names are aliases: v0.2.0 warns; v0.3.0 removes the old names"`; `ROADMAP.md:51` |
 
 ### Later dated decisions in the plan
 
@@ -182,13 +257,13 @@ is in the tree and the recording is owed.
 | L2 | `feat-0102` check-in gate: strict mechanical merge, `base_branch` only, random sampling | landed | `autonomy.md:210` "`base_branch` to a branch name, explicitly"; `:233` "read as a hexadecimal integer, is divisible by N" |
 | L3 | `VERSION` at 0.1.0 (superseding 0.2.0) | landed | `VERSION` reads `0.1.0` |
 | L4 | Old-name warnings never promoted by `--strict` | landed | `feat-0103` Decisions; `python3 .quests/validate.py --strict` exits 0 on the tree |
-| L5 | The 24 quoted phrases to `chore-0118` | deferred | `ROADMAP.md:43` |
+| L5 | The 24 quoted phrases to `chore-0118` | deferred | `ROADMAP.md:46` |
 | L6 | The destructive-git gate keeps its four extra rows | landed | `destructive-git-gate.py:119` "git push --prune", `:147` "git switch --discard-changes", `:172` "git prune", `:184` "git worktree remove --force" |
 | L7 | `memory` kept as a file | landed | `docs/agents/zen.md:19` |
 | L8 | `spec-author`'s inline fallback retired; the declined-ideas register | landed | `docs/spec/spec-author.md` second `feat-0105` amendment; `docs/declined-ideas.md` |
 | L9 | Close-round fix list (a) to (n) | landed, (h) dismissed | (a) `autonomy.md:217` "names the value it read"; (b)/(j) `review-quality.md:229` now points at guard 2 instead of claiming "the same list as" (no match for that phrase); (c) `GUARD_OPEN_RE` at `validate-skills.py:1031`; (d) `CATALOG.md:119` "(Campaign B was Epic B)"; (e) `run-checks.py:292` `ROADMAP_STATUS_EXCEPTIONS = frozenset()`, `:605` `UNLISTED_DRAFT_EXCEPTIONS = {}`; (k) `vet-skill/SKILL.md:36` PowerShell form, `:45` `shasum` and `Get-FileHash`; (l) `:60` "only from the fresh clone"; (m) `AGENTS.md` section 5 "A draft loading a draft is not checked"; (n) `wizard.py:153` `r"""`. (f), (g), (i) spot-checked only |
 | L10 | Rarity Gold wording | landed | `GLOSSARY.md:102` |
-| L11 | Prototype branch stays local; the rollout campaign keeps the Zen product app first | landed (records) | the plan; `ROADMAP.md:52` ticket `W-01` |
+| L11 | Prototype branch stays local; the rollout campaign keeps the Zen product app first | landed (records) | the plan; `ROADMAP.md:55` ticket `W-01` |
 | L12 | `feat-0106` check-in gate: the published issue shape | landed | `publish.py:61` marker, `:69` `zen:in-progress`, `:175` `is_private` |
 | L13 | `feat-0106` amendments (a) to (d) | landed | `publish.py:59` "neutralised", `:459` "**frozen**"; `python3 -m unittest tests.test_publish` "Ran 54 tests ... OK" |
 | L14 | One live `--apply` owed before adopters publish | deferred | `ROADMAP.md:39` |
@@ -197,9 +272,9 @@ is in the tree and the recording is owed.
 | L17 | Alias expiry named: v0.2.0 warns, v0.3.0 removes | landed | `.quests/validate.py:769`; `sitrep/scripts/sitrep.py:112` |
 | L18 | Scrub the account details; recommend a squash merge | landed in the tree; the squash is the maintainer's | command 8 below |
 | L19 | The close round's fix child at `e6dda0f` | landed | `git merge-base --is-ancestor e6dda0f fcb5419` exits 0 |
-| L20 | Guard regex heading nit owed to a later quest | deferred | the plan's close entry only, with no reserved id |
+| L20 | Guard regex heading nit owed to a later quest | deferred | `ROADMAP.md:45` "No quest reserved yet." |
 
-Count: **73 landed, 17 deferred, 1 missing**, over 91 rows (T1, T2 and G7 share rows with
+Count at `12af036`: **73 landed, 18 deferred, 0 missing**, over 91 rows (at `fcb5419`: 73, 17, 1) (T1, T2 and G7 share rows with
 `R2-2`, `R2-3` and `R2-1`).
 
 ## Amended approved specs flagged for re-approval
@@ -291,7 +366,7 @@ spec(s) waiting on a person's re-approval in docs/spec", every one `unbound`.
     nothing: the resolved file is exactly what the generator writes. `dc8089c` is an ancestor of
     `fcb5419`.
 
-## Findings, ranked
+## Findings at `fcb5419`, ranked
 
 1. **Blocking. F7 has no disposition.** Where: the decisions record, section F, row F7; absent
    from `ROADMAP.md`, the plan and `.quests/`. Evidence: the greps in the blocking reason. The
