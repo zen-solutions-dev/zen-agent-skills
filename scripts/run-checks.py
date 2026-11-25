@@ -596,7 +596,10 @@ def check_changelog_lines(repo_root=None, exceptions=None, limit=None):
 # reachable only by someone who already knows it exists. A draft is named too, or excepted
 # here by name with the reason; an exception for a skill that is named, or gone, fails.
 SKILL_LISTINGS = (".agents/skills/zen/SKILL.md", "docs/CATALOG.md")
-UNLISTED_DRAFT_EXCEPTIONS = {}
+UNLISTED_DRAFT_EXCEPTIONS = {
+    "triage": "a draft from feat-0106; the router and catalog lines are the integration's "
+              "(feat-0109), passed under Notes",
+}
 
 
 def _names(text, name):

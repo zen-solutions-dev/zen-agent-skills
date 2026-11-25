@@ -25,7 +25,9 @@ template init-worktracking/templates/cursor-rule.mdc.tmpl
 template init-worktracking/templates/quests-README.md.tmpl
 other init-worktracking/templates/validate.py
 template init-worktracking/templates/zen.md.tmpl
+markdown new-quest/references/publishing.md
 markdown new-quest/references/why-these-rules.md
+other new-quest/scripts/publish.py
 markdown orchestrate/references/claude-code.md
 markdown orchestrate/references/first-run.md
 other project-bootstrap/templates/editorconfig

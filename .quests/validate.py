@@ -78,8 +78,11 @@ ZEN_ROLES = {"ready-agent", "ready-human", "needs-info", "blocked", "out-of-scop
 # `tasks` is the tracker's name before the rename to quests (feat-0101), kept as an alias so
 # a repository configured before it still validates. Both mean the directory this file
 # sits in, `.quests/` or its old name `.tasks/`.
+# `publish` is the opt-in to mirroring the tracker to GitHub issues (feat-0106): off when
+# absent or `none`, so a repository never publishes because a key was left out.
 ZEN_CHOICES = {"tracker": {"quests", "tasks", "github", "gitlab", "other"},
-               "default_mode": {"afk", "hitl"}}
+               "default_mode": {"afk", "hitl"},
+               "publish": {"github", "none"}}
 ZEN_FILES = {"glossary", "memory"}
 ZEN_DIRS = {"adr_dir", "spec_dir"}
 ZEN_PATHS = ZEN_FILES | ZEN_DIRS
@@ -89,7 +92,16 @@ ZEN_PATHS = ZEN_FILES | ZEN_DIRS
 ZEN_FENCE_RE = re.compile(r"^ {0,3}(`{3,}|~{3,})(.*)$")
 ZEN_TEXT = {"acceptance", "base_branch", "integration_prefix", "merge_policy"}
 ZEN_KEYS = ({"config_version", "standards", "session_logs"} | set(ZEN_CHOICES)
-            | ZEN_PATHS | ZEN_TEXT | {"role." + r for r in ZEN_ROLES})
+            | ZEN_PATHS | ZEN_TEXT | {"role." + r for r in ZEN_ROLES}
+            | {"publish_repo"})
+# The repository published issues go to, as `owner/name`. Named explicitly rather than
+# left to `gh`, which picks a fork's upstream when it guesses. The trackers a publisher
+# reads are the local ones only: the issues are a mirror, never the source.
+ZEN_PUBLISH_REPO_RE = re.compile(r"^[A-Za-z0-9](?:[A-Za-z0-9-]*[A-Za-z0-9])?/"
+                                 r"(?!\.{1,2}$)[A-Za-z0-9_.-]+$")
+ZEN_PUBLISH_TRACKERS = {"quests", "tasks"}
+# The optional quest field that keeps one quest off GitHub when publishing is on.
+PRIVATE_VALUES = {"true", "false"}
 # The optional per-task field naming who has to be present while the work runs.
 MODES = {"afk", "hitl"}
 
@@ -816,6 +828,21 @@ def zen_config_findings(repo_root):
         if key in values and values[key] not in allowed:
             found.append(f"{key} {values[key]!r} is not one of {sorted(allowed)}")
 
+    # Publishing (S-047 to S-050): a malformed opt-in is an error here, and off at the
+    # reader, so nothing is ever published on a guess about what the person meant.
+    publish_repo = values.get("publish_repo")
+    if publish_repo not in (None, "none") and not ZEN_PUBLISH_REPO_RE.match(publish_repo):
+        found.append(f"publish_repo {publish_repo!r} must be owner/name, such as "
+                     f"'octo-org/octo-repo'")
+    if values.get("publish") == "github":
+        if publish_repo in (None, "none"):
+            found.append("publish: github needs publish_repo: owner/name, the repository "
+                         "the issues go to")
+        tracker = values.get("tracker")
+        if tracker is not None and tracker not in ZEN_PUBLISH_TRACKERS:
+            found.append(f"publish: github mirrors the local tracker, and tracker is "
+                         f"{tracker!r}; publish only with tracker quests (or tasks)")
+
     checked = [(key, values[key], key in ZEN_DIRS)
                for key in sorted(ZEN_PATHS) if key in values]
     if "standards" in values:
@@ -1013,6 +1040,10 @@ def main(argv=None) -> int:
         mode = fm.get("mode", "")
         if mode and mode not in MODES:
             err(rel, f"mode {mode!r} is not one of {sorted(MODES)}")
+        # `private: true` keeps a quest off GitHub when publishing is on (feat-0106).
+        private = fm.get("private", "")
+        if private and private not in PRIVATE_VALUES:
+            err(rel, f"private {private!r} is not one of {sorted(PRIVATE_VALUES)}")
 
     for tid, where in ids_seen.items():
         if len(where) > 1:

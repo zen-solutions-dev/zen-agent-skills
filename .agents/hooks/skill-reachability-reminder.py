@@ -169,6 +169,7 @@ KIT_SKILL_NAMES = frozenset({
     "tdd",
     "test-author",
     "test-quality",
+    "triage",
     "verifier-agent",
     "zen",
 })

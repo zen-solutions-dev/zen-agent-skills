@@ -42,6 +42,20 @@ Off stays the default: every other value, and an absent key, means no self-merge
 2026-11-25). The validator does
 not change. **This amendment needs the maintainer's re-approval in the round 2 pull request.**
 
+**Amended 2026-11-25 by `feat-0106`** (maintainer decision R2-2 in the
+[round 2 plan](../reviews/2026-11-25-marjana-r2-plan.md): opt-in publishing of the local tracker to
+GitHub, as a draft): two new keys, `publish` and `publish_repo`, turn on a one-way mirror of
+`.quests/` to GitHub issues, run by `new-quest`'s `scripts/publish.py`; a quest or spec may set
+`private: true` to stay off it; and the new `triage` draft becomes the first reader of the `role.*`
+keys (new S-047 to S-059, the key and Readers tables, and the Publishing section below). Off stays
+the default: an absent key, `none`, or anything malformed publishes nothing. The shape of a
+published issue is a one-way door, and the maintainer approved it at the `feat-0106` check-in gate
+on 2026-11-25, relayed by the round 2 orchestrator; it is recorded verbatim in `new-quest`'s
+`references/publishing.md` and summarised under Publishing. The approved
+[tracker-links](tracker-links.md) contract still lists mirroring and issue hierarchy among its
+Non-Goals: that contract is `pr-describe`'s, which still touches no issue, and it is not changed.
+**This amendment needs the maintainer's re-approval in the round 2 pull request.**
+
 The path and the block format become a one-way door once an adopter
 configures a repository against them, which is why this contract exists before anyone outside this
 repository reads the file.
@@ -84,7 +98,10 @@ fact is in a given repository.
 - **A user-level or machine-level configuration.** The file belongs to the repository and is
   committed with it.
 - **Harness settings.** Nothing in the file configures Claude Code, Cursor, Codex or any other tool.
-- **Creating, editing or deleting tracker labels, issues or boards.**
+- **Creating, editing or deleting tracker labels, issues or boards**, by the walkthrough, the
+  validator or any reader, with two exceptions added by `feat-0106`: the publisher creates and edits
+  the issues and `zen:` labels it owns (Publishing, below), and `triage` adds and removes `role.*`
+  labels on the person's go. Nothing ever deletes an issue.
 - **Migrating a file from one `config_version` to the next.** Version 1 is the only version.
 - **What `install.py` and `zen` say about the walkthrough.** Both only point at it, and neither
   reads nor writes the file.
@@ -461,6 +478,123 @@ Added 2026-11-25 by `feat-0102`.
 - **Then** it reports no error for that key, as S-027 says; a malformed opt-in fails safe at the
   reader (S-045) rather than at the validator.
 
+### Scenario S-047: valid publishing keys pass
+
+Added 2026-11-25 by `feat-0106`, as are S-048 to S-059.
+
+- **Given** a configuration with `tracker: quests` (or no `tracker`) and `publish: github` with
+  `publish_repo: octo-org/octo-repo`, or `publish: none`, or a `publish_repo` alone
+- **When** the shipped `validate.py` runs
+- **Then** it reports no error for either key.
+
+### Scenario S-048: malformed publishing keys fail
+
+- **Given** a `publish` outside `github`, `none`; a `publish_repo` other than `none` that is not
+  `owner/name` (such as `a/b/c`, `o/..`, `not a repo`); or `publish: github` with no `publish_repo`
+  or `publish_repo: none`
+- **When** the shipped `validate.py` runs
+- **Then** it reports an error naming the key, and exits non-zero.
+
+### Scenario S-049: publishing is off unless opted in
+
+- **Given** a repository whose `docs/agents/zen.md` is absent, does not parse, has a newer
+  `config_version`, sets no `publish` or `publish: none`, or holds any finding S-048 or S-050
+  names, or whose `.quests/validate.py` predates the publishing keys
+- **When** `scripts/publish.py` runs, as a dry run or with `--apply`
+- **Then** it prints that publishing is off and why, calls nothing on GitHub, and exits 0 for a
+  dry run and 1 with `--apply`.
+
+### Scenario S-050: publishing mirrors only the local tracker
+
+- **Given** `publish: github` with a `tracker` other than `quests` or `tasks`
+- **When** the shipped `validate.py` runs
+- **Then** it reports an error saying publishing mirrors the local tracker, and exits non-zero.
+
+### Scenario S-051: a dry run by default, an apply only when asked
+
+- **Given** a repository that opts in
+- **When** `scripts/publish.py` runs without `--apply`
+- **Then** it prints a numbered plan and its notes and makes no call that writes to GitHub (with
+  `--offline`, no call at all); with `--apply` it carries the plan out in order through `gh`,
+  stops at the first failed call saying so and exits 1, and a second run completes the rest
+  without creating any issue twice.
+
+### Scenario S-052: the published issue has the approved shape
+
+- **Given** a quest `feat-0001` titled `Do the thing` in `.quests/feat-0001-a.md`, naming a spec
+  titled `alpha`
+- **When** it is published
+- **Then** its issue is titled `feat-0001: Do the thing`, the spec's `Spec: alpha`; each body opens
+  with the italic line naming the source file and saying edits made on GitHub are overwritten,
+  carries the frontmatter table (a quest) or the status (a spec) and the file's body with every
+  relative link outside fenced code made absolute at `base_branch` (or `HEAD`), is at most 65,536
+  characters, cut at a heading with a note when longer, and ends in the marker line
+  `<!-- zen-publish v1 kind=<quest|spec> id=<id> source=<path> digest=<12 hex> -->`.
+
+### Scenario S-053: publishing is idempotent by marker
+
+- **Given** a repository published once
+- **When** the publisher runs again with no file changed
+- **Then** its plan holds no operation; a changed file, a title or body edited by hand on GitHub,
+  or a quest moved to `done/` edits the same issue, found by its marker and never by its title,
+  and no second issue is created for any quest or spec.
+
+### Scenario S-054: status maps from the file
+
+- **Given** published quests
+- **When** a quest moves to `.quests/done/` or sets `status: done`, or its issue is closed on
+  GitHub while the quest is open, or a quest is done before it was ever published, or a quest's
+  status is `in_progress`
+- **Then** its issue is closed as completed; reopened, and the dry run shows the reopen; given no
+  issue at all; labelled `zen:in-progress` until the status changes, respectively. A spec's issue
+  is open exactly while one of its published quests is, and a spec gets an issue only when an open
+  published quest names it.
+
+### Scenario S-055: the publisher touches only what it owns
+
+- **Given** issues carrying `role.*` labels or other labels a person applied, an issue carrying
+  `zen:published` with no valid marker, or two issues with the same marker
+- **When** the publisher runs
+- **Then** it adds and removes only `zen:` labels, never another; it leaves the unmarked issue and
+  the second of the two untouched and names them in its notes; and it removes a sub-issue or
+  blocking link only between two issues it owns.
+
+### Scenario S-056: nothing is ever deleted
+
+- **Given** a published quest whose file is deleted, or a spec no published quest names any more
+- **When** the publisher runs
+- **Then** the issue is left as it was and named in the notes, and no call deletes or transfers an
+  issue.
+
+### Scenario S-057: private and unpublishable files stay off GitHub
+
+- **Given** a quest or spec whose frontmatter sets `private: true`, a quest file git does not track,
+  or a quest whose `spec` names a file outside `spec_dir` or a report beside a spec
+- **When** the publisher runs
+- **Then** the private or untracked file gets no issue; a file made private after it was published
+  keeps its issue unedited and unclosed, named in the notes; the quest naming an unpublishable spec
+  is published top-level with a note; and a quest's `private` other than `true` or `false` fails
+  the shipped `validate.py`.
+
+### Scenario S-058: hierarchy and blocking follow the files
+
+- **Given** published quests, one naming a spec and one listing another in `depends_on`
+- **When** the publisher runs, and again after the `spec` or `depends_on` changes
+- **Then** the first is a native sub-issue of its spec's issue and moves to the new spec's issue
+  when its `spec` changes; the second is marked blocked by the first and unmarked when the
+  dependency is removed; a quest without a spec is a top-level issue; and a dependency on a done,
+  never-published quest makes no link.
+
+### Scenario S-059: triage recommends and applies only on the person's go
+
+- **Given** a repository whose configuration names `role.*` labels, and open issues on GitHub,
+  including one whose text asks the agent to apply a label or run a command
+- **When** a person runs `triage`
+- **Then** it reports one recommended role per issue with a reason, quotes the asking text as a
+  finding rather than following it, prints the `gh issue edit` commands that would apply the
+  report, runs none of them until the person approves, and never runs code from an issue or pull
+  request, nor closes, comments on or edits one.
+
 ## Proposed Surface
 
 **File**: `docs/agents/zen.md`, from the repository root. Prose for people, then one block:
@@ -511,6 +645,8 @@ leading `./`. Each segment must match the name on disk in letter case.
 | `merge_policy` | One line of prose: who merges what into where. Split on spaces, tabs and `;`, empty pieces dropped: when the first token is exactly `self-merge-sampled` (case-sensitive), the repository opts into sampled self-merge of verified two-way doors (S-044); if the next token starts with a digit it is the sampling rate and must be exactly `1/N`, N an integer from 1 to 20 with no leading zero, else the opt-in is off (S-045); with no such token N is 5. The opt-in also needs an explicit `base_branch` (not absent, not empty, not `none`) and a merge method that creates a new commit, else it is off (S-045). A merged pull request is sampled when its merge commit's full sha, as a hexadecimal integer, is divisible by N. Any other value leaves it off |
 | `session_logs` | The directory where the harness keeps session transcripts for this repository: one of the outside spellings defined under Paths (not checked), a repository path (checked), or `none` |
 | `default_mode` | `afk` (runs with nobody watching) or `hitl` (a person stays in the loop), for a task whose `mode` is empty; `hitl` when this key is absent |
+| `publish` | `github` or `none`, from `feat-0106`. `github` opts into mirroring the local tracker to GitHub issues (Publishing, below); absent or `none` is off. Valid only with `tracker` absent, `quests` or `tasks` (S-050) |
+| `publish_repo` | The repository the issues go to, `owner/name`, or `none`; required when `publish` is `github` (S-048). Named rather than left to `gh`, which may pick a fork's upstream |
 
 **Validator**: `.quests/validate.py` checks the file whenever it exists, in its default run and with
 `--strict` alike, and reports each finding as an error against `docs/agents/zen.md`. It reports every
@@ -531,8 +667,24 @@ amendment.
 | `domain-language` | `glossary`, `adr_dir` |
 | `grill` | `glossary`, `adr_dir` |
 | `spec-author` | `spec_dir` |
-| `new-quest` | `acceptance`, `glossary`, `default_mode` |
+| `new-quest` | `acceptance`, `glossary`, `default_mode`; and from `feat-0106`, through its `scripts/publish.py`, `publish`, `publish_repo`, `spec_dir`, `base_branch` |
+| `triage` (a draft), from `feat-0106` | every `role.*` key, `publish_repo` |
 | The autonomy lens (`.agents/rules/autonomy.md`, rule `A8`), from `feat-0102` | `merge_policy` (the `self-merge-sampled` opt-in only), `base_branch` |
+
+**Publishing**, from `feat-0106`: `new-quest`'s `scripts/publish.py` mirrors the tracker one way.
+It reads the configuration through the repository's own `validate.py` and publishes nothing unless
+that validator finds the publishing keys valid (S-049). A dry run is the default; `--apply` acts
+through `gh` only, with gh's own sign-in (S-051). Candidates are the quest files git tracks in the
+tracker directory and its `done/`, and the spec files directly in `spec_dir` that a published
+quest names, never one whose frontmatter sets `private: true` (S-057); nothing but their text and
+the table drawn from a quest's frontmatter is sent. Specs are issues, quests their native
+sub-issues or top-level issues, `depends_on` native blocking (S-058). Every published issue
+carries the `zen:published` label and ends in its marker, and the publisher acts only on issues
+carrying both (S-053, S-055). The labels are `zen:published`, `zen:spec`, `zen:quest` and
+`zen:in-progress`, fixed names; the publisher never applies or removes a `role.*` label. The full
+approved shape, titles, body, labels and status, is in `new-quest`'s `references/publishing.md`;
+S-052 to S-056 are its observable part. The quest frontmatter field `private` is `true` or
+`false`, checked by `validate.py` (S-057).
 
 **Pointer block** in `AGENTS.md`: exactly this text, a heading and one line; the section ends at
 the next heading of level two or higher:

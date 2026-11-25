@@ -199,6 +199,17 @@ scenarios map to which quests and any deliberately left unimplemented. Commit no
 Done when every file written is listed with its id and title, the handoff is offered and not run,
 and nothing is committed unless the person asked.
 
+### 8. Publish, only when the repository opts in
+
+Skip this step unless `docs/agents/zen.md` sets `publish: github`. When it does, read
+[references/publishing.md](references/publishing.md) now and follow it: run the dry run, show
+the person the plan, and run `--apply` only on their explicit go. The quest files stay the
+source of truth; publishing mirrors them to GitHub one way and never changes them.
+
+Done when the step was skipped because the repository does not opt in, or the dry run's plan
+was shown and applied only on the person's go, with the command and its output's last lines
+reported.
+
 Why several of these rules exist, with the incidents behind them:
 [references/why-these-rules.md](references/why-these-rules.md).
 
