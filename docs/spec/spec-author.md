@@ -24,7 +24,8 @@ has a lens but no author.
 2. Compose the `spec-quality` lens so the returned draft has a `spec-quality` verdict of `ready`.
 3. Represent an explicit human approval state that downstream decomposition can gate on.
 4. Align with the person before drafting: settle every decision the contract depends on through a
-   structured interview, so the draft records decisions the person made rather than assumptions.
+   structured interview, or take it from a decisions record the person already confirmed in this
+   conversation, so the draft records decisions the person made rather than assumptions.
 
 ## Non-Goals
 
@@ -127,6 +128,14 @@ question, only for an idea too vague to yield a contract. The id is kept so it i
   the amendment as pending re-approval, and reports that the spec now reads `changed` until the
   person re-approves it.
 
+### Scenario S-012: a confirmed decisions record skips the interview
+
+- **Given** a conversation that already holds a `grill` decisions record for the request, which the
+  person confirmed and which settles every decision the contract depends on
+- **When** spec-author runs
+- **Then** it asks the person no question that record settled, names the record it drafted from, and
+  writes each of the record's deferred decisions as an Open Question.
+
 ## Proposed Surface
 
 | Element | Detail |
@@ -138,6 +147,7 @@ question, only for an idea too vague to yield a contract. The id is kept so it i
 | Body sections | Problem, Goals, Non-Goals, Constraints, Scenarios, Proposed Surface, Open Questions |
 | Scenario ids | stable `S-NNN`, never renumbered; a retired id stays in place, marked retired |
 | Interview round | numbered questions, each with a recommended answer worded so "yes" accepts it; ends when no open decision remains and the person confirms |
+| Synthesise-only mode | taken when this conversation holds a confirmed `grill` decisions record for the request; no interview round for what the record settled, and a round only for a decision it left unsettled |
 
 ## Open Questions
 
@@ -176,4 +186,11 @@ source it used (the per-repository setup file is specified in [`zen-config.md`](
 Only the Proposed Surface output-file row changes; `S-006` is unchanged in wording and now covers a
 configured location as well as a discovered one. No id was renumbered or reused. `status` is
 deliberately left `approved`: **this amendment changes behavior and is pending the maintainer's
+re-approval.**
+
+Amended on 2026-11-25 by `feat-0105`: a synthesise-only mode. Goal 4 also accepts a decisions record
+the person already confirmed in this conversation; `S-012` (a confirmed decisions record skips the
+interview) and a Proposed Surface row are added. `S-008` is unchanged: a decision the record leaves
+open is still put to the person before any file is written. No id was renumbered or reused. `status`
+is deliberately left `approved`: **this amendment changes behavior and is pending the maintainer's
 re-approval.**

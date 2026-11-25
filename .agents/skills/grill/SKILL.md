@@ -3,7 +3,8 @@ name: grill
 description: >-
   Grills the person about a plan, design, or idea until nothing is silently assumed: works the
   decision tree in rounds over the frontier, one recommended answer per question, looks facts up
-  instead of asking, and closes with a decisions record. Use for "grill me", "stress-test this
+  instead of asking, writes each settled term to the glossary as it lands, and closes with a
+  decisions record. Use for "grill me", "stress-test this
   plan", or a brain dump to turn into decisions; spec-author composes it before drafting.
 license: MIT
 ---
@@ -20,7 +21,7 @@ its own.
 - The person says "grill me", or asks to stress-test a plan, design, or decision.
 - `spec-author` composes it before drafting a contract.
 - The input is a dictated brain dump: rambling, out of order, mixed with feelings. That is valid
-  input; mine it for decisions rather than asking for a cleaner version.
+  input, and step 1 takes it whole.
 
 Skip it for a change with no decision anyone could disagree with. A one-line fix needs no interview.
 
@@ -39,7 +40,15 @@ both. A request that names only a *what* ("add a retry flag") gets an answer no 
 the why is what lets you propose something better. The person drives: they may narrow the interview
 to one question at a time, and then you ask one at a time.
 
-Done when you can state the problem and its why in one sentence each, in the person's words.
+**Accept a brain dump.** Offer the person the choice of talking it all out first, in any order,
+dictated or typed, and take whatever arrives whole: never interrupt it and never ask for a cleaner
+version. Mine it before asking anything. Play it back as four short lists: the problem and its why,
+the decisions it already made (each becomes a settled line in the record, quoting the person), the
+decisions it raised but left open (your first frontier candidates), and the facts it leans on (step 2
+looks them up). Ask the person to correct the playback, not to repeat the dump.
+
+Done when you can state the problem and its why in one sentence each, in the person's words, and
+any brain dump has been played back and corrected.
 
 ### 2. Read before you ask
 
@@ -53,8 +62,13 @@ discovery finds several candidates. When the block does not parse or names a new
 use none of it and say that `python .quests/validate.py` (`.tasks/validate.py` where the tracker keeps its old name) shows why. Use the glossary's terms in every
 question.
 
-Done when you can name the first frontier, and every glossary term the request touches is one you will
-use as the glossary defines it.
+**Explore before the first question.** Finish this reading, including any lookup you sent to a
+subagent, before round 1 goes out. A question the repository could have answered, asked before you
+looked, is a fact asked of the person (step 3), and it spends their attention on your homework. Later
+lookups may run beside a round (step 3); the first exploration may not.
+
+Done when the first exploration has returned, you can name the first frontier, and every glossary
+term the request touches is one you will use as the glossary defines it.
 
 ### 3. Split facts from decisions
 
@@ -95,20 +109,38 @@ block, for example:
 A question that depends on another question still open in this round belongs to a later round.
 Wait for the answers.
 
+**Ask about module shape once.** When the work adds or changes code with an interface, put one
+question about its shape in the first round where the module is clear enough to name. Read
+[`deep-modules.md`](../../rules/deep-modules.md) now and ask in its terms: which module carries the
+change, and whether it stays **deep** (a small interface over much behaviour, tested at its own
+entry points) or splits into **shallow** pieces whose interfaces nearly match what they hide.
+Recommend the deeper shape unless something the code shows varies across a seam. Skip the question
+for work with no module in it (a document, a process, a configuration value).
+
 Done when the round is sent and nothing more is asked until they come back.
 
 ### 5. Recompute the frontier
 
 Each answer reshapes the tree: settled decisions unblock the decisions hanging from them, and an
-answer can open a branch nobody saw. Record each settled decision in one line as it lands. When the
-person uses a term two ways, or a term the glossary defines differently, put that to them as a
-question in the next round. Returned lookups settle their facts. When a returned fact bears on a
+answer can open a branch nobody saw. Record each settled decision in one line as it lands. Returned
+lookups settle their facts.
+
+**Terms.** When the person uses a term two ways, or a term the glossary defines differently, put
+that to them as a question in the next round. When a term **collides** (the glossary already uses the
+word for another concept, or the code names the same concept with a different word), the question
+offers a **rename** as its recommended option where one fits: a new word for the newcomer, or, when
+the code disagrees with the glossary, renaming the code to match, recorded as a decision to carry out
+as its own quest, never during the interview. When a term **settles** and the repository keeps a
+glossary, or the person wants one, read and follow
+[`domain-language`](../domain-language/SKILL.md) now for that one term, so the glossary is written
+as the term lands rather than in a batch at the end; then come back to this step. When a returned fact bears on a
 decision already settled, put that to the person in the next round as its own question; never
 reconcile it silently inside another recommendation. Then go back to step 4, unless the new
 frontier is empty: then go to step 6.
 
 Done when every answer in the round is recorded as a one-line decision, every term conflict it
-raised is queued as a question, and the new frontier is either named or empty.
+raised is queued as a question with any rename offered, every term it settled has been through
+`domain-language` where a glossary is kept, and the new frontier is either named or empty.
 
 ### 6. Close
 
@@ -155,9 +187,9 @@ decomposes with it, so keep it plain and complete:
 - <what will not be done here, and why>, or `None.`
 ```
 
-Each term in **Terms** is a candidate for the project glossary, which `domain-language` keeps. When
-`domain-language` kept the glossary during this same interview, **Terms** names the glossary entries
-instead of restating them. The record lives in the conversation or the artifact that consumes it;
+**Terms** names the glossary entries `domain-language` wrote during the interview (step 5) instead
+of restating them; a term restated in full is one no glossary took, so each is a candidate for one.
+An accepted rename is a line under **Decisions**, worded as the quest it becomes. The record lives in the conversation or the artifact that consumes it;
 write it to a file only when the person asks.
 
 ## Conventions
@@ -173,6 +205,13 @@ tree, rounds over the frontier, a recommendation per question worded for "yes", 
 fresh-context subagent, and the empty-frontier stopping rule are his. The no-subagent fallback,
 question numbering across rounds, the structured-question rule, the hardest-to-reverse mark, and the
 decisions record are this kit's.
+
+Writing the glossary as each term settles is adapted from his `grill-with-docs`, which composes
+`grilling` with `domain-modeling` (`feat-0105`, 2026-11-25). Exploring before the first question,
+offering a rename when the code disagrees with the glossary, accepting a dictated brain dump, and the
+module-shape question come from his 2026-11 podcast interview, as recorded in this repository's
+`docs/reviews/2026-11-25-podcast-extraction.md` (items 3, 4, 20, 28 and 29 of its section 5); the
+playback lists and the one-question limit are this kit's.
 
 ```provenance
 source: https://raw.githubusercontent.com/mattpocock/skills/main/skills/productivity/grilling/SKILL.md
@@ -190,4 +229,13 @@ license: MIT
 retrieved: 2026-11-23
 sha256: caaf8b8de1684f96e26b28f3c29189db5c89cce4b73e1c93d86164f66ef88637
 note: fetched with urllib and digested with hashlib on the retrieved date, at 157 bytes. The user-invoked wrapper; this kit keeps one model-invoked skill instead.
+```
+
+```provenance
+source: https://raw.githubusercontent.com/mattpocock/skills/main/skills/engineering/grill-with-docs/SKILL.md
+author: Matt Pocock
+license: MIT
+retrieved: 2026-11-25
+sha256: 7de372c13488f1ee96cc11cd8907b56b6809cc93eef776eeddd37de6b6cbe3fe
+note: fetched with urllib and digested with hashlib on the retrieved date, at 247 bytes, upstream HEAD d653911. A two-skill wrapper; this kit composes domain-language at the step that settles a term instead.
 ```
