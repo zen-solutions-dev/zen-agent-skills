@@ -10,7 +10,7 @@ and reviewed with the `spec-quality` lens as the first in-kit dogfood of that sk
 
 ## Problem
 
-The kit can turn a rough idea into atomic task files with [`new-task`](../../.agents/skills/new-task/SKILL.md),
+The kit can turn a rough idea into atomic task files with [`new-quest`](../../.agents/skills/new-quest/SKILL.md),
 and it now has a [`spec-quality`](../../.agents/skills/spec-quality/SKILL.md) lens for reviewing
 scenario-based specs. But nothing drafts the spec in the first place. Ideas jump straight to tasks
 with no durable behavioral contract, so intent is not captured before decomposition and there is
@@ -28,7 +28,7 @@ has a lens but no author.
 
 ## Non-Goals
 
-- Decomposing the spec into task files. That is `new-task`.
+- Decomposing the spec into task files. That is `new-quest`.
 - Writing implementation code, tests, or architecture.
 - Choosing implementation strategy or file layout.
 
@@ -70,8 +70,8 @@ has a lens but no author.
 ### Scenario S-003: approval gate before decomposition
 
 - **Given** a spec whose frontmatter `status` is `draft`
-- **When** `new-task` is asked to decompose it
-- **Then** `new-task` refuses and reports that the spec is not `approved`.
+- **When** `new-quest` is asked to decompose it
+- **Then** `new-quest` refuses and reports that the spec is not `approved`.
 
 ### Scenario S-004: read-only for implementation surfaces
 
@@ -116,8 +116,8 @@ question, only for an idea too vague to yield a contract. The id is kept so it i
 ### Scenario S-010: approved text edited after its approval is not decomposed
 
 - **Given** a spec with `status: approved` whose `approved_digest` no longer matches its text
-- **When** `new-task` is asked to decompose it
-- **Then** `new-task` refuses and reports that the approved text changed and waits on re-approval.
+- **When** `new-quest` is asked to decompose it
+- **Then** `new-quest` refuses and reports that the approved text changed and waits on re-approval.
 
 ### Scenario S-011: an amendment leaves the approval record alone
 

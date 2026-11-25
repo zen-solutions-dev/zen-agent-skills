@@ -25,6 +25,14 @@ place outside the repository while every other path key stays inside it; the qua
 of `AGENTS.md`, not a key; `standards` is one comma-separated list; a re-run changes a key only when
 the person asks for it during the run. They are written into the contract below as decided.
 
+**Amended 2026-11-25 by `feat-0101`** (the rename from tasks to quests, maintainer decisions R2-4
+and R2-7 in the [round 2 plan](../reviews/2026-11-25-marjana-r2-plan.md)): the kit's own tracker
+value is now `quests`, naming `.quests/`, and `tasks` stays accepted as an alias for it, so a
+repository configured before the rename still validates (S-008 as amended, new S-043). The
+validator now sits in `.quests/validate.py`, or in `.tasks/validate.py` in a repository still using
+the old directory. **This amendment needs the maintainer's re-approval in the round 2 pull
+request.**
+
 The path and the block format become a one-way door once an adopter
 configures a repository against them, which is why this contract exists before anyone outside this
 repository reads the file.
@@ -81,8 +89,8 @@ fact is in a given repository.
 - The path is `docs/agents/zen.md` from the repository root (maintainer decision `D2`, 2026-11-24).
 - The file is Markdown: prose for people, plus one fenced block whose info string is `zen-config`,
   the same placement idea the kit's provenance blocks use.
-- The check runs in the validator `init-worktracking` installs at every tier, `.tasks/validate.py`
-  (`feat-0091` scope), so every repository the walkthrough configures already carries it, whichever
+- The check runs in the validator `init-worktracking` installs at every tier, `.quests/validate.py`
+  (`feat-0091` scope; `.tasks/validate.py` in a repository scaffolded before `feat-0101`), so every repository the walkthrough configures already carries it, whichever
   tracker it names.
 - The parser uses the Python standard library only, and decides the same way on Windows, macOS and
   Linux.
@@ -146,7 +154,7 @@ fact is in a given repository.
 
 ### Scenario S-008: a value outside a closed set fails
 
-- **Given** a `tracker` outside `tasks`, `github`, `gitlab`, `other`, or a `default_mode` outside
+- **Given** a `tracker` outside `quests`, `tasks`, `github`, `gitlab`, `other`, or a `default_mode` outside
   `afk`, `hitl`
 - **When** the shipped `validate.py` runs
 - **Then** it reports an error naming the key, the value and the allowed values, and exits non-zero.
@@ -252,7 +260,7 @@ fact is in a given repository.
   `config_version` is newer than `1`
 - **When** a skill that reads it runs
 - **Then** it uses none of the file's values, discovers the facts it needs, and its reply says the
-  file could not be parsed and names `python .tasks/validate.py` as the check that shows why.
+  file could not be parsed and names `python .quests/validate.py` as the check that shows why.
 
 ### Scenario S-023: a settled section is not asked
 
@@ -324,7 +332,7 @@ fact is in a given repository.
 
 ### Scenario S-033: a tracker without labels gets no label command
 
-- **Given** a confirmed configuration with `tracker: tasks` or `tracker: other`
+- **Given** a confirmed configuration with `tracker: quests` (or its alias `tasks`) or `tracker: other`
 - **When** the configure step finishes
 - **Then** its reply prints no label command.
 
@@ -338,7 +346,7 @@ fact is in a given repository.
 ### Scenario S-035: a task's empty mode takes the default
 
 - **Given** a task file whose `mode` is empty or absent
-- **When** `new-task` or another reader needs that task's mode
+- **When** `new-quest` or another reader needs that task's mode
 - **Then** the mode is the file's `default_mode` when it sets one, and `hitl` otherwise.
 
 ### Scenario S-036: only a well-formed fence opens a block
@@ -369,7 +377,7 @@ fact is in a given repository.
 
 - **Given** a `docs/agents/zen.md` whose block does not parse (S-010, S-011)
 - **When** the configure step runs again
-- **Then** it writes nothing, reports what `python .tasks/validate.py` reports, and asks the person
+- **Then** it writes nothing, reports what `python .quests/validate.py` reports, and asks the person
   to repair the file by hand first.
 
 ### Scenario S-040: an other tracker gets its prose
@@ -394,6 +402,15 @@ fact is in a given repository.
 - **Then** it reports an error naming the key and asking for a normalised path, and exits non-zero,
   whether or not the path would resolve to a file that exists.
 
+### Scenario S-043: the old tracker name is accepted
+
+Added 2026-11-25 by `feat-0101`.
+
+- **Given** a configuration written before the rename to quests, with `tracker: tasks`, and its
+  validator in `.tasks/validate.py`
+- **When** the shipped `validate.py` runs, from `.tasks/` or from `.quests/`
+- **Then** it reports nothing about `tracker` and exits as it would for `tracker: quests`.
+
 ## Proposed Surface
 
 **File**: `docs/agents/zen.md`, from the repository root. Prose for people, then one block:
@@ -401,7 +418,7 @@ fact is in a given repository.
 ````markdown
 ```zen-config
 config_version: 1
-tracker: tasks
+tracker: quests
 glossary: GLOSSARY.md
 ```
 ````
@@ -433,7 +450,7 @@ leading `./`. Each segment must match the name on disk in letter case.
 | Key | Value |
 |---|---|
 | `config_version` | Required. ASCII digits with no sign and no leading zero; this contract defines `1` |
-| `tracker` | `tasks` (the kit's `.tasks/`), `github`, `gitlab`, or `other`; for `other`, prose in the same file says how to create, read, label and close an item |
+| `tracker` | `quests` (the kit's `.quests/`), `tasks` (the old name of `quests`, an alias, still accepted; it means `.tasks/` in a repository that has not moved), `github`, `gitlab`, or `other`; for `other`, prose in the same file says how to create, read, label and close an item |
 | `role.ready-agent`, `role.ready-human`, `role.needs-info`, `role.blocked`, `role.out-of-scope` | The external tracker's label for that role; any non-empty text. The validator accepts them with any tracker; the walkthrough asks for them only for `github`, `gitlab` and `other` |
 | `glossary` | The project glossary, a file |
 | `memory` | The file where an orchestrating session keeps its dated log of decisions, a file |
@@ -445,7 +462,7 @@ leading `./`. Each segment must match the name on disk in letter case.
 | `session_logs` | The directory where the harness keeps session transcripts for this repository: one of the outside spellings defined under Paths (not checked), a repository path (checked), or `none` |
 | `default_mode` | `afk` (runs with nobody watching) or `hitl` (a person stays in the loop), for a task whose `mode` is empty; `hitl` when this key is absent |
 
-**Validator**: `.tasks/validate.py` checks the file whenever it exists, in its default run and with
+**Validator**: `.quests/validate.py` checks the file whenever it exists, in its default run and with
 `--strict` alike, and reports each finding as an error against `docs/agents/zen.md`. It reports every
 finding at once, except that a newer `config_version` is reported alone. `--links` does not check
 the file.
@@ -462,7 +479,7 @@ amendment.
 | `domain-language` | `glossary`, `adr_dir` |
 | `grill` | `glossary`, `adr_dir` |
 | `spec-author` | `spec_dir` |
-| `new-task` | `acceptance`, `glossary`, `default_mode` |
+| `new-quest` | `acceptance`, `glossary`, `default_mode` |
 
 **Pointer block** in `AGENTS.md`: exactly this text, a heading and one line; the section ends at
 the next heading of level two or higher:

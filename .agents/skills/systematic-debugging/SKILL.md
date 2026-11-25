@@ -23,18 +23,18 @@ a real defect and blessed, per the contribution bar in the target repository's `
 - A defect, test failure, or unexpected behavior arrives and nobody has established why.
 - A test passes sometimes and fails other times, and somebody is about to call it fixed.
 - A failure surfaces in one component and may originate in another.
-- An agent working a task in isolation meets a failure its task file does not describe.
-- A task file is about to be written about a symptom. This is the step that belongs in between.
+- An agent working a task in isolation meets a failure its quest file does not describe.
+- A quest file is about to be written about a symptom. This is the step that belongs in between.
 
 ## When not to use
 
 - **You want the defect fixed.** This skill does not fix anything, and it will not be talked into it.
   The fix is a task, and `fix-batch` dispatches it.
 - **You want the regression test written.** That is `test-author`; this names what it must pin.
-- **You want the task file written.** That is `new-task`, which this feeds.
+- **You want the quest file written.** That is `new-quest`, which this feeds.
 - **You want to know whether a fix worked.** That is `verifier-agent`.
 - **You want the code judged.** A cause in ugly code is still just the cause; `house-review` judges.
-- **You want to know whether the defect is worth fixing.** A priority call, made on the task file.
+- **You want to know whether the defect is worth fixing.** A priority call, made on the quest file.
 - **The thing that went wrong is the agent rather than the repository.** Pointed at a confused run,
   this produces a confident cause for a defect that is not in the code.
 - The cause is already established and agreed. Skip to whichever skill acts on it.
@@ -233,12 +233,12 @@ absent.
 ### 8. Return the record, and do not repair
 
 **A request to diagnose and then fix is answered with the diagnosis alone.** Return the record,
-perform no repair, and leave every tracked file as you found it. The diagnosis feeds `new-task`, and
+perform no repair, and leave every tracked file as you found it. The diagnosis feeds `new-quest`, and
 `fix-batch` dispatches the fix. **Do not apply the fix in a copy either and offer it as a patch.**
 
 When the cause implicates code, `implicated_files` names the files, `reproduction` supplies the basis
 for an acceptance command (the red command), and `regression_observable` names the observable a
-regression test must pin: what a task file needs from `new-task` and cannot otherwise obtain.
+regression test must pin: what a quest file needs from `new-quest` and cannot otherwise obtain.
 
 **With no destination supplied, return the record inline and create no file.** When a destination is
 supplied, write the same record there and nowhere else. A persisted report nobody asked for is a
@@ -261,7 +261,7 @@ the supplied destination only, and every tracked file is as the run found it.
 | `hypotheses` | always | Each hypothesis stated, its trial, and its result, in order, including disproved ones. |
 | `root_cause` | `root_cause_found` | The cause as a claim about behavior, and where it originates. |
 | `confirming_observation` | `root_cause_found` | What was observed that would have differed had the hypothesis been wrong. |
-| `implicated_files` | `root_cause_found`, and the cause implicates code | Files the cause implicates, for a task file's `touched_files`. |
+| `implicated_files` | `root_cause_found`, and the cause implicates code | Files the cause implicates, for a quest file's `touched_files`. |
 | `regression_observable` | `root_cause_found`, and the cause implicates code | The observable a regression test must pin. |
 | `missing_input` | `not_reproducible` | What would make a reproduction possible. |
 | `bound_reached` | `architectural` | The bound, and the count of disproved hypotheses. |

@@ -219,7 +219,7 @@ class ConsumerTests(unittest.TestCase):
     would place a skill whose check names a script that was never installed.
     """
 
-    CONSUMERS = ("verifier-agent", "new-task", "spec-plan-readiness", "test-author")
+    CONSUMERS = ("verifier-agent", "new-quest", "spec-plan-readiness", "test-author")
 
     def test_each_consumer_links_spec_author_and_names_the_script(self):
         for name in self.CONSUMERS:

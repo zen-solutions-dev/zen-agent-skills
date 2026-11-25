@@ -19,7 +19,7 @@ and `S-002`; `feat-0055` added the fleet report and the live-session registry be
 `S-013` to `S-015`; and the final wave added the three remaining reports in parallel, `feat-0056`
 for `S-003` and `S-004`, `feat-0057` for `S-010`, `S-011`, `S-017` and `S-021`, and `feat-0058`
 for `S-016`. The decomposition began at
-[`feat-0053`](../../.tasks/done/feat-0053-the-observatory-store-and-its-incremental-ingester.md)
+[`feat-0053`](../../.quests/done/feat-0053-the-observatory-store-and-its-incremental-ingester.md)
 and was gated by [`agent-observatory.readiness.md`](agent-observatory.readiness.md).
 
 **Conformed is not unbounded.** Five rows carry a stated bound rather than a clean claim, and the

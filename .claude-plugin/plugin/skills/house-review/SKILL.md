@@ -112,8 +112,8 @@ Done when every reviewable file has been read at the Step 2 depth or is named as
 
 ### Step 4: find the contract and the standards
 
-- **Spec sources**, in order: a path the user gave; the task file the branch completes (its Problem,
-  Scope and acceptance criteria, in `.tasks/` or `.tasks/done/`); an issue the commits close; a spec
+- **Spec sources**, in order: a path the user gave; the quest file the branch completes (its Problem,
+  Scope and acceptance criteria, in `.quests/` or `.quests/done/`, or `.tasks/`, the old name); an issue the commits close; a spec
   under the repository's spec directory matching the work. When none exists, the spec axis reports
   "no contract available" and is skipped. It never invents one from the diff; a contract the
   changeset itself writes is still used, and the header says so.

@@ -153,10 +153,10 @@ class WaitingOnYouTests(unittest.TestCase):
 class ClosedTaskTests(unittest.TestCase):
 
     def test_s005_a_closed_task_never_waits_on_the_person(self):
-        """S-005: a task under `.tasks/done/` never waits, whatever its body says."""
+        """S-005: a task under `.quests/done/` never waits, whatever its body says."""
         repo = ThrowawayRepo(self)
-        repo.write(".tasks/done/feat-0001-finished.md", task_text("feat-0001", body=QUESTION))
-        repo.write(".tasks/feat-0002-open.md", task_text("feat-0002", body=QUESTION))
+        repo.write(".quests/done/feat-0001-finished.md", task_text("feat-0001", body=QUESTION))
+        repo.write(".quests/feat-0002-open.md", task_text("feat-0002", body=QUESTION))
         repo.commit()
         board = sitrep.build_board(repo.dir)
         self.assertEqual([e["id"] for e in board["waiting"]], ["feat-0002"])
@@ -167,7 +167,7 @@ class OrderTests(unittest.TestCase):
     def test_s006_waiting_entries_are_ordered_by_priority_then_id(self):
         """S-006: P1 first, then downward; the same priority in id order; none last."""
         tasks = [
-            sitrep.parse_task(f".tasks/{tid}-x.md", task_text(tid, priority=p, body=QUESTION))
+            sitrep.parse_task(f".quests/{tid}-x.md", task_text(tid, priority=p, body=QUESTION))
             for tid, p in (("feat-0003", "P2"), ("feat-0005", "P1"), ("feat-0001", "P3"),
                            ("feat-0002", "P2"), ("feat-0004", ""))
         ]
@@ -181,20 +181,20 @@ class BlockedTests(unittest.TestCase):
     def test_s007_a_task_with_an_unfinished_dependency_is_blocked(self):
         """S-007: blocked lists the task and names each dependency that is not done."""
         repo = ThrowawayRepo(self)
-        repo.write(".tasks/done/feat-0001-done.md", task_text("feat-0001"))
-        repo.write(".tasks/feat-0002-needs-two.md",
+        repo.write(".quests/done/feat-0001-done.md", task_text("feat-0001"))
+        repo.write(".quests/feat-0002-needs-two.md",
                    task_text("feat-0002", depends=("feat-0001", "bug-0009")))
-        repo.write(".tasks/bug-0009-open.md", task_text("bug-0009"))
+        repo.write(".quests/bug-0009-open.md", task_text("bug-0009"))
         repo.commit()
         board = sitrep.build_board(repo.dir)
         self.assertEqual([(e["id"], e["waits_on"]) for e in board["blocked"]],
                          [("feat-0002", ["bug-0009"])])
 
     def test_s007_a_task_whose_dependencies_are_all_done_is_not_blocked(self):
-        """S-007: once every dependency is under `.tasks/done/`, the task is not blocked."""
+        """S-007: once every dependency is under `.quests/done/`, the task is not blocked."""
         repo = ThrowawayRepo(self)
-        repo.write(".tasks/done/feat-0001-done.md", task_text("feat-0001"))
-        repo.write(".tasks/feat-0002-ready.md", task_text("feat-0002", depends=("feat-0001",)))
+        repo.write(".quests/done/feat-0001-done.md", task_text("feat-0001"))
+        repo.write(".quests/feat-0002-ready.md", task_text("feat-0002", depends=("feat-0001",)))
         repo.commit()
         board = sitrep.build_board(repo.dir)
         self.assertEqual(board["blocked"], [])
@@ -204,7 +204,7 @@ class BlockedTests(unittest.TestCase):
 class NoTrackingTests(unittest.TestCase):
 
     def test_s010_a_repository_without_task_tracking_still_gets_a_board(self):
-        """S-010: no `.tasks/` gives a board with the notice and nothing waiting or blocked.
+        """S-010: no `.quests/` gives a board with the notice and nothing waiting or blocked.
 
         Its in-flight and changed sections are present here and filled by `feat-0067`, whose
         tests run this scenario again against a repository with work in flight.
@@ -224,9 +224,9 @@ class ProvenanceTests(unittest.TestCase):
     def test_s014_a_task_entry_is_green_and_names_its_task_file(self):
         """S-014: every task on the board carries tier Green and names its file."""
         repo = ThrowawayRepo(self)
-        repo.write(".tasks/feat-0001-waits.md", task_text("feat-0001", body=QUESTION))
-        repo.write(".tasks/feat-0002-blocked.md", task_text("feat-0002", depends=("feat-0009",)))
-        repo.write(".tasks/feat-0003-planned.md", task_text("feat-0003"))
+        repo.write(".quests/feat-0001-waits.md", task_text("feat-0001", body=QUESTION))
+        repo.write(".quests/feat-0002-blocked.md", task_text("feat-0002", depends=("feat-0009",)))
+        repo.write(".quests/feat-0003-planned.md", task_text("feat-0003"))
         repo.commit()
         board = sitrep.build_board(repo.dir)
         entries = board["waiting"] + board["blocked"] + board["planned"]
@@ -235,14 +235,14 @@ class ProvenanceTests(unittest.TestCase):
             with self.subTest(task=entry["id"]):
                 self.assertEqual(entry["tier"], "green")
                 self.assertEqual(entry["provenance"], entry["file"])
-                self.assertTrue(entry["file"].startswith(".tasks/"))
+                self.assertTrue(entry["file"].startswith(".quests/"))
 
     def test_an_untracked_task_file_is_not_state(self):
         """Goal 1, the tracked-records half: a task file git does not track is not read."""
         repo = ThrowawayRepo(self)
-        repo.write(".tasks/feat-0001-tracked.md", task_text("feat-0001"))
+        repo.write(".quests/feat-0001-tracked.md", task_text("feat-0001"))
         repo.commit()
-        repo.write(".tasks/feat-0002-untracked.md", task_text("feat-0002", body=QUESTION))
+        repo.write(".quests/feat-0002-untracked.md", task_text("feat-0002", body=QUESTION))
         board = sitrep.build_board(repo.dir)
         self.assertEqual(board["waiting"], [])
         self.assertEqual([e["id"] for e in board["planned"]], ["feat-0001"])

@@ -59,7 +59,7 @@ class GateTestCase(unittest.TestCase):
         (self.root / ".git").mkdir()
         self.specs = self.root / "docs" / "spec"
         self.specs.mkdir(parents=True)
-        self.tasks = self.root / ".tasks"
+        self.tasks = self.root / ".quests"
         self.tasks.mkdir()
         self.addCleanup(self._tmp.cleanup)
 

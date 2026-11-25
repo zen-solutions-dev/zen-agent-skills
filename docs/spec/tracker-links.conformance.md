@@ -7,7 +7,7 @@ audited: 2026-07-28
 # tracker-links conformance matrix
 
 Spec-vs-implementation audit of the `external` field in
-[`.tasks/validate.py`](../../.tasks/validate.py) and the closing-reference procedure in
+[`.quests/validate.py`](../../.quests/validate.py) and the closing-reference procedure in
 [`pr-describe`](../../.agents/skills/pr-describe/SKILL.md), against
 [`tracker-links.md`](tracker-links.md). Evidence is by code location or by skill-body clause; this
 audit is independent of test pass/fail.
@@ -32,15 +32,15 @@ correctness but not executed, so its evidence is the clause plus the run recorde
 | Scenarios | S-004 a non-default base links without closing | Conformed | `pr-describe` / the "Only the default branch closes anything" rule | Clause present and states the reason to emit; not exercised |
 | Scenarios | S-005 a cross-repository reference is carried through | Conformed | `pr-describe` / "Emit the value verbatim after the keyword", plus `EXTERNAL_RE` accepting `owner/repo#123` | Accepted by the validator and covered by a test; the emission half is not exercised |
 | Scenarios | S-006 the reference never appears in the title | Conformed | `pr-describe` / "In the description, never the title" | Exercised on PR #2; the title was queried and is clean |
-| Scenarios | S-007 a malformed reference fails validation | Conformed | `.tasks/validate.py` / `EXTERNAL_RE` and the `err(...)` call in the per-file loop | Two tests, both confirmed to fail against a validator with the check removed |
-| Scenarios | S-008 an absent reference is valid | Conformed | `.tasks/validate.py` / `fm.get("external", "")` guarding the check | Three tests: absent, `#123`, and `owner/repo#123` |
-| Scenarios | S-009 a task completed in the same change still gets a reference | Conformed | `pr-describe` / "A completed task still counts", naming `.tasks/done/` | Clause present; structurally hard to exercise, see the verification record |
-| Proposed Surface | `external` field | Conformed | `.tasks/_TEMPLATE.md`, `.tasks/README.md` field table, `.tasks/validate.py` | Documented in both places an author would look |
-| Proposed Surface | Reference form | Conformed | `.tasks/validate.py` / `EXTERNAL_RE` | Both forms accepted, bare number rejected |
+| Scenarios | S-007 a malformed reference fails validation | Conformed | `.quests/validate.py` / `EXTERNAL_RE` and the `err(...)` call in the per-file loop | Two tests, both confirmed to fail against a validator with the check removed |
+| Scenarios | S-008 an absent reference is valid | Conformed | `.quests/validate.py` / `fm.get("external", "")` guarding the check | Three tests: absent, `#123`, and `owner/repo#123` |
+| Scenarios | S-009 a task completed in the same change still gets a reference | Conformed | `pr-describe` / "A completed task still counts", naming `.quests/done/` | Clause present; structurally hard to exercise, see the verification record |
+| Proposed Surface | `external` field | Conformed | `.quests/_TEMPLATE.md`, `.quests/README.md` field table, `.quests/validate.py` | Documented in both places an author would look |
+| Proposed Surface | Reference form | Conformed | `.quests/validate.py` / `EXTERNAL_RE` | Both forms accepted, bare number rejected |
 | Proposed Surface | Keyword `Closes` | Conformed | `pr-describe` / the emission examples | |
 | Proposed Surface | Pull request body | Conformed | `pr-describe` / "one per line" | |
 | Proposed Surface | Non-default base | Conformed | `pr-describe` / the default-branch rule | |
-| Proposed Surface | Validation | Conformed | `.tasks/validate.py` | Error, not warning, per the spec's silent-failure reasoning |
+| Proposed Surface | Validation | Conformed | `.quests/validate.py` | Error, not warning, per the spec's silent-failure reasoning |
 
 ## Coverage proof
 

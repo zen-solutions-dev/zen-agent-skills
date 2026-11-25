@@ -10,9 +10,9 @@ A ledger: it records what was true on the date it ran and is not rewritten when 
 | Input | Value |
 |---|---|
 | Spec | [`cloud-executable.md`](cloud-executable.md), approved 2026-08-07, `S-001` to `S-019` |
-| Decomposition | [`feat-0045`](../../.tasks/done/feat-0045-committed-acceptance-command.md), [`feat-0046`](../../.tasks/done/feat-0046-session-start-reachability-hook.md) |
+| Decomposition | [`feat-0045`](../../.quests/done/feat-0045-committed-acceptance-command.md), [`feat-0046`](../../.quests/done/feat-0046-session-start-reachability-hook.md) |
 
-[`feat-0044`](../../.tasks/done/feat-0044-autonomy-rules-module-v1.md) was deliberately **excluded**. It
+[`feat-0044`](../../.quests/done/feat-0044-autonomy-rules-module-v1.md) was deliberately **excluded**. It
 serves Epic E item 1, carries no `spec` field, and is not decomposed from this contract. Including it
 would have produced a task traceable to no scenario, which this gate blocks on, and forcing a mapping
 to make the gate pass would have been the gate failing at its own job.
@@ -99,9 +99,9 @@ added, because it would misstate the relationship as sequencing when it is a sha
 Dispatch them one after the other, or expect to reconcile that file.
 
 **Both task files omit the files they create from `touched_files`, and that is a contradiction in the
-kit rather than a defect in the tasks.** The `new-task` skill says to list a test file at the path it
-should be created at; `.tasks/validate.py:456` promotes a missing path to an error under `--strict`,
+kit rather than a defect in the tasks.** The `new-quest` skill says to list a test file at the path it
+should be created at; `.quests/validate.py:456` promotes a missing path to an error under `--strict`,
 and CI runs `--strict`. The two rules cannot both be satisfied.
-[`feat-0038`](../../.tasks/done/feat-0038-hooks-module-and-delegation-reminder.md) met the same
+[`feat-0038`](../../.quests/done/feat-0038-hooks-module-and-delegation-reminder.md) met the same
 conflict and resolved it the same way, listing only pre-existing files while creating an entire
 module. The convention works, has never been written down, and is worth its own task.

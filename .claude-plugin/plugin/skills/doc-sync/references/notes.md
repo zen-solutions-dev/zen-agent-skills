@@ -36,7 +36,7 @@ familiar prose.
 
 ## The ledger skip suppresses things that look actionable, on purpose
 
-Archived task files and changelogs accumulate references that no longer resolve, because the file
+Archived quest files and changelogs accumulate references that no longer resolve, because the file
 moved or the code did. Those are not drift: the entry still describes its moment correctly. If link
 integrity across the whole repository is what you want, that is a separate mechanical check, and
 running it through this skill would bury the real findings under archive noise.
@@ -59,7 +59,7 @@ it runs on every applied edit rather than only on the ones that look structural.
 
 ## Why the link checker's mode matters here
 
-In this kit `python .tasks/validate.py --links <path>` resolves every relative link against the
+In this kit `python .quests/validate.py --links <path>` resolves every relative link against the
 directory the file actually lives in, the same rule the CI docs link step applies to the root,
 `.github/` and `docs/` trees. The checker's other modes walk the tracker directory only, so they
 would report clean without having read the edited document at all (`bug-0014`).

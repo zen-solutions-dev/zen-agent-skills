@@ -282,7 +282,7 @@ validator is the kit-level lint that enforces that bar.
   Outside a span or a fence nothing about the link rules changed, and the boundary is worth stating
   because the two validators here differ on it: an absolute or `file://` link is still an error in
   this tool, whether by escaping the shipped tree or by failing to resolve, even though the backlog
-  validator in `.tasks/validate.py` tolerates one.
+  validator in `.quests/validate.py` tolerates one.
 
   An unterminated opening fence yields no range and therefore suppresses nothing below it: the links
   after it are checked as usual. A detector that ran an unclosed fence to end of file would switch

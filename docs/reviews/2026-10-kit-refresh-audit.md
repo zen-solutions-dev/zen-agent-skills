@@ -485,7 +485,7 @@ It exists in pieces and is not stated as a path anywhere:
   `doc-sync` and no conformance
   ([`AGENTS.md.tmpl`](../../.agents/skills/init-worktracking/templates/AGENTS.md.tmpl), lines 49 to
   58), the `spec` and `scenarios` fields are optional ("Omit both when there is no spec",
-  [`new-task`](../../.agents/skills/new-task/SKILL.md), line 28), and `init-worktracking` has a lite
+  [`new-task`](../../.agents/skills/new-quest/SKILL.md), line 28), and `init-worktracking` has a lite
   tier.
 - **This repository does not.** Its own lifecycle adds a `doc-sync` pass over the reader-facing
   documents to every task closeout, conformance when a spec is declared, link re-anchoring, a changelog
@@ -587,7 +587,7 @@ run, not a recommendation.
 
 ## 7. A method for testing each skill against a no-skill baseline
 
-Proposed, not run. It builds on [`feat-0051`](../../.tasks/feat-0051-a-paired-evaluation-harness-seeded-from-the-closed-task-corpus.md),
+Proposed, not run. It builds on [`feat-0051`](../../.quests/feat-0051-a-paired-evaluation-harness-seeded-from-the-closed-task-corpus.md),
 which already argues the case well (paired runs, a corpus of closed bugs with known answers, trigger
 disambiguation, a cadence), and changes one premise under it.
 

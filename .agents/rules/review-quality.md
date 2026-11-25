@@ -164,7 +164,7 @@ lens.
 `house-review` runs two independent passes. This section holds the rules each pass applies; the
 skill holds the order.
 
-**Spec axis**: the change against its contract (a spec, a task file's scope and acceptance
+**Spec axis**: the change against its contract (a spec, a quest file's scope and acceptance
 criteria, or the issue it closes), and nothing else. Three categories:
 
 - `spec-missing`: the contract asked for it and the change does not do it, or does part of it.

@@ -22,7 +22,7 @@ without exposing the failure, so a persistently stale page can still look health
 The full acceptance command was not green before this document existed. It ran 1,075 tests and
 reported `8 passed, 1 failed, 0 could not run`: five Codex registration tests failed because their
 attempt to start `/bin/bash` through WSL returned an error. That pre-existing issue maps to
-[`chore-0083`](../../.tasks/chore-0083-no-codex-session-has-ever-exercised-the-codex-wiring.md).
+[`chore-0083`](../../.quests/chore-0083-no-codex-session-has-ever-exercised-the-codex-wiring.md).
 It is not counted again below.
 
 **Two candidate findings were dropped by the central evidence gate.** Duplicate frontmatter keys
@@ -319,7 +319,7 @@ bytes never entered agent context. The six agent results apply only to the obser
 harness configuration. They do not isolate the effect of the skill body from the system prompt,
 model, harness, outer prompt, or autonomy lens, and they have no `without A10` control. The missing
 paired evaluation capability is already tracked by
-[`feat-0051`](../../.tasks/feat-0051-a-paired-evaluation-harness-seeded-from-the-closed-task-corpus.md)
+[`feat-0051`](../../.quests/feat-0051-a-paired-evaluation-harness-seeded-from-the-closed-task-corpus.md)
 and was not refiled.
 
 ## What was checked and found clean

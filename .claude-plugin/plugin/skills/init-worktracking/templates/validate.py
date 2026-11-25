@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate the .tasks/ backlog.
+"""Validate the .quests/ backlog, or a .tasks/ one: the directory this file sits in.
 
 Ships with the init-worktracking scaffold. Checks the mechanical integrity a
 multi-agent workflow depends on: every task file has a well-formed frontmatter,
@@ -31,9 +31,9 @@ or `hitl`.
 Standard library only, so it runs anywhere a bare Python 3 does. Exits non-zero
 on any error, so it drops cleanly into CI or a pre-commit hook.
 
-    python .tasks/validate.py            # errors fail, missing files warn
-    python .tasks/validate.py --strict   # warnings become errors too
-    python .tasks/validate.py --links '*.md'   # link-check documents
+    python .quests/validate.py            # errors fail, missing files warn
+    python .quests/validate.py --strict   # warnings become errors too
+    python .quests/validate.py --links '*.md'   # link-check documents
 
 The --links example names only the root markdown this scaffold guarantees. Add
 'docs/**/*.md' to it once there is a docs/ directory, and any other tree as it
@@ -81,7 +81,10 @@ SCAFFOLD_MANIFEST = ".scaffold.json"
 ZEN_CONFIG_PATH = "docs/agents/zen.md"
 ZEN_CONFIG_VERSION = 1
 ZEN_ROLES = {"ready-agent", "ready-human", "needs-info", "blocked", "out-of-scope"}
-ZEN_CHOICES = {"tracker": {"tasks", "github", "gitlab", "other"},
+# `tasks` is the tracker's name before the rename to quests (feat-0101), kept as an alias so
+# a repository configured before it still validates. Both mean the directory this file
+# sits in, `.quests/` or its old name `.tasks/`.
+ZEN_CHOICES = {"tracker": {"quests", "tasks", "github", "gitlab", "other"},
                "default_mode": {"afk", "hitl"}}
 ZEN_FILES = {"glossary", "memory"}
 ZEN_DIRS = {"adr_dir", "spec_dir"}
@@ -142,7 +145,7 @@ LINK_TEXT_RE = re.compile(r"\[([^\]]*)\]\(([^)]+)\)")
 # repository path uses. Prose fails this on the first space, which is the cheapest
 # reliable way to tell "README.md" from "the readme".
 TEXT_PATH_RE = re.compile(r"^[A-Za-z0-9._/-]+$")
-# A trailing `:29`, as in `.tasks/README.md:29`. Text in that form cites a location
+# A trailing `:29`, as in `.quests/README.md:29`. Text in that form cites a location
 # inside a file rather than claiming which file the link opens, so it is left alone.
 LINE_SUFFIX_RE = re.compile(r":\d+$")
 # A run of one or more backticks. Markdown opens an inline code span with a run of
@@ -213,7 +216,7 @@ def task_files():
 
 
 def markdown_files():
-    """Every Markdown file under .tasks/, not only the task files.
+    """Every Markdown file under .quests/, not only the task files.
 
     Wider than task_files() on purpose: a broken link in README.md is exactly as
     clickable as one in a task file, and excluding it would leave a hole for no
@@ -303,7 +306,7 @@ def stale_high_water(manifest_path, ids):
     if recorded is None:
         return []
     if not isinstance(recorded, dict):
-        return ["id_high_water is not an object mapping each task type to its highest "
+        return ["id_high_water is not an object mapping each quest type to its highest "
                 "id, so nothing could be compared against the backlog"]
 
     highest = {}
@@ -409,9 +412,9 @@ def broken_links(path):
     """Relative link targets in `path` that do not resolve from its own directory.
 
     Resolving against `path.parent` rather than against the repository root is the
-    whole point. A task file is authored in .tasks/, where `../src/x.py` is
-    correct, and the lifecycle moves it to .tasks/done/ at closeout, where `../`
-    now means .tasks/ and every such link dangles. Checking a link where the file
+    whole point. A task file is authored in .quests/, where `../src/x.py` is
+    correct, and the lifecycle moves it to .quests/done/ at closeout, where `../`
+    now means .quests/ and every such link dangles. Checking a link where the file
     currently lives is what makes that move fail loudly instead of silently.
 
     A link inside an inline code span or a fenced code block is skipped, the same rule
@@ -421,7 +424,7 @@ def broken_links(path):
     rewording apiece to quote a broken link as the example of the bug they documented.
 
     The ranges are computed once for the file rather than once per link, because this
-    runs over every markdown file under .tasks/ and every globbed document.
+    runs over every markdown file under .quests/ and every globbed document.
     """
     found = []
     content = read_text_utf8(path)
@@ -513,7 +516,7 @@ def mislabelled_links(path):
     """Links in `path` whose text names one repository path and which open another.
 
     The class underneath broken_links(). Once a repository has both a root `README.md`
-    and a `.tasks/README.md`, `../README.md` written from `.tasks/done/` resolves to the
+    and a `.quests/README.md`, `../README.md` written from `.quests/done/` resolves to the
     second: existence is satisfied, nothing dangles, and the reader still lands somewhere
     the link text never named. Three completed task files in the repository this scaffold
     came from carried exactly that link while every check reported success (bug-0012).
@@ -736,7 +739,7 @@ def zen_config_findings(repo_root):
         # Reported alone (S-007): the newer format's keys would otherwise read as
         # unknown, burying the one fix that matters under findings that are not faults.
         return [f"config_version is {version}, and this validator reads versions up to "
-                f"{ZEN_CONFIG_VERSION}: update .tasks/validate.py from the kit"]
+                f"{ZEN_CONFIG_VERSION}: update {TASKS_DIR.name}/validate.py from the kit"]
 
     for key in sorted(set(values) - ZEN_KEYS):
         found.append(f"unknown key {key!r}")
@@ -801,11 +804,11 @@ def main(argv=None) -> int:
     # `argv` is injectable so the CLI layer is reachable from a test. Calling
     # main() with no argument behaves exactly as before.
     args = sys.argv[1:] if argv is None else list(argv)
-    # A second mode, and the only one that does not read .tasks/ at all: link-check an
+    # A second mode, and the only one that does not read .quests/ at all: link-check an
     # arbitrary set of documents, so a CI docs link gate can call this rule rather than
     # restate it. Everything after --links is a glob, resolved from the repository root:
     #
-    #     python .tasks/validate.py --links '*.md'
+    #     python .quests/validate.py --links '*.md'
     #
     # Every pattern must match at least one document, and one that does not fails the
     # run and is named. The bound is per pattern, not per run, so name only the trees
@@ -893,7 +896,7 @@ def main(argv=None) -> int:
             if dep == tid:
                 err(rel, f"depends_on lists itself: {dep}")
             elif dep not in all_ids:
-                err(rel, f"depends_on unresolved: {dep!r} is not a known task id")
+                err(rel, f"depends_on unresolved: {dep!r} is not a known quest id")
             elif tid:
                 # Whatever survives both branches above is an edge between two tasks that
                 # exist, which is the only kind a ring can be made of. A self-edge is
@@ -1016,7 +1019,7 @@ def main(argv=None) -> int:
         print(f"ERROR {f}: {msg}")
 
     n = len(files)
-    print(f"\nChecked {n} task file{'s' if n != 1 else ''}: "
+    print(f"\nChecked {n} quest file{'s' if n != 1 else ''}: "
           f"{len(errors)} error(s), {len(warnings)} warning(s).")
     return 1 if errors else 0
 

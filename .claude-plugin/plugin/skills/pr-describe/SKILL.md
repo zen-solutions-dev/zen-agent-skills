@@ -62,7 +62,7 @@ Settled; not up for re-litigation:
    may want to `git switch -c` before opening a PR), but still produce the description.
 5. Survey, do not dump: `--stat` for the shape and the actual diff for substance. Use
    `git log --oneline <base>..HEAD` for intent **when commits exist**; for an uncommitted
-   changeset there are no commit messages, so draw intent from any matching `.tasks/` files,
+   changeset there are no commit messages, so draw intent from any matching `.quests/` files (`.tasks/` in a repository that keeps the old name),
    the branch name, or the user. Note the files/areas touched and the test files among them.
 
 Done when the changeset is fixed (a committed range, working-tree changes, or both) and you can
@@ -88,9 +88,9 @@ section the change does not justify. A typical shape, trimmed to fit the change:
   file this branch completes carries a non-empty `## Decisions` section, fold those entries in
   here, under this heading and under no new one: a rejected alternative, a deliberately open seam,
   or a premise the task got wrong is exactly what a reviewer needs and cannot read off the diff.
-  Look in `.tasks/done/` as well as `.tasks/`, the same two places the closing-reference rule below
+  Look in `.quests/done/` as well as `.quests/`, the same two places the closing-reference rule below
   already reads. The task template owns which entries are admissible (in this kit, the
-  `## Decisions` section of `.tasks/_TEMPLATE.md`), so quote or compress the entries rather than
+  `## Decisions` section of `.quests/_TEMPLATE.md`), so quote or compress the entries rather than
   re-deriving the list, and emit nothing when the section is absent.
 
 - **Merge danger**: always present, last. See below.
@@ -153,7 +153,7 @@ branch is under the size bar, or its Door is two-way and no offer is due.
 
 #### Close the linked issue, when a task names one
 
-A task file may carry an `external` field naming the upstream issue it serves (`#123` for
+A quest file may carry an `external` field naming the upstream issue it serves (`#123` for
 this repository, `owner/repo#123` for another). When the PR completes such a task, put a
 closing reference in the body so merging closes the issue instead of leaving someone to
 remember. Emit the value verbatim after the keyword; it is already stored in the syntax
@@ -171,8 +171,8 @@ merges cleanly, and leaves the tracker wrong:
   emit the bare reference **without** a keyword and say plainly that GitHub will not close
   the issue on merge because the target is not the default branch. Emitting an inert keyword
   is worse than emitting none: it reads as done and does nothing.
-- **A completed task still counts.** A branch usually moves its task file into `.tasks/done/`
-  in the same change, so look there as well as in `.tasks/`. The PR is what completes the
+- **A completed task still counts.** A branch usually moves its quest file into `.quests/done/`
+  in the same change, so look there as well as in `.quests/`. The PR is what completes the
   work, so its merge is exactly when the issue should close.
 
 Emit nothing when no task names an issue, and nothing when you cannot tell which task the
@@ -183,17 +183,17 @@ The contract behind this is `docs/spec/tracker-links.md` in the Zen Agent Skills
 Other trackers use the same shape with a different token, so the rule is the placement, not
 the vocabulary.
 
-Done when every section in the body rests on the diff, the commits or a task file, Merge danger is
+Done when every section in the body rests on the diff, the commits or a quest file, Merge danger is
 last, and every issue a completed task names has its own closing line or a stated reason it has none.
 
 ### Step 3: draft the changelog entry (by inspection)
 
 1. Look for `CHANGELOG.md` (or `HISTORY.md`/`CHANGES.md`). If present, infer its style from
    existing entries: heading structure (e.g. `## [x.y.z]`, `## [Unreleased]`, or a running
-   task log), date format, bullet style, and whether entries cite task ids or PR numbers.
+   task log), date format, bullet style, and whether entries cite quest ids or PR numbers.
 2. Produce **one** new entry in that exact style. Keep it to the change's user-visible
    essence, not a diff restatement.
-3. If a `.tasks/` system is present, detect the work-item id from the branch name or commit
+3. If a `.quests/` system is present, detect the work-item id from the branch name or commit
    messages (e.g. `feat-0003`) and reference it the way existing entries do.
 4. If there is no changelog, draft a Keep a Changelog entry (an `## [Unreleased]` section
    with `Added`/`Changed`/`Fixed` as the change warrants).

@@ -20,7 +20,7 @@ and the offending entry, rather than acting on a record it cannot read.
     python scripts/install.py --check             # is an installed set still current?
     python scripts/install.py --replace-adopted   # take the kit's rules module, lose yours
     python scripts/install.py --uninstall         # remove what this installed
-    python scripts/install.py --skills new-task   # one skill plus its sibling-link closure
+    python scripts/install.py --skills new-quest   # one skill plus its sibling-link closure
     python scripts/install.py --include-drafts    # also place draft skills, to try them
 
 Named skills, drafts, and rendered copies (feat-0079)
@@ -126,6 +126,12 @@ RULES_DIR = REPO_ROOT / ".agents" / "rules"
 HOOKS_DIR = REPO_ROOT / ".agents" / "hooks"
 MANIFEST = REPO_ROOT / "scripts" / ".install-manifest.json"
 
+# A skill's old name mapped to its current one. The old name is an alias: `--skills`
+# accepts it, and a run retires a placement this tool recorded under it, which would
+# otherwise point at a source that no longer exists. `new-task` became `new-quest` in the
+# rename from tasks to quests (feat-0101).
+RENAMED_SKILLS = {"new-task": "new-quest"}
+
 TOOL_SUBPATHS = {
     "claude": Path(".claude") / "skills",
     "opencode": Path(".agents") / "skills",
@@ -144,7 +150,7 @@ TOOL_SUBPATHS = {
 # (feat-0080). `--skills` places any single skill with its closure. See docs/spec/install.md.
 PROFILE_SEEDS = {
     "core": ["project-bootstrap", "init-worktracking", "pr-describe"],
-    "spine": ["spec-author", "spec-plan-readiness", "new-task", "fix-batch", "test-author",
+    "spine": ["spec-author", "spec-plan-readiness", "new-quest", "fix-batch", "test-author",
               "spec-conformance", "verifier-agent", "reconcile-worktrees", "doc-sync",
               "pr-describe", "project-bootstrap", "init-worktracking", "house-review",
               "doc-author"],
@@ -812,6 +818,15 @@ def install(tools, mode, home: Path, dry: bool, profile: str = DEFAULT_PROFILE,
                 (["rendered: user-invoked"] if render else [])
             print(f"{tag}{status:9} {tool:8} {src.name}  -> {target}"
                   + (f"  ({'; '.join(marks)})" if marks else ""))
+
+        for old, new in RENAMED_SKILLS.items():
+            retired = base / old
+            if str(retired) not in entries:
+                continue  # never placed here by this tool: not ours to remove
+            if not dry and (retired.is_symlink() or retired.exists()):
+                _rm(retired)
+            del entries[str(retired)]
+            print(f"{tag}{'retired':9} {tool:8} {old}  ({retired}: renamed {new})")
 
         # The rules module, as the sibling <base>/../rules, so each skill's
         # ../../rules/<file>.md reference resolves in the installed layout too.
@@ -1785,6 +1800,10 @@ def _main(argv=None) -> int:
         if not only:
             print("--skills was given no skill names.")
             return 2
+        for old in [n for n in only if n in RENAMED_SKILLS]:
+            print(f"{old!r} was renamed {RENAMED_SKILLS[old]!r}; placing "
+                  f"{RENAMED_SKILLS[old]!r}.")
+        only = list(dict.fromkeys(RENAMED_SKILLS.get(n, n) for n in only))
     profile = args.profile or DEFAULT_PROFILE
     if profile not in PROFILE_SEEDS:
         print(f"Unknown profile: {profile!r}. Choose from {list(PROFILE_SEEDS)}.")

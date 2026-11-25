@@ -69,7 +69,7 @@ to repositories this skill has never seen:
 |---|---|---|---|
 | current-state | derived from the code or repository state, checkable against it, carrying no human-owned approval marker | `README.md`, architecture and catalog documents, status pages, a roadmap's status claims | reported, and correctable with explicit approval |
 | contract | human-owned and authoritative over the code: carries an approval or `status` field, or is the repository's canonical agent instruction file or a rules module | approved specs, `AGENTS.md`, a house-style module | reported only, never edited |
-| ledger | append-only history whose entries describe past states | `CHANGELOG.md`, completed task files, audit and verification reports | skipped entirely |
+| ledger | append-only history whose entries describe past states | `CHANGELOG.md`, completed quest files, audit and verification reports | skipped entirely |
 
 Three rules protect this step:
 
@@ -180,7 +180,7 @@ Then:
   discipline governs; it is not restated here.
 - **Re-check the edited document's relative links after writing, and before recording anything.**
   It is unconditional (why, in the notes). Run the repository's own link checker over the edited
-  document (in this kit, `python .tasks/validate.py --links <path>`, the one mode that reads it);
+  document (in this kit, `python .quests/validate.py --links <path>`, the one mode that reads it);
   without one, resolve each relative link from the document's own directory. **A link the edit broke
   is repaired in the same pass, or the edit is reverted.** It is never left dangling and never
   recorded as applied: a record of a correction that broke a link is worse than no record.

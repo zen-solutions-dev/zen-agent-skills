@@ -185,7 +185,7 @@ class CountTierTests(unittest.TestCase):
     def test_s019_the_board_counts_its_own_entries_by_that_rule(self):
         """S-019 on a real board: waiting on you is a Green count, in flight a Purple one."""
         repo = ThrowawayRepo(self)
-        repo.write(".tasks/feat-0001-a.md",
+        repo.write(".quests/feat-0001-a.md",
                    "---\nid: feat-0001\ntitle: A\nstatus: open\npriority: P1\ndepends_on: []\n---\n"
                    "\n## Open question\n\nWhich?\n")
         repo.commit()

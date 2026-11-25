@@ -110,7 +110,7 @@ SUPPORTING_MARKDOWN_SUFFIXES = frozenset({".md", ".mdc"})
 
 # What a link is, and what renders as literal text, is decided once in `_skillmeta.py`
 # for this script, install.py and build-adapters.py alike (feat-0090). The span helpers
-# there are reproduced from `.tasks/validate.py`, the original, and a test holds the two
+# there are reproduced from `.quests/validate.py`, the original, and a test holds the two
 # identical, since `validate.py` ships to adopters and may import nothing from scripts/.
 
 # A skill declaring itself a draft in prose while also declaring itself shipped
@@ -313,7 +313,7 @@ def classify_supporting_file(path: Path) -> str:
       the SKILL.md rule extends to it unchanged.
     - Written **somewhere else**: a template, whose links are authored for the
       destination and are meant to dangle where the file currently sits. A link to
-      `.tasks/` inside `AGENTS.md.tmpl` is correct at an adopter's repository root.
+      `.quests/` inside `AGENTS.md.tmpl` is correct at an adopter's repository root.
       Resolving it from `.agents/skills/init-worktracking/templates/` would report every
       such link as broken and make the check unusable.
 

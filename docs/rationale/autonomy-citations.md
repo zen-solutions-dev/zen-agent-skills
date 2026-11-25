@@ -146,15 +146,15 @@ Neither trigger the held section named has fired.
 ### A11
 
 *Cited internally, with outside research for the class, and marked as such.* Added 2026-11-23 by
-[`feat-0082`](../../.tasks/done/feat-0082-an-agent-may-not-edit-its-own-judge.md), on the author's
+[`feat-0082`](../../.quests/done/feat-0082-an-agent-may-not-edit-its-own-judge.md), on the author's
 decision. The rule rests on two kinds of evidence, and they answer different questions.
 
 **That this kit already works this way.** Two closed tasks show the shape exercised rather than
-invented. [`bug-0013`](../../.tasks/done/bug-0013-validator-rejects-file-scheme-links.md) found half
+invented. [`bug-0013`](../../.quests/done/bug-0013-validator-rejects-file-scheme-links.md) found half
 of its own acceptance criterion wrong (a grep it expected to return three hits returned five) and
 recorded that "rather than quietly satisfied", leaving the two extra hits alone because changing them
 "would weaken a real check rather than fix this one".
-[`bug-0010`](../../.tasks/done/bug-0010-install-records-an-unresolved-home.md) met an assertion that
+[`bug-0010`](../../.quests/done/bug-0010-install-records-an-unresolved-home.md) met an assertion that
 would fail on macOS for a correct reason and fixed it "by comparing resolved forms rather than by
 loosening it until it passes". Neither names a rule; both obey this one.
 

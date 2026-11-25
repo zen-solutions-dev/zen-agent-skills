@@ -57,7 +57,7 @@ Ground the brief in the repository as it is now, because that is what the downst
 
 1. Read the repository's `AGENTS.md` or `CLAUDE.md` if there is one, and inherit its reading
    protocol, task lifecycle and conventions rather than restating them. Where it defines a task
-   system (for example `.tasks/`), point at the task file instead of duplicating it.
+   system (for example `.quests/`), point at the quest file instead of duplicating it.
 2. Check `git status` and recent changes, so "what is proven" reflects the working tree.
 3. Name the exact files the work touches, by path. A short reading list beats a padded one.
 
@@ -66,7 +66,7 @@ Done when every claim the brief will make about the current state has been check
 ## Step 3: write the brief
 
 One contiguous block the person can copy in a single action, in this order. Point at artifacts that
-already exist (specs, task files, decision records, commits, pull requests) by path or URL rather
+already exist (specs, quest files, decision records, commits, pull requests) by path or URL rather
 than restating them. Redact secrets and personal data.
 
 1. **Job and kind of work.** What the agent is there to do, and the kind of work, named as a
@@ -79,7 +79,7 @@ than restating them. Redact secrets and personal data.
    classes of action), each with a few words of why so it can reason about edge cases. A fresh
    agent's default is to act broadly, so this is the most valuable section for a machine reader.
 4. **Read these first, in order.** Most foundational first, durable repository files over pasted
-   content. With a task system this is usually the rules file plus one task file.
+   content. With a task system this is usually the rules file plus one quest file.
 5. **Background: what is proven, and when.** Dated ("as of 2026-07-20"): what is built, tested,
    decided, or ruled out, including what was tried and failed, so the agent neither repeats a dead
    end nor acts on a stale assumption.
@@ -115,7 +115,7 @@ Do not: <constraint 1; why>. <constraint 2; why>.
 
 Read these first, in order:
 1. AGENTS.md  (global rules, task lifecycle)
-2. .tasks/<id>.md  (your assigned task)
+2. .quests/<id>.md  (your assigned task)
 3. <architecture or context doc, if the task cites it>
 
 Background (as of <date>): <what is built/tested/decided>. <what was tried and rejected>.

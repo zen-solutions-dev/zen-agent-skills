@@ -65,7 +65,11 @@ SCHEMA_VERSION = 1
 TIERS = ("white", "green", "blue", "purple", "gold")
 TIER_NAMES = {tier: tier.capitalize() for tier in TIERS}
 
-TASK_PATH_RE = re.compile(r"^\.tasks/(?:done/)?([a-z]+-\d{4})-[^/]+\.md$")
+# The tracker directory, `.quests/`, and its name before the rename to quests (feat-0101),
+# `.tasks/`, which a repository scaffolded earlier may still use. Both are read.
+TRACKER_DIRS = (".quests", ".tasks")
+TASK_PATH_RE = re.compile(r"^\.(?:quests|tasks)/(?:done/)?([a-z]+-\d{4})-[^/]+\.md$")
+DONE_PATH_RE = re.compile(r"^\.(?:quests|tasks)/done/")
 TASK_ID_RE = re.compile(r"\b[a-z]+-\d{4}\b")
 FRONTMATTER_RE = re.compile(r"\A---\r?\n(.*?)\r?\n---[ \t]*(?:\r?\n|\Z)", re.S)
 FIELD_RE = re.compile(r"^([A-Za-z_][A-Za-z0-9_]*):[ \t]*(.*)$")
@@ -174,7 +178,7 @@ def is_commit(top, revision):
 def parse_frontmatter(text):
     """Flat `key: value` fields and `- item` lists, by regex rather than a YAML parser.
 
-    The same call `.tasks/validate.py` makes: the fields a task file carries are scalars and one
+    The same call `.quests/validate.py` makes: the fields a task file carries are scalars and one
     list, which this reads correctly in both the inline `[a, b]` and the block form.
     Returns (fields, body).
     """
@@ -225,7 +229,7 @@ def parse_task(rel, text):
         "priority": scalar("priority") or "",
         "depends_on": TASK_ID_RE.findall(fields.get("depends_on", "")),
         "file": rel,
-        "closed": rel.startswith(".tasks/done/"),
+        "closed": bool(DONE_PATH_RE.match(rel)),
         "reasons": waiting_reasons(body),
     }
 
@@ -233,10 +237,10 @@ def parse_task(rel, text):
 def load_tasks(top):
     """Every tracked task file, parsed, plus any notice the reading raised.
 
-    A repository with nothing tracked under `.tasks/` has no task tracking, which is a notice and
+    A repository with nothing tracked under `.quests/` (or `.tasks/`) has no quest tracking, which is a notice and
     not an error: the board still reports what git can tell it (S-010).
     """
-    listed = [p for p in git(top, "ls-files", "-z", "--", ".tasks").split("\0") if p]
+    listed = [p for p in git(top, "ls-files", "-z", "--", *TRACKER_DIRS).split("\0") if p]
     if not listed:
         return [], [NOTICE_NO_TASKS]
     tasks, notices = [], []
@@ -380,8 +384,9 @@ def changes_since(top, base):
     """What changed between `base` and HEAD: how many commits, which tasks closed, which updated.
 
     `base` may be `EMPTY_TREE`, for a first look over a repository younger than the window, and then
-    the whole history counts. A task is closed when its file arrives under `.tasks/done/` in the
-    range, and updated when its file changed in place outside it. Ids come from the file names,
+    the whole history counts. A task is closed when its file arrives under `.quests/done/` (or
+    `.tasks/done/`) in the range, and updated when its file changed in place outside it. A file
+    already done that only moved between the two directory names is neither. Ids come from the file names,
     which the kit's validator keeps equal to each file's `id`.
     """
     if not base:
@@ -389,7 +394,7 @@ def changes_since(top, base):
     span = "HEAD" if base == EMPTY_TREE else f"{base}..HEAD"
     commits = (git(top, "rev-list", "--count", span) or "0").strip()
     closed, updated = set(), set()
-    diff = git(top, "diff", "--name-status", "-M", base, "HEAD", "--", ".tasks")
+    diff = git(top, "diff", "--name-status", "-M", base, "HEAD", "--", *TRACKER_DIRS)
     for line in diff.splitlines():
         parts = line.split("\t")
         if len(parts) < 2:
@@ -398,9 +403,10 @@ def changes_since(top, base):
         match = TASK_PATH_RE.match(path)
         if not match:
             continue
-        if path.startswith(".tasks/done/") and code in ("A", "R", "C"):
+        moved_done = code == "R" and bool(DONE_PATH_RE.match(parts[1]))
+        if DONE_PATH_RE.match(path) and code in ("A", "R", "C") and not moved_done:
             closed.add(match.group(1))
-        elif code == "M" and not path.startswith(".tasks/done/"):
+        elif code == "M" and not DONE_PATH_RE.match(path):
             updated.add(match.group(1))
     return {"commits": int(commits) if commits.isdigit() else 0,
             "closed": sorted(closed), "updated": sorted(updated - closed)}

@@ -43,7 +43,7 @@ Pocock's `diagnosing-bugs`, recorded in the skill's provenance.
 The kit's spine assumes work arrives already diagnosed. Nothing in it establishes a cause.
 
 [`spec-author`](../../.agents/skills/spec-author/SKILL.md) accepts "a raw idea, feature request, or
-bug" and turns it straight into a contract. [`new-task`](../../.agents/skills/new-task/SKILL.md) sets
+bug" and turns it straight into a contract. [`new-quest`](../../.agents/skills/new-quest/SKILL.md) sets
 the bar a task file must clear: honest `touched_files`, a `## Problem` grounded in reproduction, and
 an acceptance command that passes only when the work is done. **All three of those require the cause
 to already be known.** A bug arriving at either skill undiagnosed produces a contract or a task file
@@ -69,7 +69,7 @@ anything that diagnoses.
    from the symptom that was reported.
 2. Return a **deterministic verdict**, so a run that could not find a cause is never mistaken for one
    that did, and an unattended run cannot end ambiguously.
-3. Produce a diagnosis that **feeds `new-task` directly**, carrying the facts a task file's bar
+3. Produce a diagnosis that **feeds `new-quest` directly**, carrying the facts a task file's bar
    demands and cannot otherwise obtain.
 4. **Refuse to repair.** The skill diagnoses; every other skill in the spine keeps its job.
 5. **Bound the investigation**, so a hypothesis loop that will not converge terminates with a verdict
@@ -80,7 +80,7 @@ anything that diagnoses.
 - **Fixing the defect.** The fix is a task, dispatched by `fix-batch`.
 - **Writing the regression test.** That is [`test-author`](../../.agents/skills/test-author/SKILL.md),
   which the diagnosis feeds by naming the observable the test must pin.
-- **Writing the task file.** That is `new-task`.
+- **Writing the task file.** That is `new-quest`.
 - **Judging code quality.** A cause that happens to sit in ugly code is still just the cause;
   [`house-review`](../../.agents/skills/house-review/SKILL.md) owns quality.
 - **Confirming a fix worked.** That is [`verifier-agent`](../../.agents/skills/verifier-agent/SKILL.md).
@@ -154,7 +154,7 @@ anything that diagnoses.
 
 ### Scenario S-006: the diagnosis carries what a task file's bar demands
 - **Given** a run that returned `verdict: root_cause_found` for a cause that implicates code
-- **When** the diagnosis is handed to `new-task`
+- **When** the diagnosis is handed to `new-quest`
 - **Then** `implicated_files` names the files the cause implicates, `reproduction` supplies the basis
   for an acceptance command, and `regression_observable` names the observable a regression test must
   pin

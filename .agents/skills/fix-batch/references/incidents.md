@@ -13,7 +13,7 @@ items in the same repo. All four claimed success. Independent verification found
   the lost code from memory and test expectations, mostly correct, but it also fabricated one
   extra, undisclosed test method that had never existed in the repo's history, and its own
   summary miscounted this fabrication as one of the "original" tests.
-- Two of the four agents had silently incorrect task-file bookkeeping: each moved its task file
+- Two of the four agents had silently incorrect task-file bookkeeping: each moved its quest file
   to a `done/` location but left the status field saying `open` and every checkbox unchecked,
   despite claiming in their summary that the task was fully closed out.
 - The repo's task-tracking files were untracked by git, so worktree isolation silently split
@@ -36,7 +36,7 @@ Three occurrences, so this carries its evidence rather than reading as caution:
 - **2026-08-05.** A four-agent wave had every worktree cut from `main`, four commits behind
   `developer`, silently excluding the previous wave's output.
 - **2026-08-18, six agents dispatched from `developer` at `e492b10`.** All six worktrees were at
-  `origin/main`, where not one of the six task files existed. At the wrong base a missing task file
+  `origin/main`, where not one of the six quest files existed. At the wrong base a missing quest file
   reads as a bad dispatch rather than a wrong tree. Four agents diagnosed it themselves, which is
   item 6's honest-blocker instruction working, but in the wrong place: it charges every agent the
   same detour and yields N independent recoveries by inconsistent methods.
@@ -69,7 +69,7 @@ improvises something creative (the bad case).
 
 ### Why the honest-blocker instruction is in every prompt (Step 3, item 7)
 
-On a real batch, two of three agents reported that the task file's premise was factually wrong about
+On a real batch, two of three agents reported that the quest file's premise was factually wrong about
 the code: a function that did not contain the logic the task attributed to it, and a regex that did
 not handle a case the task asserted it handled. Both reported it and tested what was actually there
 instead of forcing a test onto a premise that did not hold.
@@ -85,7 +85,7 @@ than the stage that would catch it.
 
 The shared-bookkeeping rule holds because the `done/` move, `CHANGELOG.md` and `ROADMAP.md` are the
 same files for every item, so N agents editing them in N worktrees collide by construction. An
-agent's own task file is the one file exactly one agent owns. Bookkeeping is also where the
+agent's own quest file is the one file exactly one agent owns. Bookkeeping is also where the
 2026-07-07 agents were caught misreporting, so doing the shared part centrally removes the need to
 audit N copies of it.
 

@@ -21,12 +21,12 @@ Conventions: your answer follows [`house-style.md`](../../rules/house-style.md).
 
 ## How to answer
 
-1. **Place the person.** From what they said and what the repository shows (a `.tasks/` directory,
+1. **Place the person.** From what they said and what the repository shows (a `.quests/` directory, or `.tasks/`, its old name,
    a spec under `docs/spec/`, an open branch, a failing command), name the stage they are in: no
    project yet, an idea, a plan, a build, a change to verify, a change to ship, or a look back.
    Look beyond the current checkout too: another worktree or an unmerged branch may already hold
    work on the same thing (`git worktree list`, `git branch -a`), and that changes the route.
-   When the repository has `.tasks/` but no `docs/agents/zen.md`, add one line to the reply: the
+   When the repository has `.quests/` but no `docs/agents/zen.md`, add one line to the reply: the
    configure step of `init-worktracking` records what the skills read here, so they stop
    rediscovering it.
    Done when you can name one stage, or you have asked the one question that decides it.
@@ -50,8 +50,8 @@ The full chain is something a change earns. Ask in this order; the first yes win
 1. **Does a person have to agree the behaviour before it is built?** Full flow: `spec-author`
    (which runs the `grill` interview first), approval, and the rest of the chain below.
 2. **Are there decisions only the person can make, but no behaviour anyone else must agree?**
-   `grill` on its own, then `new-task` writes the task files from its decisions record. No spec.
-3. **Does it span more than one sitting, or go to another agent?** Task file: `new-task` writes one
+   `grill` on its own, then `new-quest` writes the quest files from its decisions record. No spec.
+3. **Does it span more than one sitting, or go to another agent?** Quest file: `new-quest` writes one
    file with an acceptance command, and `verifier-agent` checks it before it lands. No spec.
 4. **Otherwise, direct.** Make the change, run the project's acceptance command, and ask for
    `house-review` if the change warrants one.
@@ -65,7 +65,7 @@ step is also useful on its own. *(draft)* marks a skill not yet promoted.
 
 - `project-bootstrap`: a new or bare repository gets a stack-matched baseline, then hands to
   `init-worktracking`.
-- `init-worktracking`: an existing repository gets `AGENTS.md`, `.tasks/`, and by tier a roadmap and
+- `init-worktracking`: an existing repository gets `AGENTS.md`, `.quests/`, and by tier a roadmap and
   changelog. Every task-based skill below needs it. Its configure step writes `docs/agents/zen.md`,
   the facts the skills read; run it alone on a repository already tracked.
 
@@ -82,7 +82,7 @@ step is also useful on its own. *(draft)* marks a skill not yet promoted.
   sources and writes one cited file.
 - `spec-author`: behaviour a person must agree. Writes Given/When/Then scenarios and stops for
   approval. It composes `spec-quality`, the lens that judges a spec's well-formedness.
-- `new-task`: an approved spec, or a change that needs a task file, becomes tasks each sized to one
+- `new-quest`: an approved spec, or a change that needs a quest file, becomes tasks each sized to one
   fresh context window.
 - `spec-plan-readiness`: the go/no-go gate over a spec plus its tasks, before any code.
 
@@ -92,7 +92,7 @@ step is also useful on its own. *(draft)* marks a skill not yet promoted.
 - `orchestrate` *(draft)*: a piece of work too big for one context. One session holds the
   conversation; child sessions research and build on their own branches, landing on one
   integration branch and reaching the person as one pull request.
-- `fix-batch`: two or more independent task files to parallel agents, each in its own worktree,
+- `fix-batch`: two or more independent quest files to parallel agents, each in its own worktree,
   each starting fresh. A person starts it.
 - `systematic-debugging` *(draft)*: something is broken and the cause is unknown. Builds a red
   command first and diagnoses; it never fixes.
@@ -120,14 +120,14 @@ step is also useful on its own. *(draft)* marks a skill not yet promoted.
 - `retro`: after a build, especially one that went sideways. A repeated correction
   becomes a check; a judgement call becomes a written standard. A person starts it.
 - `improve-architecture`: a spare moment, or a bug with no good seam to test it at. Finds
-  deepening refactors in the hot spots; a chosen one goes back to `grill` or `new-task`. A person
+  deepening refactors in the hot spots; a chosen one goes back to `grill` or `new-quest`. A person
   starts it.
 
 **Handoffs and context**:
 
 - `agent-handoff`: at a phase boundary, whether to continue, clear, hand off, dispatch a subagent,
   or compact, and the brief when it is a handoff. Keep align and plan in one unbroken session where
-  they fit; each build task can start fresh from its task file.
+  they fit; each build task can start fresh from its quest file.
 - `human-handoff`: an update for a partner, client, or teammate.
 
 **Documents**:
@@ -137,7 +137,7 @@ step is also useful on its own. *(draft)* marks a skill not yet promoted.
 
 **Status**:
 
-- `sitrep` *(draft)*: "where are we" for one repository, from its task files and git.
+- `sitrep` *(draft)*: "where are we" for one repository, from its quest files and git.
 - `agent-observatory` *(draft)*: questions across many agent sessions: what is running, what it
   cost.
 - `quest-tracker` *(draft)*: a season of work run from a shared tracker page.

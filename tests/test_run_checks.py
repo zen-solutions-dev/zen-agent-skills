@@ -94,7 +94,7 @@ class GateSetTests(unittest.TestCase):
          [["-m", "unittest", "discover", "-s", "tests", "-p", "test_*.py"]],
          None),
         ("backlog",
-         [[".tasks/validate.py", "--strict"]],
+         [[".quests/validate.py", "--strict"]],
          None),
         ("adapters dry run",
          [["scripts/build-adapters.py", "--dry-run"]],
@@ -114,7 +114,7 @@ class GateSetTests(unittest.TestCase):
           ["scripts/install.py", "--with-hooks", "--home", "./.tmp/zen-home"]],
          ["scripts/install.py", "--uninstall", "--home", "./.tmp/zen-home"]),
         ("doc links",
-         [[".tasks/validate.py", "--links", "*.md", ".github/**/*.md", "docs/**/*.md"]],
+         [[".quests/validate.py", "--links", "*.md", ".github/**/*.md", "docs/**/*.md"]],
          None),
         # Added by chore-0049. The doc-links gate above resolves a link's path; a matrix
         # cites a symbol, a test name, or a quoted phrase, none of which is a path.
@@ -409,7 +409,7 @@ class CoverageLineRuleTests(unittest.TestCase):
     def test_the_last_line_carrying_a_count_is_chosen(self):
         self.assertEqual(
             "Checked 155 task files: 0 error(s), 0 warning(s).",
-            rc.coverage_line("reading .tasks\n"
+            rc.coverage_line("reading .quests\n"
                              "Checked 155 task files: 0 error(s), 0 warning(s).\n"))
 
     def test_a_later_line_without_a_count_does_not_win(self):
@@ -605,7 +605,7 @@ class WorkflowWiringTests(unittest.TestCase):
         # version vacuous for five of the seven gates. It built `assertNotIn("run: python
         # " + tail)` where `tail` was the command's LAST token, so for the backlog gate it
         # asserted the absence of "run: python --strict", a string that can never appear:
-        # a real restatement reads "run: python .tasks/validate.py --strict". Four genuine
+        # a real restatement reads "run: python .quests/validate.py --strict". Four genuine
         # restatements were reinserted into checks.yml and the suite stayed green. Only the
         # two hardcoded lines below did any work, while the comment claimed the chore-0029
         # lesson was mechanical for all seven.
@@ -737,12 +737,12 @@ class RoadmapBookkeepingTests(unittest.TestCase):
     def _repo(self, roadmap, done=(), still_open=()):
         root = Path(tempfile.mkdtemp())
         self.addCleanup(shutil.rmtree, root, ignore_errors=True)
-        (root / ".tasks" / "done").mkdir(parents=True)
+        (root / ".quests" / "done").mkdir(parents=True)
         for task_id in done:
-            (root / ".tasks" / "done" / f"{task_id}-slug.md").write_text(
+            (root / ".quests" / "done" / f"{task_id}-slug.md").write_text(
                 "x", encoding="utf-8")
         for task_id in still_open:
-            (root / ".tasks" / f"{task_id}-slug.md").write_text("x", encoding="utf-8")
+            (root / ".quests" / f"{task_id}-slug.md").write_text("x", encoding="utf-8")
         (root / "ROADMAP.md").write_text(roadmap, encoding="utf-8")
         return root
 
@@ -752,11 +752,11 @@ class RoadmapBookkeepingTests(unittest.TestCase):
     SCOPED_AS = ("- **The lite tier scaffolds a required field that cannot be "
                  "satisfied.** Lite ships no `ROADMAP.md`,\n  `_TEMPLATE.md.tmpl` seeds "
                  "`parent`. Scoped as [`bug-0030`]"
-                 "(.tasks/done/bug-0030-lite-tier-parent-field-has-no-roadmap-to-name.md).")
+                 "(.quests/done/bug-0030-lite-tier-parent-field-has-no-roadmap-to-name.md).")
     FILED_NOT_FIXED = ("**Landed 2026-08-18, in one worktree-isolated batch of six**: "
                        "`bug-0026`, `bug-0028`.\nTwo findings the batch itself surfaced "
                        "are filed rather\nthan fixed: [`chore-0042`]"
-                       "(.tasks/done/chore-0042-renormalise-the-authors-working-tree.md), "
+                       "(.quests/done/chore-0042-renormalise-the-authors-working-tree.md), "
                        "the\nrenormalise remainder.")
 
     def test_an_open_state_claim_over_a_closed_id_is_reported(self):
@@ -805,7 +805,7 @@ class RoadmapBookkeepingTests(unittest.TestCase):
         self.assertFalse(rc.check_roadmap(root)[0])
 
     def test_the_same_claim_over_an_open_id_is_not_reported(self):
-        # `bug-0030` in `.tasks/` makes "Scoped as" true, and the check must say nothing.
+        # `bug-0030` in `.quests/` makes "Scoped as" true, and the check must say nothing.
         root = self._repo(self.SCOPED_AS, still_open=["bug-0030"])
         ok, report = rc.check_roadmap(root)
         self.assertTrue(ok, report)
@@ -833,7 +833,7 @@ class RoadmapBookkeepingTests(unittest.TestCase):
     def test_the_report_carries_the_arithmetic_and_not_a_claim(self):
         root = self._repo(self.SCOPED_AS, done=["bug-0030"])
         report = rc.check_roadmap(root)[1]
-        self.assertIn("1 task ids named, 1 in .tasks/done/", report)
+        self.assertIn("1 task ids named, 1 in .quests/done/", report)
         self.assertIn("blocks read", report)
 
     def test_the_report_names_the_class_it_cannot_reach(self):
@@ -884,7 +884,7 @@ class RoadmapDraftStatusTests(unittest.TestCase):
     def _repo(self, current_state, drafts=(), shipped=(), exceptions=None):
         root = Path(tempfile.mkdtemp())
         self.addCleanup(shutil.rmtree, root, ignore_errors=True)
-        (root / ".tasks" / "done").mkdir(parents=True)
+        (root / ".quests" / "done").mkdir(parents=True)
         for name in drafts:
             self._skill(root, name, "  status: draft\n")
         for name in shipped:
@@ -971,13 +971,13 @@ class RoadmapDraftStatusTests(unittest.TestCase):
     # section that the first version of this check failed twice, once for naming the skills
     # PR #113 promoted in the same bullet as the draft list, once for reading "places 20
     # skills" as the total. A check that fires on a true roadmap gets switched off.
-    TRUE_REWRITE = "Measured 2026-11-24 at `zen/marjana-2026-11-24` `9598355`, which carries `main` at `220282a` (pull requests #109 to #116 merged). Counts are derived, not kept: `python3 scripts/install.py --dry-run` prints the draft list and every profile, and `ls .agents/skills` the total.\n\n- **29 skills, 25 shipped and 4 drafts** (`metadata.status: draft`, placed only with `--include-drafts`): `agent-observatory`, `quest-tracker`, `sitrep` and `systematic-debugging`. Pull request #113 promoted `domain-language`, `grill`, `improve-architecture`, `retro`, `tdd` and `zen` (`feat-0084` to `feat-0089`).\n- **The shipped skills**: `project-bootstrap` and `init-worktracking` set a repository up; `zen` routes; `grill` and `domain-language` align before planning; `new-task` and the spec chain (`spec-author`, `spec-quality`, `spec-plan-readiness`, `spec-conformance`) turn decisions into contracts and tasks; `fix-batch` and `reconcile-worktrees` dispatch and land parallel work; `tdd`, `test-author`, `test-quality`, `verifier-agent` and `house-review` build and check it; `doc-author`, `doc-revise` and `doc-sync` keep the documents true; `pr-describe`, `agent-handoff` and `human-handoff` close and hand over; `retro` and `improve-architecture` learn from it.\n- **Four swappable lenses** under `.agents/rules/` (`house-style`, `autonomy` with `A1` to `A11`, `review-quality`, `writing-for-agents`), plus the always-loaded `core.md`, and **seven opt-in hooks** under `.agents/hooks/`.\n- **Distribution**: `install.py` (profiles `core`, `spine`, `all`; the default `spine` places 20 skills), `build-adapters.py` for Cursor and VS Code or Copilot, and the committed Claude Code marketplace under `.claude-plugin/`. `run-checks.py` is the acceptance command, and CI calls it.\n- **13 approved behavioural contracts** under `docs/spec/`, several with amendments pending the author's re-approval.\n\nThis section says only what was true on its date; the next change to the kit makes it a record of that date."
+    TRUE_REWRITE = "Measured 2026-11-24 at `zen/marjana-2026-11-24` `9598355`, which carries `main` at `220282a` (pull requests #109 to #116 merged). Counts are derived, not kept: `python3 scripts/install.py --dry-run` prints the draft list and every profile, and `ls .agents/skills` the total.\n\n- **29 skills, 25 shipped and 4 drafts** (`metadata.status: draft`, placed only with `--include-drafts`): `agent-observatory`, `quest-tracker`, `sitrep` and `systematic-debugging`. Pull request #113 promoted `domain-language`, `grill`, `improve-architecture`, `retro`, `tdd` and `zen` (`feat-0084` to `feat-0089`).\n- **The shipped skills**: `project-bootstrap` and `init-worktracking` set a repository up; `zen` routes; `grill` and `domain-language` align before planning; `new-quest` and the spec chain (`spec-author`, `spec-quality`, `spec-plan-readiness`, `spec-conformance`) turn decisions into contracts and tasks; `fix-batch` and `reconcile-worktrees` dispatch and land parallel work; `tdd`, `test-author`, `test-quality`, `verifier-agent` and `house-review` build and check it; `doc-author`, `doc-revise` and `doc-sync` keep the documents true; `pr-describe`, `agent-handoff` and `human-handoff` close and hand over; `retro` and `improve-architecture` learn from it.\n- **Four swappable lenses** under `.agents/rules/` (`house-style`, `autonomy` with `A1` to `A11`, `review-quality`, `writing-for-agents`), plus the always-loaded `core.md`, and **seven opt-in hooks** under `.agents/hooks/`.\n- **Distribution**: `install.py` (profiles `core`, `spine`, `all`; the default `spine` places 20 skills), `build-adapters.py` for Cursor and VS Code or Copilot, and the committed Claude Code marketplace under `.claude-plugin/`. `run-checks.py` is the acceptance command, and CI calls it.\n- **13 approved behavioural contracts** under `docs/spec/`, several with amendments pending the author's re-approval.\n\nThis section says only what was true on its date; the next change to the kit makes it a record of that date."
 
     DRAFTS_AT_9598355 = ["agent-observatory", "quest-tracker", "sitrep", "systematic-debugging"]
     SHIPPED_AT_9598355 = [
         "agent-handoff", "doc-author", "doc-revise", "doc-sync", "domain-language", "fix-batch",
         "grill", "house-review", "human-handoff", "improve-architecture", "init-worktracking",
-        "new-task", "pr-describe", "project-bootstrap", "reconcile-worktrees", "retro",
+        "new-quest", "pr-describe", "project-bootstrap", "reconcile-worktrees", "retro",
         "spec-author", "spec-conformance", "spec-plan-readiness", "spec-quality", "tdd",
         "test-author", "test-quality", "verifier-agent", "zen"]
 
@@ -1042,7 +1042,7 @@ class RoadmapDraftStatusTests(unittest.TestCase):
     def test_no_current_state_section_is_reported_as_not_judged(self):
         root = Path(tempfile.mkdtemp())
         self.addCleanup(shutil.rmtree, root, ignore_errors=True)
-        (root / ".tasks").mkdir()
+        (root / ".quests").mkdir()
         (root / "ROADMAP.md").write_text("Nothing here.\n", encoding="utf-8")
         ok, report = self._check(root)
         self.assertTrue(ok, report)

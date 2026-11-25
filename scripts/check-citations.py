@@ -69,7 +69,7 @@ sentence. An earlier version of this checker attributed by position, taking the 
 recent `` `file` / `` marker as the subject of every span after it. Measured against the
 real corpus on 2026-08-28, that produced false positives and no true findings: the S-005
 row of `tracker-links.conformance.md` cites `pr-describe`'s clause and then, in the same
-cell, `EXTERNAL_RE`, which lives in `.tasks/validate.py`, and positional attribution
+cell, `EXTERNAL_RE`, which lives in `.quests/validate.py`, and positional attribution
 checked the second against the first.
 
 So attribution does not guess. Every file a row names becomes a **candidate**, and a

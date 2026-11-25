@@ -63,7 +63,7 @@ The reachability reminder is the first hook here on a lifecycle event rather tha
 
 It is also the only hook whose Claude Code registration is **committed** rather than printed. See the conventions section of `AGENTS.md` for why, and for the opt-in rule that decision bends.
 
-The gate recognises two closing shapes for one rule. A spec file reaching a terminal status is the portable shape, for repositories whose specs carry a closing status. A task file carrying a `spec:` reference being set to `status: done` is the shape this kit uses, and without it the gate would be inert here: this repository's spec lifecycle is `draft` then `approved` and stops. **A guardrail that cannot fire in the repository that ships it is one nobody has ever seen work.**
+The gate recognises two closing shapes for one rule. A spec file reaching a terminal status is the portable shape, for repositories whose specs carry a closing status. A quest file carrying a `spec:` reference being set to `status: done` is the shape this kit uses, and without it the gate would be inert here: this repository's spec lifecycle is `draft` then `approved` and stops. **A guardrail that cannot fire in the repository that ships it is one nobody has ever seen work.**
 
 `approved` is deliberately not a terminal status, and a test pins that. Treating it as one blocks a human approving a brand-new spec and demands an audit of an implementation that does not exist yet, which is the normal workflow here.
 

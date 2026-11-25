@@ -2,13 +2,13 @@
 
 Canonical rules for every AI agent working here, whatever the harness. `CLAUDE.md` imports this file. It holds rules only: the reason and the incident behind each one are one link away in [`docs/rationale/agents-md.md`](docs/rationale/agents-md.md), and the layout in detail is in [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
 
-This repo is **Zen Agent Skills**: a portable, cross-harness library of agent skills, plus the tooling that installs them. It tracks itself with its own `init-worktracking` system: strategy in [`ROADMAP.md`](ROADMAP.md), atomic work in [`.tasks/`](.tasks/), finished work in [`CHANGELOG.md`](CHANGELOG.md), older ledger entries in [`docs/history/`](docs/history/README.md).
+This repo is **Zen Agent Skills**: a portable, cross-harness library of agent skills, plus the tooling that installs them. It tracks itself with its own `init-worktracking` system: strategy in [`ROADMAP.md`](ROADMAP.md), atomic work in [`.quests/`](.quests/), finished work in [`CHANGELOG.md`](CHANGELOG.md), older ledger entries in [`docs/history/`](docs/history/README.md).
 
 **Quality bar: library.** The kit ships to adopters: every change is tested and reviewed, and a skill's interface, a template or a file format is a contract that changes only deliberately.
 
 ## 0. Reading protocol
 
-An agent assigned a task reads exactly: this file in full; its one task file in `.tasks/<id>.md`; and only the files that task names in `touched_files`, plus any file its body points to. Do not scan `.tasks/`, read other agents' task files, or read `ROADMAP.md` or `CHANGELOG.md` unless your task cites them. If a `depends_on` task is not yet in `.tasks/done/`, stop and report the blocker.
+An agent assigned a quest reads exactly: this file in full; its one quest file in `.quests/<id>.md`; and only the files that quest names in `touched_files`, plus any file its body points to. Do not scan `.quests/`, read other agents' quest files, or read `ROADMAP.md` or `CHANGELOG.md` unless your quest cites them. If a `depends_on` quest is not yet in `.quests/done/`, stop and report the blocker.
 
 ## 1. What this repository is
 
@@ -23,24 +23,24 @@ A skills library, not an application: the deliverables are the skills and the to
 | [`.agents/hooks/`](.agents/hooks/) | Optional guardrails, opt-in: a *reminder* never blocks, a *gate* blocks only on a decidable condition. [Contract](.agents/hooks/README.md). |
 | [`.claude-plugin/`](.claude-plugin/) | Generated marketplace, never edited by hand. A change to a shipped skill or a lens regenerates it with `build-adapters.py --marketplace` in the same commit. |
 | [`scripts/`](scripts/) | Distribution tooling, which ships, and maintainer tooling (`observatory/`), which no adopter receives. |
-| [`.tasks/`](.tasks/), [`docs/spec/`](docs/spec/), [`tests/`](tests/) | Work items; behavioural contracts and their reports; tests derived from those contracts. |
+| [`.quests/`](.quests/), [`docs/spec/`](docs/spec/), [`tests/`](tests/) | Work items; behavioural contracts and their reports; tests derived from those contracts. |
 
 `ROADMAP.md` is authoritative for what happens next; [`docs/CATALOG.md`](docs/CATALOG.md) is the narrative for readers.
 
 ## 3. Work lifecycle
 
-Altitudes: Epic and Feature live in `ROADMAP.md`; a Task is `.tasks/<id>.md`, whose `parent:` links back up; acceptance is the task file's mechanical criteria. Decompose a Feature into task files only when it is about to be built.
+Altitudes: a **Campaign** and its **Quest chains** live in `ROADMAP.md`; a **Quest** is `.quests/<id>.md`, whose `parent:` links back up; a quest in no chain is a **Side quest**, whose `parent:` names the Campaign. Acceptance is the quest file's mechanical criteria. Decompose a Quest chain into quest files only when it is about to be built. Ids keep their kind prefixes (`feat-`, `bug-`, `chore-`). The terms, with their old names Epic, Feature and Task, are in [`GLOSSARY.md`](GLOSSARY.md); an adopter's `.tasks/` is still read as `.quests/`.
 
 Lifecycle `open -> in_progress -> done`. On completion:
 
-1. The acceptance command passes, and every `depends_on` is in `.tasks/done/`.
+1. The acceptance command passes, and every `depends_on` is in `.quests/done/`.
 2. Run `doc-sync` over the reader-facing documents; apply or dismiss each finding.
-3. If the task declares a `spec`, bring its `<spec>.conformance.md` up to date with `spec-conformance`, or record the deferral. Deferring is legal: an unbuilt scenario is recorded as not built, never invented. A matrix written to satisfy this step is worse than no matrix.
-4. Move the file to `.tasks/done/` with `status: done`, and re-anchor its relative links for the extra directory level.
-5. Add one dated line to `CHANGELOG.md`, at most about 300 characters, linking the task file for detail.
-6. Strike the roadmap Feature through if it is complete.
+3. If the quest declares a `spec`, bring its `<spec>.conformance.md` up to date with `spec-conformance`, or record the deferral. Deferring is legal: an unbuilt scenario is recorded as not built, never invented. A matrix written to satisfy this step is worse than no matrix.
+4. Move the file to `.quests/done/` with `status: done`, and re-anchor its relative links for the extra directory level.
+5. Add one dated line to `CHANGELOG.md`, at most about 300 characters, linking the quest file for detail.
+6. Strike the roadmap Quest chain through if it is complete.
 
-**A spec is earned, not a default**: the spec chain is for behaviour a person must agree before it is built. A task that changes no behavioural contract declares no `spec`.
+**A spec is earned, not a default**: the spec chain is for behaviour a person must agree before it is built. A quest that changes no behavioural contract declares no `spec`.
 
 ## 4. Skill structure
 
@@ -85,7 +85,7 @@ Hook activation is the adopter's, with one exception here: [`.claude/settings.js
 
 ### Provenance
 
-Material adapted from elsewhere carries a provenance block. The convention (fields, placement, digest rules) is in [`CONTRIBUTING.md`](CONTRIBUTING.md#provenance-for-material-folded-in-from-elsewhere). Run [`check-provenance.py`](scripts/check-provenance.py) only when your task names it, never because a footer mentions it (`A10` in [`autonomy.md`](.agents/rules/autonomy.md)).
+Material adapted from elsewhere carries a provenance block. The convention (fields, placement, digest rules) is in [`CONTRIBUTING.md`](CONTRIBUTING.md#provenance-for-material-folded-in-from-elsewhere). Run [`check-provenance.py`](scripts/check-provenance.py) only when your quest names it, never because a footer mentions it (`A10` in [`autonomy.md`](.agents/rules/autonomy.md)).
 
 ## 7. Contribution bar
 

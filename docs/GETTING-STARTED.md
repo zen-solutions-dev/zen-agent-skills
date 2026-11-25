@@ -213,7 +213,7 @@ Try:
 
 The `grill` skill asks a few questions at a time, each with a recommended answer you can accept with a "yes". It looks facts up in the project rather than asking you, so the questions that reach you are real decisions. It ends with a short record of what you decided.
 
-Then turn the decisions into work. For a small change, `new-task` writes one task with a clear acceptance check. For behaviour someone has to agree before it is built, `spec-author` writes a short specification first and waits for your approval. If you are unsure which, ask `zen`, the router (in the plugin, or `--profile all` with the installer).
+Then turn the decisions into work. For a small change, `new-quest` writes one task with a clear acceptance check. For behaviour someone has to agree before it is built, `spec-author` writes a short specification first and waits for your approval. If you are unsure which, ask `zen`, the router (in the plugin, or `--profile all` with the installer).
 
 ### 7. Work in small loops
 
@@ -268,7 +268,7 @@ python scripts/build-adapters.py --target cursor,vscode --out <path-to-your-proj
 
 The `init-worktracking` skill offers three footprints:
 
-- 🪶 **Lite:** basic agent instructions and task files. Good for a solo project or a small experiment.
+- 🪶 **Lite:** basic agent instructions and quest files. Good for a solo project or a small experiment.
 - 🗺️ **Standard:** lite plus a roadmap and changelog. Good for most projects.
 - 👥 **Team:** standard plus mechanical enforcement, wiring the validator into CI or a pre-commit hook. Good for teams, multiple agents, or projects where drift is expensive. The validator itself ships at every tier.
 
@@ -331,7 +331,7 @@ Install the skills for your tool, then use one skill when the need appears. If y
 
 This approach is useful when your existing task or project-management system already works for you.
 
-Even with the full system in place, most changes do not need all of it. The README's [choosing a path](../README.md#choosing-a-path) section says which changes are made directly, which get a task file, and which earn a written specification first.
+Even with the full system in place, most changes do not need all of it. The README's [choosing a path](../README.md#choosing-a-path) section says which changes are made directly, which get a quest file, and which earn a written specification first.
 
 ## 👥 The collaboration journey
 
@@ -344,7 +344,7 @@ flowchart LR
   A[Idea or request] --> Z[grill]
   Z --> B[spec-author]
   B --> C[You approve the specification]
-  C --> D[new-task]
+  C --> D[new-quest]
   D --> E[Agent or builder does the work]
   E --> F[test-author]
   F --> G[spec-conformance]
@@ -359,7 +359,7 @@ A typical collaboration loop is:
 
 0. 🔥 `grill` interviews you about the idea until every decision is made, and `spec-author` runs the same interview before it writes anything.
 1. 📜 `spec-author` turns a rough idea into a written specification of what the result should do, then stops and waits for you to approve it. Nothing is built until you do.
-2. 📝 `new-task` breaks the approved specification into focused tasks, each small enough for one fresh agent session.
+2. 📝 `new-quest` breaks the approved specification into focused tasks, each small enough for one fresh agent session.
 3. 🧑‍💻 A builder or agent completes the task.
 4. ✅ The acceptance command proves the intended result.
 5. 🧪 `test-author` derives tests from the specification, so each test traces back to the behavior it protects.

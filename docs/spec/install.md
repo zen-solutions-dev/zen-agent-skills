@@ -67,6 +67,12 @@ old headline overstated a Claude Code session's cost by every user-invoked descr
 on `all`, measured 2026-11-24). The same amendment adds one closing line to an install run: a pointer
 to the per-repository setup step, because placing the skills is half of adopting them.
 
+**Amended 2026-11-25 (`feat-0101`), under the round 2 plan the maintainer approved that day
+(decision R2-4, the rename from tasks to quests). Pending the maintainer's re-approval of this
+amendment in the round 2 pull request.** `S-030` is added: a renamed skill's old name stays an
+alias, so `--skills new-task` places `new-quest`, and a placement this tool recorded under the old
+name, whose source no longer exists, is retired by the next placing run.
+
 **Amended 2026-07-28 (`bug-0003`) and re-approved by the author on 2026-07-28.** S-007 was scoped to
 the home it was given and S-012 was added. The original wording, "remove the recorded targets and empty the record",
 was satisfied by an implementation that removed every recorded target from every home ever installed
@@ -484,6 +490,20 @@ overwritten exists only as a branch.
 - **And** a record whose bytes do not parse at all is read as no record, as a deleted one is per
   `S-005`, since it never named an install; and a key the tool does not recognise leaves a record
   valid, so a record written by a later version is not mistaken for damage.
+
+### Scenario S-030: a renamed skill's old name is an alias
+
+Added 2026-11-25 by `feat-0101`.
+
+- **Given** a skill that was renamed, recorded in the tool's table of old and new names
+  (`new-task`, now `new-quest`)
+- **When** `--skills` names the old name
+- **Then** the tool says the skill was renamed and places the new one, with its closure, as if the
+  new name had been given.
+- **And when** a placing run finds a target this tool recorded under the old name, in a tool
+  directory it is placing into
+- **Then** it removes that target and its entry in the record, and reports it as `retired`, naming
+  the new name; a target under the old name that the record does not name is left alone.
 
 ## Proposed Surface
 

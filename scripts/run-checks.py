@@ -4,7 +4,7 @@
 One command, one exit code, no flags. This exists because until now the seven gates
 lived only as seven separate steps in .github/workflows/checks.yml, so the only ways to
 get the answer were to push and read CI, or to run seven commands by hand and remember
-all seven. Measured 2026-08-07: the 97 acceptance chains across .tasks/ and .tasks/done/
+all seven. Measured 2026-08-07: the 97 acceptance chains across .quests/ and .quests/done/
 run one, two, three, or five commands, and none of them runs the seven.
 
 For a person that is friction. For an agent working unattended it is disqualifying: it
@@ -190,15 +190,15 @@ STALE_HEADER = re.compile(r"Last updated:.{0,20}?\d{4}-\d{2}-\d{2}")
 
 
 def task_locations(repo_root=None):
-    """Every task id under `.tasks/`, mapped to the directories holding it.
+    """Every task id under `.quests/`, mapped to the directories holding it.
 
     A set rather than a string, because an id sitting in both directories is a real state
     this must not silently resolve to one of them.
     """
     repo_root = REPO_ROOT if repo_root is None else Path(repo_root)
     found = {}
-    for directory, where in ((repo_root / ".tasks", "open"),
-                             (repo_root / ".tasks" / "done", "done")):
+    for directory, where in ((repo_root / ".quests", "open"),
+                             (repo_root / ".quests" / "done", "done")):
         if not directory.is_dir():
             continue
         for path in directory.glob("*.md"):
@@ -402,7 +402,7 @@ def roadmap_status_findings(text, statuses):
 
 
 def check_roadmap(repo_root=None, status_exceptions=None):
-    """The `roadmap bookkeeping` gate: does ROADMAP.md still agree with .tasks/?
+    """The `roadmap bookkeeping` gate: does ROADMAP.md still agree with .quests/?
 
     Returns (ok, report). Two of the three shapes chore-0066 mapped, and a bound naming
     what is left. The bound is not decoration. This catches the bookkeeping class and
@@ -434,7 +434,7 @@ def check_roadmap(repo_root=None, status_exceptions=None):
     for number, phrases, ids in findings:
         lines.append(
             f"{ROADMAP}:{number}: {', '.join(ids)} "
-            f"{'is' if len(ids) == 1 else 'are'} in .tasks/done/, and this block "
+            f"{'is' if len(ids) == 1 else 'are'} in .quests/done/, and this block "
             f"reads as outstanding: {'; '.join(repr(p) for p in phrases)}")
     if header:
         lines.append(
@@ -482,8 +482,8 @@ def check_roadmap(repo_root=None, status_exceptions=None):
                        f"excepted, {len(stale)} stale exception(s)")
 
     lines.append(
-        f"Checked {ROADMAP}: {len(named)} task ids named, {len(closed)} in .tasks/done/, "
-        f"{len(outstanding)} in .tasks/, {len(unresolved)} unresolved; {len(blocks)} "
+        f"Checked {ROADMAP}: {len(named)} task ids named, {len(closed)} in .quests/done/, "
+        f"{len(outstanding)} in .quests/, {len(unresolved)} unresolved; {len(blocks)} "
         f"blocks read, {len(findings)} carrying an open-state claim over a closed id; "
         f"1 header rule, {0 if header is None else 1} tripped; {status_note}. "
         f"Not judged: the "
@@ -517,7 +517,7 @@ def gates():
         Gate("test suite",
              [[PY, "-m", "unittest", "discover", "-s", "tests", "-p", "test_*.py"]],
              hermetic_home=True),
-        Gate("backlog", [[PY, ".tasks/validate.py", "--strict"]]),
+        Gate("backlog", [[PY, ".quests/validate.py", "--strict"]]),
         Gate("adapters dry run", [[PY, "scripts/build-adapters.py", "--dry-run"]]),
         # Added by feat-0079. The Claude Code marketplace is a generated tree committed
         # under .claude-plugin/, because that is what `claude plugin marketplace add`
@@ -546,7 +546,7 @@ def gates():
              [[PY, "scripts/install.py", "--with-hooks"] + install_home,
               [PY, "scripts/install.py", "--with-hooks"] + install_home],
              cleanup=[PY, "scripts/install.py", "--uninstall"] + install_home),
-        # Calls the link rule in .tasks/validate.py rather than restating it. An inline
+        # Calls the link rule in .quests/validate.py rather than restating it. An inline
         # copy of that rule drifted once already (chore-0029). Globbed rather than
         # listed, because a hardcoded list silently excludes every new document.
         #
@@ -556,7 +556,7 @@ def gates():
         # green over 9 documents of 45. The three trees are all guaranteed present here,
         # which is why no pattern needs an escape and none is offered.
         Gate("doc links",
-             [[PY, ".tasks/validate.py", "--links",
+             [[PY, ".quests/validate.py", "--links",
                "*.md", ".github/**/*.md", "docs/**/*.md"]]),
         # Added by chore-0049. The doc-links gate above resolves a markdown link's path
         # and stops there; a conformance matrix's evidence is a symbol, a test name, or a
@@ -569,7 +569,7 @@ def gates():
         # script. Nothing above reads ROADMAP.md, which AGENTS.md calls authoritative for
         # what happens next: `backlog` walks the task files, and `doc links` resolves this
         # file's link paths and stops there. So a sentence saying a task is still to be
-        # done, beside that task's own file sitting in `.tasks/done/`, passed every gate,
+        # done, beside that task's own file sitting in `.quests/done/`, passed every gate,
         # which is what chore-0066 measured when it corrected nine of them at once.
         Gate("roadmap bookkeeping", [], check=check_roadmap),
         # Added by chore-0098 (retro R-008). Runs on every change, documentation-only ones
@@ -719,7 +719,7 @@ def coverage_line(output):
 
     Every gate here already prints what it covered, and each of those counts was added
     by a task that had just been burned by its absence: `validate-skills.py`'s skill and
-    supporting-file counts, `.tasks/validate.py`'s `Checked N task files`, `install.py`'s
+    supporting-file counts, `.quests/validate.py`'s `Checked N task files`, `install.py`'s
     placed count and description budget, and `--links`'s document count. Until bug-0045
     this aggregator captured all of them and printed none, so seven gates passing over a
     full tree and seven gates passing over an empty one were byte-identical reports.

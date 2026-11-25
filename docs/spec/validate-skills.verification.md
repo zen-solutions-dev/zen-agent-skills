@@ -1,7 +1,7 @@
 ---
 title: validate-skills verification
 spec: docs/spec/validate-skills.md
-task: .tasks/done/chore-0003-test-validate-skills.md
+task: .quests/done/chore-0003-test-validate-skills.md
 verified: 2026-07-24
 verdict: pass
 ---
@@ -10,7 +10,7 @@ verdict: pass
 
 Independent verification of [`scripts/validate-skills.py`](../../scripts/validate-skills.py) against
 its approved spec [`validate-skills.md`](validate-skills.md) and the acceptance criteria of
-[`chore-0003`](../../.tasks/done/chore-0003-test-validate-skills.md). Produced as the first in-kit
+[`chore-0003`](../../.quests/done/chore-0003-test-validate-skills.md). Produced as the first in-kit
 dogfood of the `verifier-agent` skill. No file under verification was modified.
 
 ```text

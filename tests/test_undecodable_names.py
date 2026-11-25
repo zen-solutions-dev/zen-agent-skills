@@ -32,7 +32,7 @@ Walkers included:
   scripts/check-provenance.py  rglob over `.agents` and `scripts`, with an injected fetcher,
                                so no network is touched
   scripts/scan-secrets.py      both candidate sources: the `os.walk` fallback and `git ls-files`
-  .tasks/validate.py           not under scripts/, but it globs and rglobs `.tasks/`
+  .quests/validate.py           not under scripts/, but it globs and rglobs `.quests/`
   scripts/run-checks.py        the roadmap gate's walk over `.agents/skills/*/SKILL.md`
                                (added by feat-0094, after the landing review found it)
   .agents/hooks/install-currency-reminder.py      rglob digest and skills iterdir
@@ -89,7 +89,7 @@ ba = _load("undecodable_build_adapters", REPO_ROOT / "scripts" / "build-adapters
 cc = _load("undecodable_check_citations", REPO_ROOT / "scripts" / "check-citations.py")
 cp = _load("undecodable_check_provenance", REPO_ROOT / "scripts" / "check-provenance.py")
 ss = _load("undecodable_scan_secrets", REPO_ROOT / "scripts" / "scan-secrets.py")
-tv = _load("undecodable_tasks_validate", REPO_ROOT / ".tasks" / "validate.py")
+tv = _load("undecodable_tasks_validate", REPO_ROOT / ".quests" / "validate.py")
 rc = _load("undecodable_run_checks", REPO_ROOT / "scripts" / "run-checks.py")
 
 NAME_SUPPORTED = False
@@ -412,12 +412,12 @@ touched_files: []
 
 
 class TasksValidateTests(_Case):
-    """Task files are globbed from `.tasks/` and `done/`, and every Markdown file under
-    `.tasks/` is rglobbed for links."""
+    """Task files are globbed from `.quests/` and `done/`, and every Markdown file under
+    `.quests/` is rglobbed for links."""
 
     def setUp(self):
         super().setUp()
-        self.tasks = self.root / ".tasks"
+        self.tasks = self.root / ".quests"
         (self.tasks / "done").mkdir(parents=True)
         real = (tv.TASKS_DIR, tv.REPO_ROOT)
 
@@ -588,7 +588,7 @@ class RunChecksRoadmapTests(_Case):
         os.makedirs(bad)
         with open(os.path.join(bad, b"SKILL.md"), "wb") as handle:
             handle.write(b"---\nname: x\ndescription: x\nmetadata:\n  status: draft\n---\n")
-        (self.root / ".tasks" / "done").mkdir(parents=True)
+        (self.root / ".quests" / "done").mkdir(parents=True)
         (self.root / "ROADMAP.md").write_text(
             "# Roadmap\n\n## Current state\n\n- **Drafts**: `alpha`.\n", encoding="utf-8")
         gate = rc.Gate("roadmap bookkeeping", [],

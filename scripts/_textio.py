@@ -29,7 +29,7 @@ Standard library only, per the conventions section of `AGENTS.md`.
 Not shipped to adopters
 -----------------------
 This module is imported by the distribution scripts and reaches no adopter tree, so it carries
-no portability contract of its own. `.tasks/validate.py` deliberately does **not** import it and
+no portability contract of its own. `.quests/validate.py` deliberately does **not** import it and
 carries its own copy, because that file is a template `init-worktracking` writes into other
 repositories, where nothing named `scripts/` exists. A test asserts the two produce the same
 message rather than trusting that they still do.

@@ -241,7 +241,7 @@ Facts are values someone will need again, written down while the screen is in fr
 
 ## Quests and the route
 
-A quest is one run of work, in order, usually one call or one person's sitting. The `quests` list is the route to the goal:
+A quest is one run of work, in order, usually one call or one person's sitting. The `quests` list is the route to the goal. A tracker's quest lives on this page: it is not a quest file in a repository's `.quests/`, the kit's tracker directory, though a step may name one by its id.
 
 ```js
 { tone: "accent", short: "2 Partner call", title: "2. Partner call: accounts and hosting prep",

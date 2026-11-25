@@ -4,7 +4,7 @@ description: >-
   Drafts a behavioral spec from a raw idea, feature request, or bug before any tasks or code:
   interviews the person with grill, writes Given/When/Then scenarios with stable S-NNN ids,
   self-checks with spec-quality until ready, saves it with status draft, and stops for human
-  approval. Use for "spec this out" or "write a contract for X". new-task decomposes the approved
+  approval. Use for "spec this out" or "write a contract for X". new-quest decomposes the approved
   spec.
 license: MIT
 ---
@@ -13,7 +13,7 @@ license: MIT
 
 Draft a durable behavioral contract from a raw idea, then stop. A spec says **what** should be true
 and **why** it matters; it is not a plan, an architecture brief, a task list, or a test design. The
-chain is: `spec-author` drafts, a human approves, `new-task` decomposes, `spec-plan-readiness` gates
+chain is: `spec-author` drafts, a human approves, `new-quest` decomposes, `spec-plan-readiness` gates
 the decomposition, and `spec-conformance` later audits the build against the same scenarios.
 
 This skill composes two others rather than restating them: [`grill`](../grill/SKILL.md) for the
@@ -26,7 +26,7 @@ it.
 - There is no spec yet for behavior someone is about to decompose into tasks.
 - An existing spec needs revising back to a `ready` state.
 
-Skip it for a single obvious change with nothing to agree: write the task directly with `new-task`.
+Skip it for a single obvious change with nothing to agree: write the task directly with `new-quest`.
 To review a spec without authoring one, run `spec-quality` alone.
 
 ## Where the spec goes
@@ -36,7 +36,7 @@ so, and say when you discovered the location instead. A key the file does not se
 value outside its allowed set, is discovered instead, and so is a path it names that does not exist,
 saying that the configured path was missing. Ask the person when discovery finds several candidates.
 When the block does not parse or names a newer `config_version`, use none of it and say that
-`python .tasks/validate.py` shows why. Otherwise find the repository's spec location before
+`python .quests/validate.py` (`.tasks/validate.py` where the tracker keeps its old name) shows why. Otherwise find the repository's spec location before
 writing: an existing directory such as `docs/spec/`, `specs/`, `docs/rfcs/`, or `design/`, and how the specs
 there are named. Match it. Only when the repository has none does `docs/spec/<slug>.md` apply, as
 this kit's default. When the convention is ambiguous, ask.
@@ -160,7 +160,7 @@ Summarize: scenario count, surface elements, and any Open Questions needing the 
 List the terms the interview settled and any decision-record candidates, and offer to run
 `domain-language` on them as its own step.
 State that the spec is `status: draft` and that a human must set `status: approved`, with the
-`approved_digest` that `scripts/spec_digest.py` prints for it, before `new-task` decomposes it. Do
+`approved_digest` that `scripts/spec_digest.py` prints for it, before `new-quest` decomposes it. Do
 not decompose it, and do not treat your draft as approved. For an amendment, say instead that
 `status` was left `approved`, that the dated note records the amendment as pending re-approval, and,
 when the spec carried a digest, that it now reads `changed` until the person re-approves.

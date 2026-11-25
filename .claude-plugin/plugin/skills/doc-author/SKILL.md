@@ -52,7 +52,7 @@ Done when the script compiles, each stage traces to a step a stranger could foll
 
 ## Bootstrap mode (new repo)
 
-When the user is starting a fresh repository and wants the baseline set, produce the trio: a pointer `CLAUDE.md` or `AGENTS.md`, an `ARCHITECTURE.md` with Mermaid diagrams, and a `README.md` at the reader level they name. Do not scaffold the work-tracking system here; if the user wants task tracking, defer to the `init-worktracking` skill, which owns `AGENTS.md` rules, `ROADMAP.md`, and `.tasks/`. For a full new-repo setup (a language-aware scaffold plus tracking), `project-bootstrap` is the umbrella front door that composes this skill with `init-worktracking`. This skill and those are designed to compose, not overlap.
+When the user is starting a fresh repository and wants the baseline set, produce the trio: a pointer `CLAUDE.md` or `AGENTS.md`, an `ARCHITECTURE.md` with Mermaid diagrams, and a `README.md` at the reader level they name. Do not scaffold the work-tracking system here; if the user wants task tracking, defer to the `init-worktracking` skill, which owns `AGENTS.md` rules, `ROADMAP.md`, and `.quests/`. For a full new-repo setup (a language-aware scaffold plus tracking), `project-bootstrap` is the umbrella front door that composes this skill with `init-worktracking`. This skill and those are designed to compose, not overlap.
 
 Done when the three files exist, each opens with what it is and who it is for, and tracking was deferred to `init-worktracking` if wanted.
 

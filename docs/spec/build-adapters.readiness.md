@@ -1,7 +1,7 @@
 ---
 title: build-adapters readiness
 spec: docs/spec/build-adapters.md
-task: .tasks/done/feat-0028-exercise-spec-plan-readiness-blocking.md
+task: .quests/done/feat-0028-exercise-spec-plan-readiness-blocking.md
 gated: 2026-07-27
 verdict: blocked
 branch_exercised: spec-plan-readiness blocking paths
@@ -11,7 +11,7 @@ branch_exercised: spec-plan-readiness blocking paths
 
 A [`spec-plan-readiness`](../../.agents/skills/spec-plan-readiness/SKILL.md) run over
 [`build-adapters.md`](build-adapters.md) plus its proposed task decomposition
-([`chore-0015`](../../.tasks/done/chore-0015-state-build-adapters-overwrite-asymmetry.md)), performed
+([`chore-0015`](../../.quests/done/chore-0015-state-build-adapters-overwrite-asymmetry.md)), performed
 2026-07-27 to exercise the last of the three branches named in ROADMAP Epic A item 8.
 
 Format reused from [`house-review.verification.md`](house-review.verification.md).
@@ -20,7 +20,7 @@ Format reused from [`house-review.verification.md`](house-review.verification.md
 
 The question asked was the one the gate exists to answer, at the moment it is normally asked: work is
 about to start on `chore-0015`, so may it? Both inputs are real and neither was arranged to fail. The
-spec is approved, thirteen scenarios, `Open Questions: None`. The task was authored to the `new-task`
+spec is approved, thirteen scenarios, `Open Questions: None`. The task was authored to the `new-quest`
 bar as an ordinary piece of work, with honest `touched_files`, a real parent, resolved `depends_on`,
 and a mechanically-verifiable acceptance command.
 
@@ -92,9 +92,9 @@ either document: `chore-0015` reads as a complete task, `build-adapters.md` read
 contract, and only holding them together shows that the work has nothing to trace to. That is the
 gate's actual argument for existing, and it only appears on the non-short-circuit path.
 
-**The gate found a defect in a task written to the `new-task` bar hours earlier.** `chore-0015` has
+**The gate found a defect in a task written to the `new-quest` bar hours earlier.** `chore-0015` has
 honest `touched_files`, a real parent, and a verifiable acceptance command, and it still fails the
-deterministic risk rule, because `new-task` never prompts for risk or rollback notes and its template
+deterministic risk rule, because `new-quest` never prompts for risk or rollback notes and its template
 has no section for them. That is a genuine seam between the two skills, not a flaw in this task, and
 it is the second time this session that the spine's front half and back half have disagreed about
 what a task file must carry. The first was task-to-scenario traceability (`feat-0025`).

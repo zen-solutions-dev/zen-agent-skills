@@ -152,7 +152,7 @@ KIT_SKILL_NAMES = frozenset({
     "human-handoff",
     "improve-architecture",
     "init-worktracking",
-    "new-task",
+    "new-quest",
     "orchestrate",
     "pr-describe",
     "project-bootstrap",

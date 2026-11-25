@@ -1,6 +1,6 @@
 # Changelog archive: 2026-07
 
-Task-log entries from [`CHANGELOG.md`](../../CHANGELOG.md) dated 2026-07, newest first, moved here unchanged on 2026-11-24 by [`chore-0100`](../../.tasks/done/chore-0100-marjana-context-and-ledgers.md) except that every relative link is re-anchored for this directory. The [index](README.md) lists every archive.
+Task-log entries from [`CHANGELOG.md`](../../CHANGELOG.md) dated 2026-07, newest first, moved here unchanged on 2026-11-24 by [`chore-0100`](../../.quests/done/chore-0100-marjana-context-and-ledgers.md) except that every relative link is re-anchored for this directory. The [index](README.md) lists every archive.
 
 ## Task log
 

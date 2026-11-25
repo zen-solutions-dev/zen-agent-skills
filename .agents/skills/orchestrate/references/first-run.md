@@ -10,7 +10,7 @@ skill was written during that run by one of its children (WS-C), so this records
 moment WS-C was briefed, not its end. By then the orchestrator had cut the integration branch
 `zen/marjana-2026-11-24`, landed two research children's reports (`2940be0`), taken a decision round
 with the maintainer, and planned five workstream children, each on `zen/marjana-<workstream>`, with
-reserved task ids and disjoint owned paths. The plan it committed is in the Zen Agent Skills
+reserved quest ids and disjoint owned paths. The plan it committed is in the Zen Agent Skills
 repository at `docs/reviews/2026-11-24-marjana-plan.md` (commit `9598355`).
 
 What the orchestrator reported learning, as of 2026-11-24:
@@ -33,7 +33,7 @@ What the orchestrator reported learning, as of 2026-11-24:
 7. **The decision round asked only one-way-door questions**, four of them, each standing on its own
    with the recommended option first (Step 1). Everything reversible proceeded and was recorded with
    its revert.
-8. **Reserve task ids up front, give each child disjoint paths, and give each shared ledger exactly
+8. **Reserve quest ids up front, give each child disjoint paths, and give each shared ledger exactly
    one owner** (Step 2). The plan gave `CHANGELOG.md` and `ROADMAP.md` to one workstream and told the
    others to pass their lines under "Notes for integration"; whether that held is for the run's own
    record, not this note.

@@ -30,6 +30,11 @@ Non-Goal and the registration Constraint now say the session-start hook is wired
 opencode as well. `S-032` still holds there, because the sitrep counts as installed only when
 the skill sits in the person's own user-scope install.
 
+**Amended 2026-11-25 by `feat-0101`** (the rename from tasks to quests, maintainer decision R2-4 in
+the [round 2 plan](../reviews/2026-11-25-marjana-r2-plan.md)): task files are read from `.quests/`,
+and from `.tasks/`, the old name, as an alias (S-010 as amended, new S-041). **This amendment needs
+the maintainer's re-approval in the round 2 pull request.**
+
 ## Problem
 
 Agent sessions produce work faster than the person directing them can hold its state, and that state
@@ -115,7 +120,9 @@ far to trust a number.
   [`install.md`](install.md).
 - Task files are read in the format that
   [`init-worktracking`](../../.agents/skills/init-worktracking/SKILL.md) scaffolds: frontmatter `id`,
-  `title`, `status`, `priority` and `depends_on`, with completed tasks under `.tasks/done/`.
+  `title`, `status`, `priority` and `depends_on`, with completed tasks under `.quests/done/`.
+  A repository scaffolded before the rename to quests keeps them under `.tasks/` and `.tasks/done/`,
+  and is read the same way (S-041).
 - The tier ladder and the status meanings under Proposed Surface are the single definition. The rules
   module that restates them for agents uses the same names.
 
@@ -151,7 +158,7 @@ far to trust a number.
 
 ### Scenario S-005: a closed task never waits on the person
 
-- **Given** a task file under `.tasks/done/` whose body has an `Open question` heading with no
+- **Given** a task file under `.quests/done/` whose body has an `Open question` heading with no
   `Decision` heading below it
 - **When** the board is generated
 - **Then** the task is not listed under waiting on you
@@ -164,7 +171,7 @@ far to trust a number.
 
 ### Scenario S-007: a task with an unfinished dependency is blocked
 
-- **Given** an open task whose `depends_on` names a task id that has no file under `.tasks/done/`
+- **Given** an open task whose `depends_on` names a task id that has no file under `.quests/done/`
 - **When** the board is generated
 - **Then** blocked lists the task and names each dependency that is not done
 
@@ -184,14 +191,14 @@ far to trust a number.
 
 ### Scenario S-010: a repository without task tracking still gets a board
 
-- **Given** a git repository with no `.tasks/` directory
+- **Given** a git repository with neither a `.quests/` nor a `.tasks/` directory
 - **When** the board is generated
 - **Then** the board carries in flight and changed since you caught up, carries the notice
   `no task tracking`, and lists nothing under waiting on you or blocked
 
 ### Scenario S-011: changes since the watermark are summarised
 
-- **Given** that since the watermark one task file moved into `.tasks/done/` and another task file
+- **Given** that since the watermark one task file moved into `.quests/done/` and another task file
   changed in place
 - **When** the board is generated
 - **Then** changed since you caught up gives the number of commits since the watermark, lists the
@@ -404,6 +411,16 @@ far to trust a number.
 - **When** the next board is generated
 - **Then** that session does not move the person's watermark
 
+
+### Scenario S-041: the tracker's old name is read
+
+Added 2026-11-25 by `feat-0101`.
+
+- **Given** a repository whose task files sit under `.tasks/` and `.tasks/done/`, the tracker's name
+  before the rename to quests, or whose history moves them from there to `.quests/`
+- **When** the board is generated
+- **Then** the files are read as they would be under `.quests/`, and a file already under a `done/`
+  directory that only moved between the two names is not listed as closed
 ## Proposed Surface
 
 ### Terms

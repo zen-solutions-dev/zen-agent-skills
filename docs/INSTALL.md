@@ -33,7 +33,7 @@ What you get:
 - **Every shipped skill, and no draft.** Drafts are tried with the installer's `--include-drafts`, below.
 - **The rules module inside the plugin**, at the same relative place the skills' own lens links point to, so `house-review` arrives with its rubric and every skill with its house style. Claude Code copies a plugin to its own cache on install, and nothing outside the plugin directory travels, which is why the lenses live inside it.
 - **User-invoked skills that cost no context.** A skill the kit declares as started by a person carries `disable-model-invocation: true` in the plugin copy, so its description is never loaded; run it by name.
-- **Namespaced names.** Plugin skills are invoked as `/zen-agent-skills:<skill>`, for example `/zen-agent-skills:new-task`.
+- **Namespaced names.** Plugin skills are invoked as `/zen-agent-skills:<skill>`, for example `/zen-agent-skills:new-quest`.
 
 **Updating.** The plugin's version is generated from a digest of its content, so it changes exactly when a skill or lens does. Claude Code turns auto-update on by default only for official marketplaces, so for this one either turn it on (run `/plugin`, open the **Marketplaces** tab, select `zen-agent-skills`, enable auto-update), or update by hand:
 
@@ -52,7 +52,7 @@ The plugin tree is committed under [`.claude-plugin/`](../.claude-plugin/) and g
 
 ## Or install with the Python installer
 
-The installer places skills into Claude Code's and OpenCode's own discovery directories, where they keep their plain names (`/new-task`). Use it for OpenCode, to choose exactly which skills to place, to try drafts, to place the optional hooks, or to own the rules module.
+The installer places skills into Claude Code's and OpenCode's own discovery directories, where they keep their plain names (`/new-quest`). Use it for OpenCode, to choose exactly which skills to place, to try drafts, to place the optional hooks, or to own the rules module.
 
 ### Get the kit
 
@@ -176,7 +176,7 @@ Defaulting to `spine` means `agent-handoff` and `human-handoff` are not placed. 
 Name them instead of a profile. The run places each named skill plus every skill it composes through a sibling link, and prints that closure before placing anything:
 
 ```bash
-python scripts/install.py --skills new-task --dry-run
+python scripts/install.py --skills new-quest --dry-run
 python scripts/install.py --skills pr-describe,init-worktracking
 ```
 
@@ -281,7 +281,7 @@ Every request a Claude Code session sends carries more than your instruction fil
 
 ## Use a skill
 
-Ask the installed harness to use a skill by name, or select the generated rule or prompt in the target project. Begin with a workflow skill such as `project-bootstrap`, `init-worktracking`, or `new-task`. Read the skill's `SKILL.md` when you need the complete procedure and acceptance criteria.
+Ask the installed harness to use a skill by name, or select the generated rule or prompt in the target project. Begin with a workflow skill such as `project-bootstrap`, `init-worktracking`, or `new-quest`. Read the skill's `SKILL.md` when you need the complete procedure and acceptance criteria.
 
 ## Validate changes
 

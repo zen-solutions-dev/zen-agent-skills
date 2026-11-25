@@ -245,13 +245,13 @@ went on carrying a prompt that told a session to implement a finished task. This
 it, and could not have with the question it was asking: every row here compares one document against
 the code it describes, and the defect lived between three documents that were each individually
 correct. `S-017` and `S-018` now name
-[`bug-0020`](../../.tasks/done/bug-0020-check-unknown-remedy-is-wrong-for-the-adopted-lens.md), which is
+[`bug-0020`](../../.quests/done/bug-0020-check-unknown-remedy-is-wrong-for-the-adopted-lens.md), which is
 open, is a defect in `scripts/install.py` so `S-018`'s wording stays literally true, and whose first
 acceptance criterion already requires a test failing against the current message. **The three rows
 stay Not-built.** The amendment makes the run specifiable; only the run moves them.
 
 **A small inconsistency found while grounding the S-008 rows, recorded rather than fixed.**
-[`bug-0021`](../../.tasks/done/bug-0021-reachability-counts-any-skill-not-a-kit-skill.md) declares
+[`bug-0021`](../../.quests/done/bug-0021-reachability-counts-any-skill-not-a-kit-skill.md) declares
 `docs/spec/cloud-executable.md` in its `touched_files`, and the spec's git history shows it made no
 edit to that file. That is the correct outcome, since the contract already asked the narrower
 question and the code moved to it, and the task's own body says so. The stale frontmatter entry is

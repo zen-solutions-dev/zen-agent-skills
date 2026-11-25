@@ -49,7 +49,7 @@ seam on what a test there catches and what it misses. Prefer the narrow interfac
 module**, one that hides a lot behind a little, because tests there survive refactors.
 
 Ask the person to confirm. When no person is available, as in an unattended run, choose the seams
-yourself and record them, with the reason for each, as a decision in the task file or the run's
+yourself and record them, with the reason for each, as a decision in the quest file or the run's
 report rather than blocking.
 
 Done when every seam you will test is confirmed or recorded, and no test is planned at a seam that

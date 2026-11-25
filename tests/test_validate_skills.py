@@ -319,7 +319,7 @@ class TestFrontmatterParseability(unittest.TestCase):
     def test_plain_scalar_with_a_colon_errors(self):
         # Scenario S-019: the exact construct that shipped in eight skills.
         desc = ("Scaffold a work-tracking system into the current repository: AGENTS.md, a "
-                ".tasks/ directory, and a validate.py checker. Use it when setting one up.")
+                ".quests/ directory, and a validate.py checker. Use it when setting one up.")
         _write_skill(self.root, "alpha", GOOD_FM.format(name="alpha", desc=desc))
         code, out = _run(self.root)
         self.assertEqual(code, 1)
@@ -338,7 +338,7 @@ class TestFrontmatterParseability(unittest.TestCase):
         # Scenario S-019 (negative): this is the fix bug-0007 applied to all eight, so a
         # false positive here would reject the corrected tree.
         frontmatter = ("---\nname: alpha\ndescription: >-\n"
-                       "  Scaffold a system into this repository: AGENTS.md and a .tasks/ directory,\n"
+                       "  Scaffold a system into this repository: AGENTS.md and a .quests/ directory,\n"
                        "  which is what you want when setting one up for the first time.\n---\n")
         _write_skill(self.root, "alpha", frontmatter)
         code, out = _run(self.root)
@@ -1280,14 +1280,14 @@ class TestSupportingFileLinkChecks(unittest.TestCase):
 
     def test_a_template_suffix_file_is_not_checked(self):
         # The stated exclusion, pinned. `AGENTS.md.tmpl` is written into an adopter's
-        # repository root, where `.tasks/` and `ROADMAP.md` resolve; here they resolve
+        # repository root, where `.quests/` and `ROADMAP.md` resolve; here they resolve
         # nowhere, and reporting them would make the rule unusable. Both a plain relative
         # target and one that escapes the shipped tree are covered, because the exclusion
         # is at the file level and not per-rule.
         _write_skill(self.root, "alpha", GOOD_FM.format(name="alpha", desc=LONG_DESC))
         self._write_supporting(
             "alpha", "templates/AGENTS.md.tmpl",
-            "Work lives in [`.tasks/`](.tasks/) and history in "
+            "Work lives in [`.quests/`](.quests/) and history in "
             "[the log](../../../../CHANGELOG.md).\n")
         code, out = _run(self.root)
         self.assertEqual(code, 0, out)
@@ -1392,7 +1392,7 @@ class TestSupportingFileLinkChecks(unittest.TestCase):
         # feat-0072 added `quest-tracker/references/authoring-guide.md`, read in place and so
         # link-checked, and two files that are not markdown: the template page
         # `quest-tracker/templates/quest-tracker.html` and `quest-tracker/scripts/tracker.py`.
-        # feat-0076 added three read-in-place references: `new-task/references/why-these-rules.md`
+        # feat-0076 added three read-in-place references: `new-quest/references/why-these-rules.md`
         # and the glossary and decision-record formats under `domain-language/references/`.
         # feat-0077 added four: `tdd/references/examples.md`, `fix-batch/references/
         # claude-code.md`, `reconcile-worktrees/references/lessons.md` and
@@ -1500,7 +1500,7 @@ class TestSupportingFileSuffixCase(unittest.TestCase):
         _write_skill(self.root, "alpha", GOOD_FM.format(name="alpha", desc=LONG_DESC))
         self._write_supporting(
             "alpha", "templates/AGENTS.md.TMPL",
-            "Work lives in [`.tasks/`](.tasks/) and history in "
+            "Work lives in [`.quests/`](.quests/) and history in "
             "[the log](../../../../CHANGELOG.md).\n")
         code, out = _run(self.root)
         self.assertEqual(code, 0, out)
@@ -1652,7 +1652,7 @@ class TestPortableMarkdownOutsideTheSkillsTree(unittest.TestCase):
         # chore-0036 made one level down holds here unchanged: a `.tmpl` file's links are
         # authored for its destination and are meant to dangle where it currently sits.
         self._write_beside("rules/AGENTS.md.tmpl",
-                           "Work lives in [`.tasks/`](.tasks/) and above in "
+                           "Work lives in [`.quests/`](.quests/) and above in "
                            "[the log](../../../CHANGELOG.md).\n")
         code, out = _run(self.skills)
         self.assertEqual(code, 0, out)

@@ -102,7 +102,7 @@ section.
 ## The weakest row, named rather than buried
 
 `S-007` was this matrix's weakest row and is the reason
-[`feat-0040`](../../.tasks/done/feat-0040-evidence-gate-and-finding-signature.md) was filed. The original
+[`feat-0040`](../../.quests/done/feat-0040-evidence-gate-and-finding-signature.md) was filed. The original
 audit put it this way: the skill instructed dropping any finding it could not substantiate, but
 nothing checked that a reported finding *was* substantiated, and the failure mode is invisible by
 construction, since a review full of confident, well-formatted, unverifiable findings looks exactly
@@ -139,6 +139,6 @@ They answer different questions and neither replaces the other:
 
 A spec can have one, both, or neither. The distinction is now stated in the layout table in
 `AGENTS.md` and is what the spec-closeout gate in
-[`feat-0039`](../../.tasks/done/feat-0039-spec-conformance-gate-hook.md) will look for: the gate accepts
+[`feat-0039`](../../.quests/done/feat-0039-spec-conformance-gate-hook.md) will look for: the gate accepts
 a `<stem>.conformance.*` sibling, so a `.verification.md` alone does not satisfy it, and before this
 task `house-review` would have blocked on exactly that.

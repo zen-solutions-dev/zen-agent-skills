@@ -16,7 +16,7 @@ tree as a clean, reviewable diff, or onto an integration branch: overwrite nothi
 nothing on the main checkout on the person's behalf, and never read "no conflicts reported" as
 "safe". The incidents behind each rule are in [`references/lessons.md`](references/lessons.md).
 
-This is the landing step of the spine: `new-task` authors the task files, `fix-batch` dispatches
+This is the landing step of the spine: `new-quest` authors the quest files, `fix-batch` dispatches
 them, and this skill combines changes that are already trusted. A worktree not yet verified is
 verified first: read [`verifier-agent`](../verifier-agent/SKILL.md) now and follow it, run by you or by a separate agent
 started with a **fresh context**, told it is a **leaf**, at **high effort**; never by the agent that
@@ -183,13 +183,13 @@ child sent back or undone is named with its reason, and every skipped one is nam
 
 ### Step 6: normalize split bookkeeping
 
-If task files or the changelog ended up inconsistent across worktrees, resolve them into one correct
-state in the main checkout. In this kit: one `.tasks/` file per item in its final location with
-`status: done`, every checkbox honest, and one dated `CHANGELOG.md` line per task id. Re-run each
-task's acceptance criteria and `python .tasks/validate.py` on the consolidated result before marking
+If quest files or the changelog ended up inconsistent across worktrees, resolve them into one correct
+state in the main checkout. In this kit: one `.quests/` (or, under its old name, `.tasks/`) file per item in its final location with
+`status: done`, every checkbox honest, and one dated `CHANGELOG.md` line per quest id. Re-run each
+task's acceptance criteria and `python .quests/validate.py` on the consolidated result before marking
 anything done.
 
-Done when the bookkeeping has one consistent state and `python .tasks/validate.py`, or the target
+Done when the bookkeeping has one consistent state and `python .quests/validate.py`, or the target
 repository's equivalent, passes on it.
 
 ### Step 7: present the consolidated result, and decide nothing for the person

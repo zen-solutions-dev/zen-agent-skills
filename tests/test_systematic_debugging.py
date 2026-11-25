@@ -355,7 +355,7 @@ class TestScenarios(SkillTestCase):
                                     "the hand-off to a task file does not name this field")
         self.assertContains(step, "basis for an acceptance command",
                             "the reproduction is handed over without saying what it is for")
-        self.assertContains(step, "`new-task`",
+        self.assertContains(step, "`new-quest`",
                             "the record is not connected to the skill that consumes it")
 
     # S-007: a report without any way to observe it is answered, not guessed at.

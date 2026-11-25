@@ -37,11 +37,11 @@ Look before creating anything. When the repository has `docs/agents/zen.md`, its
 say so. A key the file does not set, or sets to a value outside its allowed set, is discovered
 instead, and so is a path it names that does not exist, saying that the configured path was missing.
 Ask the person when discovery finds several candidates. When the block does not parse or names a
-newer `config_version`, use none of it and say that `python .tasks/validate.py` shows why. The
+newer `config_version`, use none of it and say that `python .quests/validate.py` (`.tasks/validate.py` where the tracker keeps its old name) shows why. The
 glossary may be `GLOSSARY.md`, `docs/glossary.md`, a "Terminology" section of a README or
 `AGENTS.md`, or a glossary per bounded context with a map file at the root. Decision records may be
 `docs/adr/`, `docs/decisions/`, `adr/`, a numbered series under another name, or no directory at
-all: many repositories record decisions in each task file's Decisions section and keep the reasoning
+all: many repositories record decisions in each quest file's Decisions section and keep the reasoning
 in a rationale directory (`docs/rationale/`). Use what you find, in its format; that convention is
 where step 4 writes.
 
@@ -102,7 +102,7 @@ Missing any one, skip it: an easy reversal will simply be reversed, an unsurpris
 defence, and a choice with no alternative has nothing to record. When one is earned and the person
 agrees, write it where step 1 found decisions recorded. When that is a record directory, create it
 only now if it does not exist, numbered after the highest existing record; when the repository
-records decisions in task files, write it as a Decisions entry in the task that carries the work,
+records decisions in quest files, write it as a Decisions entry in the task that carries the work,
 and create no record directory. Format: [references/adr-format.md](references/adr-format.md).
 
 Done when each candidate decision is recorded or explicitly judged not to earn a record.

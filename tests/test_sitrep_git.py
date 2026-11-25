@@ -85,12 +85,12 @@ class WorktreeTests(unittest.TestCase):
         in when the prototype reported nothing in progress.
         """
         repo = ThrowawayRepo(self)
-        repo.write(".tasks/feat-0001-a.md", task_text("feat-0001"))
+        repo.write(".quests/feat-0001-a.md", task_text("feat-0001"))
         repo.commit()
         target = scratch_dir(self, "sitrep-wt-") / "feature"
         run_git(repo.dir, "worktree", "add", "-q", str(target), "-b", "feature")
         (target / "new.txt").write_text("unadded work\n", encoding="utf-8")
-        (target / ".tasks" / "feat-0001-a.md").write_text(task_text("feat-0001", "edited\n"),
+        (target / ".quests" / "feat-0001-a.md").write_text(task_text("feat-0001", "edited\n"),
                                                           encoding="utf-8")
 
         board = sitrep.build_board(repo.dir)
@@ -178,12 +178,12 @@ class ChangedSinceTests(unittest.TestCase):
     def test_s011_changes_since_a_revision_are_summarised(self):
         """S-011: the commit count, the task moved into `done/` as closed, the one edited as updated."""
         repo = ThrowawayRepo(self)
-        repo.write(".tasks/feat-0001-to-close.md", task_text("feat-0001"))
-        repo.write(".tasks/feat-0002-to-edit.md", task_text("feat-0002"))
+        repo.write(".quests/feat-0001-to-close.md", task_text("feat-0001"))
+        repo.write(".quests/feat-0002-to-edit.md", task_text("feat-0002"))
         base = repo.commit("base")
-        (repo.dir / ".tasks" / "done").mkdir()
-        run_git(repo.dir, "mv", ".tasks/feat-0001-to-close.md", ".tasks/done/feat-0001-to-close.md")
-        repo.write(".tasks/feat-0002-to-edit.md", task_text("feat-0002", "\nMore detail.\n"))
+        (repo.dir / ".quests" / "done").mkdir()
+        run_git(repo.dir, "mv", ".quests/feat-0001-to-close.md", ".quests/done/feat-0001-to-close.md")
+        repo.write(".quests/feat-0002-to-edit.md", task_text("feat-0002", "\nMore detail.\n"))
         repo.commit("close one, edit one")
         repo.write("notes.txt", "unrelated\n")
         repo.commit("unrelated")
@@ -193,10 +193,40 @@ class ChangedSinceTests(unittest.TestCase):
                          {"commits": 2, "closed": ["feat-0001"], "updated": ["feat-0002"]})
 
 
+class OldTrackerNameTests(unittest.TestCase):
+    """The tracker's name before the rename to quests (feat-0101), `.tasks/`, is still read."""
+
+    def test_a_tasks_directory_is_read_as_the_tracker(self):
+        repo = ThrowawayRepo(self)
+        repo.write(".tasks/feat-0001-open.md", task_text("feat-0001"))
+        repo.write(".tasks/done/feat-0002-shut.md", task_text("feat-0002"))
+        repo.commit()
+        tasks, notices = sitrep.load_tasks(repo.dir)
+        self.assertEqual(notices, [])
+        self.assertEqual({(t["id"], t["closed"]) for t in tasks},
+                         {("feat-0001", False), ("feat-0002", True)})
+
+    def test_moving_the_tracker_to_its_new_name_closes_nothing(self):
+        """A done file that only moved from `.tasks/done/` to `.quests/done/` was closed before."""
+        repo = ThrowawayRepo(self)
+        repo.write(".tasks/feat-0001-open.md", task_text("feat-0001"))
+        repo.write(".tasks/feat-0003-to-close.md", task_text("feat-0003"))
+        repo.write(".tasks/done/feat-0002-shut.md", task_text("feat-0002"))
+        base = repo.commit("base")
+        run_git(repo.dir, "mv", ".tasks", ".quests")
+        repo.commit("rename the tracker")
+        (repo.dir / ".quests" / "done").mkdir(exist_ok=True)
+        run_git(repo.dir, "mv", ".quests/feat-0003-to-close.md",
+                ".quests/done/feat-0003-to-close.md")
+        repo.commit("close one")
+        board = sitrep.build_board(repo.dir, since=base)
+        self.assertEqual(board["changed"]["closed"], ["feat-0003"])
+        self.assertEqual(board["changed"]["updated"], [])
+
 class NoTrackingWithWorkInFlightTests(unittest.TestCase):
 
     def test_s010_a_board_without_task_tracking_carries_its_work_in_flight(self):
-        """S-010 again: with no `.tasks/`, uncommitted work still appears in flight."""
+        """S-010 again: with no `.quests/`, uncommitted work still appears in flight."""
         repo = ThrowawayRepo(self)
         repo.write("README.md", "# no task files\n")
         repo.commit()

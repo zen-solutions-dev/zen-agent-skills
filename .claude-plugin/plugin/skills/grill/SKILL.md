@@ -50,7 +50,7 @@ repository has that file and sets them; for a path no key gives, look for `GLOSS
 does not set, or sets to a value outside its allowed set, is discovered instead, and so is a path it
 names that does not exist, saying that the configured path was missing. Ask the person when
 discovery finds several candidates. When the block does not parse or names a newer `config_version`,
-use none of it and say that `python .tasks/validate.py` shows why. Use the glossary's terms in every
+use none of it and say that `python .quests/validate.py` (`.tasks/validate.py` where the tracker keeps its old name) shows why. Use the glossary's terms in every
 question.
 
 Done when you can name the first frontier, and every glossary term the request touches is one you will
@@ -129,7 +129,7 @@ questions feel like enough.
 
 ## Output: the decisions record
 
-Close with this record. `spec-author` drafts from it and `new-task`
+Close with this record. `spec-author` drafts from it and `new-quest`
 decomposes with it, so keep it plain and complete:
 
 ```markdown

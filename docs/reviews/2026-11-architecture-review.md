@@ -51,7 +51,7 @@ Terms are those of [`vocabulary.md`](../../.agents/skills/improve-architecture/r
 - **Files:** `docs/spec/README.md`; `scripts/check-citations.py` `audit`.
 - **Problem:** the index restates scenario counts that only people recompute. No script or test reads the file. The figures moved from "160 scenarios" when `chore-0075` was filed to "Twelve specs, 186 scenarios, all approved." now, by hand each time.
 - **Deepening:** `check-citations.py` counts distinct `S-NNN` per spec and fails when the index disagrees.
-- **Wins:** locality (one checker instead of every task author). Already filed as [`chore-0075`](../../.tasks/chore-0075-the-spec-readme-carries-derived-arithmetic-that-nothing-recomputes.md); this adds the hot-spot evidence.
+- **Wins:** locality (one checker instead of every task author). Already filed as [`chore-0075`](../../.quests/chore-0075-the-spec-readme-carries-derived-arithmetic-that-nothing-recomputes.md); this adds the hot-spot evidence.
 
 ### 4. Dispatch observatory routes from the report registry (Speculative, local stand-in)
 

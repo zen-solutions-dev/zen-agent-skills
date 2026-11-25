@@ -108,7 +108,7 @@ What changed because of it:
 - Findings 5 and 6 are recorded limits.
 
 The full list is in the "Independent verification" section of
-[`feat-0094`](../../../.tasks/done/feat-0094-marjana-platform-and-gates.md).
+[`feat-0094`](../../../.quests/done/feat-0094-marjana-platform-and-gates.md).
 
 Verdict on the skill: works. Its "pass" and "fail" have no middle value, so the agent reported a
 pass and listed its findings beside it, which is the honest reading. A "pass with findings" value

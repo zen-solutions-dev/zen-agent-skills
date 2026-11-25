@@ -1,6 +1,6 @@
 # Glossary
 
-The shared language of Zen Agent Skills: one word per concept, written down when it is settled so the next session starts from it. Definitions only; decisions live in the task files and decision records, and how the code implements a term lives in the code. Kept with the [`domain-language`](.agents/skills/domain-language/SKILL.md) skill.
+The shared language of Zen Agent Skills: one word per concept, written down when it is settled so the next session starts from it. Definitions only; decisions live in the quest files and decision records, and how the code implements a term lives in the code. Kept with the [`domain-language`](.agents/skills/domain-language/SKILL.md) skill.
 
 ## Evaluation
 
@@ -43,15 +43,15 @@ The branch every child session's work lands on before it reaches the person as o
 _Avoid_: staging branch, release branch
 
 **Frontier**:
-Every open decision, or every task, whose prerequisites are all settled: what can be asked or started now without guessing.
+Every open decision, or every quest, whose prerequisites are all settled: what can be asked or started now without guessing.
 _Avoid_: next steps, backlog
 
 **AFK**:
-Said of work run with nobody watching, from the brief to a reviewable result. Suits work that is well specified, low risk and easy to verify. A task declares it as `mode: afk`.
+Said of work run with nobody watching, from the brief to a reviewable result. Suits work that is well specified, low risk and easy to verify. A quest declares it as `mode: afk`.
 _Avoid_: autonomous, unattended, background
 
 **Human in the loop**:
-Said of work a person stays present for while it runs, because it holds a one-way door, a wide blast radius, or a change hard to review. A task declares it as `mode: hitl`.
+Said of work a person stays present for while it runs, because it holds a one-way door, a wide blast radius, or a change hard to review. A quest declares it as `mode: hitl`.
 _Avoid_: supervised, interactive, HITL in prose
 
 **One-way door**:
@@ -61,6 +61,52 @@ _Avoid_: irreversible change, breaking change
 **Two-way door**:
 A decision one revert undoes. An agent may take it and report it.
 _Avoid_: reversible change, low-risk change
+
+## Quests
+
+How work is tracked, from strategy down to one agent's work item (maintainer decisions R2-4 and R2-5, 2026-11-25, `feat-0101`). The old names stay recognised: a repository that still has `.tasks/` or `tracker: tasks` is read as if it said `.quests/` and `quests`.
+
+**Campaign**:
+A durable area of the work, the top altitude in `ROADMAP.md` ("Campaign A"). It holds quest chains and side quests.
+_Avoid_: epic (the old name), theme, initiative
+
+**Quest chain**:
+A scoped piece of a campaign, in `ROADMAP.md`, delivered by one or more quests and struck through when the last of them is done.
+_Avoid_: feature (the old name), milestone, story
+
+**Quest**:
+One item of work sized for one agent in one fresh context window: a file `.quests/<id>.md`, moved to `.quests/done/` when finished. Its id keeps a kind prefix and a number (`feat-0101`, `chore-0075`), and its `parent:` names the quest chain it serves.
+_Avoid_: task (the old name, and `.tasks/` the old directory), ticket, issue (an issue lives in an external tracker; a quest may link one with `external`)
+
+**Side quest**:
+A quest in no quest chain. Its `parent:` names the campaign, or in a repository without `ROADMAP.md`, one line naming the goal.
+_Avoid_: chore (a kind prefix, which says what the work is, not where it hangs), orphan task
+
+## Rarity
+
+How far a source can be trusted, marked on research notes and citations (maintainer decision R2-6, 2026-11-25). Defined here by `feat-0101`; no skill applies it yet. Lowest first.
+
+**White**:
+Unverified: a claim nobody has checked against any source.
+_Avoid_: unknown, unsourced
+
+**Green**:
+Secondary: taken from a source that reports on the primary one, such as an article, a summary or a forum answer.
+_Avoid_: weak, second-hand
+
+**Blue**:
+Checked against the source: a secondary claim someone confirmed by reading the source it reports on.
+_Avoid_: verified (says nothing about which source)
+
+**Purple**:
+Primary source cited: the claim names the primary source itself (the specification, the code, the author's own statement).
+_Avoid_: authoritative, official
+
+**Gold**:
+Primary and independently confirmed: a purple claim that a second, independent check (another primary source, a run, a measurement) agrees with.
+_Avoid_: certain, proven
+
+Not the same scale as the evidence tiers `sitrep` prints, which share the five colour names but rank how a figure on the board was derived (a hand-entered value up to a count pinned to a test), not how far a source can be trusted.
 
 ## Setup
 
@@ -72,4 +118,4 @@ _Avoid_: setting, option, preference (the file records what is, not how a skill 
 
 **Role**:
 A state a tracker item can be in that the skills act on (ready for an agent, ready for a person, needs information, blocked, out of scope), mapped to the tracker's own label.
-_Avoid_: status (a task file's lifecycle field), label (the tracker's word for one role)
+_Avoid_: status (a quest file's lifecycle field), label (the tracker's word for one role)

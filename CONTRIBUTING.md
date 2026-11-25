@@ -55,15 +55,15 @@ The pull request template asks whether you ran it, and reminds you where a closi
 
 ## How work is tracked
 
-The repository dogfoods the same system it ships. Atomic work items live in [`.tasks/`](.tasks/), the ordered plan in [`ROADMAP.md`](ROADMAP.md), and completed work in [`CHANGELOG.md`](CHANGELOG.md). You do not need to author a task file for a small fix, but for anything larger it is the fastest way to get agreement on scope before you spend time.
+The repository dogfoods the same system it ships. Atomic work items live in [`.quests/`](.quests/), the ordered plan in [`ROADMAP.md`](ROADMAP.md), and completed work in [`CHANGELOG.md`](CHANGELOG.md). You do not need to author a quest file for a small fix, but for anything larger it is the fastest way to get agreement on scope before you spend time.
 
 ## If you are an AI agent
 
-Read [`AGENTS.md`](AGENTS.md) in full first. It defines a deliberately narrow reading protocol: this file, your one assigned task file, and only the files that task names. Do not scan the whole `.tasks/` directory or read other agents' task files.
+Read [`AGENTS.md`](AGENTS.md) in full first. It defines a deliberately narrow reading protocol: this file, your one assigned quest file, and only the files that task names. Do not scan the whole `.quests/` directory or read other agents' quest files.
 
 ## Provenance for material folded in from elsewhere
 
-Moved here verbatim from `AGENTS.md` on 2026-11-24 by [`chore-0100`](.tasks/done/chore-0100-marjana-context-and-ledgers.md); `AGENTS.md` keeps a pointer. Read this section when your task folds material in from another source or touches a provenance block.
+Moved here verbatim from `AGENTS.md` on 2026-11-24 by [`chore-0100`](.quests/done/chore-0100-marjana-context-and-ledgers.md); `AGENTS.md` keeps a pointer. Read this section when your task folds material in from another source or touches a provenance block.
 
 Prose credit alone decays into folklore (the incident that taught this is in the [rationale](docs/rationale/agents-md.md)), so any file or region adapted from an external source carries a **provenance block**, and [`scripts/check-provenance.py`](scripts/check-provenance.py) re-fetches every recorded source and reports drift.
 
