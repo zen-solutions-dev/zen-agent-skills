@@ -2,7 +2,7 @@
 id: chore-0120
 title: Add the release steps a cloud session and a squash merge need to docs/RELEASING.md
 type: chore
-status: open
+status: done
 priority: P2
 parent: "ROADMAP Campaign G: rollout (docs/reviews/2026-11-25-rollout-first-adopter.md, findings 3 and 4)"
 depends_on: []
@@ -17,7 +17,7 @@ created: 2026-11-25
 
 ## Problem
 
-The v0.2.0 release on 2026-11-25 (pull request #119, merged into `main` as `e694817`) hit two steps [`docs/RELEASING.md`](../docs/RELEASING.md) does not name, recorded as findings 3 and 4 in [the first adopter run](../docs/reviews/2026-11-25-rollout-first-adopter.md):
+The v0.2.0 release on 2026-11-25 (pull request #119, merged into `main` as `e694817`) hit two steps [`docs/RELEASING.md`](../../docs/RELEASING.md) does not name, recorded as findings 3 and 4 in [the first adopter run](../../docs/reviews/2026-11-25-rollout-first-adopter.md):
 
 1. **A cloud session cannot push a tag.** Its git proxy refused the `v0.2.0` tag push with HTTP 403, so the maintainer pushed it. `RELEASING.md` already leaves tagging to the person, but does not say why a session cannot do it, nor that the commit to tag must be named by id when `main` takes squash merges (the squash commit is not the branch's head).
 2. **A squash merge into `main` leaves `developer` behind.** After the release, `main` had to be merged back into `developer` (pull request #120) so the two trees agree again. No step says so.
@@ -38,3 +38,8 @@ The v0.2.0 release on 2026-11-25 (pull request #119, merged into `main` as `e694
 
 - [ ] Acceptance command passes locally.
 - [ ] Conventions in AGENTS.md's conventions section followed.
+
+## Decisions
+
+- **A seam left open deliberately:** `scripts/release.py`'s `next_steps()` still prints `git tag -a vX.Y.Z -m "..."` with no commit id, while step 5 of `docs/RELEASING.md` now names the commit by id. Its verifier (2026-11-26) classed this as the anticipated seam, not a defect; teaching the script to print the id is out of this quest's scope.
+- **A premise that turned out false:** step 6 says "this was pull request #120" while #120 was still open at landing (2026-11-26). It reads true once the maintainer merges #120, which precedes this branch's own pull request.
