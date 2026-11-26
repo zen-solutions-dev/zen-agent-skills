@@ -2,7 +2,7 @@
 id: chore-0121
 title: Teach tdd and test-quality that a fix claiming "every X" is tested through behaviour over every module reached
 type: chore
-status: open
+status: done
 priority: P2
 parent: "ROADMAP Campaign G: rollout (docs/reviews/2026-11-25-rollout-first-adopter.md, finding 6)"
 depends_on: []
@@ -19,9 +19,9 @@ created: 2026-11-25
 
 ## Problem
 
-The rollout's first adopter quest (2026-11-25, [the first adopter run](../docs/reviews/2026-11-25-rollout-first-adopter.md), finding 6) claimed that every `git` call in a gate was bounded by a time limit. Its guard test grepped one source file for the bounded helper, so a `git` call in a module the gate imports was missed and passed; an independent verifier found it. A source-regex guard proves what one file says, not what the program does.
+The rollout's first adopter quest (2026-11-25, [the first adopter run](../../docs/reviews/2026-11-25-rollout-first-adopter.md), finding 6) claimed that every `git` call in a gate was bounded by a time limit. Its guard test grepped one source file for the bounded helper, so a `git` call in a module the gate imports was missed and passed; an independent verifier found it. A source-regex guard proves what one file says, not what the program does.
 
-Neither [`test-quality`](../.agents/skills/test-quality/SKILL.md) (the lens that judges tests) nor [`tdd`](../.agents/skills/tdd/SKILL.md) (the procedure that writes them) names this shape.
+Neither [`test-quality`](../../.agents/skills/test-quality/SKILL.md) (the lens that judges tests) nor [`tdd`](../../.agents/skills/tdd/SKILL.md) (the procedure that writes them) names this shape.
 
 ## Scope
 
