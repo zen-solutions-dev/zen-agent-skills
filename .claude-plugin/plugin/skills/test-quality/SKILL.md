@@ -76,7 +76,7 @@ Identify the **trust boundaries** the behaviour crosses and give each one covera
 
 When a change claims a property over a set ("every call is bounded", "all callers check the token", "each module redacts its logs"), test that property through behaviour, over every module the code path reaches, not over the file the change touched. Replace the boundary the claim is about with a stand-in that makes a violation observable, drive every entry point through it, and assert the property held at each. A grep of source for the guarded helper proves what one file says, not what the program does: a call in an imported module stays invisible to it and the test stays green. Keep a grep only as a supplement that lists known call sites, never as the oracle.
 
-Example: a fix claims every `git` call in a pre-merge check runs under a time limit. A test that greps the check's own file for the bounded helper passes while a module the check imports still calls `git` with no limit. The behavioural test puts a stand-in `git` that never answers first on the `PATH`, runs every command the check exposes, and asserts each one returns within the limit and reports the timeout, neither hanging nor reading it as success.
+Example: a fix claims every `git` call in a pre-merge check runs under a time limit. A test that greps the check's own file for the bounded helper passes while a module the check imports still calls `git` with no limit. The behavioural test puts a stand-in `git` that never answers first on the `PATH`, bounds its own wait for each command above the limit under test so a missing guard fails rather than hangs, runs every command the check exposes, and asserts each one returns within the limit and reports the timeout, neither hanging nor reading it as success.
 
 Done when reverting the guard in any one reached module, the imported ones included, turns the test red.
 
@@ -123,6 +123,7 @@ Before keeping a test, ask:
 7. Is it redundant with stronger coverage elsewhere?
 8. Would a future maintainer understand the fixture and expected result?
 9. For a bug fix, does the oracle cover the bug population?
+10. For a claim over a set, does the test drive every reached module through a stand-in boundary, rather than grep source?
 
 A weak answer means consolidate, move to a lower layer, convert to a smoke check or diagnostic, or delete.
 

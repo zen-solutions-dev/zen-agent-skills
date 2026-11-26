@@ -82,8 +82,9 @@ bullet**: the thinnest test that exercises the path end to end through the seam.
   production code for a test-only need. It is an exception for an I/O seam, not a licence to mock
   collaborators.
 - When the behaviour is a claim over a set ("every call", "all callers", "each module"), read and
-  follow the claims-over-a-set check in `test-quality` now: the red test drives every module the
-  path reaches through a stand-in boundary, and a grep of one source file is not that test.
+  follow "Claims over a set" in `test-quality` now. Here the set is the behaviour, so the thinnest
+  test still covers every module the path reaches: the red test drives each of them through a
+  stand-in boundary, and a grep of one source file is not that test.
 
 Run it. It must fail, and the failure must be the one you expect: an assertion about the missing
 behaviour, not an import error, a typo, or a broken fixture. For a new module, first write an
