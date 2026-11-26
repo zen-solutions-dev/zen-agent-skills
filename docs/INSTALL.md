@@ -1,6 +1,6 @@
 # Installation and integration
 
-The complete installation reference, in the order to reach for it: the Claude Code plugin, then the Python installer (every profile, single skills, drafts, hooks, `--check`), then project-level adapters for Cursor, VS Code and Codex, then validation, uninstall, and troubleshooting. For the five-minute path, see the quick start in [`README.md`](../README.md).
+The complete installation reference, in the order to reach for it: the Claude Code plugin, then the Python installer (every profile, single skills, drafts, hooks, `--check`), then installing for cloud sessions, then project-level adapters for Cursor, VS Code and Codex, then validation, uninstall, and troubleshooting. For the five-minute path, see the quick start in [`README.md`](../README.md).
 
 ## Prerequisites
 
@@ -232,17 +232,17 @@ A cloud session starts on a fresh machine and sees only what the repository comm
 
 So give each repository worked in the cloud a saved cloud environment whose setup script runs the install.
 
-**This repository's own environment is the model.** It is named `zen-agent-skills`; its setup script runs `python3 scripts/install.py --include-drafts`; its network is limited to `github.com`, `raw.githubusercontent.com`, `codeload.github.com`, `api.github.com`, package registries and MCP servers. It runs from the checkout because this repository is the kit. See round 2, `B5`, in [the round 2 plan](reviews/2026-11-25-marjana-r2-plan.md).
+**As set up on 2026-11-25 (round 2, `B5`), this repository's own environment is the model.** It is named `zen-agent-skills`; its setup script runs `python3 scripts/install.py --include-drafts`; its network is limited to `github.com`, `raw.githubusercontent.com`, `codeload.github.com`, `api.github.com`, package registries and MCP servers. It runs from the checkout because this repository is the kit. See round 2, `B5`, in [the round 2 plan](reviews/2026-11-25-marjana-r2-plan.md).
 
 **For an adopter, the setup script clones this kit first.** Pin it to a release tag, for example `v0.2.0`, or to a branch, clone it into a temporary directory, and run its installer. Add `--include-drafts` when the adopter uses drafts, and leave it off when it does not. Example:
 
 ```bash
-git clone --depth 1 --branch v0.2.0 https://github.com/zen-solutions-dev/zen-agent-skills.git /tmp/zen-agent-skills && python3 /tmp/zen-agent-skills/scripts/install.py --include-drafts
+rm -rf /tmp/zen-agent-skills && git clone --depth 1 --branch v0.2.0 https://github.com/zen-solutions-dev/zen-agent-skills.git /tmp/zen-agent-skills && python3 /tmp/zen-agent-skills/scripts/install.py --include-drafts
 ```
 
 The environment's network must allow `github.com` (the clone) and the hosts above. A pinned tag keeps every session on the same skills until you move the tag on purpose.
 
-**Check the skills are there before work starts.** In the first session on a new environment, run `python3 /tmp/zen-agent-skills/scripts/install.py --check` (or list `~/.claude/skills/`) and confirm the skills you need are present and not reported `missing` or `diverged`. A missing skill is a setup-script problem to fix once, not something for the session to work around.
+**Check the skills are there before work starts.** In the first session on a new environment, run `python3 /tmp/zen-agent-skills/scripts/install.py --check` (or list `~/.claude/skills/`) and confirm the skills you need are present and not reported `diverged` or `error`. A missing skill is a setup-script problem to fix once, not something for the session to work around.
 
 ### Ask early: does the pre-PR check need files only on one computer?
 
