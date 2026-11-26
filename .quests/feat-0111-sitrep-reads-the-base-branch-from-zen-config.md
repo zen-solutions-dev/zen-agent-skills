@@ -12,6 +12,7 @@ external: ""
 mode: hitl
 touched_files:
   - docs/spec/sitrep.md
+  - docs/spec/sitrep.conformance.md
   - .agents/skills/sitrep/scripts/sitrep.py
   - .agents/skills/sitrep/SKILL.md
   - tests/
