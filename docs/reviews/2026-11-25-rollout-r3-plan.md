@@ -36,7 +36,7 @@ Finding 7 (point verifiers at exact heads) is dismissed: [`orchestrate`](../../.
 | `chore-0119` | The rollout installs the kit in the adopter's cloud environment, and asks early about local-only gates | `docs/INSTALL.md`, the rollout map | Two-way |
 | `chore-0120` | Release steps: a cloud session cannot push tags; tag by id; merge `main` back after a squash | `docs/RELEASING.md` | Two-way |
 | `chore-0121` | `test-quality` and `tdd`: a claim over "every X" is tested through behaviour | the two skills, the marketplace | Two-way |
-| `chore-0122` | `.sitrep.json` says this kit integrates on `developer` | `.sitrep.json` | Two-way |
+| [`chore-0122`](../../.quests/done/chore-0122-tell-sitrep-this-kit-integrates-on-developer.md) | `.sitrep.json` says this kit integrates on `developer` | `.sitrep.json` | Two-way |
 | `feat-0110` | The validator accepts an empty `touched_files` on a `hitl` quest | both `validate.py` copies, the templates, its tests, the marketplace | Two-way |
 | `feat-0111` | sitrep falls back to `zen-config`'s `base_branch` | filed only; waits for the maintainer's approval of a spec amendment | One-way (a spec) |
 

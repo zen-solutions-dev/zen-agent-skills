@@ -2,7 +2,7 @@
 id: chore-0122
 title: Tell sitrep that this kit integrates on developer, with a committed .sitrep.json
 type: chore
-status: open
+status: done
 priority: P2
 parent: "ROADMAP Campaign G: rollout (docs/reviews/2026-11-25-rollout-first-adopter.md, finding 8)"
 depends_on: []
@@ -17,7 +17,7 @@ created: 2026-11-25
 
 ## Problem
 
-[`sitrep`](../.agents/skills/sitrep/SKILL.md) takes its integration branch from `.sitrep.json`'s `integration_branch` key, else the remote `origin`'s default branch, else `main` ([`docs/spec/sitrep.md`](../docs/spec/sitrep.md), the configuration table). This kit's default branch is `main`, but its work lands on `developer` (`base_branch` in [`docs/agents/zen.md`](../docs/agents/zen.md)). So the board measures "in flight" against `main`, and on a checkout without `main` it says `no integration branch` (finding 8 of [the first adopter run](../docs/reviews/2026-11-25-rollout-first-adopter.md)).
+[`sitrep`](../../.agents/skills/sitrep/SKILL.md) takes its integration branch from `.sitrep.json`'s `integration_branch` key, else the remote `origin`'s default branch, else `main` ([`docs/spec/sitrep.md`](../../docs/spec/sitrep.md), the configuration table). This kit's default branch is `main`, but its work lands on `developer` (`base_branch` in [`docs/agents/zen.md`](../../docs/agents/zen.md)). So the board measures "in flight" against `main`, and on a checkout without `main` it says `no integration branch` (finding 8 of [the first adopter run](../../docs/reviews/2026-11-25-rollout-first-adopter.md)).
 
 ## Scope
 
