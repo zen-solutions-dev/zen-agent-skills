@@ -177,6 +177,102 @@ class TemplateExternalFieldTests(ExternalFieldTests):
     module = tvt
 
 
+# A quest whose `mode` and `touched_files` lines are the variables, so a case states
+# exactly the two fields the rule reads and nothing else differs between cases.
+MODE_TASK = """---
+id: feat-0098
+title: A quest used only by the empty touched_files tests
+type: feat
+status: open
+priority: P1
+parent: "ROADMAP#9 tracker-links"
+depends_on: []
+{mode}{touched}created: 2026-11-25
+---
+
+## Problem
+
+Body content is not what this test exercises.
+"""
+
+EMPTY_WARNING = "touched_files is empty"
+
+
+class EmptyTouchedFilesTests(TasksRootTestCase):
+    """`feat-0110`: an empty `touched_files` is accepted on a `hitl` quest only.
+
+    A `hitl` quest can be a person's own step (a deploy, a dashboard setting, a review
+    by someone outside) that changes no file, and naming a made-up path to pass the
+    check is the dishonest `touched_files` the field exists to prevent. Any other mode,
+    empty included (which takes the repository's default), still warns, and `--strict`
+    still makes that warning an error (finding 2 of the first adopter run).
+    """
+
+    def _write(self, mode_line, touched_line):
+        (self.tasks / "feat-0098-test.md").write_text(
+            MODE_TASK.format(mode=mode_line, touched=touched_line), encoding="utf-8")
+
+    def _run_lenient(self):
+        buf = io.StringIO()
+        with contextlib.redirect_stdout(buf):
+            code = self.module.main([])
+        return code, buf.getvalue()
+
+    def test_a_hitl_quest_with_an_empty_list_passes_strict_clean(self):
+        self._write("mode: hitl\n", "touched_files: []\n")
+        code, out = self._run()
+        self.assertNotIn(EMPTY_WARNING, out)
+        self.assertEqual(code, 0, out)
+
+    def test_a_hitl_quest_with_no_touched_files_key_gets_no_empty_warning(self):
+        # The empty-list warning is waived, and only that: `touched_files` is still a
+        # required field, so an absent key is still the missing-field error it was.
+        # Writing `touched_files: []` is how a person's own step passes clean.
+        self._write("mode: hitl\n", "")
+        code, out = self._run()
+        self.assertNotIn(EMPTY_WARNING, out)
+        self.assertIn("missing required field: touched_files", out)
+        self.assertNotEqual(code, 0, out)
+
+    def test_an_afk_quest_with_an_empty_list_still_warns_and_fails_strict(self):
+        self._write("mode: afk\n", "touched_files: []\n")
+        code, out = self._run()
+        self.assertIn(EMPTY_WARNING, out)
+        self.assertNotEqual(code, 0, out)
+
+    def test_an_afk_quest_with_an_empty_list_warns_without_failing_lenient(self):
+        # The rule is a warning, as before: only --strict turns it into a failure.
+        self._write("mode: afk\n", "touched_files: []\n")
+        code, out = self._run_lenient()
+        self.assertIn(EMPTY_WARNING, out)
+        self.assertEqual(code, 0, out)
+
+    def test_an_empty_mode_quest_with_an_empty_list_still_warns(self):
+        # An empty mode takes the repository's default, which may be afk, so it is not
+        # a statement that a person is present and earns no exemption.
+        self._write('mode: ""\n', "touched_files: []\n")
+        code, out = self._run()
+        self.assertIn(EMPTY_WARNING, out)
+        self.assertNotEqual(code, 0, out)
+
+    def test_an_absent_mode_quest_with_an_empty_list_still_warns(self):
+        self._write("", "touched_files: []\n")
+        code, out = self._run()
+        self.assertIn(EMPTY_WARNING, out)
+        self.assertNotEqual(code, 0, out)
+
+
+class TemplateEmptyTouchedFilesTests(EmptyTouchedFilesTests):
+    """`feat-0110`, over the copy `init-worktracking` scaffolds.
+
+    The adopter that found this runs the shipped copy, so the rule is proved there by
+    behaviour, the whole parent suite re-run against the template module, rather than
+    by comparing the two files' text.
+    """
+
+    module = tvt
+
+
 class TemplateInjectableArgvTests(TasksRootTestCase):
     """`chore-0017`'s injectable CLI layer, carried into the template by `bug-0026`.
 
