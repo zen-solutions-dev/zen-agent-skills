@@ -993,7 +993,12 @@ def main(argv=None) -> int:
                 edges.setdefault(tid, set()).add(dep)
 
         touched = fm.get("touched_files", []) or []
-        if not touched:
+        # A `hitl` quest can be a person's own step (a deploy, a dashboard setting, a
+        # review by someone outside) that changes no file, and a made-up path to pass
+        # this check is the dishonest list the field exists to prevent. Only an
+        # explicit `hitl` is waived: an empty mode takes the repository's default,
+        # which may be `afk`, so it says nothing about a person being there.
+        if not touched and fm.get("mode", "") != "hitl":
             warn(rel, "touched_files is empty")
         # A completed task's touched_files are a historical record of what it changed,
         # not a claim about the tree today. Checking them means any later rename, move,
