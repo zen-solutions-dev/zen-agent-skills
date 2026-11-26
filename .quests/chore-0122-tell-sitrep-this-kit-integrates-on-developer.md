@@ -21,7 +21,7 @@ created: 2026-11-25
 
 ## Scope
 
-**In scope:** A committed `.sitrep.json` at the repository root with `"integration_branch": "developer"`, in the format the sitrep spec defines; run `python .agents/skills/sitrep/scripts/sitrep.py` before and after and quote both in the report.
+**In scope:** A committed `.sitrep.json` at the repository root with `"integration_branch": "origin/developer"`, in the format the sitrep spec defines; run `python .agents/skills/sitrep/scripts/sitrep.py` before and after and quote both in the report.
 
 **Out of scope:** Changing `sitrep.py` or its spec. Teaching sitrep to read `base_branch` from `zen-config` is `feat-0111`, which needs a spec amendment approved first.
 
@@ -29,9 +29,13 @@ created: 2026-11-25
 
     ZEN_CHECKS_SCOPE=full python scripts/run-checks.py
 
-- [ ] `.sitrep.json` exists with `integration_branch: developer`, and sitrep's in-flight list is measured against `developer` (its output shows no `no integration branch` notice).
+- [ ] `.sitrep.json` exists with `integration_branch: origin/developer`, and sitrep's in-flight list is measured against `origin/developer`, also in a fresh clone with no local `developer` (its output shows no `no integration branch` notice).
 
 ## Definition of done
 
 - [ ] Acceptance command passes locally.
 - [ ] Conventions in AGENTS.md's conventions section followed.
+
+## Decisions
+
+- **A premise that turned out false:** the first build wrote `developer`, as this quest then said. Its verifier (2026-11-26) found that a local branch name does not resolve in a fresh clone, where the board then shows nothing in flight, and that sitrep's own fallback already uses a remote-tracking ref (`origin/main`). The orchestrator changed the value to `origin/developer` (a two-way door; revert by editing one line).
