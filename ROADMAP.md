@@ -312,6 +312,8 @@ Added 2026-11-25 (round 2, Phase 3). Install the kit and run it in each reposito
 
 **Progress, 2026-11-25:** `W-01` answered: the Zen product app and this kit are the first two test subjects; personal projects, then client projects, follow once the kit is confirmed. The kit was released as v0.2.0 for it. In the product app, the build plan moved onto quests and the first quest ran end to end, both independently verified, with their pull requests waiting on the maintainer. Run record and eight findings for the kit: [`2026-11-25-rollout-first-adopter.md`](docs/reviews/2026-11-25-rollout-first-adopter.md).
 
+**Progress, 2026-11-26** (round 3, [plan](docs/reviews/2026-11-25-rollout-r3-plan.md)): the first adopter run's findings became five kit quests, all landed and verified (`chore-0119` to `chore-0122`, `feat-0110`), with `feat-0111` filed for a spec amendment. In the Zen product app, the cutover, its first quest and four side quests (the gate runs the quests validator; its tests pass on a Windows checkout; the public road ahead and landing page drop wave 2's past date) were each verified; three were opened as draft pull requests through its own pre-PR gate on the maintainer's computer by the round's close on 2026-11-26, the two public-page quests were still at the gate, and the maintainer merges and deploys.
+
 ### Round 2 Phase 3: the wider goals, plans only
 
 Approved as goals by the maintainer on 2026-11-25 ([the decisions record](docs/reviews/2026-11-25-marjana-decisions.md), F1 to F5). Each has one short plan; none is decomposed into quest files yet.
