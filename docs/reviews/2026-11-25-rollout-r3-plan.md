@@ -33,7 +33,7 @@ Finding 7 (point verifiers at exact heads) is dismissed: [`orchestrate`](../../.
 
 | Quest | What | Owned paths | Door |
 |---|---|---|---|
-| `chore-0119` | The rollout installs the kit in the adopter's cloud environment, and asks early about local-only gates | `docs/INSTALL.md`, the rollout map | Two-way |
+| [`chore-0119`](../../.quests/done/chore-0119-rollout-installs-the-kit-in-the-cloud-and-asks-about-local-gates.md) | The rollout installs the kit in the adopter's cloud environment, and asks early about local-only gates | `docs/INSTALL.md`, the rollout map | Two-way |
 | [`chore-0120`](../../.quests/done/chore-0120-release-steps-for-tags-from-the-cloud-and-squash-merges.md) | Release steps: a cloud session cannot push tags; tag by id; merge `main` back after a squash | `docs/RELEASING.md` | Two-way |
 | `chore-0121` | `test-quality` and `tdd`: a claim over "every X" is tested through behaviour | the two skills, the marketplace | Two-way |
 | [`chore-0122`](../../.quests/done/chore-0122-tell-sitrep-this-kit-integrates-on-developer.md) | `.sitrep.json` says this kit integrates on `developer` | `.sitrep.json` | Two-way |
