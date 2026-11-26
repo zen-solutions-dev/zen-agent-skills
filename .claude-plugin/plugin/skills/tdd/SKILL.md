@@ -81,6 +81,9 @@ bullet**: the thinnest test that exercises the path end to end through the seam.
   job is to read the filesystem or the environment), wrap that function rather than changing
   production code for a test-only need. It is an exception for an I/O seam, not a licence to mock
   collaborators.
+- When the behaviour is a claim over a set ("every call", "all callers", "each module"), read and
+  follow the claims-over-a-set check in `test-quality` now: the red test drives every module the
+  path reaches through a stand-in boundary, and a grep of one source file is not that test.
 
 Run it. It must fail, and the failure must be the one you expect: an assertion about the missing
 behaviour, not an import error, a typo, or a broken fixture. For a new module, first write an

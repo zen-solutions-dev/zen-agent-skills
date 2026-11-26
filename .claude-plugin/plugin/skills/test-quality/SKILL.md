@@ -72,6 +72,14 @@ Identify the **trust boundaries** the behaviour crosses and give each one covera
 
 `secrets`, `auth`, `permissions`, `user-input`, `serialization`, and `concurrency` carry the highest blast radius: prefer exact-outcome tests at the lowest faithful layer, and leave no boundary uncovered. Tag a test with the boundary it protects when that aids diagnosis.
 
+### Claims over a set
+
+When a change claims a property over a set ("every call is bounded", "all callers check the token", "each module redacts its logs"), test that property through behaviour, over every module the code path reaches, not over the file the change touched. Replace the boundary the claim is about with a stand-in that makes a violation observable, drive every entry point through it, and assert the property held at each. A grep of source for the guarded helper proves what one file says, not what the program does: a call in an imported module stays invisible to it and the test stays green. Keep a grep only as a supplement that lists known call sites, never as the oracle.
+
+Example: a fix claims every `git` call in a pre-merge check runs under a time limit. A test that greps the check's own file for the bounded helper passes while a module the check imports still calls `git` with no limit. The behavioural test puts a stand-in `git` that never answers first on the `PATH`, runs every command the check exposes, and asserts each one returns within the limit and reports the timeout, neither hanging nor reading it as success.
+
+Done when reverting the guard in any one reached module, the imported ones included, turns the test red.
+
 ### Diagnostics vs coverage
 
 A benchmark, performance probe, or exploratory harness without an acceptance threshold is a **diagnostic**: it informs investigation and protects no contract. Commit it labelled as a diagnostic, with an entry point and cleanup; promote it to coverage only when it has a concrete pass/fail oracle.
