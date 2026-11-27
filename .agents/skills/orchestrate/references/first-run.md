@@ -96,8 +96,9 @@ one fix child (`5e43036`) and one per-finding re-check closed it. Folded in by `
    so two branches verified by cloud sessions could not be opened as pull requests. When first run
    there, the gate's own tests failed for reasons unrelated to the work (a CRLF-sensitive regex and
    a global git hook), which cost one extra quest and a restack (Step 1 item 3).
-2. **A turn the desktop app started because a child session finished, and a question answered
-   inside such a turn, could not start a new session, nor any session in another folder.** The run
+2. **A turn the desktop app started because a child session finished could not start a new
+   session, nor any session in another folder, nor could the turn that resumed after the person
+   answered a question asked in such a turn.** The run
    relayed work to an idle child already in that folder and ran builders and verifiers as
    background subagents, each in its own worktree (the desktop app section of
    [`claude-code.md`](claude-code.md)).
@@ -106,8 +107,10 @@ one fix child (`5e43036`) and one per-finding re-check closed it. Folded in by `
    item 4).
 4. **The maintainer squash-merged the kit's pull request #120, a merge of `main` into
    `developer`**, so `main`'s release commit stayed out of `developer`'s history and the next
-   branch (#121) had to merge `developer` again; #121's body had not said it needed a merge commit
-   (Step 6 item 4).
+   branch (#121) had to merge `developer` again. #120's own body had not said it needed a merge
+   commit; #121's did ("Merge #120 first, with a merge commit"), and the squash happened anyway,
+   which is why the rule puts the line in the history-carrying pull request's own body (Step 6
+   item 4).
 
 ## Owed
 

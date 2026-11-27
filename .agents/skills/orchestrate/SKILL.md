@@ -101,9 +101,9 @@ because the excess is steps and gates every run needs; the memory's layout and l
    exception to holding is the quest-file close in Step 5 item 6, which travels with a landing.
 
 Done when the integration branch exists on the remote at the target tip plus the plan commit, every
-remote action the run needs is recorded as allowed or refused, a local-only pre-PR gate has run
-once on the person's computer (green, or its failure is the first quest), every one-way door in
-the plan carries the person's recorded answer, and every child has an answer to all five questions.
+remote action the run needs is recorded as allowed or refused, where the pre-PR gate is local-only
+it has run once on the person's computer (green, or its failure is the first quest), every one-way
+door in the plan carries the person's recorded answer, and every child has an answer to all five questions.
 
 ### Step 2: brief every child
 
@@ -325,7 +325,7 @@ and `implement-spec` skills, as studied in the 2026-11-24 sources delta in this 
 `feat-0107` on 2026-11-25. Starting slow, the three brakes, capping loops and the five questions per
 child are adapted from his `software-factory` skill at the same quest, where they are asked of a
 factory's tasks. The procedure, the `A8` guards, the remote-action probe, the conflict and relay
-rules, and the cloud section are this kit's.
+rules, and the cloud and desktop sections are this kit's.
 
 ```provenance
 source: https://raw.githubusercontent.com/mattpocock/skills/d653911/skills/in-progress/chief-of-staff/SKILL.md

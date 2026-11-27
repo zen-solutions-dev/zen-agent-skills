@@ -31,9 +31,9 @@ tools carry the transport:
 
 Only when the orchestrating session runs in the Claude desktop app on the person's computer.
 
-- **A turn the app started because a child session finished cannot start a session**, and neither
-  can a question answered inside such a turn; starting a session in another folder is refused the
-  same way. Start every session a wave needs in a turn the person's own message started, or plan
+- **A turn the app started because a child session finished cannot start a session**, nor can the
+  turn that resumes after the person answers a question asked in such a turn; starting a session
+  in another folder is refused the same way. Start every session a wave needs in a turn the person's own message started, or plan
   the wave for the two routes below from the outset.
 - **Relay the next task to an idle child already working in that folder**, through the app's
   message tool. The relay carries a full brief (Step 2), and Step 4's acknowledgement rule applies.
