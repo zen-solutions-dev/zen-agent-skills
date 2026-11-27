@@ -1,6 +1,6 @@
 # Installation and integration
 
-The complete installation reference, in the order to reach for it: the Claude Code plugin, then the Python installer (every profile, single skills, drafts, hooks, `--check`), then project-level adapters for Cursor, VS Code and Codex, then validation, uninstall, and troubleshooting. For the five-minute path, see the quick start in [`README.md`](../README.md).
+The complete installation reference, in the order to reach for it: the Claude Code plugin, then the Python installer (every profile, single skills, drafts, hooks, `--check`), then installing for cloud sessions, then project-level adapters for Cursor, VS Code and Codex, then validation, uninstall, and troubleshooting. For the five-minute path, see the quick start in [`README.md`](../README.md).
 
 ## Prerequisites
 
@@ -225,6 +225,35 @@ npx skills add zen-solutions-dev/zen-agent-skills
 **It installs the skill bodies and nothing else, which matters here.** Every skill in this kit composes a lens from [`.agents/rules/`](../.agents/rules/) through a relative reference, and that installer copies only each skill's `SKILL.md`, so those references resolve to nothing. Most skills lose the house-style module; `house-review` loses its entire rubric and severity scheme, because they live in the lens rather than in the skill. Verified against this repository on 2026-07-28.
 
 So use it if you want the skill bodies in a hurry, across a harness the Python installer does not target. Use `python scripts/install.py` if you want the kit as designed: it is the only path that places the rules module where the skills' own references resolve, and it needs no Node and no network.
+
+## Install in a repository worked in cloud sessions
+
+A cloud session starts on a fresh machine and sees only what the repository commits, plus whatever its environment's setup script installs. A user-scope install on your own computer does not reach it, so a skill such as `init-worktracking` is simply absent there, and a session that cannot find it tends to write its output by hand from the templates. The first run of this kit in an adopter repository (the Zen product app, a private repository) hit exactly this, recorded as finding 1 of [the first adopter run](reviews/2026-11-25-rollout-first-adopter.md).
+
+So give each repository worked in the cloud a saved cloud environment whose setup script runs the install.
+
+**As set up on 2026-11-25 (round 2, `B5`), this repository's own environment is the model.** It is named `zen-agent-skills`; its setup script runs `python3 scripts/install.py --include-drafts`; its network is limited to `github.com`, `raw.githubusercontent.com`, `codeload.github.com`, `api.github.com`, package registries and MCP servers. It runs from the checkout because this repository is the kit. See round 2, `B5`, in [the round 2 plan](reviews/2026-11-25-marjana-r2-plan.md).
+
+**For an adopter, the setup script clones this kit first.** Pin it to a release tag, for example `v0.2.0`, or to a branch, clone it into a temporary directory, and run its installer. Add `--include-drafts` when the adopter uses drafts, and leave it off when it does not. Example:
+
+```bash
+rm -rf /tmp/zen-agent-skills && git clone --depth 1 --branch v0.2.0 https://github.com/zen-solutions-dev/zen-agent-skills.git /tmp/zen-agent-skills && python3 /tmp/zen-agent-skills/scripts/install.py --include-drafts
+```
+
+The environment's network must allow `github.com` (the clone) and the hosts above. A pinned tag keeps every session on the same skills until you move the tag on purpose.
+
+**Check the skills are there before work starts.** In the first session on a new environment, run `python3 /tmp/zen-agent-skills/scripts/install.py --check` (or list `~/.claude/skills/`) and confirm the skills you need are present and not reported `diverged` or `error`. A missing skill is a setup-script problem to fix once, not something for the session to work around.
+
+### Ask early: does the pre-PR check need files only on one computer?
+
+Before the first cloud quest, ask whether the repository's own pre-PR check reads a file that exists only on the person's computer, such as a git-ignored list. If it does, no cloud session can pass that check, and a session must not go around it. The first adopter run hit this as finding 5: the child refused to bypass the gate, and the person opened the pull requests from their own checkout.
+
+If the answer is yes, plan for it from the start:
+
+- Cloud children push their branches and hand over the pull request bodies.
+- The person, or a session on their computer, opens the pull requests and runs the check there.
+
+If the answer is no, cloud children can open the pull requests themselves.
 
 ## Generate project-level adapters
 

@@ -18,12 +18,17 @@ A top-level `VERSION` file holds the kit's one version, `MAJOR.MINOR.PATCH`; it 
    Use `--bump major`, `--bump patch`, or `--version X.Y.Z` instead as fits, and `--date YYYY-MM-DD` to date it other than today.
 3. Run the same command without `--dry-run`. It writes `VERSION` and renames the Unreleased heading to `### vX.Y.Z (date)`, keeping its text, with a fresh `### Unreleased` above it. The task log is never touched.
 4. Commit `VERSION` and `CHANGELOG.md` on their own and merge them as usual.
-5. Tag the merged commit and push the tag with the two commands the script printed:
+5. Tag the merged commit, naming it by id, and push the tag with the two commands the script printed:
 
    ```bash
-   git tag -a vX.Y.Z -m "Zen Agent Skills vX.Y.Z"
+   git tag -a vX.Y.Z -m "Zen Agent Skills vX.Y.Z" <sha>
    git push origin vX.Y.Z
    ```
+
+   `<sha>` is the commit that landed the release on `main`. When `main` takes squash merges, that is the squash commit, not the head of the release branch, so a bare `git tag` run on the branch would tag the wrong commit. For v0.2.0, pull request #119 was squash-merged as `e694817`, and the tag points there.
+
+   A cloud session cannot push the tag: its git proxy refused the `v0.2.0` push with HTTP 403 on 2026-11-25. Run these two commands yourself from your own checkout.
+6. When the release was a squash merge, bring `developer` back level with `main`: merge `main` into `developer` on a branch and open a pull request that you merge with a merge commit, not a squash, so `main`'s release commit becomes part of `developer`'s history; a squash here leaves the next release from `developer` diverging again. The squash commit exists only on `main`, so without this step the two trees disagree. For v0.2.0 this was pull request #120, from the branch `zen/rollout-handoff-2026-11-25`.
 
 `python scripts/release.py --check` confirms at any time that `VERSION` is a semantic version and that the changelog has a section for it.
 

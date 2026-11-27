@@ -22,6 +22,7 @@ external: ""
 mode: ""
 # Optional. "true" keeps this quest off GitHub when docs/agents/zen.md opts into publishing.
 private: false
+# An empty list ([]) is accepted on a "hitl" quest only, a person's own step that changes no file.
 touched_files:
   - path/to/file/the/quest/will/change
   - path/to/its/test
