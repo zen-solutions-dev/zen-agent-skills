@@ -42,6 +42,11 @@ repository declares, each with its tier.
    Done when the command has exited and you hold its full output, notices included.
 2. Report what it printed, leading with what waits on the person. Quote the reason each quest is
    waiting (`open question` or `needs a human eye`) and, for a blocked quest, what it waits on.
+   In flight is what git holds, not who is working: a stale local branch whose commits the
+   integration branch lacks and an old worktree with leftover changes both count, so name any
+   entry that looks stale as possibly stale rather than as live work.
+   The board has no list of work that can start now (`feat-0073` will add one); do not present
+   its silence as "nothing ready".
    Done when every quest the board printed is in your report with its file, its reason, and every
    figure's tier.
 3. If it printed a notice, report the notice. `no task tracking` means the repository has no tracked
@@ -59,8 +64,11 @@ repository declares, each with its tier.
 
 In flight is read from git, never from a quest's `status`: a worktree with uncommitted changes,
 untracked files included, and a local branch holding commits the integration branch lacks. The
-integration branch is `origin`'s default branch, else `main`; with neither, the board lists no
-branches and says `no integration branch`.
+integration branch is the `integration_branch` a repository names in `.sitrep.json`, else
+`origin`'s default branch, else `main`; with none of these, the board lists no branches and says
+`no integration branch`. Name it as a remote-tracking ref (for example `origin/developer`) when
+it should resolve in a fresh clone too: a local branch name does not exist there until someone
+checks it out.
 
 A quest under `.quests/done/` never waits on you. Only files git tracks are read, so a quest file that
 exists on one machine and was never committed is not part of the board.
