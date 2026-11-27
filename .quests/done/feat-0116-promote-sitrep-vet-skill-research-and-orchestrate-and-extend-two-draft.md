@@ -2,7 +2,7 @@
 id: feat-0116
 title: Promote sitrep, vet-skill, research and orchestrate, and extend two drafts
 type: feat
-status: open
+status: done
 priority: P2
 parent: "ROADMAP Campaign G: rollout (docs/reviews/2026-11-27-promotions-plan.md)"
 depends_on: [feat-0112, feat-0113, feat-0114, feat-0115]

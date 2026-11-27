@@ -30,6 +30,6 @@ Written 2026-11-27 by the orchestrating session of rollout round 3, after a prom
 | [`feat-0113`](../../.quests/done/feat-0113-confirm-vet-skill-s-first-use-fixes-landed-before-promotion.md) | 1 | `vet-skill/SKILL.md` | Two-way |
 | [`feat-0114`](../../.quests/done/feat-0114-refine-research-from-its-real-use-before-promotion.md) | 1 | `research/SKILL.md` | Two-way |
 | [`feat-0115`](../../.quests/done/feat-0115-fold-round-3-s-lessons-into-orchestrate-before-promotion.md) | 1 | `orchestrate/` | Two-way |
-| `feat-0116` | 2 | the six skills' frontmatter and draft notices, `zen`, `docs/CATALOG.md`, profile tables, `scripts/install.py`, `.claude-plugin/` | Two-way: a promotion reverts with one commit |
+| [`feat-0116`](../../.quests/done/feat-0116-promote-sitrep-vet-skill-research-and-orchestrate-and-extend-two-draft.md) | 2 | the six skills' frontmatter and draft notices, `zen`, `docs/CATALOG.md`, profile tables, `scripts/install.py`, `.claude-plugin/` | Two-way: a promotion reverts with one commit |
 
 Wave 1 children keep `status: draft`, so none of them touches the marketplace or the listings; `feat-0116` alone does. The orchestrator owns `CHANGELOG.md`, `ROADMAP.md` and this plan.
