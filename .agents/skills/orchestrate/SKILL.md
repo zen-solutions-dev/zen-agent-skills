@@ -38,8 +38,8 @@ because the excess is steps and gates every run needs; the memory's layout and l
 ## Terms
 
 - **Child**: any fresh-context agent this session starts: an in-session subagent, a worktree agent,
-  or a separate session. The procedure does not depend on which; the optional sections at the end
-  cover two transports.
+  or a separate session. The procedure does not depend on which; the optional section at the end
+  covers two transports.
 - **Integration branch**: the branch cut for this run that collects every child's work. Named by the
   repository's convention (for example `zen/<run>-<date>`); children branch from it.
 - **Frontier**: the children whose every `depends_on` item has **landed on the integration branch**.
@@ -102,8 +102,8 @@ because the excess is steps and gates every run needs; the memory's layout and l
 
 Done when the integration branch exists on the remote at the target tip plus the plan commit, every
 remote action the run needs is recorded as allowed or refused, a local-only pre-PR gate has run
-once on the person's computer (green, or its failure is the first quest), every one-way door in the plan
-carries the person's recorded answer, and every child has an answer to all five questions.
+once on the person's computer (green, or its failure is the first quest), every one-way door in
+the plan carries the person's recorded answer, and every child has an answer to all five questions.
 
 ### Step 2: brief every child
 
@@ -252,7 +252,8 @@ with no side branch merged; and the frontier is empty.
 Done when one draft pull request is open with the acceptance command's verbatim tail in it and
 Step 5's mechanical-merge and unverified own-commit lists in its body, every
 landed child's quest file is in `done/`, every refused remote action is a step for the person in
-its body, the body names a merge commit wherever a squash would drop history, and every review finding is fixed, dismissed with a reason, or listed for the person.
+its body, the body names a merge commit wherever a squash would drop history, and every review
+finding is fixed, dismissed with a reason, or listed for the person.
 
 ### Step 7: remember and learn
 
@@ -300,15 +301,11 @@ the present"; read it before the first entry. For this memory it means:
   person already uses comes first. The layout, the index format and the lint are in
   [`references/memory.md`](references/memory.md).
 
-## Optional: Claude Code cloud sessions
+## Optional: Claude Code cloud sessions and the desktop app
 
-In Claude Code on the web, a child can be a separate cloud session; the transport and its traps are
-in [`references/claude-code.md`](references/claude-code.md). Skip it in any other harness.
-
-## Optional: the Claude desktop app
-
-Run from the Claude desktop app, some turns cannot start sessions; the routes around that are in
-[`references/claude-desktop.md`](references/claude-desktop.md). Skip it in any other harness.
+In Claude Code on the web, a child can be a separate cloud session; in the Claude desktop app, some
+turns cannot start sessions. Each surface's transport and traps are in
+[`references/claude-code.md`](references/claude-code.md). Skip it in any other harness.
 
 ## Conventions
 

@@ -1,7 +1,11 @@
-# orchestrate in Claude Code cloud sessions
+# orchestrate in Claude Code: cloud sessions and the desktop app
 
-Optional, and only for Claude Code on the web. A child can be a separate cloud session, and the
-remote-session tools carry the transport:
+Optional, and only for Claude Code. Each section below is for one surface; skip the other.
+
+## Cloud sessions
+
+Only for Claude Code on the web. A child can be a separate cloud session, and the remote-session
+tools carry the transport:
 
 - `create_session` starts a child with its brief as the prompt; `send_message` is how a child
   reports back and how you reply to it.
@@ -22,3 +26,20 @@ remote-session tools carry the transport:
 - A cloud environment's network policy can refuse a host. Probe from the environment the child will
   run in; a refusal can clear after a worker restart, and some sites stop automated clients at a bot
   check, which is recorded as unreachable and never worked around.
+
+## The Claude desktop app
+
+Only when the orchestrating session runs in the Claude desktop app on the person's computer.
+
+- **A turn the app started because a child session finished cannot start a session**, and neither
+  can a question answered inside such a turn; starting a session in another folder is refused the
+  same way. Start every session a wave needs in a turn the person's own message started, or plan
+  the wave for the two routes below from the outset.
+- **Relay the next task to an idle child already working in that folder**, through the app's
+  message tool. The relay carries a full brief (Step 2), and Step 4's acknowledgement rule applies.
+- **Run builders and verifiers as background subagents**, each fresh, a leaf, and in its own
+  worktree, with the same brief a session would get and a verifier that is neither the builder nor
+  you (`A7`). A subagent does not show in the app's sidebar, so name each one and its branch in the
+  relay to the person.
+
+Seen in round 3 (2026-11-25 to 2026-11-26); the run is in [`first-run.md`](first-run.md).

@@ -99,8 +99,8 @@ one fix child (`5e43036`) and one per-finding re-check closed it. Folded in by `
 2. **A turn the desktop app started because a child session finished, and a question answered
    inside such a turn, could not start a new session, nor any session in another folder.** The run
    relayed work to an idle child already in that folder and ran builders and verifiers as
-   background subagents, each in its own worktree (the desktop reference,
-   [`claude-desktop.md`](claude-desktop.md)).
+   background subagents, each in its own worktree (the desktop app section of
+   [`claude-code.md`](claude-code.md)).
 3. **A verifier told to sweep for the same claim past its quest's scope found the claim still live
    in about twelve places the quest had scoped out**; that finding became its own quest (Step 5
    item 4).
