@@ -38,8 +38,8 @@ because the excess is steps and gates every run needs; the memory's layout and l
 ## Terms
 
 - **Child**: any fresh-context agent this session starts: an in-session subagent, a worktree agent,
-  or a separate session. The procedure does not depend on which; the optional section at the end
-  covers one transport.
+  or a separate session. The procedure does not depend on which; the optional sections at the end
+  cover two transports.
 - **Integration branch**: the branch cut for this run that collects every child's work. Named by the
   repository's convention (for example `zen/<run>-<date>`); children branch from it.
 - **Frontier**: the children whose every `depends_on` item has **landed on the integration branch**.
@@ -73,7 +73,9 @@ because the excess is steps and gates every run needs; the memory's layout and l
    push a branch, delete it, push a tag, delete it; for opening a pull request, confirm the tool or
    token is there without opening one. Record each as allowed or refused, with the refusal's text.
    An action the run needs and the environment refuses becomes a step for the person in the plan
-   and the pull request.
+   and the pull request. **Where the repository's pre-PR gate runs only on the person's computer**
+   (it needs a file kept nowhere else), have it run there once on the target tip before any child
+   is briefed; a red gate becomes the run's first quest.
 4. **Explore before you plan unfamiliar code.** Where the goal touches code nobody in this
    conversation has read, dispatch one **exploration child** (fresh, a leaf, read-only, medium
    effort) to map it: the files, the seams, the terms the code uses. Wait for its report before you
@@ -99,7 +101,8 @@ because the excess is steps and gates every run needs; the memory's layout and l
    exception to holding is the quest-file close in Step 5 item 6, which travels with a landing.
 
 Done when the integration branch exists on the remote at the target tip plus the plan commit, every
-remote action the run needs is recorded as allowed or refused, every one-way door in the plan
+remote action the run needs is recorded as allowed or refused, a local-only pre-PR gate has run
+once on the person's computer (green, or its failure is the first quest), every one-way door in the plan
 carries the person's recorded answer, and every child has an answer to all five questions.
 
 ### Step 2: brief every child
@@ -195,7 +198,9 @@ named owner.
    briefed by the child (`A7`), on the exact head commit reported. Carry the verified sha from the
    verdict's `verified_by` field into item 5. **If the child's head moves while the verifier runs**
    (a relay applied after the report), tell the verifier the new sha and have it re-run there; a
-   verdict on the old sha lands only the old sha.
+   verdict on the old sha lands only the old sha. **For a fix to a false claim**, name the claim in
+   the verifier's brief and ask for every place it still appears, inside the quest's scope or
+   outside it, each as a finding.
 5. **Land** a `pass` on the integration branch by reading and following
    [`reconcile-worktrees`](../reconcile-worktrees/SKILL.md) Step 5: a **fast-forward to the verified
    sha**, or, for a verified child that is behind the tip, a **mechanical merge** exactly as `A8`'s
@@ -240,12 +245,14 @@ with no side branch merged; and the frontier is empty.
 4. Write the body with [`pr-describe`](../pr-describe/SKILL.md), offering a stacked split when the
    branch is large and holds a one-way door, and open **one draft pull request** into the base
    branch. The body carries the two lists Step 5 kept: every mechanical merge, and every commit of
-   your own landed unverified. Never merge it: that is the person's.
+   your own landed unverified. **When a squash would drop history the branch exists to carry**
+   (for example a merge of one long-lived branch into another), the body says it needs a merge
+   commit. Never merge it: that is the person's.
 
 Done when one draft pull request is open with the acceptance command's verbatim tail in it and
 Step 5's mechanical-merge and unverified own-commit lists in its body, every
 landed child's quest file is in `done/`, every refused remote action is a step for the person in
-its body, and every review finding is fixed, dismissed with a reason, or listed for the person.
+its body, the body names a merge commit wherever a squash would drop history, and every review finding is fixed, dismissed with a reason, or listed for the person.
 
 ### Step 7: remember and learn
 
@@ -297,6 +304,11 @@ the present"; read it before the first entry. For this memory it means:
 
 In Claude Code on the web, a child can be a separate cloud session; the transport and its traps are
 in [`references/claude-code.md`](references/claude-code.md). Skip it in any other harness.
+
+## Optional: the Claude desktop app
+
+Run from the Claude desktop app, some turns cannot start sessions; the routes around that are in
+[`references/claude-desktop.md`](references/claude-desktop.md). Skip it in any other harness.
 
 ## Conventions
 

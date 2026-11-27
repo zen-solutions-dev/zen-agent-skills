@@ -79,13 +79,46 @@ to `done/` together in one commit (`03e4862`), and `feat-0105` and `feat-0108` t
 (`f579655`); only `feat-0106` was closed at its own landing (`854b91a`). Each batch was listed as
 the orchestrator's own unverified work. The rule stands; the run did not keep it.
 
+## 2026-11-25 to 2026-11-26: round 3, the second project
+
+The third real run, by an orchestrating session that did not write this skill, run from the Claude
+desktop app on the maintainer's computer in `hitl` mode, across two repositories: this kit and the
+Zen product app (a private repository). Its kit integration branch was `zen/rollout-r3-2026-11-25`,
+cut at `8708b83`. Its plan is in the Zen Agent Skills repository at
+`docs/reviews/2026-11-25-rollout-r3-plan.md`, its dogfood record at
+`docs/reviews/2026-11-26-dogfood/rollout-r3.md`, and three of its lessons are entries dated
+2026-11-26 in `docs/agents/memory/`. Start slow held twice (one child per repository first); five
+kit quests landed by fast-forward or a listed mechanical merge (`57f2782`, `c5decce`); one review,
+one fix child (`5e43036`) and one per-finding re-check closed it. Folded in by `feat-0115` on
+2026-11-27:
+
+1. **The adopter's pre-PR gate needed a git-ignored list held only on the maintainer's computer**,
+   so two branches verified by cloud sessions could not be opened as pull requests. When first run
+   there, the gate's own tests failed for reasons unrelated to the work (a CRLF-sensitive regex and
+   a global git hook), which cost one extra quest and a restack (Step 1 item 3).
+2. **A turn the desktop app started because a child session finished, and a question answered
+   inside such a turn, could not start a new session, nor any session in another folder.** The run
+   relayed work to an idle child already in that folder and ran builders and verifiers as
+   background subagents, each in its own worktree (the desktop reference,
+   [`claude-desktop.md`](claude-desktop.md)).
+3. **A verifier told to sweep for the same claim past its quest's scope found the claim still live
+   in about twelve places the quest had scoped out**; that finding became its own quest (Step 5
+   item 4).
+4. **The maintainer squash-merged the kit's pull request #120, a merge of `main` into
+   `developer`**, so `main`'s release commit stayed out of `developer`'s history and the next
+   branch (#121) had to merge `developer` again; #121's body had not said it needed a merge commit
+   (Step 6 item 4).
+
 ## Owed
 
 - A run on a project other than this kit, by a session that did not write this skill, before
   promotion. Round 2 (2026-11-25) was a second run by a session that did not write it, but on the
-  same project.
+  same project. Done 2026-11-26: round 3 ran on the Zen product app as well as this kit, by a
+  session that did not write it.
 - Recorded 2026-11-24, settled 2026-11-25: the `zen-config` keys in Inputs were re-checked against
   the approved `docs/spec/zen-config.md` when `memory` was set (`feat-0107`).
 - The start-slow brake, the five questions, the exploration child, the memory lint and the
   recurring-job offer were written in round 2 and are not yet exercised by a run that started with
-  them.
+  them. As of round 3 (2026-11-26): the start-slow brake was exercised and held twice. The
+  exploration child, the memory lint and the recurring-job offer are still unexercised, and round
+  3's plan does not record the five questions per child.
