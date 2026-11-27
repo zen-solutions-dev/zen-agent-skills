@@ -2,7 +2,7 @@
 id: feat-0114
 title: Refine research from its real use before promotion
 type: feat
-status: open
+status: done
 priority: P2
 parent: "ROADMAP Campaign G: rollout (docs/reviews/2026-11-27-promotions-plan.md)"
 depends_on: []
@@ -17,7 +17,7 @@ created: 2026-11-27
 
 ## Problem
 
-The maintainer chose on 2026-11-27 to promote [`research`](../.agents/skills/research/SKILL.md), together with `orchestrate`, which links it. Its real runs: round 1's two research questions (`docs/reviews/2026-11-24-sources-delta.md`, and the dogfood rows in `docs/reviews/2026-11-24-dogfood/orchestrator.md` and `ws-c.md`) and round 2's citation sourcing (`docs/reviews/2026-11-25-dogfood/orchestrate.md`). The lessons they record are the reach probe, the never-reconstruct rule, the asker's spot-check, and proxies or bot checks that refuse a host until a restart.
+The maintainer chose on 2026-11-27 to promote [`research`](../../.agents/skills/research/SKILL.md), together with `orchestrate`, which links it. Its real runs: round 1's two research questions (`docs/reviews/2026-11-24-sources-delta.md`, and the dogfood rows in `docs/reviews/2026-11-24-dogfood/orchestrator.md` and `ws-c.md`) and round 2's citation sourcing (`docs/reviews/2026-11-25-dogfood/orchestrate.md`). The lessons they record are the reach probe, the never-reconstruct rule, the asker's spot-check, and proxies or bot checks that refuse a host until a restart.
 
 ## Scope
 

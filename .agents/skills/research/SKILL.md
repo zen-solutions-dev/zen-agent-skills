@@ -58,7 +58,10 @@ unreachable. Where the repository keeps a glossary, its terms for this ladder wi
 ### Step 1: probe reach, then dispatch
 
 Test, from where the researcher will run, that every named source answers: fetch one page or clone
-the repository. List what does not answer and why (refused, not found, needs a sign-in). Then start
+the repository. List what does not answer and why (refused, not found, needs a sign-in). A refusal
+can be the environment, not the source: a proxy has refused a host until its worker restarted, and a
+bot check refused cloud addresses throughout. Re-probe once after the person restarts the proxy;
+never route around it. Then start
 the researcher with a **fresh context**, as a **leaf** that dispatches nothing, at medium effort,
 briefed by reading and following [`agent-handoff`](../agent-handoff/SKILL.md) Step 3, with the
 question, the sources, the baseline, the reach list, and where the file goes. Where no child can be
