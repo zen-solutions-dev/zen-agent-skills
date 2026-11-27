@@ -103,7 +103,8 @@ because the excess is steps and gates every run needs; the memory's layout and l
 Done when the integration branch exists on the remote at the target tip plus the plan commit, every
 remote action the run needs is recorded as allowed or refused, where the pre-PR gate is local-only
 it has run once on the person's computer (green, or its failure is the first quest), every one-way
-door in the plan carries the person's recorded answer, and every child has an answer to all five questions.
+door in the plan carries the person's recorded answer, and every child has an answer to all five
+questions.
 
 ### Step 2: brief every child
 

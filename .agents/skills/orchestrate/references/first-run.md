@@ -98,8 +98,8 @@ one fix child (`5e43036`) and one per-finding re-check closed it. Folded in by `
    a global git hook), which cost one extra quest and a restack (Step 1 item 3).
 2. **A turn the desktop app started because a child session finished could not start a new
    session, nor any session in another folder, nor could the turn that resumed after the person
-   answered a question asked in such a turn.** The run
-   relayed work to an idle child already in that folder and ran builders and verifiers as
+   answered a question asked in such a turn.** The run relayed work to an idle child already in
+   that folder and ran builders and verifiers as
    background subagents, each in its own worktree (the desktop app section of
    [`claude-code.md`](claude-code.md)).
 3. **A verifier told to sweep for the same claim past its quest's scope found the claim still live
