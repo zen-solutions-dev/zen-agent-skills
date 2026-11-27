@@ -163,7 +163,7 @@ python scripts/install.py --profile all
 |---|---|---|
 | `core` | 3 | Scaffold a project, track work in it, describe the change at the end |
 | `spine` | 20 | The contract-driven delivery loop. **The default** |
-| `all` | 25 | Every shipped skill, adding the two handoff skills and the three a person starts by name (`zen`, `retro`, `improve-architecture`) |
+| `all` | 29 | Every shipped skill, adding the two handoff skills, `sitrep` and `research`, and the five a person starts by name (`zen`, `retro`, `improve-architecture`, `orchestrate`, `vet-skill`) |
 
 A profile is expanded over sibling references before anything is placed, so it can never install a skill whose composed sibling is missing, and the run says when it expanded what you asked for. Since the 2026-11 overhaul a skill links a sibling only where it genuinely composes it, so the expansion is small, and `--skills <name>` places any single skill with just what it composes. Drafts are in no profile; add `--include-drafts` to place them.
 

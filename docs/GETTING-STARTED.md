@@ -337,7 +337,7 @@ Even with the full system in place, most changes do not need all of it. The READ
 
 The kit becomes especially useful when more than one person or agent is involved.
 
-When a day's work splits into several pieces, the `orchestrate` draft runs it from one session: that session talks with you and makes no changes itself, while separate agents research and build on their own branches. Each piece is checked by an agent that did not write it, then lands on one shared branch, and you get **one** pull request to review at the end. Anything hard to undo waits for your decision. It is a draft, so install it with `--include-drafts`.
+When a day's work splits into several pieces, `orchestrate` runs it from one session: that session talks with you and makes no changes itself, while separate agents research and build on their own branches. Each piece is checked by an agent that did not write it, then lands on one shared branch, and you get **one** pull request to review at the end. Anything hard to undo waits for your decision. It comes with the plugin, and with the installer in `--profile all`; a person starts it by name.
 
 ```mermaid
 flowchart LR

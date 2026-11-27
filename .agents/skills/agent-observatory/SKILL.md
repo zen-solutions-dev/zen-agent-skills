@@ -9,6 +9,7 @@ description: >-
 license: MIT
 metadata:
   status: draft
+  extended: "2026-11-27: renaming or messaging a session has not yet run on real work"
 ---
 
 # agent-observatory

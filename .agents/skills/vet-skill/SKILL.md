@@ -7,8 +7,6 @@ description: >-
   only, ending in install, install with changes, or do not install. Start it by name.
 license: MIT
 metadata:
-  status: draft
-  drafted: "2026-11-25"
   invocation: user
 ---
 

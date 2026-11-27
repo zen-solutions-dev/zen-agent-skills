@@ -13,6 +13,7 @@ compatibility: >-
   of writing that host is Claude artifacts, with the db, user, and assets capabilities.
 metadata:
   status: draft
+  extended: "2026-11-27: publishing a tracker page has not yet run on real work"
 ---
 
 # quest-tracker

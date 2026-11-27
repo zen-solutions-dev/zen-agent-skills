@@ -34,6 +34,13 @@ The maintainer chose on 2026-11-27 to promote `sitrep`, `vet-skill`, `research` 
 
 **Out of scope:** Further refinements to any skill (`feat-0112` to `feat-0115` own those). `CHANGELOG.md` and `ROADMAP.md` (the orchestrator's). Promoting any other draft.
 
+## Decisions
+
+- **Profiles: no seed changes; all four land in `all` only.** The precedent (`aa1d721`) changed no `PROFILE_SEEDS` entry: a promoted skill reached `spine` only through a link from a spine skill (`grill`, `domain-language`, `tdd`), and the three a person starts by name went to `all`. Here no spine skill composes any of the four, so the same rule places them in `all`: `orchestrate` and `vet-skill` are user-invoked, like `zen`, `retro` and `improve-architecture`; `sitrep` and `research` are model-invoked but are not steps of the contract-driven delivery loop `spine` is defined as in `docs/spec/install.md`, and seeding them would spend default-install description budget on every adopter. `core` and `spine` are unchanged (3 and 20); `all` grows from 25 to 29. `scripts/install.py` needs no edit.
+- **Links: none added.** The only shipped skill that composes one of the four is `orchestrate`, and its load of `research` was already a relative link. `fix-batch` and `autonomy.md` only name `orchestrate`, `sitrep` and `research` name each other's rarity ladder, and `zen` names every skill in backticks by design, so all keep backticks. The guarded loads of `research` in `teach` and `wayfinder` stay guarded: both are still drafts, and the guarded form remains whole for them.
+- **Draft notices.** `sitrep` loses its "This skill is a draft" sentence and keeps the built-in-stages statement as history; `orchestrate` keeps its pointer to `references/first-run.md`; `research`'s Evidence section now says "This skill is written from", not "This draft"; `vet-skill` carried no body notice.
+- **Extensions.** `agent-observatory` and `quest-tracker` carry `extended: "2026-11-27: ..."` naming the step still owed. The plan says 60 days; the validator and AGENTS.md section 7 count 90 from the extension date, so the value records the date and the reason, not a length.
+
 ## Acceptance criteria (mechanically verifiable)
 
     ZEN_CHECKS_SCOPE=full python scripts/run-checks.py

@@ -74,7 +74,7 @@ step is also useful on its own. *(draft)* marks a skill not yet promoted.
 - `init-worktracking`: an existing repository gets `AGENTS.md`, `.quests/`, and by tier a roadmap and
   changelog. Every task-based skill below needs it. Its configure step writes `docs/agents/zen.md`,
   the facts the skills read; run it alone on a repository already tracked.
-- `vet-skill` *(draft)*: another author's skill you are about to install. Pins the revision,
+- `vet-skill`: another author's skill you are about to install. Pins the revision,
   checks provenance and license, and hunts for injection and exfiltration; report only. A person
   starts it.
 
@@ -92,7 +92,7 @@ step is also useful on its own. *(draft)* marks a skill not yet promoted.
 
 **Plan**:
 
-- `research` *(draft)*: a question the repository cannot answer. A fresh agent reads primary
+- `research`: a question the repository cannot answer. A fresh agent reads primary
   sources and writes one cited file.
 - `spec-author`: behaviour a person must agree. Writes Given/When/Then scenarios and stops for
   approval. It composes `spec-quality`, the lens that judges a spec's well-formedness.
@@ -113,9 +113,9 @@ step is also useful on its own. *(draft)* marks a skill not yet promoted.
   and a named cause; that red command is `tdd`'s first failing test, and the fix is built from it.
   Diagnosing never fixes, so the chain is the whole repair.
 - `tdd`: new code, test-first, one red-green slice at a time.
-- `orchestrate` *(draft)*: a piece of work too big for one context. One session holds the
+- `orchestrate`: a piece of work too big for one context. One session holds the
   conversation; child sessions research and build on their own branches, landing on one
-  integration branch and reaching the person as one pull request.
+  integration branch and reaching the person as one pull request. A person starts it.
 - `fix-batch`: two or more independent quest files to parallel agents, each in its own worktree,
   each starting fresh. A person starts it.
 - `systematic-debugging` *(draft)*: something is broken and the cause is unknown. Builds a red
@@ -165,7 +165,7 @@ step is also useful on its own. *(draft)* marks a skill not yet promoted.
 
 **Status**:
 
-- `sitrep` *(draft)*: "where are we" for one repository, from its quest files and git.
+- `sitrep`: "where are we" for one repository, from its quest files and git.
 - `agent-observatory` *(draft)*: questions across many agent sessions: what is running, what it
   cost.
 - `quest-tracker` *(draft)*: a season of work run from a shared tracker page.

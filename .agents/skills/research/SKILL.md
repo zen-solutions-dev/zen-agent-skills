@@ -6,8 +6,6 @@ description: >-
   for "research this", "what does upstream say about", gathering documentation or API facts, or
   handing reading legwork to a background agent.
 license: MIT
-metadata:
-  status: draft
 ---
 
 # research
@@ -111,7 +109,7 @@ Done when the spot-checked citations hold, or the report is returned with the on
 
 ## Evidence
 
-This draft is written from its first two real runs, both in the Zen Agent Skills repository on
+This skill is written from its first two real runs, both in the Zen Agent Skills repository on
 2026-11-24: `docs/reviews/2026-11-24-sources-delta.md` (an upstream skills repository and its
 author's site, one video unreachable and recorded as such) and
 `docs/reviews/2026-11-24-marjana-inventory.md` (an internal inventory of the repository itself).

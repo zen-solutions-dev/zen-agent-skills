@@ -30,7 +30,7 @@ Drafts come only through the installer; `install.py --dry-run` prints the curren
 
 ```bash
 python scripts/install.py --tools claude --include-drafts
-python scripts/install.py --skills sitrep --include-drafts  # one skill and what it composes
+python scripts/install.py --skills teach --include-drafts   # one skill and what it composes
 ```
 
 **Use one route per harness.** The plugin and the installer's `claude` target place the same skills under different names, so having both loads every description twice. To try the drafts in Claude Code, use the installer for Claude Code instead of the plugin.
@@ -43,6 +43,8 @@ Cursor, VS Code or Copilot, and Codex use project-level adapters instead, and na
 
 Nothing is tagged since `v0.1.0`; the next release is cut on the maintainer's go, as [`docs/RELEASING.md`](docs/RELEASING.md) describes. What it will carry, newest first.
 
+The 2026-11-27 promotions, planned in [the promotions plan](docs/reviews/2026-11-27-promotions-plan.md): `sitrep`, `vet-skill`, `research` and `orchestrate` are promoted from drafts, each refined from its real use first. They come with the plugin, and with the installer in `--profile all`. `agent-observatory` and `quest-tracker` stay drafts, extended until their core actions run on real work.
+
 The 2026-11-25 Marjana round 2, planned in [the round 2 plan](docs/reviews/2026-11-25-marjana-r2-plan.md):
 
 - **Tasks are now quests.** `.tasks/` is `.quests/`, `new-task` is `new-quest`, and the hierarchy is Campaign, Quest chain, Quest and Side quest ([`GLOSSARY.md`](GLOSSARY.md)). An adopter's `.tasks/`, `tracker: tasks` and `new-task` keep working, with a warning: v0.2.0 warns; v0.3.0 removes the old names.
@@ -53,7 +55,7 @@ The 2026-11-25 Marjana round 2, planned in [the round 2 plan](docs/reviews/2026-
 The 2026-11-24 "Marjana" round, a deep clean planned in [the Marjana plan](docs/reviews/2026-11-24-marjana-plan.md) from [what Matt Pocock's newest work teaches](docs/reviews/2026-11-24-sources-delta.md) and [an inventory of this repository's own dust](docs/reviews/2026-11-24-marjana-inventory.md):
 
 - **Configure once per repository.** `init-worktracking` now ends by configuring the skills: one committed file, `docs/agents/zen.md`, says where this repository keeps its tracker, glossary, specs and acceptance command, so no skill has to rediscover it. The format is a [draft contract](docs/spec/zen-config.md) checked by the scaffolded `validate.py`.
-- **Orchestrate a day of work.** The `orchestrate` draft runs one session that holds the conversation with you while child agents research and build on their own branches, lands each verified commit on one integration branch, and hands you one pull request. The `research` draft writes one cited report per question. The autonomy rules now say exactly which merge an orchestrator may make (`A8`).
+- **Orchestrate a day of work.** `orchestrate` runs one session that holds the conversation with you while child agents research and build on their own branches, lands each verified commit on one integration branch, and hands you one pull request. `research` writes one cited report per question. The autonomy rules now say exactly which merge an orchestrator may make (`A8`).
 - **AFK or human in the loop, named.** A quest can say `mode: afk` or `mode: hitl`, set from how reversible the change is and how far it reaches.
 - **Review once, fix once, then stop.** `house-review` re-checks only the fixed findings after one fix round. `retro` samples sessions, ratchets a stricter check in with an exception list, and prunes checks that fire on good code.
 - **Lighter to carry.** This repository's always-loaded `AGENTS.md` fell from about 28 KB to about 9 KB, the two scaffolds no longer spend an adopter's description budget, and the installer's budget figure now counts only what Claude Code loads.
@@ -70,7 +72,7 @@ The 2026-11 overhaul before it, compared against Matt Pocock's skills and writte
 - **A router.** `zen` says which skill fits where you are.
 - **Lighter to carry.** Skills are slimmed, orchestrators a person starts by name no longer spend the agent's description budget, and any skill installs alone with `--skills`.
 
-Six of the new skills, `grill`, `domain-language`, `tdd`, `retro`, `improve-architecture` and `zen`, were promoted from drafts once each had been used on real work and refined from it; `systematic-debugging` stays a draft until its second run, and this round's `orchestrate` and `research` are drafts until they have been refined from real use. See [no skill ships cold](#no-skill-ships-cold). The full list, with status, is in [`docs/CATALOG.md`](docs/CATALOG.md).
+Six of the new skills, `grill`, `domain-language`, `tdd`, `retro`, `improve-architecture` and `zen`, were promoted from drafts once each had been used on real work and refined from it; `systematic-debugging` stays a draft until its second run, and this round's `orchestrate` and `research` were promoted on 2026-11-27, once each had been refined from real use. See [no skill ships cold](#no-skill-ships-cold). The full list, with status, is in [`docs/CATALOG.md`](docs/CATALOG.md).
 
 ## Why it exists
 

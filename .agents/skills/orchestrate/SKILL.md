@@ -7,7 +7,6 @@ description: >-
 license: MIT
 metadata:
   invocation: user
-  status: draft
 ---
 
 # orchestrate
@@ -20,7 +19,7 @@ The split of ownership is the point. **The person owns strategy, design and ever
 Agents iterate behind tests, CI, verification by another agent, and review. A reversible decision (a
 two-way door) proceeds and is recorded; an irreversible one waits for the person.
 
-This is a draft. Its real runs, and what each taught, are in
+Its real runs, and what each taught, are in
 [`references/first-run.md`](references/first-run.md). This body runs past the kit's 250-line guide
 because the excess is steps and gates every run needs; the memory's layout and lint live in
 [`references/memory.md`](references/memory.md).

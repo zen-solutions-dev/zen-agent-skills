@@ -6,8 +6,6 @@ description: >-
   caught up, with an evidence tier on every figure. Changes nothing. Use for "where are we", "what
   is waiting on me", "what is blocked", "sitrep". For what agents did, see agent-observatory.
 license: MIT
-metadata:
-  status: draft
 ---
 
 # sitrep
@@ -17,11 +15,9 @@ Report the state of one repository from what the repository itself records, so t
 status report written from memory goes wrong in both directions and nothing marks which way; this
 reads the tracked quest files and says what they say.
 
-**This skill is a draft.** It ships with no profile and reaches no adopter until it has been used
-on real work and blessed, per the contribution bar in the target repository's `AGENTS.md`. It is
-also being built in stages, and this body describes only what exists so far: what waits on you,
-what is in flight, what is blocked, what changed since you last caught up, and the figures a
-repository declares, each with its tier.
+It was built in stages, and this body describes only what exists so far: what waits on you, what
+is in flight, what is blocked, what changed since you last caught up, and the figures a repository
+declares, each with its tier.
 
 ## When to use
 

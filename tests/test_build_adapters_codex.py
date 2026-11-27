@@ -93,9 +93,9 @@ class CodexTargetTests(unittest.TestCase):
 
     def test_drafts_are_withheld_unless_asked_for(self):
         run("--target", "codex", "--out", str(self.out))
-        self.assertFalse((self.out / ".agents" / "skills" / "orchestrate").exists())
+        self.assertFalse((self.out / ".agents" / "skills" / "teach").exists())
         run("--target", "codex", "--out", str(self.out), "--include-drafts")
-        sidecar = self.out / ".agents" / "skills" / "orchestrate" / "agents" / "openai.yaml"
+        sidecar = self.out / ".agents" / "skills" / "teach" / "agents" / "openai.yaml"
         self.assertIn("allow_implicit_invocation: false", sidecar.read_text(encoding="utf-8"))
 
     def test_a_dry_run_writes_nothing(self):
