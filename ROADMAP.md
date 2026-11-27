@@ -310,6 +310,8 @@ cold, and a governance feature nobody has governed anything with is exactly the 
 
 Added 2026-11-25 (round 2, Phase 3). Install the kit and run it in each repository the maintainer keeps, the Zen product app first; the rest are named later by the maintainer (`wayfinder` ticket `W-01`). It is where the drafts get the real use outside this repository that promotes them. Plan: [`2026-11-25-plan-rollout-campaign.md`](docs/reviews/2026-11-25-plan-rollout-campaign.md); not decomposed into quest files until it is about to be built.
 
+**Progress, 2026-11-25:** `W-01` answered: the Zen product app and this kit are the first two test subjects; personal projects, then client projects, follow once the kit is confirmed. The kit was released as v0.2.0 for it. In the product app, the build plan moved onto quests and the first quest ran end to end, both independently verified, with their pull requests waiting on the maintainer. Run record and eight findings for the kit: [`2026-11-25-rollout-first-adopter.md`](docs/reviews/2026-11-25-rollout-first-adopter.md).
+
 ### Round 2 Phase 3: the wider goals, plans only
 
 Approved as goals by the maintainer on 2026-11-25 ([the decisions record](docs/reviews/2026-11-25-marjana-decisions.md), F1 to F5). Each has one short plan; none is decomposed into quest files yet.

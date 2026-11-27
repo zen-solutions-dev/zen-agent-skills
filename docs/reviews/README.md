@@ -20,6 +20,7 @@ Dated reports about this kit, one per pass. None is loaded into a session unaske
 | [Podcast extraction](2026-11-25-podcast-extraction.md) | 2026-11-25 | live | Notes from the full "How to Actually Code with AI" podcast: the loop, the practices, 34 items new to the kit |
 | [Marjana decisions](2026-11-25-marjana-decisions.md) | 2026-11-25 | live | The maintainer's answers to the Marjana decision sheet, verbatim, and what is still open |
 | [Round 2 handoff](2026-11-25-round-2-handoff.md) | 2026-11-25 | live | The brief the round 2 orchestrating session starts from |
+| [Rollout, first adopter](2026-11-25-rollout-first-adopter.md) | 2026-11-25 | live | Campaign G's first slice in the Zen product app, and eight findings for the kit |
 | [Plan F1: daily improvement loop](2026-11-25-plan-f1-improvement-loop.md) | 2026-11-25 | live | Plan only (`chore-0110`): a scheduled `improve-architecture` run opening one pull request; asks which repositories |
 | [Plan F2: knowledge wiki](2026-11-25-plan-f2-knowledge-wiki.md) | 2026-11-25 | live | Plan only (`chore-0111`): a private wiki fed by the maintainer's channels, outside this repository |
 | [Plan F3: shared vocabulary](2026-11-25-plan-f3-shared-vocabulary.md) | 2026-11-25 | live | Plan only (`chore-0112`): `GLOSSARY.md` as the one vocabulary for kit, website and courses |

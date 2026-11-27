@@ -6,7 +6,9 @@ Completed work for Zen Agent Skills, newest first. This is the append-only ledge
 
 ## Releases
 
-### Unreleased: the 2026-11-24 Marjana overhaul and the 2026-11-25 round 2
+### Unreleased
+
+### v0.2.0 (2026-11-25): the 2026-11-24 Marjana overhaul and the 2026-11-25 round 2
 
 Not yet a version: `VERSION` holds `0.1.0`, the last tag, and the next release is cut only on the maintainer's go ([`docs/RELEASING.md`](docs/RELEASING.md)). It carries both Marjana rounds.
 
@@ -67,6 +69,8 @@ Contents, derived from the task log (2026-07-23 to 2026-07-29, now in [`docs/his
 `0.1.0` rather than `1.0.0`, deliberately: this is one maintainer's working library, two catalog skills are held unbuilt until they have been used twice, and the install story has an open portability question, since `npx skills` copies only each skill's `SKILL.md` and leaves its lens reference resolving to nothing (`chore-0020`, `feat-0034`).
 
 ## Task log
+
+- [x] (2026-11-25) Released v0.2.0 (pull request #119, `main` e694817) and ran Campaign G's first slice in the Zen product app: its build plan moved onto quests, and one quest ran end to end, both independently verified. [Run record](docs/reviews/2026-11-25-rollout-first-adopter.md).
 
 - [x] (2026-11-25) Closed [`feat-0109`](.quests/done/feat-0109-integrate-the-round-2-ledgers-and-listings.md): round 2's changelog lines, roadmap section and Current state, the six drafts listed in `zen` and the catalog, the gate bridges removed, `doc-sync`, and the close round's one fix round.
 
