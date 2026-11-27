@@ -584,6 +584,17 @@ class StrayCheckoutTests(unittest.TestCase):
             code, report = tree.run()
         self.assertEqual(0, code, report)
 
+    def test_the_generated_plugin_copy_is_absent_from_the_index(self):
+        # Promoting a skill that ships a script (`sitrep`, feat-0116) puts a second copy of
+        # that script under the generated plugin tree, which is the same defect.
+        with _Tree([]) as tree:
+            copy = tree.root / ".claude-plugin" / "plugin" / "skills" / "x" / "scripts"
+            copy.mkdir(parents=True)
+            (copy / "thing.py").write_text("# a generated copy\n", encoding="utf-8")
+            holders = cc._index_by_basename(tree.root).get("thing.py", [])
+            self.assertEqual(1, len(holders), "only the source file may be indexed")
+            self.assertTrue(holders[0].samefile(tree.root / "scripts" / "thing.py"))
+
     def test_the_stray_copy_is_absent_from_the_index_entirely(self):
         with _Tree([]) as tree:
             stray = tree.root / ".claude" / "worktrees" / "wt-x" / "scripts"

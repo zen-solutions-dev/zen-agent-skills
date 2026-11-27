@@ -162,8 +162,14 @@ TEST_DIR = "tests"
 # resolving it, and every phrase cited against that file would be reported unresolved. A
 # guard whose findings depend on whether someone happens to have a worktree open is worse
 # than one that reports nothing.
+#
+# `.claude-plugin/plugin` is the same defect from a generated copy rather than a stray
+# one: `build-adapters.py --marketplace` copies every shipped skill there, so promoting a
+# skill that carries a script (`sitrep.py`, feat-0116) made its basename ambiguous and
+# every citation of it unresolved. The source under `.agents/skills/` is what a matrix
+# cites; the copy is regenerated from it and checked current by the plugin tree gate.
 UNINDEXED = {".git", "__pycache__", ".tmp", "node_modules", ".venv", "venv"}
-UNINDEXED_PATHS = ((".claude", "worktrees"),)
+UNINDEXED_PATHS = ((".claude", "worktrees"), (".claude-plugin", "plugin"))
 
 BUILTIN_NAMES = frozenset(dir(builtins))
 
