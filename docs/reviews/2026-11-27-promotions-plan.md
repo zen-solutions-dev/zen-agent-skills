@@ -26,7 +26,7 @@ Written 2026-11-27 by the orchestrating session of rollout round 3, after a prom
 
 | Quest | Wave | Owned paths | Door |
 |---|---|---|---|
-| `feat-0112` | 1 (first, alone) | `sitrep/SKILL.md` | Two-way |
+| [`feat-0112`](../../.quests/done/feat-0112-refine-sitrep-from-its-real-use-before-promotion.md) | 1 (first, alone) | `sitrep/SKILL.md` | Two-way |
 | `feat-0113` | 1 | `vet-skill/SKILL.md` | Two-way |
 | `feat-0114` | 1 | `research/SKILL.md` | Two-way |
 | `feat-0115` | 1 | `orchestrate/` | Two-way |

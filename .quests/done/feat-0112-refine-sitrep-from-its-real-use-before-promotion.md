@@ -2,7 +2,7 @@
 id: feat-0112
 title: Refine sitrep from its real use before promotion
 type: feat
-status: open
+status: done
 priority: P2
 parent: "ROADMAP Campaign G: rollout (docs/reviews/2026-11-27-promotions-plan.md)"
 depends_on: []
@@ -17,7 +17,7 @@ created: 2026-11-27
 
 ## Problem
 
-The maintainer chose on 2026-11-27 to promote [`sitrep`](../.agents/skills/sitrep/SKILL.md). Its real runs are in the dogfood records `docs/reviews/2026-11-24-dogfood/ws-e.md`, `docs/reviews/2026-11-25-dogfood/rollout.md` and `docs/reviews/2026-11-26-dogfood/rollout-r3.md`. They exposed three things its body does not yet say: the integration branch is best named as a remote-tracking ref in `.sitrep.json` (a local branch name does not resolve in a fresh clone, `chore-0122`); a stale local branch or leftover worktree inflates the in-flight list; and the board has no list of what can start now (`feat-0073` will add one).
+The maintainer chose on 2026-11-27 to promote [`sitrep`](../../.agents/skills/sitrep/SKILL.md). Its real runs are in the dogfood records `docs/reviews/2026-11-24-dogfood/ws-e.md`, `docs/reviews/2026-11-25-dogfood/rollout.md` and `docs/reviews/2026-11-26-dogfood/rollout-r3.md`. They exposed three things its body does not yet say: the integration branch is best named as a remote-tracking ref in `.sitrep.json` (a local branch name does not resolve in a fresh clone, `chore-0122`); a stale local branch or leftover worktree inflates the in-flight list; and the board has no list of what can start now (`feat-0073` will add one).
 
 ## Scope
 
